@@ -9,7 +9,8 @@ public abstract class Node {
     protected String index;
     // Mutter
     protected Node mother;
-
+    //Adresse
+    protected String address;
 
     public Node(String cat, String index) {
 	this.cat = cat;
@@ -56,6 +57,7 @@ public abstract class Node {
     public abstract Node copyAndReplace(List<Anchor> anchors, String lookUp);
 
     public void lexicalize(List<Node> nodes, String lookUp){}
+    public void printXDGInBuffer(StringBuffer result, String distance) {}
 
     public abstract void printXML();
     public abstract void printXMLInBuffer(StringBuffer result, String distance);

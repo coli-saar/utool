@@ -136,6 +136,14 @@ public final class InnerNode extends Node {
 	result.append(distance+"</node>");
     }
 
+    public void printXDGInBuffer(StringBuffer result, String distance) {
+	result.append(distance+"<node cat=\""+cat+"\">\n");
+	for (Node it : children){
+	    it.printXMLInBuffer(result, (distance+" "));
+	    result.append("\n");}
+	result.append(distance+"</node>");
+    }
+
 
     /**
      * Rekursive Ausgabe des Baums (Lisp-artig)
