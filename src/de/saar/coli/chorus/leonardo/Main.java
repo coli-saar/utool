@@ -14,6 +14,8 @@ import javax.swing.JScrollPane;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 
+import de.saar.coli.getopt.ConvenientGetopt;
+
 /**
  * The main program for Leonardo.
  * 
