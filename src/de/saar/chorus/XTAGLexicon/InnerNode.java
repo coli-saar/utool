@@ -34,8 +34,6 @@ public final class InnerNode extends Node {
      */
     public void lexicalize (List<Node> nodes, String lookUp){
 	if (children.size() == 1){
-	    System.out.println("Node "+cat+" "+index);
-	    this.printLisp();
 	    Node onlyChild = children.get(0);
 	    String childCat = onlyChild.getCat();
 	    if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)){
