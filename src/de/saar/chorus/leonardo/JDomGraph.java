@@ -295,38 +295,6 @@ class JDomGraph extends JGraph {
 	        frag.addMenuItem("fBaz", "F Baz Baz");
 	    }
 	}
-	
-	/**
-	 * prints position and dimensions of all 
-	 * fragments and their node on screen.
-	 * NOTE: made it public (MR)
-	 *
-	 */
-	public void printPositions() {
-		int frCount = 1;
-		
-		//putting height and widht of fragments and nodes on screen,
-		//just for comparing.
-		
-		for(Fragment frag : fragments)
-		{
-			DefaultGraphCell recCell = frag.getGroupObject();
-			Rectangle2D karton = GraphConstants.getBounds(recCell.getAttributes());
-			System.out.print("Fragment No. " + frCount + " " + recCell.toString());
-			System.out.println(" is at " + karton);
-			frCount++;
-			
-			for( DefaultGraphCell recNode : frag.getNodes()) {
-				Rectangle2D nodeRect = GraphConstants.getBounds(recNode.getAttributes());
-				System.out.print("  Node " + getNodeData(recNode).getName() + "(" + recNode + ")");
-				System.out.println(" is at " + nodeRect);
-			}
-			
-			System.out.println("");
-		}
-		
-		System.out.println("");
-	}
 
 	/**
 	 * Apply a layout algorithm to this graph. Before the first call of
@@ -334,46 +302,7 @@ class JDomGraph extends JGraph {
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		
-		System.out.println("Fragments and nodes _before_ Sugiyama:");
-		printPositions();
-		
-
-	    
-		JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
-		
-		System.out.println("Fragments and nodes with Sugiyama one Time: ");
-		printPositions();
-		
-		//It seems to make a difference whether the layout algorithm
-		//is applied two times or one time. To show this, the algorithm
-		//is used a second time here.
-		
-		JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
-		
-		//mr: some experimental code ...
-		
-		System.out.println("Fragments and nodes with Sugiyama two Times: ");
-		printPositions();
-		
-		//changing layout: 
-		//every fragment (means: its nodes) is arranged with tree layout.
-		
-		Iterator<Fragment> frIt = fragments.iterator();
-	
-		
-		while(frIt.hasNext())
-		{
-			computeFragmentLayout(frIt.next(), new TreeLayoutAlgorithm());
-			
-		}
-		
-		//putting height and width on screen again and finding something -
-		//strange? The fragments seem to grow.
-		
-		System.out.println("Fragments with TreeLayout after Sugiyama: ");
-		printPositions();
-	
+		JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());	
 		
 	    
 	    // TODO Put a more intelligent layout algorithm here.
@@ -462,35 +391,12 @@ class JDomGraph extends JGraph {
 	    
 	    // insert fragment cells into the graph.
 	    for( Fragment frag : fragments ) {
-	    	
-	    	addTestMenu(frag);
-	    	
-	        getModel().insert( new Object[] { frag.getGroupObject() },
+	    	getModel().insert( new Object[] { frag.getGroupObject() },
 	                			null, null, null, null );
 	    }
-	    
-	    //MR: for testing a listener for the sample layout menu;
-	    //perhaps the listener in general should be added somewhere
-	    //else.
-	    this.addPopupListener(new FragmentLayoutChangeListener());
 	}
 	
 	
-	/**
-	 * This adds a hard coded menu to a fragment.
-	 * Serves to check optical and internal dimension
-	 * changes of fragments. (Michaela)
-	 * 
-	 * @param frag, the fragment to add the menu to
-	 */
-	private void addTestMenu(Fragment frag)
-	{
-		frag.addMenuItem("tree", "Tree Layout");
-		frag.addMenuItem("sug", "Sugiyama Layout");
-		frag.addMenuItem("allSug", "ALL Sugiyama Layout");
-		frag.addMenuItem("allTree", "ALL Tree Layout");
-		frag.addMenuItem("prInf", "print dimensions / position");
-	}
 
 	/**
 	 * Merge one fragment into another. This means that all nodes of the "from"
