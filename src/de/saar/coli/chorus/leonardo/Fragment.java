@@ -182,8 +182,7 @@ class Fragment extends DomGraphPopupTarget {
      * @param node, the node to check
      * @return true if the node is a leaf;
      */
-    public boolean isLeaf(DefaultGraphCell node)
-    {
+    public boolean isLeaf(DefaultGraphCell node){
     	return getChildren(node).isEmpty();
     }
     
@@ -194,8 +193,7 @@ class Fragment extends DomGraphPopupTarget {
      * @param prec, the node to go out from
      * @return the next leaf or null if it cannot be resolved
      */
-    public DefaultGraphCell getNextLeaf(DefaultGraphCell prec)
-    {
+    public DefaultGraphCell getNextLeaf(DefaultGraphCell prec){
     	if(! this.getNodes().contains(prec))
     		return null;
     	else {
@@ -209,8 +207,65 @@ class Fragment extends DomGraphPopupTarget {
     	}
     	return null;
     }
+   
+    /**
+     * returns the parent node of a fragment cell.
+     * returns null if the given node is the root of 
+     * the fragment or if it is not contained in the
+     * fragment.
+     * 
+     * @param child, the node to find the parent from
+     * @return the parent or null
+     */
+    public DefaultGraphCell getParent(DefaultGraphCell child) {
+    	for(DefaultEdge edg : this.getEdges()){
+    		DefaultGraphCell potChild = 
+    			(DefaultGraphCell) JGraphUtilities.getTargetVertex(this.getParent(), edg);
+    		if(potChild.equals(child)) {
+    			return (DefaultGraphCell) JGraphUtilities.getSourceVertex(this.getParent(), edg);
+    		}
+    	}
+    	return null;
+    }
     
     
+   /**
+    * Returns the neighbor of a given node - or null,
+    * if there is none.
+    * @param node, the node to compute the neighbor from
+    * @return the neighbor or null
+    */
+    public DefaultGraphCell getNeighbour(DefaultGraphCell node){
+    	for(DefaultEdge edg : this.getEdges()){
+    		
+    		if(JGraphUtilities.getTargetVertex(this.getParent(), edg).equals(
+    				this.getParent(node))){
+    			DefaultGraphCell potNeighbor = 
+    				(DefaultGraphCell) JGraphUtilities.getTargetVertex(this.getParent(), edg);
+    			if(! potNeighbor.equals(node)) {
+    				return potNeighbor;
+    			}
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * Returns all the leaves, considering the nodes
+     * of this fragment.
+     * 
+     * @return the leaves
+     */
+    public Set<DefaultGraphCell> getLeafs(){
+    	HashSet<DefaultGraphCell> leafs = new HashSet<DefaultGraphCell>();
+    	
+    	for(DefaultGraphCell node: this.getNodes()){
+    		if(this.isLeaf(node))
+    			leafs.add(node);
+    	}
+    	return leafs;
+    }
     
     public String toString() {
         return "<" + fragmentName.toString() + ">";
