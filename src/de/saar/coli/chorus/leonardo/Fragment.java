@@ -251,6 +251,7 @@ class Fragment extends DomGraphPopupTarget {
     	return null;
     }
     
+    
     /**
      * Returns all the leaves, considering the nodes
      * of this fragment.

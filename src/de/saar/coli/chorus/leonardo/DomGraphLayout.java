@@ -34,6 +34,9 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 	private Map<Fragment,Integer> fragXpos;
 	private Map<Fragment,Integer> fragYpos;
 	
+	private Map<Fragment,Integer> fragWidth;
+	private Map<Fragment,Integer> fragHeight;
+	
 	private Map<DefaultGraphCell,DefaultGraphCell> parent;
 	private Map<DefaultGraphCell,List<DefaultGraphCell>> children;
 	
@@ -72,6 +75,11 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 		
 		fragments = new HashSet<Fragment>();
 		
+		fragXpos = new HashMap<Fragment, Integer>();
+		fragYpos = new HashMap<Fragment, Integer>();
+		
+		fragWidth = new HashMap<Fragment, Integer>();
+		fragHeight = new HashMap<Fragment, Integer>();
 		
 		relXpos = new HashMap<DefaultGraphCell,Integer>();
 		relYpos = new HashMap<DefaultGraphCell,Integer>();
@@ -156,8 +164,46 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 		return recentRoot;
 	}
 	
+	/*
+	 * Note: I know this method does not fit in here.
+	 * It's just easier to define it here...
+	 */
+	private int getMaxDepth(Fragment frag) {
+		int dep = 0;
+		
+		for(DefaultGraphCell node : frag.getNodes()) {
+			if(dep < depth.get(node).intValue())
+				dep = depth.get(node).intValue();
+		}
+		
+		return dep;
+		
+	}
 	
-	private void computePositions(){
+	/**
+	 * computes the relative y-positions of a
+	 * fragment node by its depth.
+	 * NOTE: can only be used after "computeXPositions"
+	 * because the depth is computed there.
+	 *
+	 */
+	private void computeYPositions(){
+		for(Fragment frag : fragments) {
+			int maxDep = getMaxDepth(frag);
+			
+			for(DefaultGraphCell node : frag.getNodes()){
+				int nodeDep = depth.get(node).intValue();
+				
+				//60: a node's height is 30, so there should
+				//be at least one "node" space - perhaps 
+				//more, to be tested.
+				int yVal = (maxDep - nodeDep) * 60; 
+				relYpos.put(node, new Integer(yVal));
+			}
+		}
+	}
+	
+	private void computeXPositions(){
 		
 		DefaultGraphCell recRoot = null;
 		
@@ -183,6 +229,9 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 				relXpos.put(lf, new Integer(recX));
 				recX += 60;
 			}
+			
+			fragWidth.put(frag, new Integer(recX + 30));
+			
 			
 			/*
 			 * put all nodes in a stack.
@@ -249,10 +298,12 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 				}
 			}
 			
+			
+			
+			
 		}
-		/*
-		 * TODO implement converting depth in Y-position
-		 */
+		
+		
 	}
 	
 	
