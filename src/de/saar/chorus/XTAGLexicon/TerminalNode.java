@@ -13,6 +13,11 @@ public final class TerminalNode extends LeafNode {
 	super(cat, index);
     }
 
+    public boolean equals(Object o){
+	if (o instanceof TerminalNode){
+	    return ((TerminalNode)o).getCat().equals(cat);}
+	else { return false;}
+    }
     
     public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 	return new TerminalNode(cat, index);

@@ -20,4 +20,9 @@ public abstract class LeafNode extends Node {
     public List<Node> getChildren(){
 	throw new Error ("oops");
     }
+
+    public int hashCode(){
+	return cat.hashCode();
+    }
+
 }
