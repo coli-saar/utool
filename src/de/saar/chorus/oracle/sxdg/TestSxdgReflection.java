@@ -1,4 +1,4 @@
-package de.saar.coli.chorus.oracle.sxdg;
+package de.saar.chorus.oracle.sxdg;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,8 +6,8 @@ import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import de.saar.coli.chorus.oracle.Evaluator;
-import de.saar.coli.chorus.oracle.SortedEvaluatingSearchSpace;
+import de.saar.chorus.oracle.Evaluator;
+import de.saar.chorus.oracle.SortedEvaluatingSearchSpace;
 
 
 public class TestSxdgReflection extends TestCase {

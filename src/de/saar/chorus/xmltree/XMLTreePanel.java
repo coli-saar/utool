@@ -9,7 +9,7 @@
  * 
  */
 
-package de.saar.coli.chorus.xmltree;
+package de.saar.chorus.xmltree;
 
 import java.awt.*;
 import java.awt.event.*;

@@ -1,7 +1,7 @@
 
-package de.saar.coli.chorus.oracle.sxdg;
+package de.saar.chorus.oracle.sxdg;
 
-import de.saar.coli.chorus.oracle.*;
+import de.saar.chorus.oracle.*;
 
 import java.util.*;
 import java.io.*;

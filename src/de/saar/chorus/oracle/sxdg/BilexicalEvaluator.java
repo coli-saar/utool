@@ -31,7 +31,7 @@ Java max. heap size can be increased with e.g. -Xmx256m
 */
 
 
-package de.saar.coli.chorus.oracle.sxdg;
+package de.saar.chorus.oracle.sxdg;
 
 import java.io.File;
 import java.util.HashMap;
@@ -46,7 +46,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.saar.coli.chorus.oracle.Evaluator;
+import de.saar.chorus.oracle.Evaluator;
 
 
 

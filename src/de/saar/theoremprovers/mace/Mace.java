@@ -1,10 +1,12 @@
 
 
-package de.saar.coli.theoremprovers.mace;
+package de.saar.theoremprovers.mace;
 
-import edu.mit.techniques.FOL.*;
 
-import de.saar.coli.convenientprocess.*;
+import de.saar.convenientprocess.*;
+
+import edu.mit.techniques.FOL.Negation;
+import edu.mit.techniques.FOL.Sentence;
 
 
 

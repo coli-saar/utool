@@ -1,5 +1,5 @@
 
-package de.saar.coli.chorus.oracle.sxdg;
+package de.saar.chorus.oracle.sxdg;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import de.saar.coli.chorus.oracle.SortedEvaluatingSearchSpace;
+import de.saar.chorus.oracle.SortedEvaluatingSearchSpace;
 
 
 public class TestBilexicalEvaluator extends TestCase {

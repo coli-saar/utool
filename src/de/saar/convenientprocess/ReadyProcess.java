@@ -1,5 +1,5 @@
 
-package de.saar.coli.convenientprocess;
+package de.saar.convenientprocess;
 
 /*
  This class is an interface to a process that outputs the line

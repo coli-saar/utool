@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package de.saar.coli.chorus.leonardo;
+package de.saar.chorus.leonardo;
 
 import java.io.InputStream;
 import java.io.StringReader;

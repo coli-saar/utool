@@ -1,11 +1,11 @@
 
-package de.saar.coli.chorus.oracle.dummy;
+package de.saar.chorus.oracle.dummy;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import de.saar.coli.chorus.oracle.*;
+import de.saar.chorus.oracle.*;
 
 
 /* 
@@ -79,14 +79,14 @@ public class Main extends EvaluatingOracle<DummySpace,String> {
 	}
 
 	/* (non-Javadoc)
-	 * @see de.saar.coli.chorus.oracle.Oracle#generateNewSpace()
+	 * @see de.saar.chorus.oracle.Oracle#generateNewSpace()
 	 */
 	protected DummySpace generateNewSpace() {
 		return new DummySpace(eval);
 	}
 
 	/* (non-Javadoc)
-	 * @see de.saar.coli.chorus.oracle.Oracle#xmlToDomain(java.lang.String)
+	 * @see de.saar.chorus.oracle.Oracle#xmlToDomain(java.lang.String)
 	 */
 	protected String xmlToDomain(String elt) {
 		return elt;

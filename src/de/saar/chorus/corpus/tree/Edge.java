@@ -10,7 +10,7 @@
 
 
 
-package de.saar.coli.chorus.corpus.tree;
+package de.saar.chorus.corpus.tree;
 
 import java.util.*;
 

@@ -1,10 +1,10 @@
-package de.saar.coli.theoremprovers.spass;
+package de.saar.theoremprovers.spass;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import de.saar.convenientprocess.*;
 import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
-import de.saar.coli.convenientprocess.*;
-
-import java.util.*;
 
 
 public class Spass {
