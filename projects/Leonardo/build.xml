@@ -19,13 +19,13 @@
 	<property name="build.lib" location="${build}/lib" />
 	<property name="build.src" location="${build}/src" />
 
-	<property name="coli" value="de/saar/coli" />
-	<property name="chorus" value="de/saar/coli/chorus" />
+	<property name="coli" value="de/saar" />
+	<property name="chorus" value="de/saar/chorus" />
 
 
 
 	<property name="leonardo.jar" value="${build.lib}/Leonardo.jar" />
-	<property name="leonardo.jar.classes" value="${chorus}/leonardo/*" />
+	<property name="leonardo.jar.classes" value="${chorus}/leonardo/*,${coli}/getopt/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
 	<property name="reports.tests" location="testreports" />
@@ -37,7 +37,7 @@
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
-               includes="${chorus}/leonardo/*.java"
+               includes="${chorus}/leonardo/*.java,${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
 			<classpath>
@@ -52,7 +52,7 @@
              includes="${leonardo.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes}">
 			<manifest>
 				<attribute name="Main-Class"
-                           value="de.saar.coli.chorus.leonardo.Main" />
+                           value="de.saar.chorus.leonardo.Main" />
 			</manifest>
 		</jar>
 
