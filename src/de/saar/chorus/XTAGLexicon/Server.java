@@ -25,7 +25,7 @@ public class Server {
       ServerSocket sockServ = new ServerSocket(iPort);
       // build the lexikon
       System.out.println("[Server] building Lexicon");
-      SocketMain main = new SocketMain();
+      XDGMain main = new XDGMain();
       main.run();
       System.out.println("[Server] Lexicon ready");
       
