@@ -31,19 +31,18 @@ public class Lexicon {
 	    if (morphSet == null){
 		throw new Exception("Not in Lexicon : "+word);}
 	    
-	    for (Iterator<MorphInfo> it = morphSet.iterator(); it.hasNext();){
-		String entry = it.next().getRoot();
+	    for (MorphInfo it : morphSet){
+		String entry = it.getRoot();
 		Set<SyntInfo> syntSet = syntax.get(entry);
 		if (syntSet == null){
 		    throw new Exception("Not in Syntax : "+word);}
-		for (Iterator<SyntInfo> it2 = syntSet.iterator(); it2.hasNext();){
-		    SyntInfo nextSynt = it2.next();
+		for (SyntInfo nextSynt : syntSet){
 		    Set<String> syntTrees = nextSynt.getTrees();
 		    Set<String> syntFamilies = nextSynt.getFamilies();
 		    List<Anchor> syntAnchors = nextSynt.getAnchors();
 		    if (syntTrees != null){
-			for (Iterator<String> it3 = syntTrees.iterator(); it3.hasNext();){
-			    Node nextNode = trees.get(it3.next());
+			for (String it3 : syntTrees){
+			    Node nextNode = trees.get(it3);
 			    if (nextNode != null){
 				Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
 				result.add(replacedNode);
@@ -53,12 +52,13 @@ public class Lexicon {
 			}
 		    }
 		    if (syntFamilies != null){
-			for (Iterator<String> it3 = syntFamilies.iterator(); it3.hasNext();){
-			    Set<String> nextTrees = families.get(it3.next());
-			    for (Iterator<String> it4 = nextTrees.iterator(); it4.hasNext();){
-				Node nextNode = trees.get(it4.next());
+			for (String it3 : syntFamilies){
+			    Set<String> nextTrees = families.get(it3);
+			    for (String it4 : nextTrees){
+				Node nextNode = trees.get(it4);
 				if (nextNode != null){
-				    Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
+				    Node replacedNode = 
+					nextNode.copyAndReplace(syntAnchors, word);
 				    result.add(replacedNode);
 				    List<Node> nodes = new ArrayList<Node>();
 				    replacedNode.lexicalize(nodes, word);
