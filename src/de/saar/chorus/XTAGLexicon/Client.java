@@ -13,7 +13,6 @@ import java.io.IOException;
  * gibt die Baeume aus, die vom Server kommen
  */
 
-
 public class Client {
 
   public static void main(String asArgs[]) {

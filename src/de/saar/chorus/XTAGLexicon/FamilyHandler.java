@@ -1,9 +1,9 @@
-
 import java.util.*;
 import java.io.*;
 import org.xml.sax.*;
 import javax.xml.parsers.*;
 import org.xml.sax.helpers.DefaultHandler;
+
 
 
 public class FamilyHandler extends DefaultHandler {
@@ -22,7 +22,8 @@ public class FamilyHandler extends DefaultHandler {
     public void startElement(String namespaceURI,
 			     String sName,
                              String qName,
-			     Attributes attrs)
+		  
+	     Attributes attrs)
 	throws SAXException
     {
 	String element = sName.equals("") ? qName : sName;

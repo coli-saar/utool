@@ -17,9 +17,8 @@ public final class InnerNode extends Node {
     
     public int hashCode(){
 	int hashCode = cat.hashCode();
-	for (Iterator<Node> it = children.iterator(); 
-	     it.hasNext();){
-	    hashCode = hashCode + it.next().hashCode();}
+	for (Node it : children){
+	    hashCode = hashCode + it.hashCode();}
 	return hashCode;
     }
 
@@ -50,9 +49,8 @@ public final class InnerNode extends Node {
      */
     public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 	Node copiedNode = new InnerNode(cat, index);
-	for (Iterator<Node> it = children.iterator();
-	     it.hasNext();){
-	    Node copiedChild = it.next().copyAndReplace(anchors, lookUp);
+	for (Node it : children){
+	    Node copiedChild = it.copyAndReplace(anchors, lookUp);
 	    copiedNode.addChild(copiedChild);}
 	return copiedNode;
     }
@@ -86,23 +84,14 @@ public final class InnerNode extends Node {
 	}
 	else{
 	    List<Node> innerNodeChildren = new ArrayList<Node>();
-	    for (Iterator<Node> it = children.iterator(); it.hasNext();){
-		Node child = it.next();
+	    for (Node child : children){
 		if (child instanceof InnerNode){
 		    innerNodeChildren.add(child);}
 	    }
-	    for (Iterator<Node> it = innerNodeChildren.iterator();
-		 it.hasNext();){
-		it.next().lexicalize(nodes, lookUp);
+	    for (Node it : innerNodeChildren){
+		it.lexicalize(nodes, lookUp);
 	    }
-	}/**
-	    else{
-	    for(int i=0; i==children.size(); i++){
-	    Node child = children.get(i);
-	    if (child instanceof InnerNode){
-	    child.lexicalize(nodes, lookUp);}
-	    }
-	    }*/
+	}
     }
     
 		
@@ -141,8 +130,8 @@ public final class InnerNode extends Node {
 
     public void printXMLInBuffer(StringBuffer result, String distance) {
 	result.append(distance+"<node cat=\""+cat+"\">\n");
-	for (Iterator<Node> it = children.iterator(); it.hasNext();){
-	    it.next().printXMLInBuffer(result, (distance+" "));
+	for (Node it : children){
+	    it.printXMLInBuffer(result, (distance+" "));
 	    result.append("\n");}
 	result.append(distance+"</node>");
     }
