@@ -15,6 +15,27 @@ public final class InnerNode extends Node {
 	children = new ArrayList<Node>();
     }
     
+    public int hashCode(){
+	int hashCode = cat.hashCode();
+	for (Iterator<Node> it = children.iterator(); 
+	     it.hasNext();){
+	    hashCode = hashCode + it.next().hashCode();}
+	return hashCode;
+    }
+
+    public boolean equals(Object o){
+	if (o instanceof InnerNode){
+	    if (((InnerNode)o).getCat().equals(cat)){
+		List<Node> compareChildren = ((InnerNode)o).getChildren();
+		for (Iterator<Node> it = children.iterator(); it.hasNext();){
+		    Node child = it.next();
+		    if (!compareChildren.contains(child)){
+			return false;}
+		}
+		return true;}
+	    return false;}
+	else {return false;}
+    }
    
     /**
      * Kopieren und ersetzen der Ankerknoten
@@ -29,43 +50,53 @@ public final class InnerNode extends Node {
     }
 
 
+    public boolean hasOneTerminal(String lookUp){
+	if (children.size() == 1){
+	   Node onlyChild = children.get(0);
+	   String childCat = onlyChild.getCat(); 
+	   if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+	       && !childCat.equals("PRO") && !childCat.equals(null)
+	       && !childCat.equals("")){
+	       return true;}
+	   else {return false;}}
+	else{return false;}
+    }
+
     /**
      * Lexikalisierung der Baeume
      */
     public void lexicalize (List<Node> nodes, String lookUp){
-	if (children.size() == 1){
+	if (this.hasOneTerminal(lookUp)){
 	    Node onlyChild = children.get(0);
 	    String childCat = onlyChild.getCat();
-	    if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)){
-		if (mother != null){
-		    mother.replaceChild(this, new SubstitutionNode(cat+"/"+childCat, index));}
-		else {nodes.add(new SubstitutionNode(cat+"/"+childCat, index));}
-		Node newMother = new InnerNode(cat+"/"+childCat, index);
-		newMother.addChild(this);
-		nodes.add(newMother);
-	    }
+	    mother.replaceChild(this, 
+				new SubstitutionNode(cat+"/"+childCat, index));
+	    Node newMother = new InnerNode(cat+"/"+childCat, index);
+	    newMother.addChild(this);
+	    if (!nodes.contains(newMother)){
+		nodes.add(newMother);}
 	}
-		else{
-		    List<Node> innerNodeChildren = new ArrayList<Node>();
-		    for (Iterator<Node> it = children.iterator(); it.hasNext();){
-			Node child = it.next();
-			if (child instanceof InnerNode){
-			    innerNodeChildren.add(child);}
-		    }
-		    for (Iterator<Node> it = innerNodeChildren.iterator();
-			 it.hasNext();){
-			it.next().lexicalize(nodes, lookUp);
-		    }
-		}/**
-		    else{
-		    for(int i=0; i==children.size(); i++){
-		    Node child = children.get(i);
-		    if (child instanceof InnerNode){
-		    child.lexicalize(nodes, lookUp);}
-		    }
-		    }*/
+	else{
+	    List<Node> innerNodeChildren = new ArrayList<Node>();
+	    for (Iterator<Node> it = children.iterator(); it.hasNext();){
+		Node child = it.next();
+		if (child instanceof InnerNode){
+		    innerNodeChildren.add(child);}
+	    }
+	    for (Iterator<Node> it = innerNodeChildren.iterator();
+		 it.hasNext();){
+		it.next().lexicalize(nodes, lookUp);
+	    }
+	}/**
+	    else{
+	    for(int i=0; i==children.size(); i++){
+	    Node child = children.get(i);
+	    if (child instanceof InnerNode){
+	    child.lexicalize(nodes, lookUp);}
+	    }
+	    }*/
     }
-
+    
 		
 
     /**

@@ -12,6 +12,12 @@ public final class AnchorNode extends LeafNode {
     }
 
 
+    public boolean equals(Object o){
+	if (o instanceof AnchorNode){
+	    return ((AnchorNode)o).getCat().equals(cat);}
+	else { return false;}
+    }
+
     public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 	Node newAnchorNode = new InnerNode(this.cat, this.index);
 	TerminalNode newTerminalNode = new TerminalNode(cat, null);

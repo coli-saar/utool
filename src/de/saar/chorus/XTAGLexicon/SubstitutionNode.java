@@ -12,6 +12,12 @@ public final class SubstitutionNode extends LeafNode {
 	super(cat, index);
     }
 
+    public boolean equals(Object o){
+	if (o instanceof SubstitutionNode){
+	    return ((SubstitutionNode)o).getCat().equals(cat);}
+	else { return false;}
+    }
+
     public Node copyAndReplace(List<Anchor> anchors, String lookUp) {
 	return new SubstitutionNode(cat, index);
     }

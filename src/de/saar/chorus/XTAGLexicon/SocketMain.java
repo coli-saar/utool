@@ -22,11 +22,13 @@ public class SocketMain {
     }
 
     public StringBuffer lookUp(StringBuffer result, String lookUp){
-	try{
+	try{int counter = 1;
 	    result.append("<?xml version=\"1.0\"?>\n<lexicon>\n");
 	    for (Node root : lexicon.lookup(lookUp)) {
+		result.append(" <----- Baum Nummer "+counter+" ----->\n");
 		    root.printXMLInBuffer(result," ");
 		    result.append("\n");
+		    counter++;
 		    }
 	    result.append("</lexicon>");
 	}

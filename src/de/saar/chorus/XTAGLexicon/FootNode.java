@@ -12,6 +12,12 @@ public final class FootNode extends LeafNode {
 	super(cat, index);
     }
 
+    public boolean equals(Object o){
+	if (o instanceof FootNode){
+	    return ((FootNode)o).getCat().equals(cat);}
+	else { return false;}
+    }
+
     public Node copyAndReplace(List<Anchor> anchors, String lookUp) {
 	return new FootNode(cat, index);
     }
