@@ -27,14 +27,22 @@ public final class InnerNode extends Node {
 	if (o instanceof InnerNode){
 	    if (((InnerNode)o).getCat().equals(cat)){
 		List<Node> compareChildren = ((InnerNode)o).getChildren();
-		for (Iterator<Node> it = children.iterator(); it.hasNext();){
-		    Node child = it.next();
-		    if (!compareChildren.contains(child)){
-			return false;}
+		if (compareChildren.size() == children.size()){
+		    for (int i=0; i>children.size(); i++){
+			if (!children.get(i).equals(compareChildren.get(i))){
+			    return false;
+			}
+		    }
+		    return true;
 		}
-		return true;}
-	    return false;}
-	else {return false;}
+		else 
+		    {return false;}
+	    }
+	    else 
+		{return false;}
+	}
+	else 
+	    {return false;}
     }
    
     /**
