@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE gxl SYSTEM "http://www.gupro.de/GXL/gxl-1.0.dtd">
+
+<gxl xmlns:xlink="http://www.w3.org/1999/xlink">
+   <graph id="chain2" edgeids="true" hypergraph="false" edgemode="directed">
+      <!-- OF 1 -->
+      <node id="X">
+        <type xlink:href="root" />
+        <attr name="label"><string>f</string></attr>
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>
+      <node id="X1">
+        <type xlink:href="hole" />
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>
+      <node id="X2">
+        <type xlink:href="leaf" />
+        <attr name="label"><string>b</string></attr>
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>
+      <edge from="X" to="X1" id="x-x1">
+        <type xlink:href="solid" />
+      </edge>
+      <edge from="X" to="X2" id="x-x2">
+        <type xlink:href="solid" />
+      </edge>
+      
+      <!-- OF 2 -->
+      <node id="Y">
+        <type xlink:href="root" />
+        <attr name="label"><string>g</string></attr>
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>
+      <node id="Y1">
+        <type xlink:href="hole" />
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>
+      <edge from="Y" to="Y1" id="Y-Y1">
+        <type xlink:href="solid" />
+      </edge>
+
+      <!-- UF 1 -->
+      <node id="Z">
+        <type xlink:href="root" />
+        <attr name="label"><string>a</string></attr>
+        <popup id="foo" label="Foo Foo" />
+        <popup id="bar" label="Bar Bar" />
+        <popup id="baz" label="Baz Baz" />
+      </node>      
+      
+      
+      <!-- dominances -->
+      <edge from="X1" to="Z" id="x1-z">
+        <type xlink:href="dominance" />
+      </edge>
+      <edge from="Y1" to="Z" id="y1-z">
+        <type xlink:href="dominance" />
+      </edge>
+   </graph>
+</gxl>
+
+
