@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
+import org.jgraph.util.*;
 
 /**
  * A fragment in a dominance graph. This fragment contains nodes (labelled
@@ -137,6 +138,79 @@ class Fragment extends DomGraphPopupTarget {
     public DefaultGraphCell getGroupObject() {
         return groupObject;
     }
+    
+    /**
+     * Returns the children of a given node contained in
+     * this Fragment. Returns null if the given source 
+     * node is not contained in the fragment.
+     * 
+     * @param node, the source node
+     * @return a Set of the node's children.
+     */
+    public Set<DefaultGraphCell> getChildren(DefaultGraphCell node){
+    	
+    	Set<DefaultGraphCell> fragChildren = new HashSet<DefaultGraphCell>();
+    	
+    	//if there is no node, there are no children.
+    	if(! this.getNodes().contains(node))
+    		return null;
+    	else {
+    		//iterating over the edges.
+    		for(DefaultEdge edg : this.getEdges()){
+    			
+    			//if we find one going out from our source...
+    			if(JGraphUtilities.getSourceVertex(this.getParent(),edg).equals(node)){
+    				DefaultGraphCell potChild = 
+    					(DefaultGraphCell) JGraphUtilities.getTargetVertex(this.getParent(), edg);
+    				
+    				//we add it, in case it is part of the fragment.
+    				if(this.getNodes().contains(potChild))
+    					fragChildren.add(potChild);
+    			}
+    		}
+    		
+    	}
+    	return fragChildren;
+    }
+    
+    /**
+     * Indicates if a node is a Leaf - considering
+     * just the nodes this fragment contains.
+     * Throws NullPointerException if the not ist not part
+     * of the fragment, I'll fix that (promised).
+     * 
+     * @param node, the node to check
+     * @return true if the node is a leaf;
+     */
+    public boolean isLeaf(DefaultGraphCell node)
+    {
+    	return getChildren(node).isEmpty();
+    }
+    
+    /**
+     * Returns the next leave going out from a given node.
+     * Returns null if the node is not part of the fragment
+     * or there are no following leafs.
+     * @param prec, the node to go out from
+     * @return the next leaf or null if it cannot be resolved
+     */
+    public DefaultGraphCell getNextLeaf(DefaultGraphCell prec)
+    {
+    	if(! this.getNodes().contains(prec))
+    		return null;
+    	else {
+    		boolean seen = false;
+        	for(DefaultGraphCell nd : this.getNodes()) {
+        		if(nd.equals(prec))
+        			seen = true;
+        		if(seen && this.isLeaf(nd))
+        			return nd;
+        	}
+    	}
+    	return null;
+    }
+    
+    
     
     public String toString() {
         return "<" + fragmentName.toString() + ">";
