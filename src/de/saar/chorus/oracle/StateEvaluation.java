@@ -1,5 +1,5 @@
 
-package de.saar.coli.chorus.oracle;
+package de.saar.chorus.oracle;
 
 
 public class StateEvaluation {

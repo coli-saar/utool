@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package de.saar.coli.chorus.leonardo;
+package de.saar.chorus.leonardo;
 
 import java.io.*;
 import java.io.IOException;

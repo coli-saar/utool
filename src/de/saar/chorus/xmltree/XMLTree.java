@@ -1,5 +1,5 @@
 
-package de.saar.coli.chorus.xmltree;
+package de.saar.chorus.xmltree;
 
 import javax.swing.*;
 import java.io.*;

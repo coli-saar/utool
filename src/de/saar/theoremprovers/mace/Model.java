@@ -1,5 +1,5 @@
 
-package de.saar.coli.theoremprovers.mace;
+package de.saar.theoremprovers.mace;
 
 import java.util.*;
 

@@ -1,5 +1,5 @@
 
-package de.saar.coli.convenientprocess;
+package de.saar.convenientprocess;
 
 /*
   This is a convenience wrapper for a process, which has the following

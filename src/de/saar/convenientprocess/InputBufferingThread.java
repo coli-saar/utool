@@ -1,6 +1,6 @@
 
 
-package de.saar.coli.convenientprocess;
+package de.saar.convenientprocess;
 
 
 /***

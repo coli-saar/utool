@@ -1,7 +1,7 @@
 
 // TODO: Predicate tables should print values T/F instead of 1/0.
 
-package de.saar.coli.theoremprovers.mace;
+package de.saar.theoremprovers.mace;
 
 
 import edu.mit.techniques.FOL.*;

@@ -1,7 +1,7 @@
 /*
  * Created on 07.02.2005
  */
-package de.saar.coli.chorus.leonardo;
+package de.saar.chorus.leonardo;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;

@@ -14,14 +14,14 @@
  *
  * The class contains a main program. You can run it as follows:
  *
- * java -cp build/lib/Tree.jar de.saar.coli.chorus.corpus.tree.ScopeFormatConverter <corpusname>
+ * java -cp build/lib/Tree.jar de.saar.chorus.corpus.tree.ScopeFormatConverter <corpusname>
  *
  */
 
 
 
 
-package de.saar.coli.chorus.corpus.tree;
+package de.saar.chorus.corpus.tree;
 
 import java.util.*;
 import java.io.*;
@@ -45,7 +45,7 @@ import electric.xml.Attribute;
  *
  * The class contains a main program. You can run it as follows:
  *
- * java -cp build/lib/Tree.jar de.saar.coli.chorus.corpus.tree.ScopeFormatConverter <corpusname>
+ * java -cp build/lib/Tree.jar de.saar.chorus.corpus.tree.ScopeFormatConverter <corpusname>
  * 
  */
 

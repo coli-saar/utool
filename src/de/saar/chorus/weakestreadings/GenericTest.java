@@ -1,9 +1,12 @@
 
-package de.saar.coli.chorus.weakestreadings;
+package de.saar.chorus.weakestreadings;
 
-import de.saar.coli.theoremprovers.spass.*;
-import de.saar.coli.theoremprovers.mace.*;
-import edu.mit.techniques.FOL.*;
+import de.saar.theoremprovers.mace.Mace;
+import de.saar.theoremprovers.mace.Model;
+import de.saar.theoremprovers.mace.ModelTextGUI;
+import de.saar.theoremprovers.spass.Spass;
+import edu.mit.techniques.FOL.Implication;
+import edu.mit.techniques.FOL.Sentence;
 
 
 class GenericTest {

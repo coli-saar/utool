@@ -1,6 +1,6 @@
 
 
-package de.saar.coli.chorus.weakestreadings;
+package de.saar.chorus.weakestreadings;
 
 import edu.mit.techniques.FOL.*;
 import edu.mit.techniques.FOL.parser.*;

@@ -2,7 +2,7 @@
  * Created on 27.07.2004
  *
  */
-package de.saar.coli.chorus.leonardo;
+package de.saar.chorus.leonardo;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -14,7 +14,7 @@ import javax.swing.JScrollPane;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 
-import de.saar.coli.getopt.ConvenientGetopt;
+import de.saar.getopt.ConvenientGetopt;
 
 /**
  * The main program for Leonardo.
