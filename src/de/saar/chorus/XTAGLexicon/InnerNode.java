@@ -45,18 +45,25 @@ public final class InnerNode extends Node {
 		nodes.add(newMother);
 	    }
 	}
-	else{
-	    List<Node> innerNodeChildren = new ArrayList<Node>();
-	    for (Iterator<Node> it = children.iterator(); it.hasNext();){
-		Node child = it.next();
-		if (child instanceof InnerNode){
-		    innerNodeChildren.add(child);}
-	    }
-	    for (Iterator<Node> it = innerNodeChildren.iterator();
-		 it.hasNext();){
-		it.next().lexicalize(nodes, lookUp);
-	    }
-	}
+		else{
+		    List<Node> innerNodeChildren = new ArrayList<Node>();
+		    for (Iterator<Node> it = children.iterator(); it.hasNext();){
+			Node child = it.next();
+			if (child instanceof InnerNode){
+			    innerNodeChildren.add(child);}
+		    }
+		    for (Iterator<Node> it = innerNodeChildren.iterator();
+			 it.hasNext();){
+			it.next().lexicalize(nodes, lookUp);
+		    }
+		}/**
+		    else{
+		    for(int i=0; i==children.size(); i++){
+		    Node child = children.get(i);
+		    if (child instanceof InnerNode){
+		    child.lexicalize(nodes, lookUp);}
+		    }
+		    }*/
     }
 
 		
