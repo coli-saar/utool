@@ -20,6 +20,8 @@ import org.jgraph.util.JGraphUtilities;
  */
 public class DomGraphLayout extends JGraphLayoutAlgorithm {
 	
+	//I don't know which of these I'll really need...
+	
 	private JDomGraph graph; 
 	private JGraph auxGraph;
 	
@@ -119,18 +121,18 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 		}
 	} */
 	
-	private boolean isFragLeaf(DefaultGraphCell node, Fragment frag) {
-		
-		if((children.get(node).size() == 0))
-			return true;
-		
-		for(DefaultGraphCell child : children.get(node))
-		{
-			if(frag.getNodes().contains(child))
-				return false;
-		}
-		return false;
-	}
+//	private boolean isFragLeaf(DefaultGraphCell node, Fragment frag) {
+//		
+//		if((children.get(node).size() == 0))
+//			return true;
+//		
+//		for(DefaultGraphCell child : children.get(node))
+//		{
+//			if(frag.getNodes().contains(child))
+//				return false;
+//		}
+//		return false;
+//	}
 	
 	
 	private DefaultGraphCell computeFragRoot(Fragment frag) {
@@ -170,32 +172,86 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 			
 			Set<DefaultGraphCell> toCompute = frag.getNodes();
 			
-			//chartNodes(frag.getEdges());
-			
 			recRoot = computeFragRoot(frag);
+			toCompute.remove(recRoot);
 			
 			Stack<DefaultGraphCell> restedNodes = new Stack<DefaultGraphCell>();
+			restedNodes.push(recRoot);
 			
+			//compute the leafs positions.
+			for(DefaultGraphCell lf : frag.getLeafs()) {
+				relXpos.put(lf, new Integer(recX));
+				recX += 60;
+			}
+			
+			/*
+			 * put all nodes in a stack.
+			 * if the fragment consists of just one 
+			 * node, the loop won't start, so we 
+			 * don't need to care about this case.
+			 */
 			while(! (toCompute.size() == 0)) {
 				recDep++;
+				
+				/*
+				 * so our root has at least one children.
+				 */
 				for(DefaultGraphCell nd : frag.getChildren(recRoot)) {
 					
+					//remembering the depth.
 					depth.put(nd, new Integer(recDep));
 					
+					//in this order, a node's children should be
+					//above the node itself... 
 					restedNodes.push(nd);
-					toCompute.remove(nd);
+					
+					/*
+					 * If I can rely on the order in the nodes-array,
+					 * this could work.
+					 * I guess it won't, but I leave it until I find
+					 * (means: understand) something better.
+					 */
+					for(DefaultGraphCell cl : toCompute){
+						if(frag.isLeaf(cl)){
+							toCompute.remove(cl);
+						} else {
+							recRoot = cl;
+							break;
+						}
+					}
 				}
 			}
 			
+			/*
+			 * if it works as it is supposed to, every node
+			 * is preceded by its children.
+			 * so the recursion should work... 
+			 */
+			while(! restedNodes.empty()) {
+				DefaultGraphCell recNode = restedNodes.pop();
+				
+				if(frag.isLeaf(recNode)) 
+					continue;
+				else {
+					int nodesX = 0;
+					/*
+					 * if a node is no leaf, it should have at least
+					 * one child...
+					 */
+					for(DefaultGraphCell chld : frag.getChildren(recNode))
+					{
+						nodesX += relXpos.get(chld).intValue();
+					}
+					
+					//position in the middle of its children.
+					nodesX = (int) nodesX/(frag.getChildren(recNode).size());
+					relXpos.put(recNode, new Integer(nodesX));
+				}
+			}
 			
-			
-			
-			
-			
-			parent.clear();
-			children.clear();
-		}
+		}	
 	}
+	
 	
 	
 	
