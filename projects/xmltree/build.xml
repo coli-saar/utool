@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+
+<project name="xmltree" default="xmltree">
+  <property name="build" location="../../build" />
+  <property name="build.classes" location="${build}/classes" />
+  <property name="build.lib" location="${build}/lib" />
+  <property name="build.src" location="${build}/src" />
+
+  <property name="doc.api" location="../../docs/api" />
+  <property name="source" location="../../src" />
+  <property name="packages" location="../../packages" />
+
+  <property name="coli" value="de/saar/coli" />
+  <property name="chorus" value="de/saar/coli/chorus" />
+
+
+  <!-- add project-specific properties here -->
+
+  <property name="xmltree.jar" value="${build.lib}/XMLTree.jar" />
+  <property name="xmltree.jar.classes" value="${chorus}/xmltree/*" />
+
+  <property name="electric.jar" value="/export/black/koller/electric/lib/EXML.jar" />
+  <property name="electric.jar.classes" value="electric/**" />
+
+
+  <!-- Jars -->
+  <target name="xmltree" depends="init,electric.unpacked">
+    <javac srcdir="${source}"
+           destdir="${build.classes}"
+           includes="${chorus}/xmltree/*.java">
+      <classpath>
+	<pathelement path="${electric.jar}"/>
+      </classpath>
+    </javac>
+
+    <jar jarfile="${xmltree.jar}"
+         basedir="${build.classes}"
+         includes="${xmltree.jar.classes},${electric.jar.classes}">
+      <manifest>
+        <attribute name="Main-Class" value="de.saar.coli.chorus.xmltree.XMLTree" />
+      </manifest>
+    </jar>
+
+  </target>
+
+
+
+  <!-- Doc -->
+  <target name="xmltree.doc" depends="xmltree">
+    <javadoc sourcepath="${source}" destdir="${doc.api}" Private="true"
+    packagenames="de.saar.coli.chorus.xmltree">
+      <classpath>
+	<pathelement path="${electric.jar}"/>
+      </classpath>
+    </javadoc>
+  </target>
+
+
+
+
+  <!-- JAR Unpacking -->
+
+  <!-- Unpack the Jar file at the path "unpack.jar", unless the
+       unpacked version is already up to date. Up-to-dateness is
+       recorded with a timestamp. "unpack.jar.id" is a unique id for
+       this Jar. -->
+  <target name="unpack" depends="check.unpack" unless="nobuild.unpack">
+    <unjar src="${unpack.jar}" dest="${build.classes}" />
+    <touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
+  </target>
+
+  <target name="check.unpack">
+    <uptodate property="nobuild.unpack"
+    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
+      <srcfiles dir="." includes="${unpack.jar}" />
+    </uptodate>
+  </target>    
+
+
+  <target name="electric.unpacked" depends="init">
+    <antcall target="unpack">
+      <param name="unpack.jar" value="${electric.jar}" />
+      <param name="unpack.jar.id" value="electric" />
+    </antcall>
+  </target>
+
+
+  <!-- Init -->
+
+  <target name="init">
+    <mkdir dir="${build}" />
+    <mkdir dir="${build.classes}" />
+    <mkdir dir="${build.classes}/timestamps-unpackjar" />
+    <mkdir dir="${build.lib}" />
+    <mkdir dir="${build.src}" />
+
+    <mkdir dir="${doc.api}" />
+  </target>
+
+  <!-- Delete all compiled files -->
+  <target name="clean">
+     <delete dir="${build}"/>
+     <delete dir="${doc.api}"/>
+  </target>
+
+  <!-- Generate the DTD -->
+  <target name="dtd">
+     <antstructure output="ant.dtd" />
+  </target>
+
+
+</project>
