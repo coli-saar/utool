@@ -2,7 +2,7 @@
  * Created on 06.08.2004
  *
  */
-package de.saar.coli.chorus.leonardo;
+package de.saar.coli.getopt;
 
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
