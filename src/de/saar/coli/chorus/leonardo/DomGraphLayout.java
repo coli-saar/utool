@@ -249,7 +249,10 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 				}
 			}
 			
-		}	
+		}
+		/*
+		 * TODO implement converting depth in Y-position
+		 */
 	}
 	
 	
