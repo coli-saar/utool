@@ -46,8 +46,10 @@ public class Lexicon {
 			    Node nextNode = trees.get(it3.next());
 			    if (nextNode != null){
 				Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
-				result.add(replacedNode);}
-			    //result.add(nextNode);}
+				result.add(replacedNode);
+				List<Node> nodes = new ArrayList<Node>();
+				replacedNode.lexicalize(nodes, word);
+				result.addAll(nodes);}
 			}
 		    }
 		    if (syntFamilies != null){
@@ -57,18 +59,18 @@ public class Lexicon {
 				Node nextNode = trees.get(it4.next());
 				if (nextNode != null){
 				    Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
-				    if (replacedNode != null){
-				    result.add(replacedNode);}
-				    else {
-					result.add(nextNode);}
-				}
+				    result.add(replacedNode);
+				    List<Node> nodes = new ArrayList<Node>();
+				    replacedNode.lexicalize(nodes, word);
+				    result.addAll(nodes);}
 			    }
-			    
 			}
+			
 		    }
-		} 
-	    }
+		}
+	    } 
 	}
+    
     
 	catch (NullPointerException e){
 	    System.out.println("NullPointerException in Lexikon");}

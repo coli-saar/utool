@@ -23,13 +23,16 @@ public class SocketMain {
 
     public StringBuffer lookUp(StringBuffer result, String lookUp){
 	try{
+	    result.append("<?xml version=\"1.0\"?>\n<lexicon>\n");
 	    for (Node root : lexicon.lookup(lookUp)) {
-		    root.printXMLInBuffer(result,"");
-		    result.append("\n\n");
+		    root.printXMLInBuffer(result," ");
+		    result.append("\n");
 		    }
+	    result.append("</lexicon>");
 	}
 	catch (Exception e){
-	    result.append("Error: "+e.getMessage());}
+	    result.append("Error: "+e.getMessage());
+	    e.printStackTrace();}
 	return result;
     }
 
