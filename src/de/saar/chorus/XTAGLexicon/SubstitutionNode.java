@@ -22,7 +22,7 @@ public final class SubstitutionNode extends LeafNode {
     }
 
     public void printXMLInBuffer(StringBuffer result, String distance) {
-	result.append(distance+"<Substitution cat=\""+cat+"\"/>");
+	result.append(distance+"<substitution cat=\""+cat+"\"/>");
     }
 
 

@@ -49,11 +49,13 @@ public abstract class Node {
 	index = newIndex;
     }
 
-    public void deleteChild(Node node){}
+    public void replaceChild(Node child,Node newChild){}
 
     public abstract List<Node> getChildren ();
 
     public abstract Node copyAndReplace(List<Anchor> anchors, String lookUp);
+
+    public void lexicalize(List<Node> nodes, String lookUp){}
 
     public abstract void printXML();
     public abstract void printXMLInBuffer(StringBuffer result, String distance);

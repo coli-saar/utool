@@ -22,6 +22,9 @@ public final class TerminalNode extends LeafNode {
 	this.cat = newCat;
     }
    
+    //public String getCat(){
+    //return cat;
+    //}
 
     public void printXML() {
 	throw new Error("Not implemented");
