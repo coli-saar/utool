@@ -50,31 +50,31 @@ public final class InnerNode extends Node {
     }
 
 
-    public boolean hasOneTerminal(String lookUp){
-	if (children.size() == 1){
-	   Node onlyChild = children.get(0);
-	   String childCat = onlyChild.getCat(); 
-	   if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+    public boolean terminalMustBeReplaced(Node onlyChild, 
+					  String childCat, 
+					  String lookUp){
+	if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
 	       && !childCat.equals("PRO") && !childCat.equals(null)
 	       && !childCat.equals("")){
 	       return true;}
-	   else {return false;}}
-	else{return false;}
+	   else {return false;}
     }
 
     /**
      * Lexikalisierung der Baeume
      */
     public void lexicalize (List<Node> nodes, String lookUp){
-	if (this.hasOneTerminal(lookUp)){
+	if (children.size() == 1){
 	    Node onlyChild = children.get(0);
 	    String childCat = onlyChild.getCat();
-	    mother.replaceChild(this, 
-				new SubstitutionNode(cat+"/"+childCat, index));
-	    Node newMother = new InnerNode(cat+"/"+childCat, index);
-	    newMother.addChild(this);
-	    if (!nodes.contains(newMother)){
-		nodes.add(newMother);}
+	    if (this.terminalMustBeReplaced(onlyChild, childCat, lookUp)){
+		mother.replaceChild(this, 
+				    new SubstitutionNode(cat+"/"+childCat, index));
+		Node newMother = new InnerNode(cat+"/"+childCat, index);
+		newMother.addChild(this);
+		if (!nodes.contains(newMother)){
+		    nodes.add(newMother);}
+	    }
 	}
 	else{
 	    List<Node> innerNodeChildren = new ArrayList<Node>();
