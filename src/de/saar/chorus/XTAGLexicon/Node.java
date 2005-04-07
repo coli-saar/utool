@@ -14,6 +14,8 @@ public abstract class Node {
 
     protected boolean isAdj;
 
+    protected boolean isAnchor = false;
+
     public Node(String cat, String index) {
 	this.cat = cat;
 	this.index = index;
@@ -35,8 +37,16 @@ public abstract class Node {
 	return false; 
     }
 
+    public boolean isAnchor(){
+	return isAnchor;
+    }
+
     public boolean isRoot() {
 	return mother == null; 
+    }
+
+    public void setIsAnchor (boolean ia){
+	isAnchor = ia;
     }
 
     public void setMother (Node node) {

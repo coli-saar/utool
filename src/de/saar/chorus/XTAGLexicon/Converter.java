@@ -68,7 +68,7 @@ public class Converter {
 		  else {
 		      HashSet<String> addSet = new HashSet<String>();
 		      addSet.add(nodeCat);
-		      cats2adds.put(address, addSet);}
+		      entry.linking.put(address, addSet);}
 	if (node instanceof SubstitutionNode){
 		  entry.outId.add(nodeCat+"_!");
 		  entry.outLp.add(address+"_!");
@@ -126,6 +126,7 @@ public class Converter {
 	    }
 	    string.append(" </linking>\n");
 	    nums2trees.get(entry.number).printXMLInBuffer(string," ");
+	    string.append("\n");
 	}
     }
 
