@@ -17,24 +17,22 @@ public class XDGMain {
     public void run (){
 	converter = new Converter();
 	lexicon = new Lexicon(new POSScaler());
-	parse("../xml/trees.xml", new TreeHandler(lexicon));
-	parse("../xml/families.xml", new FamilyHandler(lexicon));
-	parse("../xml/morphology.xml", new MorphHandler(lexicon));
-	parse("../xml/syntax.xml", new SyntHandler(lexicon));
+	parse("trees.xml", new TreeHandler(lexicon));
+	parse("families.xml", new FamilyHandler(lexicon));
+	parse("morphology.xml", new MorphHandler(lexicon));
+	parse("syntax.xml", new SyntHandler(lexicon));
     }
 
     public StringBuffer lookUp(StringBuffer result, String lookUp){
+	String[] sentence = lookUp.split(" ");
+	Set<Node> treeSet = new HashSet<Node>();
 	try{
-	    Set<Node> treeSet = lexicon.lookup(lookUp);
+	    for (String word : sentence){
+		treeSet.addAll(lexicon.lookup(word));}
 	    converter.convert(treeSet);
 	    int counter = 1;
 	    result.append("<?xml version=\"1.0\"?>\n<lexicon>\n");
-	    for (Node root : treeSet) {
-		result.append(" <----- Baum Nummer "+counter+" ----->\n");
-		root.printXDGInBuffer(result," ");
-		result.append("\n");
-		counter++;
-	    }
+	    converter.printInBuffer(result);
 	    result.append("</lexicon>");
 	}
 	catch (Exception e){
