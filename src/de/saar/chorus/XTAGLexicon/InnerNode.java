@@ -22,6 +22,54 @@ public final class InnerNode extends Node {
 	return hashCode;
     }
 
+    public boolean isAdj() {
+	return true; 
+    }
+
+    public boolean isRightAux (){
+	boolean result = false;
+	for (Node leftChild : children){
+	    if (!this.childIsEmpty(leftChild)){
+		if (leftChild instanceof FootNode){
+		    result = true;
+		    break;}
+		else {
+		    if (leftChild instanceof InnerNode){
+			result = leftChild.isRightAux();
+			break;}
+		    else {break;}
+		}
+	    }
+	}
+	return result;
+    }
+    
+    public boolean childIsEmpty (Node child){
+	return (child instanceof TerminalNode &&
+		!child.isAnchor());
+    }
+
+    public boolean isLeftAux (){
+	boolean result = false;
+	for (int i=(children.size()-1); i<0; i--){
+	    Node rightChild = children.get(i);
+	    if (!this.childIsEmpty(rightChild)){
+		if (rightChild instanceof FootNode){
+		    result = true;
+		    break;}
+		else {
+		    if (rightChild instanceof InnerNode){
+			result = rightChild.isLeftAux();
+			break;}
+		    else {break;}
+		}
+	    }
+	}
+	return result;
+    }
+
+    
+
     public boolean equals(Object o){
 	if (o instanceof InnerNode){
 	    if (((InnerNode)o).getCat().equals(cat)){
