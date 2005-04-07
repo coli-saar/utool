@@ -12,6 +12,8 @@ public abstract class Node {
     //Adresse
     protected String address;
 
+    protected boolean isAdj;
+
     public Node(String cat, String index) {
 	this.cat = cat;
 	this.index = index;
@@ -29,6 +31,9 @@ public abstract class Node {
 	}
     }
 
+    public boolean isAdj() {
+	return false; 
+    }
 
     public boolean isRoot() {
 	return mother == null; 
@@ -42,6 +47,14 @@ public abstract class Node {
 	return mother;
     }
 
+    public void setAddress (String add) {
+	address = add;
+    }
+
+    public String getAddress () {
+	return address;
+    }
+
     public String getCat (){
 	return cat;
     }
@@ -49,6 +62,11 @@ public abstract class Node {
     public void setWord(String newIndex){
 	index = newIndex;
     }
+
+    public boolean isLeftAux (){
+	return false;}
+    public boolean isRightAux () {
+	return false;}
 
     public void replaceChild(Node child,Node newChild){}
 
@@ -63,6 +81,5 @@ public abstract class Node {
     public abstract void printXMLInBuffer(StringBuffer result, String distance);
     public abstract void printLisp();
     public abstract void printLispInBuffer(StringBuffer result);
-
     public abstract void addChild(Node node);
 }
