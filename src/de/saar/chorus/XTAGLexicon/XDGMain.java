@@ -17,10 +17,10 @@ public class XDGMain {
     public void run (){
 	converter = new Converter();
 	lexicon = new Lexicon(new POSScaler());
-	parse("xml/trees.xml", new TreeHandler(lexicon));
-	parse("xml/families.xml", new FamilyHandler(lexicon));
-	parse("xml/morphology.xml", new MorphHandler(lexicon));
-	parse("xml/syntax.xml", new SyntHandler(lexicon));
+	parse("../xml/trees.xml", new TreeHandler(lexicon));
+	parse("../xml/families.xml", new FamilyHandler(lexicon));
+	parse("../xml/morphology.xml", new MorphHandler(lexicon));
+	parse("../xml/syntax.xml", new SyntHandler(lexicon));
     }
 
     public StringBuffer lookUp(StringBuffer result, String lookUp){
