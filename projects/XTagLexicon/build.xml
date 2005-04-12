@@ -1,0 +1,34 @@
+<?xml version="1.0"?> 
+<project name="xtag" default="compile" basedir="."> 
+
+     <property name="src" value="../../src/de/saar/chorus/XTAGLexicon"/> 
+     <property name="build" value="build"/>
+     <property name="getopt.jar" location="../../packages/java-getopt-1.0.9.jar" />
+     <property name="getopt.unpacked" value="build/gnu/getopt"/>
+
+
+     <target name="unpack">
+	<unjar src="${getopt.jar}" dest="${build}" />
+     </target>
+
+     <target name="init" depends="unpack">  
+          <mkdir dir="${build}"/>
+          <mkdir dir="${build}/classes"/>
+     </target>
+
+     <target name="compile" depends="init"> 
+          <!-- Compile the java code -->
+          <javac srcdir="${src}" destdir="${build}">
+                <classpath>
+		   <pathelement path="${getopt.jar}" />
+		</classpath>
+          </javac>
+          <copy file="${getop.unpacked}/Getopt.class" 
+                tofile="${build}/Getop.class"/>
+          <copy file="${getop.unpacked}/LongOpt.class" 
+                tofile="${build}/LongOpt.class"/>
+     </target>
+
+
+
+</project>
