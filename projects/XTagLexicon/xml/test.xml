@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE grammar SYSTEM "../Compiler/XML/xdk.dtd">
+<grammar>
+    <useDimension idref="id"/>
+    <useDimension idref="lp"/>
+    <useDimension idref="idlp"/>
+    <useDimension idref="lex"/>
+    <dimension id="id">
+	<attrsType>
+	    <typeRecord>
+
+	    </typeRecord>
+	</attrsType>
+	<entryType>
+	    <typeRecord>
+		<typeFeature data="in">
+		    <typeISet>
+			<typeRef idref="id.label"/>
+		    </typeISet>
+		</typeFeature>
+		<typeFeature data="out">
+		    <typeValency>
+			<typeRef idref="id.label"/>
+		    </typeValency>
+		</typeFeature>
+	    </typeRecord>
+	</entryType>
+	<labelType>
+	    <typeRef idref="id.label"/>
+	</labelType>
+	<typeDef id="id.label">
+	    <typeDomain>
+                <!-- HIER: die Labels fuer "ID", z.B. S_A_, NP_, ... -->
+		<constant data="lS"/>
+		<constant data="lNP"/>
+		<constant data="lVP"/>
+		<constant data="lV"/>
+		<constant data="lAdv"/>
+	    </typeDomain>
+	</typeDef>
+	<usePrinciple idref="principle.graph1">
+	    <dim var="D" idref="id"/>
+
+	</usePrinciple>
+	<usePrinciple idref="principle.tree">
+	    <dim var="D" idref="id"/>
+
+	</usePrinciple>
+	<usePrinciple idref="principle.in">
+	    <dim var="D" idref="id"/>
+	    <arg var="In">
+		<featurePath root="down" dimension="D" aspect="entry">
+		    <constant data="in"/>
+		</featurePath>
+	    </arg>
+	</usePrinciple>
+	<usePrinciple idref="principle.out">
+	    <dim var="D" idref="id"/>
+	    <arg var="Out">
+		<featurePath root="down" dimension="D" aspect="entry">
+		    <constant data="out"/>
+		</featurePath>
+	    </arg>
+	</usePrinciple>
+	<output idref="output.pretty"/>
+
+    </dimension>
+    <dimension id="lp">
+	<attrsType>
+	    <typeRecord>
+
+	    </typeRecord>
+	</attrsType>
+	<entryType>
+	    <typeRecord>
+		<typeFeature data="in">
+		    <typeISet>
+			<typeRef idref="lp.label"/>
+		    </typeISet>
+		</typeFeature>
+		<typeFeature data="out">
+		    <typeValency>
+			<typeRef idref="lp.label"/>
+		    </typeValency>
+		</typeFeature>
+		<typeFeature data="on">
+		    <typeISet>
+			<typeRef idref="lp.label"/>
+		    </typeISet>
+		</typeFeature>
+	    </typeRecord>
+	</entryType>
+	<labelType>
+	    <typeRef idref="lp.label"/>
+	</labelType>
+	<typeDef id="lp.label">
+	    <typeDomain>
+                <!-- HIER: alle Knotenadressen (+ ggf. _L/_R) -->
+		<constant data="p0l"/>
+		<constant data="p1l"/>
+		<constant data="p1r"/>
+		<constant data="p2l"/>
+		<constant data="p21l"/>
+		<constant data="p211l"/>
+		<constant data="p211r"/>
+		<constant data="p21r"/>
+		<constant data="p22l"/>
+		<constant data="p22r"/>
+		<constant data="p2r"/>
+		<constant data="p0r"/>
+	    </typeDomain>
+	</typeDef>
+	<usePrinciple idref="principle.graph1">
+	    <dim var="D" idref="lp"/>
+
+	</usePrinciple>
+	<usePrinciple idref="principle.tree">
+	    <dim var="D" idref="lp"/>
+
+	</usePrinciple>
+	<usePrinciple idref="principle.in">
+	    <dim var="D" idref="lp"/>
+	    <arg var="In">
+		<featurePath root="down" dimension="D" aspect="entry">
+		    <constant data="in"/>
+		</featurePath>
+	    </arg>
+	</usePrinciple>
+	<usePrinciple idref="principle.out">
+	    <dim var="D" idref="lp"/>
+	    <arg var="Out">
+		<featurePath root="down" dimension="D" aspect="entry">
+		    <constant data="out"/>
+		</featurePath>
+	    </arg>
+	</usePrinciple>
+	<usePrinciple idref="principle.order">
+	    <dim var="D" idref="lp"/>
+	    <arg var="On">
+		<featurePath root="down" dimension="D" aspect="entry">
+		    <constant data="on"/>
+		</featurePath>
+	    </arg>
+	    <arg var="Order">
+		<list>
+                    <!-- HIER: die Reihenfolge der LP-Label -->
+		    <constant data="p0l"/>
+		    <constant data="p1l"/>
+		    <constant data="p1r"/>
+		    <constant data="p2l"/>
+		    <constant data="p21l"/>
+		    <constant data="p211l"/>
+		    <constant data="p211r"/>
+		    <constant data="p21r"/>
+		    <constant data="p22l"/>
+		    <constant data="p22r"/>
+		    <constant data="p2r"/>
+		    <constant data="p0r"/>
+		</list>
+	    </arg>
+	    <arg var="Projective">
+		<constant data="true"/>
+	    </arg>
+	    <arg var="Yields">
+		<constant data="true"/>
+	    </arg>
+	</usePrinciple>
+	<usePrinciple idref="principle.parse">
+	    <dim var="D" idref="lp"/>
+
+	</usePrinciple>
+	<output idref="output.pretty"/>
+
+    </dimension>
+    <dimension id="idlp">
+	<attrsType>
+	    <typeRecord>
+
+	    </typeRecord>
+	</attrsType>
+	<entryType>
+	    <typeRecord>
+		<typeFeature data="link">
+		    <typeMap>
+			<typeRef idref="lp.label"/>
+			<typeSet>
+			    <typeRef idref="id.label"/>
+			</typeSet>
+		    </typeMap>
+		</typeFeature>
+	    </typeRecord>
+	</entryType>
+	<labelType>
+	    <typeDomain>
+
+	    </typeDomain>
+	</labelType>
+
+	<usePrinciple idref="principle.linkingDaughterEnd">
+	    <dim var="D1" idref="lp"/>
+	    <dim var="D2" idref="id"/>
+	    <arg var="End">
+		<featurePath root="up" dimension="This" aspect="entry">
+		    <constant data="link"/>
+		</featurePath>
+	    </arg>
+	</usePrinciple>
+	<output idref="output.pretty"/>
+
+    </dimension>
+    <dimension id="lex">
+	<attrsType>
+	    <typeRecord>
+
+	    </typeRecord>
+	</attrsType>
+	<entryType>
+	    <typeRecord>
+		<typeFeature data="word">
+		    <typeString/>
+		</typeFeature>
+	    </typeRecord>
+	</entryType>
+	<labelType>
+	    <typeDomain>
+
+	    </typeDomain>
+	</labelType>
+
+
+	<output idref="output.dags1"/>
+	<output idref="output.latexs1"/>
+	<useOutput idref="output.dags1"/>
+    </dimension>
+
+<!-- HIER -->
+    <entry>
+	<classConj>
+	    <classDimension idref="id">
+		<record>
+		    <feature data="in">
+			<set>
+                            <!-- HIER -->
+			    <constant data="lS"/>
+			</set>
+		    </feature>
+		    <feature data="out">
+			<set>
+                            <!-- HIER -->
+
+                            <!-- genau 2 NPs -->
+			    <constantCardSet data="lNP">
+				<integer data="2"/>
+			    </constantCardSet>
+
+
+                            <!-- bis zu zwei NPs:
+                            <constantCardSet data="NP_A_">
+				<integer data="0"/>
+				<integer data="1"/>
+				<integer data="2"/>
+				<integer data="3"/>
+			    </constantCardSet>
+                             -->
+
+
+			    <constantCard data="NP_!" card="one"/>
+
+			    <constantCard data="lS" card="opt"/>
+			    <constantCard data="lVP" card="opt"/>
+			    <constantCard data="lV" card="opt"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lp">
+		<record>
+		    <feature data="in">
+			<top/>
+		    </feature>
+		    <feature data="out">
+			<set>
+                            <!-- HIER -->
+			    <constantCard data="p0l" card="opt"/>
+			    <constantCard data="p0r" card="opt"/>
+			    <constantCard data="p1l" card="one"/>
+			    <constantCard data="p22l" card="one"/>
+			    <constantCard data="p0l" card="opt"/>
+			    <constantCard data="p0r" card="opt"/>
+			    <constantCard data="p2l" card="opt"/>
+			    <constantCard data="p2r" card="opt"/>
+			    <constantCard data="p21l" card="opt"/>
+			    <constantCard data="p21r" card="opt"/>
+			</set>
+		    </feature>
+		    <feature data="on">
+			<set>
+                            <!-- HIER: die Ankeradresse -->
+			    <constant data="p211l"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="idlp">
+		<record>
+		    <feature data="link">
+			<record>
+                            <!-- HIER -->
+			    <feature data="p0l">
+				<set>
+				    <constant data="lS"/>
+				</set>
+			    </feature>
+			    <feature data="p0r">
+				<set>
+				    <constant data="lS"/>
+				</set>
+			    </feature>
+			    <feature data="p1l">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			    <feature data="p1r">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			    <feature data="p2l">
+				<set>
+				    <constant data="lVP"/>
+				</set>
+			    </feature>
+			    <feature data="p2r">
+				<set>
+				    <constant data="lVP"/>
+				</set>
+			    </feature>
+			    <feature data="p21l">
+				<set>
+				    <constant data="lV"/>
+				</set>
+			    </feature>
+			    <feature data="p21r">
+				<set>
+				    <constant data="lV"/>
+				</set>
+			    </feature>
+			    <feature data="p22l">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			    <feature data="p22r">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			</record>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lex">
+		<record>
+		    <feature data="word">
+                        <!-- HIER -->
+			<constant data="loves"/>
+		    </feature>
+		</record>
+	    </classDimension>
+	</classConj>
+    </entry>
+
+    <entry>
+	<classConj>
+	    <classDimension idref="id">
+		<record>
+		    <feature data="in">
+			<set>
+			    <constant data="lNP"/>
+			</set>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="lNP" card="opt"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lp">
+		<record>
+		    <feature data="in">
+			<top/>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="p0l" card="opt"/>
+			    <constantCard data="p0r" card="opt"/>
+			</set>
+		    </feature>
+		    <feature data="on">
+			<set>
+			    <constant data="p1l"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="idlp">
+		<record>
+		    <feature data="link">
+			<record>
+			    <feature data="p0l">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			    <feature data="p0r">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			</record>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lex">
+		<record>
+		    <feature data="word">
+			<constant data="John"/>
+		    </feature>
+		</record>
+	    </classDimension>
+	</classConj>
+    </entry>
+    <entry>
+	<classConj>
+	    <classDimension idref="id">
+		<record>
+		    <feature data="in">
+			<set>
+			    <constant data="lNP"/>
+			</set>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="lNP" card="opt"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lp">
+		<record>
+		    <feature data="in">
+			<top/>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="p0l" card="opt"/>
+			    <constantCard data="p0r" card="opt"/>
+			</set>
+		    </feature>
+		    <feature data="on">
+			<set>
+			    <constant data="p1l"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="idlp">
+		<record>
+		    <feature data="link">
+			<record>
+			    <feature data="p0l">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			    <feature data="p0r">
+				<set>
+				    <constant data="lNP"/>
+				</set>
+			    </feature>
+			</record>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lex">
+		<record>
+		    <feature data="word">
+			<constant data="Mary"/>
+		    </feature>
+		</record>
+	    </classDimension>
+	</classConj>
+    </entry>
+    <entry>
+	<classConj>
+	    <classDimension idref="id">
+		<record>
+		    <feature data="in">
+			<set>
+			    <constant data="lVP"/>
+			</set>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="lVP" card="opt"/>
+			    <constantCard data="lAdv" card="opt"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lp">
+		<record>
+		    <feature data="in">
+			<set>
+			    <constant data="p1r"/>
+			    <constant data="p0r"/>
+			    <constant data="p211r"/>
+			    <constant data="p21r"/>
+			    <constant data="p2r"/>
+			    <constant data="p22r"/>
+			</set>
+		    </feature>
+		    <feature data="out">
+			<set>
+			    <constantCard data="p0l" card="opt"/>
+			    <constantCard data="p0r" card="opt"/>
+			    <constantCard data="p2l" card="opt"/>
+			    <constantCard data="p2r" card="opt"/>
+			</set>
+		    </feature>
+		    <feature data="on">
+			<set>
+			    <constant data="p21l"/>
+			</set>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="idlp">
+		<record>
+		    <feature data="link">
+			<record>
+			    <feature data="p0l">
+				<set>
+				    <constant data="lVP"/>
+				</set>
+			    </feature>
+			    <feature data="p0r">
+				<set>
+				    <constant data="lVP"/>
+				</set>
+			    </feature>
+			    <feature data="p2l">
+				<set>
+				    <constant data="lAdv"/>
+				</set>
+			    </feature>
+			    <feature data="p2r">
+				<set>
+				    <constant data="lAdv"/>
+				</set>
+			    </feature>
+			</record>
+		    </feature>
+		</record>
+	    </classDimension>
+	    <classDimension idref="lex">
+		<record>
+		    <feature data="word">
+			<constant data="passionately"/>
+		    </feature>
+		</record>
+	    </classDimension>
+	</classConj>
+    </entry>
+</grammar>
