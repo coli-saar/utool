@@ -40,7 +40,7 @@ public final class FootNode extends LeafNode {
 	result.append(cat);
     }
 
- public List<Node> getChildren(){
+    public List<Node> getChildren(){
 	throw new Error ("oops");
     }
 }

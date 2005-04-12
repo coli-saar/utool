@@ -12,6 +12,11 @@ public final class SubstitutionNode extends LeafNode {
 	super(cat, index);
     }
 
+    public boolean isAdj() {
+	return true; 
+    }
+
+
     public boolean equals(Object o){
 	if (o instanceof SubstitutionNode){
 	    return ((SubstitutionNode)o).getCat().equals(cat);}
