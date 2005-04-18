@@ -27,21 +27,14 @@ public final class InnerNode extends Node {
     }
 
     public boolean isRightAux (){
-	boolean result = false;
 	for (Node leftChild : children){
 	    if (!this.childIsEmpty(leftChild)){
 		if (leftChild instanceof FootNode){
-		    result = true;
-		    break;}
-		else {
-		    if (leftChild instanceof InnerNode){
-			result = leftChild.isRightAux();
-			break;}
-		    else {break;}
-		}
+		    return true;}
+		else {return leftChild.isRightAux();}
 	    }
 	}
-	return result;
+	return false;
     }
     
     public boolean childIsEmpty (Node child){
@@ -50,22 +43,15 @@ public final class InnerNode extends Node {
     }
 
     public boolean isLeftAux (){
-	boolean result = false;
-	for (int i=(children.size()-1); i<0; i--){
+	for (int i=(children.size()-1); i>=0; i--){
 	    Node rightChild = children.get(i);
 	    if (!this.childIsEmpty(rightChild)){
 		if (rightChild instanceof FootNode){
-		    result = true;
-		    break;}
-		else {
-		    if (rightChild instanceof InnerNode){
-			result = rightChild.isLeftAux();
-			break;}
-		    else {break;}
-		}
+		    return true;}
+		else {return rightChild.isLeftAux();}
 	    }
 	}
-	return result;
+	return false;
     }
 
     

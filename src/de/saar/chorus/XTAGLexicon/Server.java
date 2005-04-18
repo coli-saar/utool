@@ -1,5 +1,5 @@
-import gnu.getopt.LongOpt;
-import gnu.getopt.Getopt;
+//import gnu.getopt.LongOpt;
+//import gnu.getopt.Getopt;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;

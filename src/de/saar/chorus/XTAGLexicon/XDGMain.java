@@ -30,10 +30,7 @@ public class XDGMain {
 	    for (String word : sentence){
 		treeSet.addAll(lexicon.lookup(word));}
 	    converter.convert(treeSet);
-	    int counter = 1;
-	    result.append("<?xml version=\"1.0\"?>\n<lexicon>\n");
-	    converter.printInBuffer(result);
-	    result.append("</lexicon>");
+	    converter.printXDG(result);
 	}
 	catch (Exception e){
 	    result.append("Error: "+e.getMessage());
