@@ -5,6 +5,8 @@ public class Converter {
 
     //speichert alle vorgekommenen Adressen
     private Set<String> addresses;
+    //speichert alle vorgekommenen Labels
+    private Set<String> labels;
     //Abbildung von Kategorien auf Adressen
     private Map<String,Set<String>> cats2adds;
     //Nummerierung der Baeume
@@ -19,6 +21,7 @@ public class Converter {
 
     public Converter (){
 	addresses = new HashSet<String>();
+	labels = new HashSet<String>();
 	cats2adds = new HashMap<String, Set<String>>();
 	nums2trees = new HashMap<Integer, Node>();
 	results = new ArrayList<XDGEntry>();
@@ -63,6 +66,7 @@ public class Converter {
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
 	addresses.add(address);
+	labels.add(nodeCat);
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
 		  else {
@@ -95,11 +99,16 @@ public class Converter {
 	}
     }
 
-
+    public void printXDG(StringBuffer sb){
+	XDGWriter writer = new XDGWriter();
+	writer.printHeader(sb, this);
+	for (XDGEntry entry : results){
+	    writer.printEntry(sb,entry);}
+    }
 
     
 
-    public void printInBuffer (StringBuffer string){
+    public void testPrint (StringBuffer string){
 	for (XDGEntry entry : results){
 	    string.append("<entry num=\""+entry.number+"\">\n");
 	    string.append(" <inId cat=\""+entry.rootCat+"\">\n");
