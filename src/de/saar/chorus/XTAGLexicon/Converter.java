@@ -4,7 +4,7 @@ import java.io.*;
 public class Converter {
 
     //speichert alle vorgekommenen Adressen
-    private Set<String> addresses;
+    private List<String> addresses;
     //speichert alle vorgekommenen Labels
     private Set<String> labels;
     //Abbildung von Kategorien auf Adressen
@@ -20,7 +20,7 @@ public class Converter {
 
 
     public Converter (){
-	addresses = new HashSet<String>();
+	addresses = new ArrayList<String>();
 	labels = new HashSet<String>();
 	cats2adds = new HashMap<String, Set<String>>();
 	nums2trees = new HashMap<Integer, Node>();
@@ -45,7 +45,7 @@ public class Converter {
 	    }
 	    newEntry.rootCat = nodeCat; 
 	    newEntry.auxDirection = aux;
-	    this.traverseTree(node, newEntry, "", true);
+	    this.traverseTree(node, newEntry, ".", true);
 	    results.add(newEntry);
 	    counter++;}
 	this.updateInLp();
@@ -65,7 +65,8 @@ public class Converter {
 	    HashSet<String> addSet = new HashSet<String>();
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
-	addresses.add(address);
+	if (!addresses.contains(address)){
+	    addresses.add(address);}
 	labels.add(nodeCat);
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
@@ -86,9 +87,19 @@ public class Converter {
 		    else {entry.outLp.add(address+"_A_?");}
 		}
 		int counter = 1;
+		String separator = "";
+		if (!isRoot){
+		    separator = ".";}
 		for (Node child : node.getChildren()){
-		    this.traverseTree(child, entry, address+"."+counter, false);
+		    this.traverseTree(child, entry, address+separator+counter, false);
 		    counter++;}
+	    }
+	    else {
+		if (node instanceof TerminalNode){
+		    if (node.isAnchor()){
+			entry.anchor = node.getCat();
+			entry.anchorAddress = address;}
+		}
 	    }
 	}
     }
@@ -101,12 +112,55 @@ public class Converter {
 
     public void printXDG(StringBuffer sb){
 	XDGWriter writer = new XDGWriter();
-	writer.printHeader(sb, this);
+	writer.printHeader(sb, addresses, labels);
 	for (XDGEntry entry : results){
 	    writer.printEntry(sb,entry);}
     }
 
-    
+    public void sortAddresses(String address){
+	List<int[]> intAdds = new ArrayList<int[]>();
+	for (String a : addresses){
+	    String[]  strings = a.split(".");
+	    int[] ints;
+	    int i = 0;
+	    while (i < strings.length()){
+		ints[i] = getInteger(strings[i]).intValue();}
+	    intAdds.add(ints);}
+    }
+	
+		
+
+
+
+    public boolean isA1Smaller(int[] a1, int[] a2){
+	int a1length = a1.length();
+	int a2length = a2.length();
+	if (a1length == a2length){
+	    for (int i = 0; i < a1length; i++){
+		if (!a1[i] == a2[i]){
+		    if (a1[i] < a2[i]){
+			return true;}
+		    else return false;}
+	    }
+	}
+	else { 
+	    for (int i = 0; i < Math.min(a1length, a2length); i++){
+		if (!a1[i] == a2[i]){
+		    if (a1[i] < a2[i]){
+			return true;}
+		    else return false;}
+	    }
+	    return (a1length < a2length);
+	}
+	return false;
+    }	       
+		
+
+
+
+
+
+
 
     public void testPrint (StringBuffer string){
 	for (XDGEntry entry : results){

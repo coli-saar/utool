@@ -3,9 +3,10 @@ import java.util.*;
 
 public class XDGWriter {
 
-    public printHeader (StringBuffer sb, Converter con){
-	sb.append(
-"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n
+    public printHeader (StringBuffer sb, 
+			List<String> addresses, 
+			Set<String> labels){
+	sb.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n
 <!DOCTYPE grammar SYSTEM \"../Compiler/XML/xdk.dtd\">\n
 <grammar>\n
     <useDimension idref=\"id\"/>\n
@@ -38,8 +39,9 @@ public class XDGWriter {
 	    <typeDomain>\n");
 	//<!-- HIER: die Labels fuer \"ID\", z.B. S_A_, NP_, ... -->\n
 	//<constant data=\"lS\"/>\n");
-	sb.append(
-"	     </typeDomain>\n
+	for (String label : labels){
+	    sb.append("	      <constant data=\""+label+"\"/>\n");}
+	sb.append("	     </typeDomain>\n
 	</typeDef>\n
 	<usePrinciple idref=\"principle.graph1\">\n
 	    <dim var=\"D\" idref=\"id\"/>\n\n
@@ -96,8 +98,9 @@ public class XDGWriter {
 	    <typeDomain>\n");
 	//<!-- HIER: alle Knotenadressen (+ ggf. _L/_R) -->\n
 	//<constant data=\"p0l\"/>\n");
-	sb.append(
-"	    </typeDomain>\n
+	for (String ad : addresses){
+	    sb.append("	      <constant data=\""+ad+"\"/>\n");}
+	sb.append("	    </typeDomain>\n
 	</typeDef>\n
 	<usePrinciple idref=\"principle.graph1\">\n
 	    <dim var=\"D\" idref=\"lp\"/>\n\n
@@ -132,8 +135,9 @@ public class XDGWriter {
 		<list>\n");
 	//<!-- HIER: die Reihenfolge der LP-Label -->\n
 	//    <constant data=\"p0l\"/>\n");
-	sb.append(
-"		 </list>\n
+	for (String ad : addresses){
+	    sb.append("	      <constant data=\""+ad+"\"/>\n");}
+	sb.append("		 </list>\n
 	    </arg>\n
 	    <arg var=\"Projective\">\n
 		<constant data=\"true\"/>\n
@@ -199,20 +203,19 @@ public class XDGWriter {
 	<output idref=\"output.latexs1\"/>\n
 	<useOutput idref=\"output.dags1\"/>\n
     </dimension>\n");
-}
+    }
+
 
     public printEntry (StringBuffer sb, XDGEntry entry){
-	sb.append(
-"     <entry>\n
+	sb.append("     <entry>\n
 	<classConj>\n
 	    <classDimension idref=\"id\">\n
 		<record>\n
 		    <feature data=\"in\">\n
 			<set>\n");
 	//<!-- HIER -->\n
-	//	    <constant data=\"lS\"/>\n");
-	sb.append(
-"			 </set>\n
+	sb.append("		            <constant data=\""+entry.rootCat+"\"/>\n");
+	sb.append("			 </set>\n
 		    </feature>\n
 		    <feature data="out">\n
 			<set>\n");
@@ -230,33 +233,35 @@ public class XDGWriter {
 	//                   -->\n
 	//	    <constantCard data=\"NP_!\" card=\"one\"/>\n
 	//	    <constantCard data=\"lS\" card=\"opt\"/>\n");
-	sb.append(
-"			 </set>\n
+	sb.append("			 </set>\n
 		    </feature>\n
 		</record>\n
 	    </classDimension>\n
 	    <classDimension idref=\"lp\">\n
 		<record>\n
 		    <feature data=\"in\">\n");
-	//			<top/>\n
-	sb.append(		
-"		   </feature>\n
+	if (!entry.isAux){
+	    sb.append(" 		    <top/>\n");
+	sb.append("		   </feature>\n
 		    <feature data=\"out\">\n
 			<set>\n");
 	//<!-- HIER -->
-	//	    <constantCard data="p0l" card="opt"/>
-	//	    <constantCard data="p0r" card="opt"/>
-	//	    <constantCard data="p1l" card="one"/>
-	//	    <constantCard data="p22l" card="one"/>
-	sb.append(
-"			 </set>\n
+	for (String ad : entry.outLp){
+	    String[] adStrings = ad.split("_");
+	    String label = ad[0];
+	    String adj = "";
+	    String opt = "";
+	    if (adStrings.length() = 2){
+		opt = "one"}
+	    else {opt = "opt";}
+	    sb.append("		         <constantCard data=\""+label+"\" card=\""+opt+"\"/>\n");
+	sb.append("			 </set>\n
 		    </feature>\n
 		    <feature data=\"on\">\n
 			<set>\n");
 	//<!-- HIER: die Ankeradresse -->
-	//	    <constant data="p211l"/>
-		sb.append(
-"       	         </set>\n
+	sb.append("       	        <constant data=\""+entry.anchorAddress+"\"/>\n");
+		sb.append("       	         </set>\n
 		    </feature>\n
 		</record>\n
 	    </classDimension>\n
@@ -265,18 +270,20 @@ public class XDGWriter {
 		    <feature data="link">\n
 			<record>\n");
 		//<!-- HIER -->
-		//    <feature data="p0l">
-		//	<set>
-		//	    <constant data="lS"/>
-		//	</set>
-		//    </feature>
+		for (String add : entry.linking.keySet()){
+		    sb.append("                          <feature data=\""+add+"\">\n
+                              <set>\n");
+		    for (String cat : entry.linking.get(add)){
+			sb.append("                               <constant data=\""+cat+"\"/>\n");}
+		    sb.append("                            </set>\n
+                           </feature>\n");
+		}
 		//    <feature data="p0r">
 		//	<set>
 		//	    <constant data="lS"/>
 		//	</set>
 		//    </feature>
-		sb.append(
-"			 </record>\n
+		sb.append("			 </record>\n
 		    </feature>\n
 		</record>\n
 	    </classDimension>\n
@@ -284,9 +291,9 @@ public class XDGWriter {
 		<record>\n
 		    <feature data=\"word\">\n");
 		//                        <!-- HIER -->
+		sb.append("                       <constant data=\""+entry.anchor+"\"/>\n");
 		//<constant data="loves"/>
-		sb.append(
-" 		     </feature>\n
+		sb.append(" 		     </feature>\n
 		</record>\n
 	    </classDimension>\n
 	</classConj>\n
