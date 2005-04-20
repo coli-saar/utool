@@ -4,7 +4,7 @@ import java.io.*;
 public class Converter {
 
     //speichert alle vorgekommenen Adressen
-    private List<String> addresses;
+    private SortedSet<String> addresses;
     //speichert alle vorgekommenen Labels
     private Set<String> labels;
     //Abbildung von Kategorien auf Adressen
@@ -20,7 +20,7 @@ public class Converter {
 
 
     public Converter (){
-	addresses = new ArrayList<String>();
+	addresses = new TreeSet<String>(new AddressComparator());
 	labels = new HashSet<String>();
 	cats2adds = new HashMap<String, Set<String>>();
 	nums2trees = new HashMap<Integer, Node>();
@@ -65,8 +65,10 @@ public class Converter {
 	    HashSet<String> addSet = new HashSet<String>();
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
-	if (!addresses.contains(address)){
-	    addresses.add(address);}
+	try {	addresses.add(address);
+	}
+	catch (Exception e){
+	    System.out.println("Hier Ausnahme");}
 	labels.add(nodeCat);
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
@@ -117,50 +119,9 @@ public class Converter {
 	    writer.printEntry(sb,entry);}
     }
 
-    public void sortAddresses(String address){
-	List<int[]> intAdds = new ArrayList<int[]>();
-	for (String a : addresses){
-	    String[]  strings = a.split(".");
-	    int[] ints;
-	    int i = 0;
-	    while (i < strings.length()){
-		ints[i] = getInteger(strings[i]).intValue();}
-	    intAdds.add(ints);}
-    }
-	
+
+   	       
 		
-
-
-
-    public boolean isA1Smaller(int[] a1, int[] a2){
-	int a1length = a1.length();
-	int a2length = a2.length();
-	if (a1length == a2length){
-	    for (int i = 0; i < a1length; i++){
-		if (!a1[i] == a2[i]){
-		    if (a1[i] < a2[i]){
-			return true;}
-		    else return false;}
-	    }
-	}
-	else { 
-	    for (int i = 0; i < Math.min(a1length, a2length); i++){
-		if (!a1[i] == a2[i]){
-		    if (a1[i] < a2[i]){
-			return true;}
-		    else return false;}
-	    }
-	    return (a1length < a2length);
-	}
-	return false;
-    }	       
-		
-
-
-
-
-
-
 
     public void testPrint (StringBuffer string){
 	for (XDGEntry entry : results){
