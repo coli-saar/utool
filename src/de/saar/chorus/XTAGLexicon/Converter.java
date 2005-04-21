@@ -69,7 +69,6 @@ public class Converter {
 	}
 	catch (Exception e){
 	    System.out.println("Hier Ausnahme");}
-	labels.add(nodeCat);
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
 		  else {
@@ -79,6 +78,7 @@ public class Converter {
 	if (node instanceof SubstitutionNode){
 		  entry.outId.add(nodeCat+"_!");
 		  entry.outLp.add(address+"_!");
+		  labels.add(nodeCat);
 	}
 	else {
 	    if (node instanceof InnerNode){
@@ -93,11 +93,15 @@ public class Converter {
 		if (!isRoot){
 		    separator = ".";}
 		for (Node child : node.getChildren()){
-		    this.traverseTree(child, entry, address+separator+counter, false);
+		    this.traverseTree(child, entry, address
+				      +separator+counter, false);
 		    counter++;}
+		labels.add(nodeCat);
 	    }
 	    else {
-		if (node instanceof TerminalNode){
+		if (!node instanceof TerminalNode){
+		    labels.add(nodeCat);}
+		else{
 		    if (node.isAnchor()){
 			entry.anchor = node.getCat();
 			entry.anchorAddress = address;}
@@ -105,6 +109,7 @@ public class Converter {
 	    }
 	}
     }
+    
 
     public void updateInLp(){
 	for (XDGEntry entry : results){
