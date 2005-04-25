@@ -1,18 +1,3 @@
-[Server] building Lexicon
-[Server] Lexicon ready
-[Server] waiting for connection on Port 3456
-[Server] have connection
-[Server] Waiting for Input
-[Server] received Input "a student works"
-[Server] sending Output 
-Error: Not in Syntax : student
-[Server] waiting for Input
-[Server] received Input "the dog braks"
-[Server] sending Output 
-Error: Not in Lexicon : braks
-[Server] waiting for Input
-[Server] received Input "the dog barks"
-[Server] sending Output 
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE grammar SYSTEM "../Compiler/XML/xdk.dtd">
 <grammar>

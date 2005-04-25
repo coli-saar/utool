@@ -10,8 +10,9 @@
 
      <target name="compile" depends="init"> 
           <!-- Compile the java code -->
-          <javac srcdir="${src}" destdir="${build}">
-          </javac>
+          <javac srcdir="${src}" destdir="${build}"
+               excludes="Converter_SB.java, AddressComparator_SB.java"/> 
+          
      </target>
 
 </project>
