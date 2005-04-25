@@ -1,13 +1,13 @@
 import java.util.*;
 
-public class AddressComparator implements Comparator<StringBuilder>{
+public class AddressComparator implements Comparator<String>{
 
-    public int compare (StringBuilder a1, StringBuilder a2){
+    public int compare (String a1, String a2){
 	if (a1.equals(a2)){
 	    return 0;}
 	else{
-	    String[] strA1 = a1.toString().split("\\.");
-	    String[] strA2 = a2.toString().split("\\.");
+	    String[] strA1 = a1.split("\\.");
+	    String[] strA2 = a2.split("\\.");
 	    for (int i = 0; i < Math.min(strA1.length, strA2.length); i++){
 		if (!(strA1[i].equals(strA2[i]))){
 		    int intA1 = Integer.getInteger(strA1[i]).intValue();
