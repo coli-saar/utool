@@ -10,8 +10,8 @@ public class AddressComparator implements Comparator<String>{
 	    String[] strA2 = a2.split("\\.");
 	    for (int i = 0; i < Math.min(strA1.length, strA2.length); i++){
 		if (!(strA1[i].equals(strA2[i]))){
-		    int intA1 = Integer.getInteger(strA1[i]).intValue();
-		    int intA2 = Integer.getInteger(strA2[i]).intValue();
+		    int intA1 = Integer.getInteger(strA1[i], -3).intValue();
+		    int intA2 = Integer.getInteger(strA2[i], -3).intValue();
 		    if (intA1 < intA2){
 			return -1;}
 		    else return 1;}
