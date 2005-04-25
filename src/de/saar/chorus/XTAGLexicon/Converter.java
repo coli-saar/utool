@@ -121,6 +121,9 @@ public class Converter {
 	XDGWriter writer = new XDGWriter();
 	writer.printHeader(sb, addresses, labels);
 	for (XDGEntry entry : results){
+	    sb.append("<!--\n");
+	    nums2trees.get(entry.number).printXMLInBuffer(sb," ");
+	    sb.append("\n-->\n");
 	    writer.printEntry(sb,entry);}
     }
 
