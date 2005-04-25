@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class AddressComparator implements Comparator<StringBuilder>{
+public class AddressComparator_SB implements Comparator<StringBuilder>{
 
     public int compare (StringBuilder a1, StringBuilder a2){
 	String a2String = a2.toString();

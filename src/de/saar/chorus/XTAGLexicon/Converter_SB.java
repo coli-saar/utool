@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class Converter {
+public class Converter_SB {
 
     //speichert alle vorgekommenen Adressen
     private SortedSet<StringBuilder> addresses;
@@ -19,7 +19,7 @@ public class Converter {
    
 
 
-    public Converter (){
+    public Converter_SB (){
 	addresses = new TreeSet<StringBuilder>(new AddressComparator());
 	labels = new HashSet<String>();
 	cats2adds = new HashMap<String, Set<String>>();
@@ -122,12 +122,12 @@ public class Converter {
 	}
     }
 
-    public void printXDG(StringBuffer sb){
-	XDGWriter writer = new XDGWriter();
-	writer.printHeader(sb, addresses, labels);
-	for (XDGEntry entry : results){
-	    writer.printEntry(sb,entry);}
-    }
+    //public void printXDG(StringBuffer sb){
+    //XDGWriter writer = new XDGWriter();
+    //writer.printHeader(sb, addresses, labels);
+    //for (XDGEntry entry : results){
+    //    writer.printEntry(sb,entry);}
+    //}
 
 
    	       

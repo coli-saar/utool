@@ -99,7 +99,7 @@ public class Converter {
 		labels.add(nodeCat);
 	    }
 	    else {
-		if (!node instanceof TerminalNode){
+		if (!(node instanceof TerminalNode)){
 		    labels.add(nodeCat);}
 		else{
 		    if (node.isAnchor()){
