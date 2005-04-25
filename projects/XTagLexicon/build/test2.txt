@@ -1,3 +1,10 @@
+[Server] building Lexicon
+[Server] Lexicon ready
+[Server] waiting for connection on Port 3456
+[Server] have connection
+[Server] Waiting for Input
+[Server] received Input "the dog barks"
+[Server] sending Output 
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE grammar SYSTEM "../Compiler/XML/xdk.dtd">
 <grammar>
@@ -30,25 +37,17 @@
 	 <typeDef id="id.label">
 	     <typeDomain>
 	      <constant data="S"/>
-	      <constant data="the"/>
-	      <constant data="of"/>
+	      <constant data="P/of"/>
 	      <constant data="D"/>
 	      <constant data="VP"/>
 	      <constant data="AP"/>
-	      <constant data="PRO"/>
-	      <constant data="by"/>
-	      <constant data="P"/>
-	      <constant data="awake"/>
-	      <constant data="V"/>
-	      <constant data="barks"/>
-	      <constant data="P/of"/>
-	      <constant data="dog"/>
 	      <constant data="NP"/>
 	      <constant data="A"/>
 	      <constant data="PP"/>
 	      <constant data="N"/>
+	      <constant data="P"/>
+	      <constant data="V"/>
 	      <constant data="P/by"/>
-	      <constant data=""/>
 	     </typeDomain>
 	 </typeDef>
 	 <usePrinciple idref="principle.graph1">
@@ -111,38 +110,38 @@
 	     <typeDomain>
 	      <constant data="."/>
 	      <constant data=".1"/>
+	      <constant data=".1.1"/>
+	      <constant data=".1.1.1"/>
+	      <constant data=".1.2"/>
+	      <constant data=".1.2.1"/>
+	      <constant data=".1.2.1.1"/>
 	      <constant data=".2"/>
 	      <constant data=".2.1"/>
+	      <constant data=".2.1.1"/>
+	      <constant data=".2.1.2"/>
 	      <constant data=".2.2"/>
 	      <constant data=".2.2.1"/>
 	      <constant data=".2.2.1.1"/>
 	      <constant data=".2.2.2"/>
 	      <constant data=".2.2.2.1"/>
-	      <constant data=".2.2.3"/>
-	      <constant data=".2.2.3.1"/>
-	      <constant data=".2.2.3.1.1"/>
 	      <constant data=".2.2.2.1.1"/>
 	      <constant data=".2.2.2.2"/>
 	      <constant data=".2.2.2.2.1"/>
 	      <constant data=".2.2.2.2.1.1"/>
-	      <constant data=".2.1.1"/>
-	      <constant data=".2.3"/>
-	      <constant data=".2.3.1"/>
-	      <constant data=".2.3.1.1"/>
-	      <constant data=".1.1"/>
+	      <constant data=".2.2.2.2.2"/>
+	      <constant data=".2.2.2.2.2.1"/>
 	      <constant data=".2.2.2.3"/>
 	      <constant data=".2.2.2.3.1"/>
 	      <constant data=".2.2.2.3.1.1"/>
-	      <constant data=".1.1.1"/>
-	      <constant data=".1.2"/>
-	      <constant data=".1.2.1"/>
-	      <constant data=".1.2.1.1"/>
-	      <constant data=".2.2.2.2.2"/>
-	      <constant data=".2.2.2.2.2.1"/>
-	      <constant data=".2.3.2"/>
-	      <constant data=".2.2.3.2"/>
 	      <constant data=".2.2.2.3.2"/>
-	      <constant data=".2.1.2"/>
+	      <constant data=".2.2.3"/>
+	      <constant data=".2.2.3.1"/>
+	      <constant data=".2.2.3.1.1"/>
+	      <constant data=".2.2.3.2"/>
+	      <constant data=".2.3"/>
+	      <constant data=".2.3.1"/>
+	      <constant data=".2.3.1.1"/>
+	      <constant data=".2.3.2"/>
 	    </typeDomain>
         </typeDef>
 	 <usePrinciple idref="principle.graph1">
@@ -180,38 +179,38 @@
 		 <list>
 	      <constant data="."/>
 	      <constant data=".1"/>
+	      <constant data=".1.1"/>
+	      <constant data=".1.1.1"/>
+	      <constant data=".1.2"/>
+	      <constant data=".1.2.1"/>
+	      <constant data=".1.2.1.1"/>
 	      <constant data=".2"/>
 	      <constant data=".2.1"/>
+	      <constant data=".2.1.1"/>
+	      <constant data=".2.1.2"/>
 	      <constant data=".2.2"/>
 	      <constant data=".2.2.1"/>
 	      <constant data=".2.2.1.1"/>
 	      <constant data=".2.2.2"/>
 	      <constant data=".2.2.2.1"/>
-	      <constant data=".2.2.3"/>
-	      <constant data=".2.2.3.1"/>
-	      <constant data=".2.2.3.1.1"/>
 	      <constant data=".2.2.2.1.1"/>
 	      <constant data=".2.2.2.2"/>
 	      <constant data=".2.2.2.2.1"/>
 	      <constant data=".2.2.2.2.1.1"/>
-	      <constant data=".2.1.1"/>
-	      <constant data=".2.3"/>
-	      <constant data=".2.3.1"/>
-	      <constant data=".2.3.1.1"/>
-	      <constant data=".1.1"/>
+	      <constant data=".2.2.2.2.2"/>
+	      <constant data=".2.2.2.2.2.1"/>
 	      <constant data=".2.2.2.3"/>
 	      <constant data=".2.2.2.3.1"/>
 	      <constant data=".2.2.2.3.1.1"/>
-	      <constant data=".1.1.1"/>
-	      <constant data=".1.2"/>
-	      <constant data=".1.2.1"/>
-	      <constant data=".1.2.1.1"/>
-	      <constant data=".2.2.2.2.2"/>
-	      <constant data=".2.2.2.2.2.1"/>
-	      <constant data=".2.3.2"/>
-	      <constant data=".2.2.3.2"/>
 	      <constant data=".2.2.2.3.2"/>
-	      <constant data=".2.1.2"/>
+	      <constant data=".2.2.3"/>
+	      <constant data=".2.2.3.1"/>
+	      <constant data=".2.2.3.1.1"/>
+	      <constant data=".2.2.3.2"/>
+	      <constant data=".2.3"/>
+	      <constant data=".2.3.1"/>
+	      <constant data=".2.3.1.1"/>
+	      <constant data=".2.3.2"/>
 		 </list>
 	     </arg>
 	     <arg var="Projective">
@@ -304,20 +303,20 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -440,15 +439,15 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -566,20 +565,20 @@
                                <integer data="2"/>
                                <integer data="3"/>
                                <integer data="4"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -706,12 +705,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -794,17 +793,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -903,20 +902,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1021,7 +1020,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1085,12 +1084,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1179,22 +1178,22 @@
                                <integer data="2"/>
                                <integer data="3"/>
                                <integer data="4"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1321,12 +1320,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1414,18 +1413,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1541,12 +1540,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1628,15 +1627,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1724,18 +1723,18 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1840,20 +1839,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -1953,18 +1952,18 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2075,15 +2074,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2171,7 +2170,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2242,22 +2241,22 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2373,15 +2372,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2474,23 +2473,23 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2618,20 +2617,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2731,7 +2730,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2807,15 +2806,15 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -2921,18 +2920,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3049,23 +3048,23 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3187,17 +3186,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3295,12 +3294,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3383,17 +3382,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3492,15 +3491,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3588,15 +3587,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3684,20 +3683,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3797,7 +3796,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3867,15 +3866,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -3969,17 +3968,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4089,12 +4088,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4176,17 +4175,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4296,20 +4295,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4411,22 +4410,22 @@
                                <integer data="2"/>
                                <integer data="3"/>
                                <integer data="4"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4560,18 +4559,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4689,18 +4688,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4817,15 +4816,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -4918,25 +4917,25 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5053,12 +5052,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5140,20 +5139,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5254,18 +5253,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5387,12 +5386,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5474,20 +5473,20 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5610,25 +5609,25 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5762,7 +5761,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5833,25 +5832,25 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -5996,20 +5995,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6114,12 +6113,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6195,15 +6194,15 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6296,20 +6295,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6419,20 +6418,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6538,15 +6537,15 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6652,17 +6651,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6761,17 +6760,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -6875,21 +6874,21 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7017,12 +7016,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7109,12 +7108,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7202,23 +7201,23 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7353,15 +7352,15 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7478,22 +7477,22 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7609,17 +7608,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7719,18 +7718,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -7853,25 +7852,25 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8005,12 +8004,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8087,18 +8086,18 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8215,7 +8214,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8291,22 +8290,22 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8422,17 +8421,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8531,26 +8530,26 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="P/by">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8691,20 +8690,20 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8831,25 +8830,25 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="AP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -8966,20 +8965,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9084,20 +9083,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9197,17 +9196,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9311,7 +9310,7 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9375,20 +9374,20 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9493,21 +9492,21 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9636,25 +9635,25 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="A">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9787,17 +9786,17 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -9896,18 +9895,18 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -10019,17 +10018,17 @@
                                <integer data="1"/>
                                <integer data="2"/>
                                <integer data="3"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="N">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -10133,18 +10132,18 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="NP">
                                    <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="V">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -10249,12 +10248,12 @@
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
@@ -10338,22 +10337,22 @@
                                <integer data="2"/>
                                <integer data="3"/>
                                <integer data="4"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="S">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="VP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
                            <constantCardSet data="PP">
                                <integer data="0"/>
                                <integer data="1"/>
                                <integer data="2"/>
-                            </constantCardSet>
+                           </constantCardSet>
 		        </set>
 		     </feature>
 		 </record>
