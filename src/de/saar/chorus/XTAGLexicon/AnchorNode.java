@@ -26,9 +26,10 @@ public final class AnchorNode extends LeafNode {
 	     it.hasNext();) {
 	    Anchor anchor = it.next();
 	    if (anchor.getPos().equals(cat)){
+		newTerminalNode.setIsAnchor(true);
 		if (anchor.isSpecial()){
 		    newTerminalNode.setCat(lookUp);
-		newTerminalNode.setIsAnchor(true);}
+		}
 		else {
 		    newTerminalNode.setCat(anchor.getRoot());}
 	    }
