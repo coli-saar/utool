@@ -17,6 +17,10 @@ public final class TerminalNode extends LeafNode {
 	else { return false;}
     }
     
+    public boolean isAnchor(){
+	return (! (cat.equals("") || cat.equals("PRO") || cat.equals(null)));}
+ 
+
     public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 	return new TerminalNode(cat, index);
     }
