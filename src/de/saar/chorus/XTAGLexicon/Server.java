@@ -1,5 +1,4 @@
-//import gnu.getopt.LongOpt;
-//import gnu.getopt.Getopt;
+//import de.saar.getopt.ConvenientGetopt;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
@@ -20,41 +19,54 @@ public class Server {
 
   public static void main(String asArgs[]) {
     try {
-      // get port number from parameter
-      int iPort = Integer.parseInt(asArgs[0]);
+	ConvenientGetopt cg = new ConvenientGetopt("Server", 
+						   "java Server [options]",
+						   "");
+	 cg.addOption('d', "debug", ConvenientGetopt.NO_ARGUMENT,
+        		"Run in debug mode", null);
+	 cg.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
+			  "Use port <arg>", null);
 
-      // create a server socket
-      ServerSocket sockServ = new ServerSocket(iPort);
-      // build the lexikon
-      System.out.println("[Server] building Lexicon");
-      XDGMain main = new XDGMain();
-      main.run();
-      System.out.println("[Server] Lexicon ready");
+	 cg.parse(asArgs);
+        
+        // extract arguments
+        boolean debugMode = cg.hasOption('d');
+	int iPort = Integer.parseInt(cg.getValue('p'));
+
+	// create a server socket
+	ServerSocket sockServ = new ServerSocket(iPort);
+	// build the lexikon
+	System.out.println("[Server] building Lexicon");
+	XDGMain main = new XDGMain();
+	main.run();
+	System.out.println("[Server] Lexicon ready");
       
-      // wait for connection request
-      System.out.println("[Server] waiting for connection on Port "+iPort);
-      Socket sockTalk = sockServ.accept();
-      System.out.println("[Server] have connection");
+	// wait for connection request
+	System.out.println("[Server] waiting for connection on Port "+iPort);
+	Socket sockTalk = sockServ.accept();
+	System.out.println("[Server] have connection");
 
-      // get a buffered Reader to read from socket
-      InputStream is        = sockTalk.getInputStream();
-      InputStreamReader isr = new InputStreamReader(is);
-      BufferedReader br     = new BufferedReader(isr);
-      // get a printwriter to write to socket
-      OutputStream os       = sockTalk.getOutputStream();
-      PrintWriter pw        = new PrintWriter(os);
-
-     
-      System.out.println("[Server] Waiting for Input");
-      pw.println("!start!");
-      pw.flush();
-      //wait for the input
-      String sIn = br.readLine();
-      while (!sIn.equals("!finish!")){
-	  System.out.println("[Server] received Input \""+sIn+"\"");
-	  StringBuffer outPut = new StringBuffer();
-	  outPut = main.lookUp(outPut, sIn);
-	  System.out.println("[Server] sending Output \n"+outPut);
+	// get a buffered Reader to read from socket
+	InputStream is        = sockTalk.getInputStream();
+	InputStreamReader isr = new InputStreamReader(is);
+	BufferedReader br     = new BufferedReader(isr);
+	// get a printwriter to write to socket
+	OutputStream os       = sockTalk.getOutputStream();
+	PrintWriter pw        = new PrintWriter(os);
+	
+	
+	System.out.println("[Server] Waiting for Input");
+	pw.println("!start!");
+	pw.flush();
+	//wait for the input
+	String sIn = br.readLine();
+	while (!sIn.equals("!finish!")){
+	    System.out.println("[Server] received Input \""+sIn+"\"");
+	    StringBuffer outPut = new StringBuffer();
+	    outPut = main.lookUp(outPut, sIn);
+	    System.out.println("[Server] sending Output \n");
+	    if (debugMode){
+		System.out.println("[Server] Output:\n"+outPut);}
 	  pw.println(outPut);
 	  pw.println("!finish!");
 	  pw.flush();

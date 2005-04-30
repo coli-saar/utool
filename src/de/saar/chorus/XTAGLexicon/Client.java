@@ -17,14 +17,26 @@ public class Client {
 
   public static void main(String asArgs[]) {
     try {
-      // get Hostname and port number from params
-      String sHost = asArgs[0];
-      int iPort = Integer.parseInt(asArgs[1]);
+ConvenientGetopt cg = new ConvenientGetopt("Server", 
+						   "java Server [options]",
+						   "");
+	 cg.addOption('h', "host", ConvenientGetopt.REQUIRED_ARGUMENT,
+		      "Use host <arg>", null);
+	 cg.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
+		      "Use port <arg>", null);
 
-      // create socket connecting to host at port
-      System.out.println("[Client] Connecting to \""
-			 +sHost+"\" on Port "+iPort);
-      Socket sockTalk = new Socket(sHost, iPort);
+	 cg.parse(asArgs);
+	 // get Hostname and port number from params
+	 int iPort = Integer.parseInt(cg.getValue('p'));
+	 String sHost = cg.getValue('h');
+	 if (sHost == null){
+	   System.out.println("[Client] Warning: you did not specify a host");
+	   sHost = "localhost";}
+	 
+	// create socket connecting to host at port
+	System.out.println("[Client] Connecting to \""
+			   +sHost+"\" on Port "+iPort);
+	Socket sockTalk = new Socket(sHost, iPort);
 
       // get a buffered Reader to read from socket
       InputStream is        = sockTalk.getInputStream();
