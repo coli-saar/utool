@@ -1,24 +1,23 @@
 <?xml version="1.0"?> 
 <project name="xtag" default="compile" basedir="."> 
 
-     <property name="src" value="."/> 
-     <property name="build" value="."/>
+     <property name="src" value="../../src/de/saar/chorus/XTAGLexicon"/> 
+     <property name="build" value="build"/>
      <property name="packages" location="../../packages" />
-     <property name="getopt.jar" 
-     location="${packages}/java-getopt-1.0.9.jar" />
+     <property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar"/>
 
      <!-- Unpack the Jar file at the path "unpack.jar", unless the
 	       unpacked version is already up to date. Up-to-dateness is
 	       recorded with a timestamp. "unpack.jar.id" is a unique id for
 	       this Jar. -->
 	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
-		<unjar src="${unpack.jar}" dest="${build.classes}" />
-		<touch file="$timestamps-unpackjar/${unpack.jar.id}" />
+		<unjar src="${unpack.jar}" dest="${build}" />
+		<touch file="${unpack.jar.id}" />
 	</target>
 
 	<target name="check.unpack">
 		<uptodate property="nobuild.unpack"
-		targetfile="timestamps-unpackjar/${unpack.jar.id}">
+		targetfile="${unpack.jar.id}">
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
 	</target>
@@ -32,6 +31,10 @@
 
      <target name="compile" depends="getopt.unpacked"> 
           <!-- Compile the java code -->
-          <javac srcdir="${src}" destdir="${build}"/> 
+          <javac srcdir="${src}" destdir="${build}"> 
+                <classpath>
+		   <pathelement path="${getopt.jar}" />
+		</classpath>
+          </javac>
      </target>
 </project>
