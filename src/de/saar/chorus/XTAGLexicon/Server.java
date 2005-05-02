@@ -1,4 +1,3 @@
-//import de.saar.getopt.ConvenientGetopt;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
@@ -17,6 +16,8 @@ import java.io.IOException;
  */
 public class Server {
 
+private static String helpMessage = "Parameters of the Server:\n-p, --port <arg>: define port number (Required Parameter)\n-d, --debug     : Debug-Modus; display results (Optional Parameter)\n-h, --help      : display this\n";
+
   public static void main(String asArgs[]) {
     try {
 	ConvenientGetopt cg = new ConvenientGetopt("Server", 
@@ -26,10 +27,16 @@ public class Server {
         		"Run in debug mode", null);
 	 cg.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
 			  "Use port <arg>", null);
-
+	 cg.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
+		      "Display help", null);
 	 cg.parse(asArgs);
         
         // extract arguments
+	 
+	 if (cg.hasOption('h')){
+	     System.out.println(helpMessage);
+	     return;}
+	 
         boolean debugMode = cg.hasOption('d');
 	int iPort = Integer.parseInt(cg.getValue('p'));
 
@@ -82,9 +89,9 @@ public class Server {
     } catch (IOException ioe) {
       System.out.println("Exception:"+ioe.getMessage());
     } catch (NumberFormatException nfe) {
-      System.out.println("[Server] Need a port number as parameter");
+      System.out.println(helpMessage);
     } catch (ArrayIndexOutOfBoundsException aioobe) {
-      System.out.println("[Server] Need a port number as parameter");
+      System.out.println(helpMessage);
     }
   }
 }

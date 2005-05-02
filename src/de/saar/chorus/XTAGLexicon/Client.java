@@ -15,20 +15,29 @@ import java.io.IOException;
 
 public class Client {
 
+private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>    : define port number (Required Parameter)\n-m, --machine <arg> : define the Host name; default value localhost (Optional Parameter)\n-h, --help          : display this\n";
+
+
   public static void main(String asArgs[]) {
     try {
-ConvenientGetopt cg = new ConvenientGetopt("Server", 
-						   "java Server [options]",
+	ConvenientGetopt cg = new ConvenientGetopt("Client", 
+						   "java Client [options]",
 						   "");
-	 cg.addOption('h', "host", ConvenientGetopt.REQUIRED_ARGUMENT,
+	 cg.addOption('m', "machine", ConvenientGetopt.REQUIRED_ARGUMENT,
 		      "Use host <arg>", null);
 	 cg.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
 		      "Use port <arg>", null);
-
+	 cg.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
+		      "Display help", null);
 	 cg.parse(asArgs);
+	 
+	 if (cg.hasOption('h')){
+	     System.out.println(helpMessage);
+	     return;}
+
 	 // get Hostname and port number from params
 	 int iPort = Integer.parseInt(cg.getValue('p'));
-	 String sHost = cg.getValue('h');
+	 String sHost = cg.getValue('m');
 	 if (sHost == null){
 	   System.out.println("[Client] Warning: you did not specify a host");
 	   sHost = "localhost";}
@@ -74,7 +83,7 @@ ConvenientGetopt cg = new ConvenientGetopt("Server",
 	      userIn = stdIn.readLine();
 	  }
 	  System.out.println("[Client] Sending message \""
-			     +userIn+"\"");
+	  		     +userIn+"\"");
 	  pw.println("!finish!");
 	  pw.flush();
 	  // terminating
@@ -87,9 +96,9 @@ ConvenientGetopt cg = new ConvenientGetopt("Server",
     } catch (IOException ioe) {
 	System.out.println("[Client] Some IO Exception occurred");
     } catch (NumberFormatException nfe) {
-	System.out.println("[Client] Need a port number as parameter");
+	System.out.println(helpMessage);
     } catch (ArrayIndexOutOfBoundsException aioobe) {
-	System.out.println("[Client] Need a host name,a port number and a message as parameters");
+	System.out.println(helpMessage);
     }
   }
 }
