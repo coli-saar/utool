@@ -93,11 +93,9 @@ public final class InnerNode extends Node {
     public boolean terminalMustBeReplaced(Node onlyChild, 
 					  String childCat, 
 					  String lookUp){
-	if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+	return (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
 	       && !childCat.equals("PRO") && !childCat.equals(null)
-	       && !childCat.equals("")){
-	       return true;}
-	   else {return false;}
+		&& !childCat.equals(""));
     }
 
     /**

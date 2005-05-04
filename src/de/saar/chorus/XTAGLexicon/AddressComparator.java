@@ -6,7 +6,7 @@ public class AddressComparator implements Comparator<String>{
 	try {
 	String[] strA1 = a1.split("\\.");
 	String[] strA2 = a2.split("\\.");
-	for (int i = 1; i < Math.min(strA1.length, strA2.length); i++){
+	for (int i = 2; i < Math.min(strA1.length, strA2.length); i++){
 	    if (!(strA1[i].equals(strA2[i]))){
 		int intA1 = Integer.parseInt(strA1[i]);
 		int intA2 = Integer.parseInt(strA2[i]);

@@ -41,7 +41,7 @@ public class Converter {
 	    else{
 		if (node.isRightAux()){
 		    aux = "_R";}
-		else {aux = "";}
+		else {aux = "M";}
 	    }
 	    newEntry.rootCat = nodeCat; 
 	    newEntry.auxDirection = aux;
@@ -65,10 +65,7 @@ public class Converter {
 	    HashSet<String> addSet = new HashSet<String>();
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
-	try {	addresses.add(address);
-	}
-	catch (Exception e){
-	    System.out.println("Hier Ausnahme");}
+	//addresses.add(address);
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
 		  else {
@@ -82,6 +79,7 @@ public class Converter {
 	}
 	else {
 	    if (node instanceof InnerNode){
+		
 		if (node.isAdj()){
 		    entry.outId.add(nodeCat+"_A_?");
 		    if (isRoot){
@@ -91,11 +89,19 @@ public class Converter {
 		int counter = 1;
 		String separator = "";
 		if (!isRoot){
+		    addresses.add("L"+address);
 		    separator = ".";}
+		else {
+		    if (entry.auxDirection.equals("M")){
+			addresses.add("L"+address);}
+		    else {addresses.add(entry.auxDirection+address);}
+		}
 		for (Node child : node.getChildren()){
 		    this.traverseTree(child, entry, address
 				      +separator+counter, false);
 		    counter++;}
+		if (!(entry.isAux && !entry.passedFoot)){
+		    addresses.add("R"+address);}
 		labels.add(nodeCat);
 	    }
 	    else {

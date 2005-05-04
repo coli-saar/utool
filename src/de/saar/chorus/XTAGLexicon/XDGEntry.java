@@ -12,6 +12,7 @@ public class XDGEntry {
     public int number;
     public String auxDirection = "";
     public boolean isAux = false;
+    public boolean passedFoot = false;
 
     public XDGEntry(int num){
 	outId = new ArrayList<String>();
