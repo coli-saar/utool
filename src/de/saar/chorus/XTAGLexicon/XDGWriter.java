@@ -223,7 +223,7 @@ public class XDGWriter {
 	int counter = 1;
 	for (int i = 0; i < entry.outId.size(); i++){
 	    String next = entry.outId.get(i);
-	    for (int j = i; j < entry.outId.size(); j++){
+	    for (int j = i+1; j < entry.outId.size(); j++){
 		if (next.equals(entry.outId.get(j))){
 		    counter++;
 		    entry.outId.remove(j);}
@@ -252,7 +252,10 @@ public class XDGWriter {
 	    else{
 		sb.append("                           <constantCard data=\""+
 			  label+"\" card=\""+opt+"\"/>\n");}
-	} 
+			  } 
+
+
+
 	//                  <!-- genau 2 NPs -->\n
 	//	    <constantCardSet data=\"lNP\">\n
 	//		<integer data=\"2\"/>\n
