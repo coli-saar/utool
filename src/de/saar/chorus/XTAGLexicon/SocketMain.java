@@ -33,8 +33,7 @@ public class SocketMain {
 	    result.append("</lexicon>");
 	}
 	catch (Exception e){
-	    result.append("Error: "+e.getMessage());
-	    e.printStackTrace();}
+	    result.append("Error: "+e.getMessage());}
 	return result;
     }
 

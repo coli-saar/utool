@@ -206,9 +206,11 @@ public class XDGWriter {
     }
 
 
-    public void printEntry (StringBuffer sb, XDGEntry entry){
-	sb.append("     <entry>\n"+
-"	 <classConj>\n"+
+    public void printEntry (StringBuffer sb, XDGEntry entry, Node tree){
+	sb.append("     <entry>\n<!--\n");
+	tree.printXMLInBuffer(sb," ");
+	sb.append("\n-->\n");
+	sb.append("	 <classConj>\n"+
 "	     <classDimension idref=\"id\">\n"+
 "		 <record>\n"+
 "		     <feature data=\"in\">\n"+
@@ -336,4 +338,7 @@ public class XDGWriter {
 "     </entry>\n");
     }
 	
+    public void printEnd(StringBuffer sb){
+	sb.append("  </grammar>");}
+
 }

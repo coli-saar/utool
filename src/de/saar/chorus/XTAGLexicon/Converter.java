@@ -37,11 +37,13 @@ public class Converter {
 	    String nodeCat = node.getCat();
 	    String aux;
 	    if (node.isLeftAux()){
-		aux = "_L";}
+		aux = "L";
+	    }
 	    else{
 		if (node.isRightAux()){
-		    aux = "_R";}
-		else {aux = "M";}
+		    aux = "R";}
+		else {aux = "M";		
+		newEntry.passedFoot = true;}
 	    }
 	    newEntry.rootCat = nodeCat; 
 	    newEntry.auxDirection = aux;
@@ -65,52 +67,64 @@ public class Converter {
 	    HashSet<String> addSet = new HashSet<String>();
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
-	//addresses.add(address);
+	
 	if (entry.linking.containsKey(address)){
 		      entry.linking.get(address).add(nodeCat);}
-		  else {
-		      HashSet<String> addSet = new HashSet<String>();
-		      addSet.add(nodeCat);
-		      entry.linking.put(address, addSet);}
+	else {
+	    HashSet<String> addSet = new HashSet<String>();
+	    addSet.add(nodeCat);
+	    entry.linking.put(address, addSet);}
+	
 	if (node instanceof SubstitutionNode){
 		  entry.outId.add(nodeCat+"_!");
-		  entry.outLp.add(address+"_!");
+		  entry.outLp.add("M"+address+"_!");
+		  addresses.add("M"+address);
 		  labels.add(nodeCat);
 	}
 	else {
 	    if (node instanceof InnerNode){
-		
-		if (node.isAdj()){
-		    entry.outId.add(nodeCat+"_A_?");
-		    if (isRoot){
-			entry.outLp.add(address+"_A"+entry.auxDirection+"_?");}
-		    else {entry.outLp.add(address+"_A_?");}
-		}
-		int counter = 1;
 		String separator = "";
 		if (!isRoot){
-		    addresses.add("L"+address);
 		    separator = ".";}
-		else {
-		    if (entry.auxDirection.equals("M")){
-			addresses.add("L"+address);}
-		    else {addresses.add(entry.auxDirection+address);}
+		String auxAddress = address;
+		if (!entry.passedFoot){
+		    auxAddress = entry.auxDirection+address;
+		    addresses.add(auxAddress);
+		    if (node.isAdj()){
+			entry.outLp.add(auxAddress+"_A_?");}
 		}
+		else {
+		    addresses.add("L"+address);
+		    addresses.add("R"+address);
+		    if (node.isAdj()){
+			entry.outId.add(nodeCat+"_A_?");
+			entry.outLp.add("L"+address+"_A_?");
+			entry.outLp.add("R"+address+"_A_?");
+		    }
+		}
+		int counter = 1;
+		
 		for (Node child : node.getChildren()){
 		    this.traverseTree(child, entry, address
 				      +separator+counter, false);
 		    counter++;}
-		if (!(entry.isAux && !entry.passedFoot)){
-		    addresses.add("R"+address);}
+	
 		labels.add(nodeCat);
+	    
 	    }
 	    else {
-		if (!(node instanceof TerminalNode)){
-		    labels.add(nodeCat);}
-		else{
-		    if (node.isAnchor()){
-			entry.anchor = node.getCat();
-			entry.anchorAddress = address;}
+		if (node instanceof FootNode){
+		    entry.passedFoot = true;
+		    addresses.add("M"+address);
+		    labels.add(nodeCat);
+		}
+		else {
+		    if (node instanceof TerminalNode){
+			addresses.add("M"+address);
+		       	if (node.isAnchor()){
+			    entry.anchor = node.getCat();
+			    entry.anchorAddress = address;}
+		    }
 		}
 	    }
 	}
@@ -127,10 +141,8 @@ public class Converter {
 	XDGWriter writer = new XDGWriter();
 	writer.printHeader(sb, addresses, labels);
 	for (XDGEntry entry : results){
-	    sb.append("<!--\n");
-	    nums2trees.get(entry.number).printXMLInBuffer(sb," ");
-	    sb.append("\n-->\n");
-	    writer.printEntry(sb,entry);}
+	    writer.printEntry(sb,entry, nums2trees.get(entry.number));}
+	writer.printEnd(sb);
     }
 
 
