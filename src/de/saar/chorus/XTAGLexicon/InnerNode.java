@@ -93,16 +93,16 @@ public final class InnerNode extends Node {
     public boolean terminalMustBeReplaced(Node onlyChild, 
 					  String childCat, 
 					  String lookUp){
-	return (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+	return ((onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
 	       && !childCat.equals("PRO") && !childCat.equals(null)
-		&& !childCat.equals(""));
+		&& !childCat.equals("")) || childCat.equals("awake"));
     }
 
     /**
      * Lexikalisierung der Baeume
      */
     public void lexicalize (List<Node> nodes, String lookUp){
-	if (children.size() == 1){
+	if (children.size() == 1 && !(children.get(0) instanceof InnerNode)){
 	    Node onlyChild = children.get(0);
 	    String childCat = onlyChild.getCat();
 	    if (this.terminalMustBeReplaced(onlyChild, childCat, lookUp)){
@@ -121,8 +121,8 @@ public final class InnerNode extends Node {
 		    innerNodeChildren.add(child);}
 	    }
 	    for (Node it : innerNodeChildren){
-		it.lexicalize(nodes, lookUp);
-	    }
+		it.lexicalize(nodes, lookUp);}
+	    
 	}
     }
     
