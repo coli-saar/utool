@@ -50,7 +50,7 @@ public class Converter {
 	    this.traverseTree(node, newEntry, ".", true);
 	    results.add(newEntry);
 	    counter++;}
-	this.updateInLp();
+	//this.updateInLp();
     }
 	
 
@@ -88,6 +88,8 @@ public class Converter {
 		String separator = "";
 		if (!isRoot){
 		    separator = ".";}
+		else{
+		    entry.inLp = entry.auxDirection+address;}
 		String auxAddress = address;
 		if (!entry.passedFoot){
 		    auxAddress = entry.auxDirection+address;
@@ -155,11 +157,11 @@ public class Converter {
     }
     
 
-    public void updateInLp(){
-	for (XDGEntry entry : results){
-	    entry.inLp = cats2adds.get(entry.rootCat);
-	}
-    }
+    //public void updateInLp(){
+    //for (XDGEntry entry : results){
+    //    entry.inLp = cats2adds.get(entry.rootCat);
+    //}
+    //}
 
     public void printXDG(StringBuffer sb){
 	XDGWriter writer = new XDGWriter();
@@ -183,9 +185,9 @@ public class Converter {
 	    }
 	    string.append(" </outId> \n");
 	    string.append(" <inLp>\n");
-	    for (String add : entry.inLp){
-		string.append("  <element add=\""+add+"\">\n");
-	    }
+	    //for (String add : entry.inLp){
+	    //string.append("  <element add=\""+add+"\">\n");
+	    //}
 	    string.append(" </inLp>\n");
 	    string.append(" <outLp>\n");
 	    for (String add : entry.outLp){

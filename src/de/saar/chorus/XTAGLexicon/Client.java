@@ -27,6 +27,8 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
 		      "Use host <arg>", null);
 	 cg.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
 		      "Use port <arg>", null);
+	 cg.addOption('x', "xml", ConvenientGetopt.NO_ARGUMENT,
+		      "Print only xml code", null);
 	 cg.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
 		      "Display help", null);
 	 cg.parse(asArgs);
@@ -34,17 +36,20 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
 	 if (cg.hasOption('h')){
 	     System.out.println(helpMessage);
 	     return;}
-
+	 boolean withPrompt = true;
+	 if (cg.hasOption('x')){
+	     withPrompt = false;}
 	 // get Hostname and port number from params
 	 int iPort = Integer.parseInt(cg.getValue('p'));
 	 String sHost = cg.getValue('m');
-	 if (sHost == null){
+	 if (sHost == null && withPrompt){
 	   System.out.println("[Client] Warning: you did not specify a host");
 	   sHost = "localhost";}
 	 
 	// create socket connecting to host at port
+	 if (withPrompt){
 	System.out.println("[Client] Connecting to \""
-			   +sHost+"\" on Port "+iPort);
+			   +sHost+"\" on Port "+iPort);}
 	Socket sockTalk = new Socket(sHost, iPort);
 
       // get a buffered Reader to read from socket
@@ -54,41 +59,49 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
       // get a printwriter to write to socket
       OutputStream os       = sockTalk.getOutputStream();
       PrintWriter pw        = new PrintWriter(os);
-
+      
       // send message
-      System.out.println("[Client] Waiting for Server");
+      if (withPrompt){
+	  System.out.println("[Client] Waiting for Server");}
       String sIn = br.readLine();
       if (!sIn.equals("!start!")){
 	  System.out.println("[Client]Error: terminating");
 	  sockTalk.close();
       }
       else{
+	  if (withPrompt){
 	  System.out.println("[Client] Lexicon ready");
-	  System.out.println("[Client] Waiting for Input. Type \"finish!\" to terminate");
+	  System.out.println("[Client] Waiting for Input. Type \"finish!\" to terminate");}
 	  BufferedReader stdIn = 
 	      new BufferedReader(new InputStreamReader(System.in));
 	  String userIn = stdIn.readLine();
 	  while (!userIn.equals("finish!")){
+	      if (withPrompt){
 	      System.out.println("[Client] Sending message \""
-				 +userIn+"\"");
+				 +userIn+"\"");}
 	      pw.println(userIn);
 	      pw.flush();
-	      System.out.println("[Client] received Input: ");
+	      if (withPrompt){
+		  System.out.println("[Client] received Input: ");}
 	      sIn = br.readLine();
 	      while (!sIn.equals("!finish!")){
 		  System.out.print(sIn+"\n");
 		  sIn = br.readLine();
 	      }
-	      System.out.println("[Client] Waiting for Input. Type \"finish!\" to terminate");
+	      if (withPrompt){
+		  System.out.println("[Client] Waiting for Input. Type \"finish!\" to terminate");}
 	      userIn = stdIn.readLine();
 	  }
+	  if (withPrompt){
 	  System.out.println("[Client] Sending message \""
-	  		     +userIn+"\"");
+	  		     +userIn+"\"");}
 	  pw.println("!finish!");
 	  pw.flush();
 	  // terminating
-	  System.out.println("[Client] terminating");
+	  if (withPrompt){
+	      System.out.println("[Client] terminating");}
 	  sockTalk.close();
+      
       }
     }
     catch (UnknownHostException uhee) {
