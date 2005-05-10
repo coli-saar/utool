@@ -68,18 +68,20 @@ public class Converter {
 	    addSet.add(address);
 	    cats2adds.put(nodeCat, addSet);}
 	
-	if (entry.linking.containsKey(address)){
-		      entry.linking.get(address).add(nodeCat);}
-	else {
-	    HashSet<String> addSet = new HashSet<String>();
-	    addSet.add(nodeCat);
-	    entry.linking.put(address, addSet);}
+
 	
 	if (node instanceof SubstitutionNode){
 		  entry.outId.add(nodeCat+"_!");
-		  entry.outLp.add("M"+address+"_!");
-		  addresses.add("M"+address);
+		  address = "M"+address;
+		  entry.outLp.add(address+"_!");
+		  addresses.add(address);
 		  labels.add(nodeCat);
+		  if (entry.linking.containsKey(address)){
+		      entry.linking.get(address).add(nodeCat);}
+		  else {
+		      HashSet<String> addSet = new HashSet<String>();
+		      addSet.add(nodeCat);
+		      entry.linking.put(address, addSet);}
 	}
 	else {
 	    if (node instanceof InnerNode){
@@ -90,10 +92,30 @@ public class Converter {
 		if (!entry.passedFoot){
 		    auxAddress = entry.auxDirection+address;
 		    addresses.add(auxAddress);
+		    if (entry.linking.containsKey(auxAddress)){
+			entry.linking.get(address).add(nodeCat);}
+		    else {
+			HashSet<String> addSet = new HashSet<String>();
+			addSet.add(nodeCat);
+			entry.linking.put(auxAddress, addSet);}
 		    if (node.isAdj()){
-			entry.outLp.add(auxAddress+"_A_?");}
+			entry.outLp.add(auxAddress+"_A_?");
+			entry.outId.add(nodeCat+"_A_?");
+		    }
 		}
 		else {
+		    if (entry.linking.containsKey("R"+address)){
+			entry.linking.get(address).add(nodeCat);}
+		    else {
+			HashSet<String> addSet = new HashSet<String>();
+			addSet.add(nodeCat);
+			entry.linking.put("R"+address, addSet);}
+		    if (entry.linking.containsKey("L"+address)){
+			entry.linking.get(address).add(nodeCat);}
+		    else {
+			HashSet<String> addSet = new HashSet<String>();
+			addSet.add(nodeCat);
+			entry.linking.put("L"+address, addSet);}
 		    addresses.add("L"+address);
 		    addresses.add("R"+address);
 		    if (node.isAdj()){
@@ -117,13 +139,15 @@ public class Converter {
 		    entry.passedFoot = true;
 		    addresses.add("M"+address);
 		    labels.add(nodeCat);
+		  
 		}
 		else {
 		    if (node instanceof TerminalNode){
 			addresses.add("M"+address);
+		
 		       	if (node.isAnchor()){
 			    entry.anchor = node.getCat();
-			    entry.anchorAddress = address;}
+			    entry.anchorAddress = "M"+address;}
 		    }
 		}
 	    }
