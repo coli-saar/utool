@@ -278,8 +278,8 @@ public class XDGWriter {
 "	     <classDimension idref=\"lp\">\n"+
 "		 <record>\n"+
 "		     <feature data=\"in\">\n");
-	sb.append(" 	  	        </constantCard data=\""
-		      +entry.inLp+"\">\n");
+	sb.append(" 	  	        <set><constant data=\""
+		      +entry.inLp+"\"/></set>\n");
 	sb.append("		    </feature>\n"+
 "		     <feature data=\"out\">\n"+
 "			 <set>\n");
