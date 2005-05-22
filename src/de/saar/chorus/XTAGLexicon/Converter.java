@@ -50,6 +50,7 @@ public class Converter {
 	    this.traverseTree(node, newEntry, ".", true);
 	    results.add(newEntry);
 	    counter++;}
+	addresses.add("M.");
 	//this.updateInLp();
     }
 	
