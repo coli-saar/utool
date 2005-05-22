@@ -222,36 +222,39 @@ public class XDGWriter {
 "		     <feature data=\"out\">\n"+
 "			<set>\n");
 	//<!-- HIER -->\n
-	int counter = 1;
+	int elCounter = 1;
+	int subCounter = 0;
 	for (int i = 0; i < entry.outId.size(); i++){
 	    String next = entry.outId.get(i);
-	    for (int j = i+1; j < entry.outId.size(); j++){
-		if (next.equals(entry.outId.get(j))){
-		    counter++;
-		    entry.outId.remove(j);}
-	    }
 	    String[] adStrings = next.split("_");
 	    String label = adStrings[0];
-	    String opt = "";
-	    if (adStrings.length == 2){
-		opt = "one";}
-	    else {opt = "opt";}
-	    if (counter>1){
+	    for (int j = i+1; j < entry.outId.size(); j++){
+		String element = entry.outId.get(j);
+		String[] elStrings = element.split("_");
+		String elLabel = elString[0];
+		if (label.equals(elLabel)){
+		    elCounter++;
+		    if (elStrings.length == 2){
+			subCounter++;}
+		    entry.outId.remove(j);}
+	    }
+	   
+	    if (elCounter>1){
 		sb.append("                           <constantCardSet data=\""+
 			  label+"\">\n");
-		if (opt.equals("one")){
+		for (int i = subCounter; i<=elCounter+1;i++){
 		    sb.append("                                   <integer data=\""+
-			      counter+"\"/>\n");
-		}
-		else {
-		    for (int k = 0; k <= counter; k++){
-			sb.append("                               <integer data=\""+
-				  k+"\"/>\n");}
+			      i+"\"/>\n");
 		}
 		sb.append("                           </constantCardSet>\n");
 		counter = 1;
+		subCounter = 0;
 	    }
 	    else{
+		String opt = "";
+		if (adStrings.length == 2){
+		    opt = "one";}
+		else {opt = "opt";}
 		sb.append("                           <constantCard data=\""+
 			  label+"\" card=\""+opt+"\"/>\n");}
 			  } 
