@@ -28,6 +28,12 @@ public class XDGMain {
 	Set<Node> treeSet = new HashSet<Node>();
 	try{
 	    for (String word : sentence){
+		/*
+		for (Node node : lexicon.lookup(word)) {
+		    if (filter(node)) {
+			treeSet.add(node);
+		    }
+		    } */
 		treeSet.addAll(lexicon.lookup(word));}
 	    converter.convert(treeSet);
 	    converter.printXDG(result);

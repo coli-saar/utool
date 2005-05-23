@@ -231,7 +231,7 @@ public class XDGWriter {
 	    for (int j = i+1; j < entry.outId.size(); j++){
 		String element = entry.outId.get(j);
 		String[] elStrings = element.split("_");
-		String elLabel = elString[0];
+		String elLabel = elStrings[0];
 		if (label.equals(elLabel)){
 		    elCounter++;
 		    if (elStrings.length == 2){
@@ -242,12 +242,12 @@ public class XDGWriter {
 	    if (elCounter>1){
 		sb.append("                           <constantCardSet data=\""+
 			  label+"\">\n");
-		for (int i = subCounter; i<=elCounter+1;i++){
+		for (int k = subCounter; k<=elCounter;k++){
 		    sb.append("                                   <integer data=\""+
-			      i+"\"/>\n");
+			      k+"\"/>\n");
 		}
 		sb.append("                           </constantCardSet>\n");
-		counter = 1;
+		elCounter = 1;
 		subCounter = 0;
 	    }
 	    else{
