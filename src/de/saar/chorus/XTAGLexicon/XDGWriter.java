@@ -281,9 +281,12 @@ public class XDGWriter {
 "	     <classDimension idref=\"lp\">\n"+
 "		 <record>\n"+
 "		     <feature data=\"in\">\n");
-	sb.append(" 	  	        <set><constant data=\""
-		      +entry.inLp+"\"/></set>\n");
-	sb.append("		    </feature>\n"+
+	sb.append(" 	  	        <set>\n");
+	for (String ad : entry.inLp){
+	    sb.append("                         <constant data=\""
+		      +ad+"\"/>\n");}
+	sb.append("                     </set>\n"+
+	"		    </feature>\n"+
 "		     <feature data=\"out\">\n"+
 "			 <set>\n");
 	//<!-- HIER -->

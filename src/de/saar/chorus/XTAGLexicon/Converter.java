@@ -51,7 +51,7 @@ public class Converter {
 	    results.add(newEntry);
 	    counter++;}
 	addresses.add("M.");
-	//this.updateInLp();
+	this.updateInLp();
     }
 	
 
@@ -89,8 +89,6 @@ public class Converter {
 		String separator = "";
 		if (!isRoot){
 		    separator = ".";}
-		else{
-		    entry.inLp = entry.auxDirection+address;}
 		String auxAddress = address;
 		if (!entry.passedFoot){
 		    auxAddress = entry.auxDirection+address;
@@ -158,11 +156,25 @@ public class Converter {
     }
     
 
-    //public void updateInLp(){
-    //for (XDGEntry entry : results){
-    //    entry.inLp = cats2adds.get(entry.rootCat);
-    //}
-    //}
+    public void updateInLp(){
+	HashSet<String> mAds = new HashSet<String>();
+	HashSet<String> lAds = new HashSet<String>();
+	HashSet<String> rAds = new HashSet<String>();
+	for (String ad : addresses){
+	    if (ad.charAt(0) == 'M'){
+		mAds.add(ad);}
+	    else{
+		if (ad.charAt(0) == 'L'){
+		    lAds.add(ad);}
+		else rAds.add(ad);}}
+	for (XDGEntry entry : results){
+	    if (entry.auxDirection.equals("M")){
+		entry.inLp = mAds;}
+	    else {
+		if (entry.auxDirection.equals("L")){
+		    entry.inLp = lAds;}
+		else entry.inLp = rAds;}}
+    }
 
     public void printXDG(StringBuffer sb){
 	XDGWriter writer = new XDGWriter();
