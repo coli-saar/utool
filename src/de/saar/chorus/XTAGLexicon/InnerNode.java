@@ -8,11 +8,13 @@ public final class InnerNode extends Node {
     public InnerNode(String cat, String index, Node mother) {
 	super(cat, index, mother);
 	children = new ArrayList<Node>();
+	isAdj = true;
     }
 
     public InnerNode(String cat, String index) {
 	super(cat, index);
 	children = new ArrayList<Node>();
+	isAdj = true;
     }
     
     public int hashCode(){
@@ -23,7 +25,7 @@ public final class InnerNode extends Node {
     }
 
     public boolean isAdj() {
-	return true; 
+	return isAdj; 
     }
 
     public boolean isRightAux (){
@@ -93,9 +95,9 @@ public final class InnerNode extends Node {
     public boolean terminalMustBeReplaced(Node onlyChild, 
 					  String childCat, 
 					  String lookUp){
-	return ((onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+	return (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
 	       && !childCat.equals("PRO") && !childCat.equals(null)
-		&& !childCat.equals("")) || childCat.equals("awake"));
+		&& !childCat.equals(""));
     }
 
     /**
@@ -113,6 +115,10 @@ public final class InnerNode extends Node {
 		if (!nodes.contains(newMother)){
 		    nodes.add(newMother);}
 	    }
+	    //wenn einzigstes Kind leeres Terminal, setzte isAdj auf false
+	    else {
+		if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)){
+		    isAdj = false;}}
 	}
 	else{
 	    List<Node> innerNodeChildren = new ArrayList<Node>();
