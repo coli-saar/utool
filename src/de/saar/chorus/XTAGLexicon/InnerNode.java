@@ -16,7 +16,23 @@ public final class InnerNode extends Node {
 	children = new ArrayList<Node>();
 	isAdj = true;
     }
-    
+
+    /** STTH */
+    public boolean containsEmpty() {
+	for (Node it : children) {
+	    if (it.containsEmpty())
+		return true;
+	}
+	return false;
+    }
+    public boolean containsEmpty(String mothercat) {
+	for (Node it : children) {
+	    if (it.containsEmpty(mothercat))
+		return true;
+	}
+	return false;
+    }
+
     public int hashCode(){
 	int hashCode = cat.hashCode();
 	for (Node it : children){

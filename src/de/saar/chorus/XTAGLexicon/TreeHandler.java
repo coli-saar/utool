@@ -51,7 +51,11 @@ public class TreeHandler extends DefaultHandler {
 		add(new FootNode(cat, index));
 	    }
 	    else if (type.equals("anchor")) {
-		add(new AnchorNode(cat, index));
+		if (index == null) {
+		    add(new AnchorNode(cat, index));
+		} else {
+		    add(new AnchorNode(cat + index, index));
+		}
 	    }
 	    else if (type.equals("terminal")) {
 		add(new TerminalNode(cat, index));
