@@ -28,13 +28,15 @@ public class XDGMain {
 	Set<Node> treeSet = new HashSet<Node>();
 	try{
 	    for (String word : sentence){
-		/*
+		/** STTH */
 		for (Node node : lexicon.lookup(word)) {
-		    if (filter(node)) {
+		    if (! node.containsEmpty("V")) {
 			treeSet.add(node);
 		    }
-		    } */
-		treeSet.addAll(lexicon.lookup(word));}
+		}
+		
+		// treeSet.addAll(lexicon.lookup(word));
+	    }
 	    converter.convert(treeSet);
 	    converter.printXDG(result);
 	}

@@ -33,6 +33,15 @@ public abstract class Node {
 	}
     }
 
+
+    /** STTH */
+    public boolean containsEmpty() {
+	return false;
+    }
+    public boolean containsEmpty(String mothercat) {
+	return false;
+    }
+
     public boolean isAdj() {
 	return false; 
     }

@@ -28,6 +28,15 @@ public final class TerminalNode extends LeafNode {
     public void setCat(String newCat){
 	this.cat = newCat;
     }
+
+    /** STTH */
+    public boolean containsEmpty() {
+	return cat.equals("");
+    }
+
+    public boolean containsEmpty(String mothercat) {
+	return cat.equals("") && mothercat.equals(mother.cat);
+    }
    
     //public String getCat(){
     //return cat;
