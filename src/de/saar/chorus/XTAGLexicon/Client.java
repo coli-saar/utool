@@ -30,8 +30,8 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
 		     "Use port <arg>", null);
 	cg.addOption('x', "xml", ConvenientGetopt.NO_ARGUMENT,
 		     "Print only xml code", null);
-	cg.addOption('f', "filter", ConvenientGetopt.OPTIONAL_ARGUMENT,
-		     "Use filter <arg>", null);
+	cg.addOption('f', "filter", ConvenientGetopt.REQUIRED_ARGUMENT,
+		     "Use filter <arg>", "#");
 	cg.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
 		      "Display help", null);
 	cg.parse(asArgs);
@@ -48,12 +48,13 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
 	    withPrompt = false;}
 	
 	//test, wether a filter has been specified
-	String filter = "*";
+	String filter = "none";
 	if (cg.hasOption('f')){
-	    if (cg.getValue('f').equals(null)){
-		filter = "filter";}
-	    else{filter = cg.getValue('f');
-	    }
+	    //System.out.println(cg.getValue('f'));    
+	    if (cg.getValue('f').equals("all")){
+			    filter = "all";}
+	    else{filter = cg.getValue('f');}
+	    System.err.println(filter);
 	}
 	
 	// get Hostname and port number from params
