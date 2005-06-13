@@ -16,10 +16,11 @@ import java.io.IOException;
  */
 public class Server {
 
-private static String helpMessage = "Parameters of the Server:\n-p, --port <arg>: define port number (Required Parameter)\n-d, --debug     : Debug-Modus; display results (Optional Parameter)\n-h, --help      : display this\n";
+    private static String helpMessage = "Parameters of the Server:\n-p, --port <arg>: define port number (Required Parameter)\n-d, --debug     : Debug-Modus; display results (Optional Parameter)\n-h, --help      : display this\n";
 
   public static void main(String asArgs[]) {
     try {
+	//build a new ConvenientGetopt
 	ConvenientGetopt cg = new ConvenientGetopt("Server", 
 						   "java Server [options]",
 						   "");
@@ -31,61 +32,62 @@ private static String helpMessage = "Parameters of the Server:\n-p, --port <arg>
 		      "Display help", null);
 	 cg.parse(asArgs);
         
-        // extract arguments
-	 
+	 //display help message and return if h is given
 	 if (cg.hasOption('h')){
 	     System.out.println(helpMessage);
 	     return;}
-	 
-        boolean debugMode = cg.hasOption('d');
-	int iPort = Integer.parseInt(cg.getValue('p'));
+	 //read the other params
+	 boolean debugMode = cg.hasOption('d');
+	 int iPort = Integer.parseInt(cg.getValue('p'));
 
-	// create a server socket
-	ServerSocket sockServ = new ServerSocket(iPort);
-	// build the lexikon
-	System.out.println("[Server] building Lexicon");
-	XDGMain main = new XDGMain();
-	main.run();
-	System.out.println("[Server] Lexicon ready");
+	 // create a server socket
+	 ServerSocket sockServ = new ServerSocket(iPort);
+	 // build the lexikon
+	 System.out.println("[Server] building Lexicon");
+	 XDGMain main = new XDGMain();
+	 main.run();
+	 System.out.println("[Server] Lexicon ready");
       
-	// wait for connection request
-	System.out.println("[Server] waiting for connection on Port "+iPort);
-	Socket sockTalk = sockServ.accept();
-	System.out.println("[Server] have connection");
-
-	// get a buffered Reader to read from socket
-	InputStream is        = sockTalk.getInputStream();
-	InputStreamReader isr = new InputStreamReader(is);
-	BufferedReader br     = new BufferedReader(isr);
-	// get a printwriter to write to socket
-	OutputStream os       = sockTalk.getOutputStream();
-	PrintWriter pw        = new PrintWriter(os);
-	
-	
-	System.out.println("[Server] Waiting for Input");
-	pw.println("!start!");
-	pw.flush();
-	//wait for the input
-	String sIn = br.readLine();
-	while (!sIn.equals("!finish!")){
-	    System.out.println("[Server] received Input \""+sIn+"\"");
-	    StringBuffer outPut = new StringBuffer();
-	    outPut = main.lookUp(outPut, sIn);
-	    System.out.println("[Server] sending Output \n");
-	    if (debugMode){
-		System.out.println("[Server] Output:\n"+outPut);}
-	  pw.println(outPut);
-	  pw.println("!finish!");
-	  pw.flush();
-	  System.out.println("[Server] waiting for Input");
-	  sIn = br.readLine();
-      }
-      System.out.println("[Server] received Input \"finish!\"");
-      // finished
-      System.out.println("[Server] terminating");
-      sockTalk.close();
-      sockServ.close();
-
+	 // wait for connection request
+	 System.out.println("[Server] waiting for connection on Port "+iPort);
+	 Socket sockTalk = sockServ.accept();
+	 System.out.println("[Server] have connection");
+	 
+	 // get a buffered Reader to read from socket
+	 InputStream is        = sockTalk.getInputStream();
+	 InputStreamReader isr = new InputStreamReader(is);
+	 BufferedReader br     = new BufferedReader(isr);
+	 // get a printwriter to write to socket
+	 OutputStream os       = sockTalk.getOutputStream();
+	 PrintWriter pw        = new PrintWriter(os);
+	 
+	 //send ready-signal to client
+	 System.out.println("[Server] Waiting for Input");
+	 pw.println("!start!");
+	 pw.flush();
+	 //wait for the input
+	 String sIn = br.readLine();
+	 while (!sIn.equals("!finish!")){
+	     System.out.println("[Server] received Input \""+sIn+"\"");
+	     //process the output with XDGMain and send result to client
+	     StringBuffer outPut = new StringBuffer();
+	     outPut = main.lookUp(outPut, sIn);
+	     System.out.println("[Server] sending Output \n");
+	     if (debugMode){
+		 System.out.println("[Server] Output:\n"+outPut);}
+	     pw.println(outPut);
+	     pw.println("!finish!");
+	     pw.flush();
+	     System.out.println("[Server] waiting for Input");
+	     sIn = br.readLine();
+	 }
+	 //terminate, if the client sends "!finish!"
+	 System.out.println("[Server] received Input \"finish!\"");
+	 // finished
+	 System.out.println("[Server] terminating");
+	 sockTalk.close();
+	 sockServ.close();
+	 
     } catch (IOException ioe) {
       System.out.println("Exception:"+ioe.getMessage());
     } catch (NumberFormatException nfe) {

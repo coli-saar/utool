@@ -3,6 +3,7 @@ import java.util.*;
 
 public final class InnerNode extends Node {
     
+    //die Kinder
     private List<Node> children;
 
     public InnerNode(String cat, String index, Node mother) {
