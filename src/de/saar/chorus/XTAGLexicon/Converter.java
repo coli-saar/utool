@@ -18,7 +18,9 @@ public class Converter {
     private List<XDGEntry> results;
    
 
-
+    /**
+     * Initialize all global variables
+     */
     public Converter (){
 	addresses = new TreeSet<String>(new AddressComparator());
 	labels = new HashSet<String>();
@@ -28,8 +30,11 @@ public class Converter {
 	counter = 1;
     }
 
-
-
+    /**
+     * Read the information in the given 
+     * set of trees into the global variables
+     * @param treeSet the tree set
+     */
     public void convert(Set<Node> treeSet){
 	for (Node node : treeSet){
 	    XDGEntry newEntry = new XDGEntry(counter);
@@ -54,8 +59,16 @@ public class Converter {
 	this.updateInLp();
     }
 	
-
-
+    /**
+     * collect and store relevant information from a
+     * given node, continue in this node's children,
+     * if it has some
+     * @param node the node
+     * @param entry the XDG-entry for the tree to 
+     * which the node belongs
+     * @param address the address of the node
+     * @param isRoot true, if the node is a root
+     */ 
     public void traverseTree(Node node, 
 			     XDGEntry entry, 
 			     String address,
@@ -155,7 +168,9 @@ public class Converter {
 	}
     }
     
-
+    /**
+     * update the inLp-lists of all entries in results
+     */
     public void updateInLp(){
 	HashSet<String> mAds = new HashSet<String>();
 	HashSet<String> lAds = new HashSet<String>();
@@ -176,6 +191,11 @@ public class Converter {
 		else entry.inLp = rAds;}}
     }
 
+    /**
+     * print the collected information 
+     * and the entries in XDG-Grammar-style
+     * @param sb the StringBuffer to print into
+     */
     public void printXDG(StringBuffer sb){
 	XDGWriter writer = new XDGWriter();
 	writer.printHeader(sb, addresses, labels);
@@ -184,10 +204,10 @@ public class Converter {
 	writer.printEnd(sb);
     }
 
-
-   	       
-		
-
+    /**
+     * test-print of the results
+     * @param string the StringBuffer to print into
+     */
     public void testPrint (StringBuffer string){
 	for (XDGEntry entry : results){
 	    string.append("<entry num=\""+entry.number+"\">\n");
