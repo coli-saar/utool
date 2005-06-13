@@ -41,10 +41,10 @@ public class XDGMain {
 	sentence[0] = s[1];
 	boolean filterAll = false;
 	boolean filterCat = false;
-	if (!s[0].equals("*")){
-	    if (s[0].equals("filter")){
+	if (!s[0].equals("none")){
+	    if (s[0].equals("all")){
 		filterAll = true;}
-	    else {filterCat = false;}
+	    else {filterCat = true;}
 	}
 	Set<Node> treeSet = new HashSet<Node>();
 	try{
