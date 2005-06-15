@@ -39,6 +39,7 @@ public abstract class Node {
     /**
      * tests, if the node contains an empty TerminalNode
      * (only overwritten in TerminalNode and InnerNode)
+     * @return true, if the node contains an empty Terminal
      */
     public boolean containsEmpty() {
 	return false;
@@ -49,6 +50,8 @@ public abstract class Node {
      * and the cat of the mother is equal to a given cat
      * (only overwritten in TerminalNode and InnerNode)
      * @param mothercat the cat of the mother
+     * @return true, if the node contains an empty Terminal
+     * and the cat of the mother equals mothercat
      */
     public boolean containsEmpty(String mothercat) {
 	return false;
@@ -106,6 +109,7 @@ public abstract class Node {
     /**
      * tests, if the node is a left-aux-tree
      * (only overwritten in InnerNode)
+     * @return true, if the node is a left-aux-tree
      */
     public boolean isLeftAux (){
 	return false;}
@@ -113,6 +117,7 @@ public abstract class Node {
     /**
      * tests, if the node is a right-aux-tree
      * (only overwritten in InnerNode)
+     * @return true, if the node is a right-aux-tree
      */
     public boolean isRightAux () {
 	return false;}
@@ -157,10 +162,6 @@ public abstract class Node {
      */
     public void printXDGInBuffer(StringBuffer result, String distance) {}
 
-    /**
-     * print node to the command-line xml-style
-     */
-    public abstract void printXML();
     
      /**
      * print the node in a StringBuffer xml-style

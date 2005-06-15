@@ -13,10 +13,12 @@ public abstract class LeafNode extends Node {
 	super(cat, index);
     }
 
+    //senseless in LeafNodes
     public void addChild(Node node) {
 	throw new Error("oops");
     } 
 
+    //senseless in LeafNodes
     public List<Node> getChildren(){
 	throw new Error ("oops");
     }

@@ -37,18 +37,17 @@ public class XDGMain {
      */
     public StringBuffer lookUp(StringBuffer result, String lookUp){
 	String[] sentence = lookUp.split(" ");
-	String[] s = sentence[0].split("_");
-	sentence[0] = s[1];
 	boolean filterAll = false;
 	boolean filterCat = false;
-	if (!s[0].equals("none")){
-	    if (s[0].equals("all")){
+	if (!sentence[0].equals("none")){
+	    if (sentence[0].equals("all")){
 		filterAll = true;}
 	    else {filterCat = true;}
 	}
 	Set<Node> treeSet = new HashSet<Node>();
 	try{
-	    for (String word : sentence){
+	    for (int i = 1; i<sentence.length;i++){
+		String word = sentence[i];
 		for (Node node : lexicon.lookup(word)) {
 		    if (filterAll){
 			if (! node.containsEmpty()) {
@@ -56,7 +55,7 @@ public class XDGMain {
 		    }
 		    else {
 			if (filterCat){
-			    if (! node.containsEmpty(s[0])) {
+			    if (! node.containsEmpty(sentence[0])) {
 				treeSet.add(node);}
 			}
 			else {treeSet.add(node);}

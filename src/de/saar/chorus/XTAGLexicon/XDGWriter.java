@@ -345,61 +345,61 @@ public class XDGWriter {
     }
 	
     public void printEnd(StringBuffer sb){
-	sb.append("  <entry>"+
-"	 <classConj>"+
-"	     <classDimension idref=\"id\">"+
-"		 <record>"+
-"		     <feature data=\"in\">"+
-"		         <set>"+
-"			  </set>"+
-"		     </feature>"+
-"		     <feature data=\"out\">"+
-"			<set>"+
-"                           <constantCard data=\"S\" card=\"one\"/>"+
-"		        </set>"+
-"		     </feature>"+
-"		 </record>"+
-"	     </classDimension>"+
-"	     <classDimension idref=\"lp\">"+
-"		 <record>"+
-"		     <feature data=\"in\">"+
-" 	  	        <set>"+
-"                     </set>"+
-"		    </feature>"+
-"		     <feature data=\"out\">"+
-"			 <set>"+
-"	   	               <constantCard data=\"M.1\" card=\"one\"/>"+
-"			      </set>"+
-"		     </feature>"+
-"		     <feature data=\"on\">"+
-"			 <set>"+
-"       	        <constant data=\"M.2\"/>"+
-"       	         </set>"+
-"		     </feature>"+
-"		 </record>"+
-"	     </classDimension>"+
-"	     <classDimension idref=\"idlp\">"+
-"		 <record>"+
-"		     <feature data=\"link\">"+
-"			 <record>"+
-"                            <feature data=\"M.1\">"+
-"                                <set>"+
-"                                    <constant data=\"S\"/>"+
-"                                </set>"+
-"                            </feature>"+
-"			 </record>"+
-"		     </feature>"+
-"		 </record>"+
-"	     </classDimension>"+
-"	     <classDimension idref=\"lex\">"+
-"		 <record>"+
-"		     <feature data=\"word\">"+
-"                       <constant data=\".\"/>"+
-" 		     </feature>"+
-"		 </record>"+
-"	     </classDimension>"+
-" 	 </classConj>"+
-"     </entry>"+
-"  </grammar>");}
+	sb.append("  <entry>\n"+
+"	 <classConj>\n"+
+"	     <classDimension idref=\"id\">\n"+
+"		 <record>\n"+
+"		     <feature data=\"in\">\n"+
+"		         <set>\n"+
+"			  </set>\n"+
+"		     </feature>\n"+
+"		     <feature data=\"out\">\n"+
+"			<set>\n"+
+"                           <constantCard data=\"S\" card=\"one\"/>\n"+
+"		        </set>\n"+
+"		     </feature>\n"+
+"		 </record>\n"+
+"	     </classDimension>\n"+
+"	     <classDimension idref=\"lp\">\n"+
+"		 <record>\n"+
+"		     <feature data=\"in\">\n"+
+" 	  	        <set>\n"+
+"                     </set>\n"+
+"		    </feature>\n"+
+"		     <feature data=\"out\">\n"+
+"			 <set>\n"+
+"	   	               <constantCard data=\"M.1\" card=\"one\"/>\n"+
+"			      </set>\n"+
+"		     </feature>\n"+
+"		     <feature data=\"on\">\n"+
+"			 <set>\n"+
+"       	        <constant data=\"M.2\"/>\n"+
+"       	         </set>\n"+
+"		     </feature>\n"+
+"		 </record>\n"+
+"	     </classDimension>\n"+
+"	     <classDimension idref=\"idlp\">\n"+
+"		 <record>\n"+
+"		     <feature data=\"link\">\n"+
+"			 <record>\n"+
+"                            <feature data=\"M.1\">\n"+
+"                                <set>\n"+
+"                                    <constant data=\"S\"/>\n"+
+"                                </set>\n"+
+"                            </feature>\n"+
+"			 </record>\n"+
+"		     </feature>\n"+
+"		 </record>\n"+
+"	     </classDimension>\n"+
+"	     <classDimension idref=\"lex\">\n"+
+"		 <record>\n"+
+"		     <feature data=\"word\">\n"+
+"                       <constant data=\".\"/>\n"+
+" 		     </feature>\n"+
+"		 </record>\n"+
+"	     </classDimension>\n"+
+" 	 </classConj>\n"+
+"     </entry>\n"+
+"  </grammar>\n");}
 
 }
