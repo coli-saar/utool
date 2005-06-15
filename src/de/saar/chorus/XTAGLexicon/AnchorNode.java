@@ -11,13 +11,23 @@ public final class AnchorNode extends LeafNode {
 	super(cat, index);
     }
 
-
+    /**
+     * determines, wether this Node equals an Object 
+     * @param o the Object
+     * @return true, if this Node and the Object are the same
+     */
     public boolean equals(Object o){
 	if (o instanceof AnchorNode){
 	    return ((AnchorNode)o).getCat().equals(cat);}
 	else { return false;}
     }
 
+    /**
+     * replace this AnchorNode by its anchor 
+     * @param anchors the anchors
+     * @param lookUp the word the user is searching for
+     * @return the replacement
+     */ 
     public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 	Node newAnchorNode = new InnerNode(this.cat, this.index);
 	TerminalNode newTerminalNode = new TerminalNode(cat, null);
@@ -38,39 +48,33 @@ public final class AnchorNode extends LeafNode {
 	return newAnchorNode;
     }
 
-
-    public void printXML() {
-	throw new Error("Not implemented");
-    }
-
- public void printXMLInBuffer(StringBuffer result, String distance) {
+    /**
+     * print the node in a StringBuffer xml-style
+     * @param result the StringBuffer to print into
+     * @param distance an argument used for the proper indention
+     */
+    public void printXMLInBuffer(StringBuffer result, String distance) {
 	result.append(distance+"<anchor cat=\""+cat+"\" word=\""+index+"\"/>");
     }
 
+    /**
+     * print node to the command-line lisp-style
+     */
     public void printLisp() {
 	System.out.print("(");
 	System.out.print(cat);
 	System.out.print(" ");
 	System.out.print(index+")");
     }
-
- public void printLispInBuffer(StringBuffer result) {
+    /**
+     * print the node in a StringBuffer lisp-style
+     * @param result the StringBuffer to print into
+     */
+    public void printLispInBuffer(StringBuffer result) {
 	result.append("(");
 	result.append(cat);
 	result.append(" ");
 	result.append(index+")");
-    }
-
-    public String getCat (){
-	return cat;
-    }
-
-    public void setWord(String newIndex){
-	index = newIndex;
-    }
-
- public List<Node> getChildren(){
-	throw new Error ("oops");
     }
 
 }

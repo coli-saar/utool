@@ -99,7 +99,7 @@ private static String helpMessage = "Parameters of the Client:\n-p, --port <arg>
 		if (withPrompt){
 		    System.out.println("[Client] Sending message \""
 				       +userIn+"\"");}
-		pw.println(filter+"_"+userIn);
+		pw.println(filter+" "+userIn);
 		pw.flush();
 		if (withPrompt){
 		    System.out.println("[Client] received Input: ");}
