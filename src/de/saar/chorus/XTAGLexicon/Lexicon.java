@@ -21,47 +21,75 @@ public class Lexicon {
 	this.families = new HashMap<String, Set<String>>();
     }
 
+    /**
+     * look up a word 
+     * @param word the word
+     * @return a set of trees for that word
+     */
     public Set<Node> lookup(String word) 
 	throws Exception
     {
+	//collect the trees in this set
 	Set<Node> result = new HashSet<Node>();
 	
 	try{
+	    //try to find the word in morphSet
 	    Set<MorphInfo> morphSet = morph.get(word);
+	    //if word not in morphSet, return
 	    if (morphSet == null){
 		throw new Exception("Not in Lexicon : "+word);}
-	    
+	    //for all the MorphInfos of the word
 	    for (MorphInfo it : morphSet){
+		//get the root and try to find it in syntSet
 		String entry = it.getRoot();
 		Set<SyntInfo> syntSet = syntax.get(entry);
+		//if root not in syntSet, return
 		if (syntSet == null){
 		    throw new Exception("Not in Syntax : "+word);}
+		//for all SyntInfos of the word
 		for (SyntInfo nextSynt : syntSet){
+		    //get the Trees, Families and Anchors
 		    Set<String> syntTrees = nextSynt.getTrees();
 		    Set<String> syntFamilies = nextSynt.getFamilies();
 		    List<Anchor> syntAnchors = nextSynt.getAnchors();
 		    if (syntTrees != null){
+			//for all trees
 			for (String it3 : syntTrees){
+			    //get the root Node
 			    Node nextNode = trees.get(it3);
 			    if (nextNode != null){
+				//copy the tree and replace the anchors
 				Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
+				//add this tree to the result
 				result.add(replacedNode);
 				List<Node> nodes = new ArrayList<Node>();
+				//lexicalize this tree, put the resulting new
+				//trees in nodes
 				replacedNode.lexicalize(nodes, word);
+				//add all trees in nodes to the result
 				result.addAll(nodes);}
 			}
 		    }
 		    if (syntFamilies != null){
+			//for all families
 			for (String it3 : syntFamilies){
+			    //get the trees of the family
 			    Set<String> nextTrees = families.get(it3);
+			    //for all of these trees
 			    for (String it4 : nextTrees){
+				//get the root Node
 				Node nextNode = trees.get(it4);
 				if (nextNode != null){
+				    //copy the tree and replace the anchors
 				    Node replacedNode = 
 					nextNode.copyAndReplace(syntAnchors, word);
+				    //add this tree to the result
 				    result.add(replacedNode);
 				    List<Node> nodes = new ArrayList<Node>();
+				    //lexicalize this tree, put the resulting 
+				    //new trees in nodes
 				    replacedNode.lexicalize(nodes, word);
+				    //add all trees in nodes to the result
 				    result.addAll(nodes);}
 			    }
 			}
@@ -74,6 +102,7 @@ public class Lexicon {
     
 	catch (NullPointerException e){
 	    System.out.println("NullPointerException in Lexikon");}
+	//return the result
     	return result;
     }
 
