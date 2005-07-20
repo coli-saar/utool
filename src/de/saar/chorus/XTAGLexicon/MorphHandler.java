@@ -1,6 +1,7 @@
 /*
  * MorphHandler.java
  */
+package de.saar.chorus.XTAGLexicon;
 
 import java.util.*;
 import java.io.*;

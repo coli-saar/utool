@@ -2,6 +2,8 @@
  * MorphInfo.java
  */
 
+package de.saar.chorus.XTAGLexicon;
+
 public class MorphInfo {
 
     private String root;

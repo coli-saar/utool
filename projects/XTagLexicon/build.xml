@@ -1,40 +1,103 @@
 <?xml version="1.0"?> 
-<project name="xtag" default="compile" basedir="."> 
+<project name="xtag" default="xtag" basedir="."> 
+	<property name="build" location="../../build" />
+	<property name="source" location="../../src" />
+	<property name="packages" location="../../packages" />
+	<property name="doc.api" location="../../docs/api" />
 
-     <property name="src" value="../../src/de/saar/chorus/XTAGLexicon"/> 
-     <property name="build" value="build"/>
-     <property name="packages" location="../../packages" />
-     <property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar"/>
+	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
+	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
 
+	<property name="build.classes" location="${build}/classes" />
+	<property name="build.lib" location="${build}/lib" />
+	<property name="build.src" location="${build}/src" />
+
+	<property name="coli" value="de/saar" />
+	<property name="chorus" value="de/saar/chorus" />
+
+	<property name="xtag.jar" value="${build.lib}/Xtag.jar" />
+	<property name="xtag.jar.classes" value="${chorus}/XTAGLexicon/*,${coli}/getopt/*" />
+	
+
+	
+	<!-- Jars -->
+	<target name="xtag" depends="init,getopt.unpacked">
+		<javac srcdir="${source}"
+               destdir="${build.classes}"
+               debug="true"
+               includes="${chorus}/XTAGLexicon/*.java,${coli}/getopt/*.java"
+               excludes="**/Test*.java"
+               source="1.5">
+			<classpath>
+				<pathelement path="${getopt.jar}" />
+			</classpath>
+		</javac>
+
+		<jar jarfile="${xtag.jar}"
+             basedir="${build.classes}"
+             includes="${xtag.jar.classes},${getopt.unpacked.classes}">
+		</jar>
+
+	</target>
+	
+	
+	
      <!-- Unpack the Jar file at the path "unpack.jar", unless the
 	       unpacked version is already up to date. Up-to-dateness is
 	       recorded with a timestamp. "unpack.jar.id" is a unique id for
 	       this Jar. -->
 	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
-		<unjar src="${unpack.jar}" dest="${build}" />
-		<touch file="${unpack.jar.id}" />
+		<unjar src="${unpack.jar}" dest="${build.classes}" />
+		<touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
 	</target>
 
 	<target name="check.unpack">
 		<uptodate property="nobuild.unpack"
-		targetfile="${unpack.jar.id}">
+	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
 	</target>
 
-	<target name="getopt.unpacked">
+	<target name="jgraph.unpacked" depends="init">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${jgraph.jar}" />
+			<param name="unpack.jar.id" value="jgraph" />
+		</antcall>
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${jgraphaddons.jar}" />
+			<param name="unpack.jar.id" value="jgraphaddons" />
+		</antcall>
+	</target>
+
+	<target name="getopt.unpacked" depends="init">
 		<antcall target="unpack">
 			<param name="unpack.jar" value="${getopt.jar}" />
 			<param name="unpack.jar.id" value="getopt" />
 		</antcall>
 	</target>
+	
+	
+	
+	
+	<!-- Init -->
 
-     <target name="compile" depends="getopt.unpacked"> 
-          <!-- Compile the java code -->
-          <javac srcdir="${src}" destdir="${build}"> 
-                <classpath>
-		   <pathelement path="${getopt.jar}" />
-		</classpath>
-          </javac>
-     </target>
+		<target name="init">
+			<mkdir dir="${build}" />
+			<mkdir dir="${build.classes}" />
+			<mkdir dir="${build.classes}/timestamps-unpackjar" />
+			<mkdir dir="${build.lib}" />
+			<mkdir dir="${build.src}" />
+
+			<mkdir dir="${reports.tests}" />
+
+			<mkdir dir="${doc.api}" />
+		</target>
+
+		<!-- Delete all compiled files -->
+		<target name="clean">
+			<delete dir="${build.classes}" />
+			<delete dir="${build.lib}" />
+			<delete dir="${build.src}" />
+			<delete dir="${doc.api}" />
+		</target>
 </project>

@@ -1,3 +1,5 @@
+package de.saar.chorus.XTAGLexicon;
+
 import java.util.*;
 
 public class AddressComparator implements Comparator<String>{

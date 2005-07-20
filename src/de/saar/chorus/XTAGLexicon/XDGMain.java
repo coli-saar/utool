@@ -2,6 +2,8 @@
  * Main.java
  */
 
+package de.saar.chorus.XTAGLexicon;
+
 import java.io.File;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -13,6 +15,12 @@ public class XDGMain {
     
     private Lexicon lexicon;
     private Converter converter;
+    
+    private String xmlPath;
+    
+    public XDGMain(String xmlPath) {
+        this.xmlPath = xmlPath;
+    }
 
     /**
      * Reads in the lexicon and saves it in lexicon
@@ -21,10 +29,10 @@ public class XDGMain {
     public void run (){
 	converter = new Converter();
 	lexicon = new Lexicon(new POSScaler());
-	parse("../xml/trees.xml", new TreeHandler(lexicon));
-	parse("../xml/families.xml", new FamilyHandler(lexicon));
-	parse("../xml/morphology.xml", new MorphHandler(lexicon));
-	parse("../xml/syntax.xml", new SyntHandler(lexicon));
+	parse(xmlPath + "/trees.xml", new TreeHandler(lexicon));
+	parse(xmlPath + "/families.xml", new FamilyHandler(lexicon));
+	parse(xmlPath + "/morphology.xml", new MorphHandler(lexicon));
+	parse(xmlPath + "/syntax.xml", new SyntHandler(lexicon));
     }
 
     /**
