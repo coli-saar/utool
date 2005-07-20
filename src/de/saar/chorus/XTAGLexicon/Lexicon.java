@@ -1,6 +1,7 @@
 /*
  * Lexicon.java
  */
+package de.saar.chorus.XTAGLexicon;
 
 import java.util.*;
 

@@ -1,6 +1,7 @@
 /*
  * Main.java
  */
+package de.saar.chorus.XTAGLexicon;
 
 import java.io.File;
 import javax.xml.parsers.SAXParser;

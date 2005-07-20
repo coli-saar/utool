@@ -1,3 +1,5 @@
+package de.saar.chorus.XTAGLexicon;
+
 import java.io.*;
 import java.util.*;
 

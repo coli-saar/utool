@@ -1,5 +1,8 @@
+package de.saar.chorus.XTAGLexicon;
+
 import java.io.*;
 import java.util.*;
+
 
 public final class AnchorNode extends LeafNode {
     

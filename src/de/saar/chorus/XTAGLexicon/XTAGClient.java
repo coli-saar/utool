@@ -1,3 +1,5 @@
+package de.saar.chorus.XTAGLexicon;
+
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.io.InputStream;

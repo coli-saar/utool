@@ -2,6 +2,7 @@
  * Anchor.java
  */
 
+package de.saar.chorus.XTAGLexicon;
 
 public class Anchor {
 

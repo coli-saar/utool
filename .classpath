@@ -2,8 +2,16 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="packages/jgraph.jar"/>
-	<classpathentry kind="lib" path="packages/jgraphaddons.jar"/>
+	<classpathentry sourcepath="C:/Programme/Java/jgraph/src" kind="lib" path="packages/jgraph.jar">
+		<attributes>
+			<attribute value="file:/C:/Programme/Java/jgraph/doc/" name="javadoc_location"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Programme/Java/jgraph/jgraphaddons/src" kind="lib" path="packages/jgraphaddons.jar">
+		<attributes>
+			<attribute value="file:/C:/Programme/Java/jgraph/jgraphaddons/doc/" name="javadoc_location"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="packages/java-getopt-1.0.9.jar"/>
 	<classpathentry kind="lib" path="packages/junit.jar"/>
 	<classpathentry kind="lib" path="packages/EXML.jar"/>
