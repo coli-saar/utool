@@ -21,31 +21,31 @@ public abstract class Node {
     // true only for TerminalNodes bearing
     // a looked up word
     protected boolean isAnchor = false;
-
+    
     public Node(String cat, String index) {
-	this.cat = cat;
-	this.index = index;
-	this.mother = null;
+        this.cat = cat;
+        this.index = index;
+        this.mother = null;
     }
-  
+    
     public Node(String cat, String index, Node mother) {
-	this.cat = cat;
-	this.index = index;
-	this.mother = mother;
-
-	if (mother != null) {
-	    mother.addChild(this);
-	}
+        this.cat = cat;
+        this.index = index;
+        this.mother = mother;
+        
+        if (mother != null) {
+            mother.addChild(this);
+        }
     }
-
-
+    
+    
     /**
      * tests, if the node contains an empty TerminalNode
      * (only overwritten in TerminalNode and InnerNode)
      * @return true, if the node contains an empty Terminal
      */
     public boolean containsEmpty() {
-	return false;
+        return false;
     }
     
     /**
@@ -57,74 +57,74 @@ public abstract class Node {
      * and the cat of the mother equals mothercat
      */
     public boolean containsEmpty(String mothercat) {
-	return false;
+        return false;
     }
     
     /**
      * only overwritten in InnerNode
      */
     public boolean isAdj() {
-	return false; 
+        return false; 
     }
-
+    
     /**
      * only overwritten in TerminalNode
      */
     public boolean isAnchor(){
-	return isAnchor;
+        return isAnchor;
     }
-
+    
     /**
      * tests if the node is a root
      */
     public boolean isRoot() {
-	return mother == null; 
+        return mother == null; 
     }
-
+    
     public void setIsAnchor (boolean ia){
-	isAnchor = ia;
+        isAnchor = ia;
     }
-
+    
     public void setMother (Node node) {
-	mother = node;
+        mother = node;
     }
-
+    
     public Node getMother () {
-	return mother;
+        return mother;
     }
-
+    
     public void setAddress (String add) {
-	address = add;
+        address = add;
     }
-
+    
     public String getAddress () {
-	return address;
+        return address;
     }
-
+    
     public String getCat (){
-	return cat;
+        return cat;
     }
-
+    
     public void setWord(String newIndex){
-	index = newIndex;
+        index = newIndex;
     }
-
+    
     /**
      * tests, if the node is a left-aux-tree
      * (only overwritten in InnerNode)
      * @return true, if the node is a left-aux-tree
      */
     public boolean isLeftAux (){
-	return false;}
-
+        return false;}
+    
     /**
      * tests, if the node is a right-aux-tree
      * (only overwritten in InnerNode)
      * @return true, if the node is a right-aux-tree
      */
     public boolean isRightAux () {
-	return false;}
-
+        return false;}
+    
     /**
      * replace a child by another child
      * (only overwritten in InnerNode)
@@ -132,14 +132,14 @@ public abstract class Node {
      * @param newChild the new child
      */
     public void replaceChild(Node child,Node newChild){}
-
+    
     /**
      * get the children of the node
      * (only useful in InnerNode)
      * @return the children
      */
     public abstract List<Node> getChildren ();
-
+    
     /**
      * copy the node and replace all AnchorNodes by their
      * anchors 
@@ -148,7 +148,7 @@ public abstract class Node {
      * @return the copied node
      */ 
     public abstract Node copyAndReplace(List<Anchor> anchors, String lookUp);
-
+    
     /**
      * lexicalize the trees
      * (only overwritten in InnerNode)
@@ -164,25 +164,25 @@ public abstract class Node {
      * @param distance an argument used for the proper indention
      */
     public void printXDGInBuffer(StringBuffer result, String distance) {}
-
     
-     /**
+    
+    /**
      * print the node in a StringBuffer xml-style
      * @param result the StringBuffer to print into
      * @param distance an argument used for the proper indention
      */
     public abstract void printXMLInBuffer(StringBuffer result, String distance);
-     /**
+    /**
      * print node to the command-line lisp-style
      */
     public abstract void printLisp();
-
+    
     /**
      * print the node in a StringBuffer lisp-style
      * @param result the StringBuffer to print into
      */
     public abstract void printLispInBuffer(StringBuffer result);
-
+    
     /**
      * adds a child to the node
      * @param node the child
