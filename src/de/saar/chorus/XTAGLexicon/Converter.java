@@ -38,7 +38,7 @@ public class Converter {
      * @param treeSet the tree set
      */
     public void convert(Collection<Node> treeSet){
-        for (Node node : treeSet){
+        for (Node node : treeSet) {
             XDGEntry newEntry = new XDGEntry(counter);
             nums2trees.put(new Integer(counter), node);
             String nodeCat = node.getCat();
@@ -56,7 +56,8 @@ public class Converter {
             newEntry.auxDirection = aux;
             this.traverseTree(node, newEntry, ".", true);
             results.add(newEntry);
-            counter++;}
+            counter++;
+        }
         addresses.add("M.");
         this.updateInLp();
     }
@@ -239,6 +240,10 @@ public class Converter {
             nums2trees.get(entry.number).printXMLInBuffer(string," ");
             string.append("\n");
         }
+    }
+
+    public List<XDGEntry> getXdgEntries() {
+        return results;
     }
     
     
