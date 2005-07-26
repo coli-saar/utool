@@ -9,14 +9,18 @@ package de.saar.chorus.poetry.stress;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 public class CmuDict {
     private Map<String,List<WordPronunciation>> words;
@@ -34,7 +38,13 @@ public class CmuDict {
         
         try {
             File f = new File(filename);
-            BufferedReader r = new BufferedReader(new FileReader(f));
+            InputStream fr = new FileInputStream(f);
+            
+            if( filename.endsWith(".gz")) {
+            	fr = new GZIPInputStream(fr);
+            }
+            
+            BufferedReader r = new BufferedReader(new InputStreamReader(fr));
             
             Pattern linePattern = Pattern.compile("(\\S+)\\s+(.*)");
             Pattern bracketPattern = Pattern.compile("([^\\(]+).*");
@@ -44,7 +54,7 @@ public class CmuDict {
             do {
                 line = r.readLine();
                 if( line != null ) {
-                    if( verbose && (lineNo % 10 == 0) ) {
+                    if( verbose && (lineNo % 1000 == 0) ) {
                         System.err.print(".");
                     }
                     lineNo ++;

@@ -34,7 +34,7 @@
 
 	<!-- Jars -->
 	<target name="leonardo" depends="init,jgraph.unpacked,getopt.unpacked">
-		<javac srcdir="${source}"
+	     <javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
                includes="${chorus}/leonardo/*.java,${coli}/getopt/*.java"
