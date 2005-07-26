@@ -39,27 +39,34 @@ public class Converter {
      */
     public void convert(Collection<Node> treeSet){
         for (Node node : treeSet) {
-            XDGEntry newEntry = new XDGEntry(counter);
-            nums2trees.put(new Integer(counter), node);
-            String nodeCat = node.getCat();
-            String aux;
-            if (node.isLeftAux()){
-                aux = "L";
-            }
-            else{
-                if (node.isRightAux()){
-                    aux = "R";}
-                else {aux = "M";		
-                newEntry.passedFoot = true;}
-            }
-            newEntry.rootCat = nodeCat; 
-            newEntry.auxDirection = aux;
-            this.traverseTree(node, newEntry, ".", true);
-            results.add(newEntry);
-            counter++;
+        	convert(node);
         }
         addresses.add("M.");
-        this.updateInLp();
+        updateInLp();
+    }
+    
+    public void convert(Node node) {
+        XDGEntry newEntry = new XDGEntry(counter);
+        nums2trees.put(new Integer(counter), node);
+        String nodeCat = node.getCat();
+        String aux;
+        if (node.isLeftAux()){
+            aux = "L";
+        }
+        else{
+            if (node.isRightAux()){
+                aux = "R";}
+            else {aux = "M";		
+            newEntry.passedFoot = true;}
+        }
+        newEntry.rootCat = nodeCat; 
+        newEntry.auxDirection = aux;
+        traverseTree(node, newEntry, ".", true);
+        results.add(newEntry);
+        counter++;    
+        
+        // TODO: Do we need the addresses.add() and updateInLp()
+        // from convert(Collection) here, too?
     }
     
     /**
@@ -202,9 +209,14 @@ public class Converter {
     public void printXDG(StringBuffer sb){
         XDGWriter writer = new XDGWriter();
         writer.printHeader(sb, addresses, labels);
-        for (XDGEntry entry : results){
-            writer.printEntry(sb,entry, nums2trees.get(entry.number));}
+        for (XDGEntry entry : results) {
+            writer.printEntry(sb,entry, getNodeForEntry(entry));
+        }
         writer.printEnd(sb);
+    }
+    
+    public Node getNodeForEntry(XDGEntry entry) {
+    	return nums2trees.get(entry.number);
     }
     
     /**
@@ -245,6 +257,14 @@ public class Converter {
     public List<XDGEntry> getXdgEntries() {
         return results;
     }
+
+	public Collection<String> getAddresses() {
+		return addresses;
+	}
+
+	public Collection<String> getLabels() {
+		return labels;
+	}
     
     
 }

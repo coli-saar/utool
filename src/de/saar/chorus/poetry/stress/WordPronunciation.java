@@ -38,6 +38,10 @@ public class WordPronunciation {
         return ret;
     }
     
+    public int numSyllables() {
+    	return getBooleanStressPattern().size();
+    }
+    
     public List<Boolean> getBooleanStressPattern() {
         List<Boolean> ret = new ArrayList<Boolean>();
         

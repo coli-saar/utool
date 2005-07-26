@@ -28,6 +28,24 @@ public class StressPattern {
         }
     }
     
+    public Set<Integer> pronFitsAtPositions(WordPronunciation pron) {
+    	Set<Integer> ret = new HashSet<Integer>();
+    	
+    	if( pron == null ) {
+    		return null;
+    	} else {
+            List<Integer> wordStressPattern = pron.getStressPattern();
+            
+            for( int i = 0; i < pattern.size() - wordStressPattern.size() + 1; i++ ) {
+                if( patternsMatch(wordStressPattern, i) ) {
+                    ret.add(new Integer(i));
+                }
+            }    		
+    	}
+    	
+    	return ret;
+    }
+    
     public Set<Integer> wordFitsAtPositions(List<WordPronunciation> prons) {
         Set<Integer> ret = new HashSet<Integer>();
         
@@ -35,13 +53,7 @@ public class StressPattern {
             return ret;
         } else {
             for( WordPronunciation pron : prons ) {
-                List<Integer> wordStressPattern = pron.getStressPattern();
-                
-                for( int i = 0; i < pattern.size() - wordStressPattern.size() + 1; i++ ) {
-                    if( patternsMatch(wordStressPattern, i) ) {
-                        ret.add(new Integer(i));
-                    }
-                }
+            	ret.addAll(pronFitsAtPositions(pron));
             }
         }
         
@@ -83,5 +95,9 @@ public class StressPattern {
         }
         
         return b.toString();
+    }
+    
+    public int size() {
+    	return pattern.size();
     }
 }

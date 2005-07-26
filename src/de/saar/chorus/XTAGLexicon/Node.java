@@ -172,6 +172,9 @@ public abstract class Node {
      * @param distance an argument used for the proper indention
      */
     public abstract void printXMLInBuffer(StringBuffer result, String distance);
+    
+    public abstract void printXML(Writer result, String distance) throws IOException;
+    
     /**
      * print node to the command-line lisp-style
      */
@@ -188,4 +191,12 @@ public abstract class Node {
      * @param node the child
      */
     public abstract void addChild(Node node);
+    
+    /**
+     * returns the anchor of this tree (or null if it doesn't have one)
+     * @return
+     */
+    public abstract String getAnchor();
+    
+    public abstract String toString();
 }

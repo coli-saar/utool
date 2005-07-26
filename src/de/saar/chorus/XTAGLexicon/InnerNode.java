@@ -4,303 +4,336 @@ import java.io.*;
 import java.util.*;
 
 public final class InnerNode extends Node {
-    
-    //the children
-    private List<Node> children;
-
-
-    public InnerNode(String cat, String index, Node mother) {
-	super(cat, index, mother);
-	children = new ArrayList<Node>();
-	isAdj = true;
-    }
-
-    public InnerNode(String cat, String index) {
-	super(cat, index);
-	children = new ArrayList<Node>();
-	isAdj = true;
-    }
-
-    /** 
-     * Tests, if the node contains an empty TerminalNode
-     * @return true, if one of the children is an empty Terminal
-     */
-    public boolean containsEmpty() {
-	for (Node it : children) {
-	    if (it.containsEmpty())
-		return true;
+	
+	//the children
+	private List<Node> children;
+	
+	
+	public InnerNode(String cat, String index, Node mother) {
+		super(cat, index, mother);
+		children = new ArrayList<Node>();
+		isAdj = true;
 	}
-	return false;
-    }
-
-     
-    /**
-     * tests, if the node contains an empty TerminalNode
-     * and the cat of the mother is equal to a given cat
-     * @param mothercat the cat of the mother
-     * @return true, if one of the children is an empty Terminal
-     * and the cat of the mother equals mothercat
-     */
-    public boolean containsEmpty(String mothercat) {
-	for (Node it : children) {
-	    if (it.containsEmpty(mothercat))
-		return true;
+	
+	public InnerNode(String cat, String index) {
+		super(cat, index);
+		children = new ArrayList<Node>();
+		isAdj = true;
 	}
-	return false;
-    }
-
-    /**
-     * get the hashCode of the node
-     * @return the hashCode
-     */
-    public int hashCode(){
-	int hashCode = cat.hashCode();
-	for (Node it : children){
-	    hashCode = hashCode + it.hashCode();}
-	return hashCode;
-    }
-
-
-    public boolean isAdj() {
-	return isAdj; 
-    }
-
-    /**
-     * tests, if the node is a right-aux-tree
-     * @return true, if the node is a right-aux-tree
-     */
-    public boolean isRightAux (){
-	//walk through the children from left to right
-	for (Node leftChild : children){
-	    //if you encounter a non-empty child
-	    if (!this.childIsEmpty(leftChild)){
-		//if this is a foot, return true
-		if (leftChild instanceof FootNode){
-		    return true;}
-		//else go in recursion
-		else {return leftChild.isRightAux();}
-	    }
+	
+	/** 
+	 * Tests, if the node contains an empty TerminalNode
+	 * @return true, if one of the children is an empty Terminal
+	 */
+	public boolean containsEmpty() {
+		for (Node it : children) {
+			if (it.containsEmpty())
+				return true;
+		}
+		return false;
 	}
-	return false;
-    }
-    
-    /**
-     * tests, if the given Node is an empty Terminal
-     * @param child the child node
-     * @return true, if the child is an empty Terminal
-     */
-    public boolean childIsEmpty (Node child){
-	return (child instanceof TerminalNode &&
-		!child.isAnchor());
-    }
-
-    /**
-     * tests, if the node is a leftt-aux-tree
-     * @return true, if the node is a leftt-aux-tree
-     */
-    public boolean isLeftAux (){
-	//walk through the children from right to left
-	for (int i=(children.size()-1); i>=0; i--){
-	    Node rightChild = children.get(i);
-	    //if you encounter a non-empty child
-	    if (!this.childIsEmpty(rightChild)){
-		//if this is a foot, return true
-		if (rightChild instanceof FootNode){
-		    return true;}
-		//else go in recursion
-		else {return rightChild.isLeftAux();}
-	    }
+	
+	
+	/**
+	 * tests, if the node contains an empty TerminalNode
+	 * and the cat of the mother is equal to a given cat
+	 * @param mothercat the cat of the mother
+	 * @return true, if one of the children is an empty Terminal
+	 * and the cat of the mother equals mothercat
+	 */
+	public boolean containsEmpty(String mothercat) {
+		for (Node it : children) {
+			if (it.containsEmpty(mothercat))
+				return true;
+		}
+		return false;
 	}
-	return false;
-    }
-
-    /**
-     * determines, wether this Node equals an Object 
-     * @param o the Object
-     * @return true, if this Node and the Object are the same
-     */
-    public boolean equals(Object o){
-	//o has to be an InnerNode
-	if (o instanceof InnerNode){
-	    //o's cat has to be equals to this Node's cat
-	    if (((InnerNode)o).getCat().equals(cat)){
-		List<Node> compareChildren = ((InnerNode)o).getChildren();
-		//number of o's children has to be the same as this Node's children
-		if (compareChildren.size() == children.size()){
-		    //all children of o have to be the same as this Node's children
-		    for (int i=0; i>children.size(); i++){
-			if (!children.get(i).equals(compareChildren.get(i))){
-			    return false;
+	
+	/**
+	 * get the hashCode of the node
+	 * @return the hashCode
+	 */
+	public int hashCode(){
+		int hashCode = cat.hashCode();
+		for (Node it : children){
+			hashCode = hashCode + it.hashCode();}
+		return hashCode;
+	}
+	
+	
+	public boolean isAdj() {
+		return isAdj; 
+	}
+	
+	/**
+	 * tests, if the node is a right-aux-tree
+	 * @return true, if the node is a right-aux-tree
+	 */
+	public boolean isRightAux (){
+		//walk through the children from left to right
+		for (Node leftChild : children){
+			//if you encounter a non-empty child
+			if (!this.childIsEmpty(leftChild)){
+				//if this is a foot, return true
+				if (leftChild instanceof FootNode){
+					return true;}
+				//else go in recursion
+				else {return leftChild.isRightAux();}
 			}
-		    }
-		    return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * tests, if the given Node is an empty Terminal
+	 * @param child the child node
+	 * @return true, if the child is an empty Terminal
+	 */
+	public boolean childIsEmpty (Node child){
+		return (child instanceof TerminalNode &&
+				!child.isAnchor());
+	}
+	
+	/**
+	 * tests, if the node is a leftt-aux-tree
+	 * @return true, if the node is a leftt-aux-tree
+	 */
+	public boolean isLeftAux (){
+		//walk through the children from right to left
+		for (int i=(children.size()-1); i>=0; i--){
+			Node rightChild = children.get(i);
+			//if you encounter a non-empty child
+			if (!this.childIsEmpty(rightChild)){
+				//if this is a foot, return true
+				if (rightChild instanceof FootNode){
+					return true;}
+				//else go in recursion
+				else {return rightChild.isLeftAux();}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * determines, wether this Node equals an Object 
+	 * @param o the Object
+	 * @return true, if this Node and the Object are the same
+	 */
+	public boolean equals(Object o){
+		//o has to be an InnerNode
+		if (o instanceof InnerNode){
+			//o's cat has to be equals to this Node's cat
+			if (((InnerNode)o).getCat().equals(cat)){
+				List<Node> compareChildren = ((InnerNode)o).getChildren();
+				//number of o's children has to be the same as this Node's children
+				if (compareChildren.size() == children.size()){
+					//all children of o have to be the same as this Node's children
+					for (int i=0; i>children.size(); i++){
+						if (!children.get(i).equals(compareChildren.get(i))){
+							return false;
+						}
+					}
+					return true;
+				}
+				else 
+				{return false;}
+			}
+			else 
+			{return false;}
 		}
 		else 
-		    {return false;}
-	    }
-	    else 
 		{return false;}
 	}
-	else 
-	    {return false;}
-    }
-   
-    /**
-     * copy the node and replace all AnchorNodes by their
-     * anchors 
-     * @param anchors the anchors
-     * @param lookUp the word the user is searching for
-     * @return the copied node
-     */ 
-    public Node copyAndReplace(List<Anchor> anchors, String lookUp){
-	Node copiedNode = new InnerNode(cat, index);
-	for (Node it : children){
-	    Node copiedChild = it.copyAndReplace(anchors, lookUp);
-	    copiedNode.addChild(copiedChild);}
-	return copiedNode;
-    }
-
-
-
-    /**
-     * tests, if the given Node is not an empty Terminal
-     * and not a Terminal bearing a word the user looked up
-     * @param onlyChild the Node
-     * @param childCat the cat of the Node
-     * @param lookUp the word that the user looked up
-     * @return true, if the given Node is not an empty Terminal
-     * and not bearing a word the user looked up
-     */
-    public boolean terminalMustBeReplaced(Node onlyChild, 
-					  String childCat, 
-					  String lookUp){
-	return (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
-	       && !childCat.equals("PRO") && !childCat.equals(null)
-		&& !childCat.equals(""));
-    }
-
-  /**
-     * lexicalize the trees
-     * @param nodes the initially empty set of trees, that
-     * are generated by this method
-     * @param lookUp the word the user is searching for
-     */
-    public void lexicalize (List<Node> nodes, String lookUp){
-	//if this Node has only one child and this is not an InnerNode
-	if (children.size() == 1 && !(children.get(0) instanceof InnerNode)){
-	    Node onlyChild = children.get(0);
-	    String childCat = onlyChild.getCat();
-	    //if the child is a Terminal and must be replaced, replace it
-	    if (this.terminalMustBeReplaced(onlyChild, childCat, lookUp)){
-		mother.replaceChild(this, 
-				    new SubstitutionNode(cat+"/"+childCat, index));
-		Node newMother = new InnerNode(cat+"/"+childCat, index);
-		newMother.addChild(this);
-		if (!nodes.contains(newMother)){
-		    nodes.add(newMother);}
-	    }
-	    else {
-		//if the child is an empty Terminal, set isAnchor to false 
-		if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)){
-		    isAnchor = false;}}
+	
+	/**
+	 * copy the node and replace all AnchorNodes by their
+	 * anchors 
+	 * @param anchors the anchors
+	 * @param lookUp the word the user is searching for
+	 * @return the copied node
+	 */ 
+	public Node copyAndReplace(List<Anchor> anchors, String lookUp){
+		Node copiedNode = new InnerNode(cat, index);
+		for (Node it : children){
+			Node copiedChild = it.copyAndReplace(anchors, lookUp);
+			copiedNode.addChild(copiedChild);}
+		return copiedNode;
 	}
-	else{
-	    //make a list of the InnerNode children of this Node
-	    List<Node> innerNodeChildren = new ArrayList<Node>();
-	    for (Node child : children){
-		if (child instanceof InnerNode){
-		    innerNodeChildren.add(child);}
-	    }
-	    //for each InnerNode child, go in recursion
-	    for (Node it : innerNodeChildren){
-		it.lexicalize(nodes, lookUp);}
-	    
+	
+	
+	
+	/**
+	 * tests, if the given Node is not an empty Terminal
+	 * and not a Terminal bearing a word the user looked up
+	 * @param onlyChild the Node
+	 * @param childCat the cat of the Node
+	 * @param lookUp the word that the user looked up
+	 * @return true, if the given Node is not an empty Terminal
+	 * and not bearing a word the user looked up
+	 */
+	public boolean terminalMustBeReplaced(Node onlyChild, 
+			String childCat, 
+			String lookUp){
+		return (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)
+				&& !childCat.equals("PRO") && !childCat.equals(null)
+				&& !childCat.equals(""));
 	}
-    }
-    
+	
+	/**
+	 * lexicalize the trees
+	 * @param nodes the initially empty set of trees, that
+	 * are generated by this method
+	 * @param lookUp the word the user is searching for
+	 */
+	public void lexicalize (List<Node> nodes, String lookUp){
+		//if this Node has only one child and this is not an InnerNode
+		if (children.size() == 1 && !(children.get(0) instanceof InnerNode)){
+			Node onlyChild = children.get(0);
+			String childCat = onlyChild.getCat();
+			//if the child is a Terminal and must be replaced, replace it
+			if (this.terminalMustBeReplaced(onlyChild, childCat, lookUp)){
+				mother.replaceChild(this, 
+						new SubstitutionNode(cat+"/"+childCat, index));
+				Node newMother = new InnerNode(cat+"/"+childCat, index);
+				newMother.addChild(this);
+				if (!nodes.contains(newMother)){
+					nodes.add(newMother);}
+			}
+			else {
+				//if the child is an empty Terminal, set isAnchor to false 
+				if (onlyChild instanceof TerminalNode && !childCat.equals(lookUp)){
+					isAnchor = false;}}
+		}
+		else{
+			//make a list of the InnerNode children of this Node
+			List<Node> innerNodeChildren = new ArrayList<Node>();
+			for (Node child : children){
+				if (child instanceof InnerNode){
+					innerNodeChildren.add(child);}
+			}
+			//for each InnerNode child, go in recursion
+			for (Node it : innerNodeChildren){
+				it.lexicalize(nodes, lookUp);}
+			
+		}
+	}
+	
+	
+	/**
+	 * adds a child to the node
+	 * sets this node as the mother
+	 * @param node the child
+	 */
+	public void addChild(Node node) {
+		node.setMother(this);
+		children.add(node);
+	}
+	
+	
+	/**
+	 * replace a child by another child
+	 * @param child the old child
+	 * @param newChild the new child
+	 */
+	public void replaceChild(Node child, Node newChild){
+		int position = children.indexOf(child);
+		children.remove(child);
+		children.add(position, newChild);
+		newChild.setMother(this);
+	}
+	
+	
+	/**
+	 * print the node in a StringBuffer xml-style
+	 * @param result the StringBuffer to print into
+	 * @param distance an argument used for the proper indention
+	 */
+	public void printXMLInBuffer(StringBuffer result, String distance) {
+		result.append(distance+"<node cat=\""+cat+"\">\n");
+		for (Node it : children){
+			it.printXMLInBuffer(result, (distance+" "));
+			result.append("\n");}
+		result.append(distance+"</node>");
+	}
+
+	public void printXML(Writer result, String distance) throws IOException {
+		result.append(distance+"<node cat=\""+cat+"\">\n");
+		for (Node it : children){
+			it.printXML(result, (distance+" "));
+			result.append("\n");}
+		result.append(distance+"</node>");
+	}
+
+	/**
+	 * print the node in a StringBuffer xml-style
+	 * @param result the StringBuffer to print into
+	 * @param distance an argument used for the proper indention
+	 */
+	public void printXDGInBuffer(StringBuffer result, String distance) {
+		result.append(distance+"<node cat=\""+cat+"\">\n");
+		for (Node it : children){
+			it.printXMLInBuffer(result, (distance+" "));
+			result.append("\n");}
+		result.append(distance+"</node>");
+	}
+	
+	/**
+	 * print node to the command-line lisp-style
+	 */
+	public void printLisp() {
+		System.out.print("(");
+		System.out.print(cat);
+		for (Node child : children) {
+			System.out.print(" ");
+			child.printLisp();
+		}
+		System.out.print(")");
+	}
+	/**
+	 * print the node in a StringBuffer lisp-style
+	 * @param result the StringBuffer to print into
+	 */  
+	public void printLispInBuffer(StringBuffer result) {
+		result.append("(");
+		result.append(cat);
+		for (Node child : children) {
+			result.append(" ");
+			child.printLispInBuffer(result);
+		}
+		result.append(")");
+	}
+	
+	/**
+	 * get the children of the node
+	 * @return the children
+	 */
+	public List<Node> getChildren (){
+		return children;
+	}
+
+	public String getAnchor() {
+		for( Node child : children ) {
+			String x = child.getAnchor();
+			if( x != null ) 
+				return x;
+		}
 		
-    /**
-     * adds a child to the node
-     * sets this node as the mother
-     * @param node the child
-     */
-    public void addChild(Node node) {
-	node.setMother(this);
-	children.add(node);
-    }
-    
-
-    /**
-     * replace a child by another child
-     * @param child the old child
-     * @param newChild the new child
-     */
-    public void replaceChild(Node child, Node newChild){
-	int position = children.indexOf(child);
-	children.remove(child);
-	children.add(position, newChild);
-	newChild.setMother(this);
-    }
-    
-    
-    /**
-     * print the node in a StringBuffer xml-style
-     * @param result the StringBuffer to print into
-     * @param distance an argument used for the proper indention
-     */
-    public void printXMLInBuffer(StringBuffer result, String distance) {
-	result.append(distance+"<node cat=\""+cat+"\">\n");
-	for (Node it : children){
-	    it.printXMLInBuffer(result, (distance+" "));
-	    result.append("\n");}
-	result.append(distance+"</node>");
-    }
-
-    /**
-     * print the node in a StringBuffer xml-style
-     * @param result the StringBuffer to print into
-     * @param distance an argument used for the proper indention
-     */
-    public void printXDGInBuffer(StringBuffer result, String distance) {
-	result.append(distance+"<node cat=\""+cat+"\">\n");
-	for (Node it : children){
-	    it.printXMLInBuffer(result, (distance+" "));
-	    result.append("\n");}
-	result.append(distance+"</node>");
-    }
-
-    /**
-     * print node to the command-line lisp-style
-     */
-    public void printLisp() {
-	System.out.print("(");
-	System.out.print(cat);
-	for (Node child : children) {
-	    System.out.print(" ");
-	    child.printLisp();
+		return null;
 	}
-	System.out.print(")");
-    }
-    /**
-     * print the node in a StringBuffer lisp-style
-     * @param result the StringBuffer to print into
-     */  
-    public void printLispInBuffer(StringBuffer result) {
-	result.append("(");
-	result.append(cat);
-	for (Node child : children) {
-	    result.append(" ");
-	    child.printLispInBuffer(result);
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		
+		b.append(cat);
+		b.append("(");
+		for( Node child : children ) {
+			b.append(child + " ");
+		}
+		b.append(")");
+		
+		return b.toString();
 	}
-	result.append(")");
-    }
-
-    /**
-     * get the children of the node
-     * @return the children
-     */
-    public List<Node> getChildren (){
-	return children;
-    }
-
+	
+	
 }
