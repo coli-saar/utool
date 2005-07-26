@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<!DOCTYPE gxl SYSTEM "xgxl.dtd">
-
 <gxl xmlns:xlink="http://www.w3.org/1999/xlink">
    <graph id="chain2" edgeids="true" hypergraph="false" edgemode="directed">
       <!-- OF 1 -->

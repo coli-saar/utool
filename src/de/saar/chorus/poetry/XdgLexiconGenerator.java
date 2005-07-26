@@ -44,7 +44,7 @@ public class XdgLexiconGenerator {
     
     public XdgLexiconGenerator() {
         tagPath = "projects/XTagLexicon/xml";
-        cmuDictFilename = "c:\\cmudict.0.6";
+        cmuDictFilename = "projects/poetry/cmudict.0.6.gz";
     }
     
     public void run(String[] words) {
@@ -78,11 +78,13 @@ public class XdgLexiconGenerator {
     }
     
     private void loadCmuDict() {
+    	System.err.println("Loading pronunciation dictionary " + cmuDictFilename + " ...");
         dict = new CmuDict();
         dict.read(cmuDictFilename, true);
     }
 
     private void loadTagLexicon() {
+    	System.err.println("Loading TAG lexicon in " + tagPath + " ...");
         tagLexicon = new Lexicon(new POSScaler());
         parse(tagPath + "/trees.xml", new TreeHandler(tagLexicon));
         parse(tagPath + "/families.xml", new FamilyHandler(tagLexicon));
