@@ -46,7 +46,7 @@ class XdgWriter {
 	                "	 <typeDef id=\"id.label\">\n"+
 	        "	     <typeDomain>\n");
 	        
-	        sb.append("	      <constant data=\"sentence\"/>\n");
+	        //sb.append("	      <constant data=\"sentence\"/>\n");
 	        sb.append("	      <constant data=\"dum\"/>\n");
 	        //<!-- HIER: die Labels fuer \"ID\", z.B. S_A_, NP_, ... -->\n
 	        for (String label : labels) {
@@ -113,7 +113,7 @@ class XdgWriter {
 	                "	 <typeDef id=\"lp.label\">\n"+
 	        "	     <typeDomain>\n");
 	        
-	        sb.append("	      <constant data=\"sentence\"/>\n");
+	        //sb.append("	      <constant data=\"sentence\"/>\n");
 	        sb.append("	      <constant data=\"dum\"/>\n");
 	        //<!-- HIER: alle Knotenadressen (+ ggf. _L/_R) -->\n
 	        for (String ad : addresses) {
@@ -156,7 +156,7 @@ class XdgWriter {
 	        
 	        //<!-- HIER: die Reihenfolge der LP-Label -->\n
 	        //    <constant data=\"p0l\"/>\n");
-	        sb.append("	      <constant data=\"sentence\"/>\n");
+	        //sb.append("	      <constant data=\"sentence\"/>\n");
 	        sb.append("	      <constant data=\"dum\"/>\n");
 	        for (String ad : addresses) {
 	            sb.append("	      <constant data=\""+ad+"\"/>\n");
@@ -239,7 +239,10 @@ class XdgWriter {
 	                "	 <labelType>\n"+
 	                "	     <typeDomain>\n\n"+
 	                "            </typeDomain>\n"+
-	                "	 </labelType>\n\n\n"+
+	                "	 </labelType>\n"+
+	                "    <usePrinciple idref=\"principle.poetry\">\n"+
+	                "        <dim var=\"D\" idref=\"lex\"/>\n"+
+	                "    </usePrinciple>\n\n"+
 	                "	 <output idref=\"output.dags1\"/>\n"+
 	                "	 <output idref=\"output.latexs1\"/>\n"+
 	                "	 <useOutput idref=\"output.dags1\"/>\n"+
@@ -485,12 +488,12 @@ class XdgWriter {
 	                "		 <record>\n"+
 	                "		     <feature data=\"in\">\n"+
 	                "		         <set>\n"+
-	                "                   <constant data=\"sentence\" />\n" +
 	                "			  </set>\n"+
 	                "		     </feature>\n"+
 	                "		     <feature data=\"out\">\n"+
 	                "			<set>\n"+
-	                "                           <constantCard data=\"S\" card=\"one\"/>\n"+
+	                "                    <constantCard data=\"S\" card=\"one\"/>\n"+
+	        		"                    <constantCard data=\"dum\" card=\"any\"/>\n" +
 	                "		        </set>\n"+
 	                "		     </feature>\n"+
 	                "		 </record>\n"+
@@ -502,9 +505,10 @@ class XdgWriter {
 	                "                     </set>\n"+
 	                "		    </feature>\n"+
 	                "		     <feature data=\"out\">\n"+
-	                "			 <set>\n"+
-	                "	   	               <constantCard data=\"M.1\" card=\"one\"/>\n"+
-	                "			      </set>\n"+
+	                "			   <set>\n"+
+	                "	   	          <constantCard data=\"M.1\" card=\"one\"/>\n"+
+	        		"                 <constantCard data=\"dum\" card=\"any\"/>\n" +
+	                "			   </set>\n"+
 	                "		     </feature>\n"+
 	                "		     <feature data=\"on\">\n"+
 	                "			 <set>\n"+
@@ -520,6 +524,11 @@ class XdgWriter {
 	                "                            <feature data=\"M.1\">\n"+
 	                "                                <set>\n"+
 	                "                                    <constant data=\"S\"/>\n"+
+	                "                                </set>\n"+
+	                "                            </feature>\n"+
+	                "                            <feature data=\"dum\">\n"+
+	                "                                <set>\n"+
+	                "                                    <constant data=\"dum\"/>\n"+
 	                "                                </set>\n"+
 	                "                            </feature>\n"+
 	                "			 </record>\n"+
@@ -545,7 +554,7 @@ class XdgWriter {
 	                "     </entry>\n\n\n");
 	        
 	        
-	        /************ lexicon entry for $ (Marco's end symbol) *****/
+	        /************ lexicon entry for $ (Marco's end symbol) *****
 	        sb.append("  <entry>\n" +
 	        		"    <classConj>\n" +
 	        		"      <classDimension idref=\"id\">\n" +
@@ -595,6 +604,7 @@ class XdgWriter {
 	        		"      </classDimension>\n" +
 	        		"    </classConj>\n" +
 	        		"  </entry>\n\n\n");
+	        		*/
 
 	    
 	        sb.append("  </grammar>\n");
