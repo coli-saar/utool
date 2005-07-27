@@ -10,7 +10,6 @@ package de.saar.chorus.poetry;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +37,6 @@ public class XdgLexiconGenerator {
     
     private Lexicon tagLexicon;
     private CmuDict dict;
-    private List<XDGEntry> xdgLex;
     
     private StressPattern pattern;
 
@@ -58,8 +56,8 @@ public class XdgLexiconGenerator {
         Converter conv = new Converter();
         
         // fix stress pattern
-        // TODO do this more generically
-        pattern = new StressPattern("w,s,w,w,s,w,w,s,w");
+        //pattern = new StressPattern("w,s,w,w,s,w,w,s,w");
+        pattern = new StressPattern(words[0]);
     	
         // load lexicons
         loadTagLexicon();
@@ -67,11 +65,12 @@ public class XdgLexiconGenerator {
         
         // convert words into XDG lexicon entries
         try {
-            for( int i = 0; i < words.length; i++ ) {
+            for( int i = 1; i < words.length; i++ ) {
             	conv.convert(tagLexicon.lookup(words[i]));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+        	System.err.println("[Exception] " + e);
+        	System.exit(1);
         }
         
         // now print an XDG grammar
@@ -85,8 +84,7 @@ public class XdgLexiconGenerator {
         		Node node = conv.getNodeForEntry(entry);
         		List<WordPronunciation> prons = dict.lookup(node.getAnchor());
         		
-        		System.err.println("TAG tree: " + node);
-        		System.err.println("word anchor: " + node.getAnchor());
+        		System.err.println("\n\nTree: " + node + " (anchor: " + node.getAnchor() + ")");
         		System.err.println("pronunciations: ");
         		for( WordPronunciation pron : prons ) {
         			System.err.println("   " + pron);
@@ -107,13 +105,13 @@ public class XdgLexiconGenerator {
         	System.err.println("this code should never be reached (because it's a StringWriter)");
         }
         
-        System.out.println("Grammar:\n" + w.toString());
+        System.out.println(w.toString());
     }
     
     private void loadCmuDict() {
     	System.err.println("Loading pronunciation dictionary " + cmuDictFilename + " ...");
         dict = new CmuDict();
-        dict.read(cmuDictFilename, true);
+        dict.read(cmuDictFilename, false);
     }
 
     private void loadTagLexicon() {
