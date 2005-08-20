@@ -11,14 +11,14 @@ public class Lexicon {
     
     private Map<String, Set<MorphInfo>> morph;
     private Map<String, Set<SyntInfo>> syntax;
-    private Map<String, Node> trees;
+    private Map<String, Tree> trees;
     private Map<String, Set<String>> families;
     
     public Lexicon(POSScaler scaler) {
         this.scaler = scaler;
         this.morph = new HashMap<String, Set<MorphInfo>>();
         this.syntax = new HashMap<String, Set<SyntInfo>>();
-        this.trees = new HashMap<String, Node>();
+        this.trees = new HashMap<String, Tree>();
         this.families = new HashMap<String, Set<String>>();
     }
     
@@ -57,7 +57,7 @@ public class Lexicon {
                         //for all trees
                         for (String it3 : syntTrees){
                             //get the root Node
-                            Node nextNode = trees.get(it3);
+                            Node nextNode = trees.get(it3).getRoot();
                             if (nextNode != null){
                                 //copy the tree and replace the anchors
                                 Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
@@ -79,7 +79,7 @@ public class Lexicon {
                             //for all of these trees
                             for (String it4 : nextTrees){
                                 //get the root Node
-                                Node nextNode = trees.get(it4);
+                                Node nextNode = trees.get(it4).getRoot();
                                 if (nextNode != null){
                                     //copy the tree and replace the anchors
                                     Node replacedNode = 
@@ -134,13 +134,13 @@ public class Lexicon {
         families.put(name, trees);
     }
     
-    public void addTree(String name, Node root) {
+    public void addTree(Tree tree) {
         //System.out.print(name);
         //System.out.print("\t");
         //root.printLisp();
         //System.out.print("\n");
         
-        trees.put(name, root);
+        trees.put(tree.getName(), tree);
     }
     
 }
