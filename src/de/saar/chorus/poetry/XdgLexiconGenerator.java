@@ -60,8 +60,13 @@ public class XdgLexiconGenerator {
         pattern = new StressPattern(words[0]);
     	
         // load lexicons
+        System.err.println("Loading TAG grammar ...");
         loadTagLexicon();
+        
+        System.err.println("Loading pronunciation dictionary ...");
         loadCmuDict();
+        
+        System.err.println("Ok");
         
         // convert words into XDG lexicon entries
         try {
