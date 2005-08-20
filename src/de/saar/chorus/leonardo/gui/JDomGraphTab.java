@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -130,10 +132,12 @@ public class JDomGraphTab extends JPanel {
 		
 		// a new solver and a new converter initialized
 		// with the given graph
-		solver = new DomSolver();
-		conv = new JDomGraphConverter(solver);
-		conv.toDomGraph(theGraph);
-        
+		if(Preferences.utoolPresent()) {
+			solver = new DomSolver();
+			conv = new JDomGraphConverter(solver);
+			conv.toDomGraph(theGraph);
+		}
+		
 		isSolvedYet = false;
 		isSolvedForm = false;
 		solvable = true;
@@ -681,6 +685,8 @@ public class JDomGraphTab extends JPanel {
     	
     	private String numOfSF; 
     	
+    	private Set<JLabel> classifyLabels;
+    	
     	private BorderLayout layout = new BorderLayout();
     	
     	/**
@@ -722,6 +728,7 @@ public class JDomGraphTab extends JPanel {
     		 */
     		
     		classified = new JPanel();
+    		classifyLabels = new HashSet<JLabel>();
     		
     		ll = new JLabel("L") {
     			public Point getToolTipLocation(MouseEvent e) {
@@ -732,6 +739,7 @@ public class JDomGraphTab extends JPanel {
     			}
     		};
     		ll.setForeground(Color.RED);
+    		classifyLabels.add(ll);
     		
     		hn = new JLabel("H") {
     			public Point getToolTipLocation(MouseEvent e) {
@@ -741,6 +749,7 @@ public class JDomGraphTab extends JPanel {
     			}
     		};
     		hn.setForeground(Color.RED);
+    		classifyLabels.add(hn);
     		
     		norm = new JLabel("N") {
     			public Point getToolTipLocation(MouseEvent e) {
@@ -750,7 +759,7 @@ public class JDomGraphTab extends JPanel {
     			}
     		};
     		norm.setForeground(Color.RED);
-    		
+    		classifyLabels.add(norm);
     		
     		comp = new JLabel("C") {
     			public Point getToolTipLocation(MouseEvent e) {
@@ -760,51 +769,59 @@ public class JDomGraphTab extends JPanel {
     			}
     		};
     		comp.setForeground(Color.RED);
+    		classifyLabels.add(comp);
     		
-    		int graphValue = solver.classify();
-    		
-    		
-    		if(( ConstraintClasses.NORMAL & graphValue) == ConstraintClasses.NORMAL) {
-    			norm.setText("N");
-    			norm.setToolTipText("Normal");
+    		if( Preferences.utoolPresent() ) {
+    			int graphValue = solver.classify();
     			
-    		} else if ((	ConstraintClasses.WEAKLY_NORMAL & graphValue) == ConstraintClasses.WEAKLY_NORMAL) {
-    			norm.setText("n");
-    			norm.setToolTipText("Weakly Normal");
+    			
+    			if(( ConstraintClasses.NORMAL & graphValue) == ConstraintClasses.NORMAL) {
+    				norm.setText("N");
+    				norm.setToolTipText("Normal");
+    				
+    			} else if ((	ConstraintClasses.WEAKLY_NORMAL & graphValue) == ConstraintClasses.WEAKLY_NORMAL) {
+    				norm.setText("n");
+    				norm.setToolTipText("Weakly Normal");
+    			} else {
+    				norm.setText("-");
+    				norm.setToolTipText("Not Normal");
+    			}
+    			
+    			
+    			if(( ConstraintClasses.COMPACT & graphValue) == ConstraintClasses.COMPACT) {
+    				comp.setText("C");
+    				comp.setToolTipText("Compact");
+    			} else if ((	ConstraintClasses.COMPACTIFIABLE & graphValue) == ConstraintClasses.COMPACTIFIABLE) {
+    				comp.setText("c");
+    				comp.setToolTipText("compactifiable");
+    			} else {
+    				comp.setText("-");
+    				comp.setToolTipText("Not Compactifiable");
+    			}
+    			
+    			
+    			if((ConstraintClasses.HN_CONNECTED & graphValue) == ConstraintClasses.HN_CONNECTED) {
+    				hn.setText("H");
+    				hn.setToolTipText("Hypernormally Connected");
+    			} else {
+    				hn.setText("-");
+    				hn.setToolTipText("Not Hypernormally Connected");
+    			}
+    			
+    			if((ConstraintClasses.LEAF_LABELLED & graphValue) == ConstraintClasses.LEAF_LABELLED) {
+    				ll.setText("L");
+    				ll.setToolTipText("Leaf-Labelled");
+    			} else {
+    				ll.setText("-");
+    				ll.setToolTipText("Not Leaf-Labelled");
+    			}
+    			
     		} else {
-    			norm.setText("-");
-    			norm.setToolTipText("Not Normal");
+    			for( JLabel label : classifyLabels ) {
+    				label.setText("??");
+    				label.setToolTipText("No Classifying available.");
+    			}
     		}
-    		
-    		
-    		if(( ConstraintClasses.COMPACT & graphValue) == ConstraintClasses.COMPACT) {
-    			comp.setText("C");
-    			comp.setToolTipText("Compact");
-    		} else if ((	ConstraintClasses.COMPACTIFIABLE & graphValue) == ConstraintClasses.COMPACTIFIABLE) {
-    			comp.setText("c");
-    			comp.setToolTipText("compactifiable");
-    		} else {
-    			comp.setText("-");
-    			comp.setToolTipText("Not Compactifiable");
-    		}
-    		
-    		
-    		if((ConstraintClasses.HN_CONNECTED & graphValue) == ConstraintClasses.HN_CONNECTED) {
-    			hn.setText("H");
-    			hn.setToolTipText("Hypernormally Connected");
-    		} else {
-    			hn.setText("-");
-    			hn.setToolTipText("Not Hypernormally Connected");
-    		}
-    		
-    		if((ConstraintClasses.LEAF_LABELLED & graphValue) == ConstraintClasses.LEAF_LABELLED) {
-    			ll.setText("L");
-    			ll.setToolTipText("Leaf-Labelled");
-    		} else {
-    			ll.setText("-");
-    			ll.setToolTipText("Not Leaf-Labelled");
-    		}
-    		
     		classified.setAlignmentY(SwingConstants.HORIZONTAL);
     		classified.add(new JLabel("Classify: "));
     		classified.add(norm);
@@ -817,6 +834,10 @@ public class JDomGraphTab extends JPanel {
     		classified.setAlignmentX(SwingConstants.LEFT);
     		
     		add(classified, BorderLayout.EAST);
+    		
+    		if( ! Preferences.utoolPresent() ) {
+    			solve.setEnabled(false);
+    		}
     	}
     }
 

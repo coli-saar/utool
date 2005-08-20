@@ -282,7 +282,7 @@ public class Main  {
 			tab.fitGraph();
 		
 		// solving?
-		if(Preferences.isAutoCount()) {
+		if(Preferences.isAutoCount() && Preferences.utoolPresent()) {
 			statusBar.showProgressBar();
 			
 			tab.solve();
