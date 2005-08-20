@@ -345,7 +345,7 @@ public class CommandListener implements ActionListener, ItemListener {
         } else if ( command.equals("cSF")) {
         	
         	// solve the visible graph
-            if( Main.getVisibleTab() != null ) {
+            if( (Main.getVisibleTab() != null) && Preferences.utoolPresent() ) {
                 Main.showProgressBar();
                 Main.getVisibleTab().solve();
                 Main.refresh();
@@ -463,7 +463,7 @@ public class CommandListener implements ActionListener, ItemListener {
                     Main.getMenuBar().setCountSfEnabled(false);
                 }
                 Preferences.setAutoCount(true);
-                if( Main.getVisibleTab() != null ) {
+                if( Main.getVisibleTab() != null && Preferences.utoolPresent() ) {
                     Main.getVisibleTab().solve();
                     Main.refresh();
                 }

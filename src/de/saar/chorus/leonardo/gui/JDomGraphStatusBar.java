@@ -67,7 +67,7 @@ public class JDomGraphStatusBar extends JPanel {
 		layout.addLayoutComponent(progressPanel,"progress");
 		add(progressPanel,"progress");
 		
-		layout.show(this, "empty");
+		showEmptybar();
 	}
 	
 	
