@@ -44,7 +44,7 @@ public final class AnchorNode extends LeafNode {
 					newTerminalNode.setCat(lookUp);
 				}
 				else {
-					newTerminalNode.setCat(anchor.getRoot());}
+					newTerminalNode.setCat(anchor.getStem());}
 			}
 		}
 		newAnchorNode.addChild(newTerminalNode);
@@ -87,6 +87,20 @@ public final class AnchorNode extends LeafNode {
 	public String getAnchor() {
 		return getCat();
 	}
+
+    /*
+	for (Iterator<Anchor> it = anchors.iterator();
+	     it.hasNext();) {
+	    Anchor anchor = it.next();
+	    if (anchor.getPos().equals(cat)){
+		newTerminalNode.setIsAnchor(true);
+		if (anchor.isSpecial()){
+		    newTerminalNode.setCat(lookUp);
+		}
+		else {
+		    newTerminalNode.setCat(anchor.getStem());}
+	    }
+        */
 
 	public String toString() {
 		return "A:" + getCat();

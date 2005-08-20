@@ -5,31 +5,31 @@
 package de.saar.chorus.XTAGLexicon;
 
 public class Anchor {
-
-    private String root;
+    
+    private String stem;
     private String pos;
     private boolean special;
-
-    public Anchor (String root, String pos, boolean special){
-	this.root = root;
-	this.pos = pos;
-	this.special = special;
+    
+    public Anchor (String root, String pos, boolean special) {
+        this.stem = root;
+        this.pos = pos;
+        this.special = special;
     }
-
-    public String getRoot() {
-	return root;
+    
+    public String getStem() {
+        return stem;
     }
-
+    
     public String getPos() {
-	return pos;
+        return pos;
     }
-
+    
     public int hashCode() {
-	return root.hashCode(); 
+        return stem.hashCode(); 
     }
-
-    public boolean isSpecial (){
-	return special;
+    
+    public boolean isSpecial() {
+        return special;
     }
-
+    
 }
