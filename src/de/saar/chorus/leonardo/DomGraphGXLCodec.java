@@ -51,7 +51,7 @@ import org.xml.sax.SAXException;
  * @author Alexander
  * 
  */
-class DomGraphGXLCodec {
+public class DomGraphGXLCodec {
 	
 	/**
 	 * Reads a GXL description of a dominance graph from a file and writes it
@@ -98,7 +98,7 @@ class DomGraphGXLCodec {
 				
 				NodeList list = graph_elem.getChildNodes();
 
-				// Loop Children
+				// Loop over all nodes
 				for (int i = 0; i < list.getLength(); i++) {
 					Node node = list.item(i);  // a "node" or "edge" element
 					String id = getAttribute(node, "id");
@@ -129,9 +129,19 @@ class DomGraphGXLCodec {
 
 						DefaultGraphCell vertex = graph.addNode(data);
 						ids.put(id, vertex);
+					}
+				}
+				
+				// Loop over all edges
+				for (int i = 0; i < list.getLength(); i++) {
+					Node node = list.item(i);  // a "node" or "edge" element
+					String id = getAttribute(node, "id");
+					String edgeOrNode = node.getNodeName();
+					String type = getType(node);
+					Map<String,String> attrs = getStringAttributes(node);
 						
 						
-					} else if( edgeOrNode.equals("edge")) {
+					if( edgeOrNode.equals("edge")) {
 						EdgeData data;
 						
 						if( type.equals("solid")) {
@@ -163,7 +173,9 @@ class DomGraphGXLCodec {
 					}
 				}
 			}
-		} // end of document loop
+		} // end of document loop´
+        
+     //   graph.computeAdjacency();
 	}
 
 	/**

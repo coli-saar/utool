@@ -4,6 +4,8 @@
  */
 package de.saar.chorus.leonardo;
 
+import de.saar.chorus.jgraph.IEdgeData;
+
 /**
  * The data that can be stored in the edge of a dominance graph -- namely,
  * a name and an edge type.
@@ -11,10 +13,10 @@ package de.saar.chorus.leonardo;
  * In addition, objects of this class can serve as popup targets, i.e.
  * they provide a menu item for a popup menu.
  *  
- * @author Alexander
+ * @author Alexander Koller
  *
  */
-class EdgeData extends DomGraphPopupTarget {
+public class EdgeData extends DomGraphPopupTarget implements IEdgeData<EdgeType> {
 	
 
 	private EdgeType type;

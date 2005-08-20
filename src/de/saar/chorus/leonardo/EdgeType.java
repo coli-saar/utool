@@ -7,6 +7,7 @@
 
 package de.saar.chorus.leonardo;
 
+
 /**
  * An edge type -- either solid or dominance.
  * 
@@ -15,10 +16,10 @@ package de.saar.chorus.leonardo;
  * It is safe (and encouraged) to use EdgeType.solid and EdgeType.dominance and compare
  * them with ==.
  * 
- * @author Alexander
+ * @author Alexander Koller
  */
 
-class EdgeType {
+public class EdgeType {
 	public static final int
 		solidVal = 1,
 		dominanceVal = 2;

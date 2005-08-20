@@ -3,15 +3,22 @@
 <project name="leonardo" default="leonardo">
 	<property name="build" location="../../build" />
 	<property name="source" location="../../src" />
+	<property name="pictures" location="../../projects/Leonardo/pictures"/>
 	<property name="packages" location="../../packages" />
 	<property name="doc.api" location="../../docs/api" />
 
 	<property name="jgraph.jar" location="${packages}/jgraph.jar" />
 	<property name="jgraphaddons.jar" location="${packages}/jgraphaddons.jar" />
+	<property name="itext.jar" location="${packages}/itext-1.3.1.jar" />
+
 	<property name="jgraph.unpacked.classes" value="org/jgraph/**" />
+	<property name="itext.unpacked.classes" value="com/lowagie/**" />
 	
 	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
+	
+	<property name="utool-swig.jar" location="${packages}/DomgraphSwig.jar" />
+	<property name="utool-swig.unpacked.classes" value="de/saar/chorus/libdomgraph/*" />
 
 
 
@@ -25,7 +32,7 @@
 
 
 	<property name="leonardo.jar" value="${build.lib}/Leonardo.jar" />
-	<property name="leonardo.jar.classes" value="${chorus}/leonardo/*,${coli}/getopt/*" />
+	<property name="leonardo.jar.classes" value="${chorus}/leonardo/*,${chorus}/treelayout/*,${chorus}/leonardo/gui/*,${chorus}/leonardo/utool/*,${chorus}/jgraph/*,${coli}/getopt/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
 	<property name="reports.tests" location="testreports" />
@@ -33,31 +40,32 @@
 
 
 	<!-- Jars -->
-	<target name="leonardo" depends="init,jgraph.unpacked,getopt.unpacked">
-	     <javac srcdir="${source}"
+	<target name="leonardo" depends="init,jgraph.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
+		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
-               includes="${chorus}/leonardo/*.java,${coli}/getopt/*.java"
+               includes="${chorus}/leonardo/*.java,${chorus}/jgraph/*.java,${chorus}/treelayout/*.java,${chorus}/leonardo/gui/*.java,${chorus}/leonardo/utool/*.java,${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
 			<classpath>
 				<pathelement path="${jgraph.jar}" />
 				<pathelement path="${jgraphaddons.jar}" />
 				<pathelement path="${getopt.jar}" />
+				<pathelement path="${itext.jar}" />
+				<pathelement path="${utool-swig.jar}" />
 			</classpath>
 		</javac>
 
 		<jar jarfile="${leonardo.jar}"
              basedir="${build.classes}"
-             includes="${leonardo.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes}">
+             includes="${leonardo.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
 			<manifest>
 				<attribute name="Main-Class"
-                           value="de.saar.chorus.leonardo.Main" />
+                           value="de.saar.chorus.leonardo.gui.Main" />
 			</manifest>
 		</jar>
 
 	</target>
-
 
 	<!-- JUnit -->
 	<!-- If the JUnit targets don't work, make sure that junit.jar is in
@@ -104,8 +112,6 @@
 	</target>
 
 
-
-
 	<!-- JAR Unpacking -->
 
 	<!-- Unpack the Jar file at the path "unpack.jar", unless the
@@ -142,6 +148,21 @@
 		</antcall>
 	</target>
 
+	<target name="itext.unpacked" depends="init">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${itext.jar}" />
+			<param name="unpack.jar.id" value="itext" />
+		</antcall>
+	</target>
+
+	<target name="utool-swig.unpacked" depends="init">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${utool-swig.jar}" />
+			<param name="unpack.jar.id" value="utool-swig" />
+		</antcall>
+	</target>
+
+				
 	<!-- Javadoc -->
 
 	<target name="javadoc" depends="leonardo">
