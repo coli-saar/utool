@@ -7,7 +7,7 @@ package de.saar.chorus.leonardo;
 import junit.framework.TestCase;
 
 /**
- * @author Alexander
+ * @author Alexander Koller
  *
  */
 public class TestFragment extends TestCase {

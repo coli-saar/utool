@@ -5,6 +5,7 @@
 
 package de.saar.chorus.leonardo;
 
+
 /**
  * A node type -- either labelled or unlabelled (i.e. non-hole or hole).
  * 
@@ -13,9 +14,9 @@ package de.saar.chorus.leonardo;
  * It is safe (and encouraged) to use NodeType.labelled and NodeType.unlabelled
  * and compare them with ==.
  * 
- * @author Alexander
+ * @author Alexander Koller
  */
-class NodeType {
+public class NodeType {
 	
 	public static final int
 		labelledVal = 1,

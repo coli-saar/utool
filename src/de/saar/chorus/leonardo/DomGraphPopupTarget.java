@@ -31,7 +31,7 @@ import javax.swing.JMenuItem;
  * in e.g. a popup menu (as we expect), its menu label in the supermenu is 
  * taken from the getMenuLabel() method, which concrete subclasses must override.
  * 
- * @author Alexander
+ * @author Alexander Koller
  *
  */
 abstract class DomGraphPopupTarget implements ActionListener {

@@ -10,7 +10,7 @@ import org.jgraph.graph.DefaultGraphCell;
  * Listeners that implement this interface can be registered in a JDomGraph
  * object to be called every time the user selects an item from a popup menu.
  * 
- * @author Alexander
+ * @author Alexander Koller
  *
  */
 public interface DomGraphPopupListener {

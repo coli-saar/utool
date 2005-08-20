@@ -8,6 +8,8 @@ package de.saar.chorus.leonardo;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
@@ -15,7 +17,7 @@ import org.jgraph.graph.*;
 import org.jgraph.util.JGraphUtilities;
 
 /**
- * @author Alexander
+ * @author Alexander Koller
  *
  */
 public class TestJDomGraph extends TestCase {
@@ -121,7 +123,7 @@ public class TestJDomGraph extends TestCase {
 	}
 	
 	private void myEdgesAreCorrect() {
-	    Set<DefaultEdge> edges = graph.getEdges();
+	   Set<DefaultEdge> edges = graph.getEdges();
 	    Object[] modelEdges = JGraphUtilities.getEdges(graph);
 	    
 	    assertEquals("Same number of edges", modelEdges.length, edges.size());

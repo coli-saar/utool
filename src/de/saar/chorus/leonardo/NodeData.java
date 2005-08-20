@@ -4,6 +4,11 @@
  */
 package de.saar.chorus.leonardo;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import de.saar.chorus.jgraph.INodeData;
+
 
 
 /**
@@ -13,13 +18,15 @@ package de.saar.chorus.leonardo;
  * In addition, objects of this class can serve as popup targets, i.e.
  * they provide a menu item for a popup menu.
  *  
- * @author Alexander
+ * @author Alexander Koller
  *
  */
-public class NodeData extends DomGraphPopupTarget {
+public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType> {
 	private String name;
+    private String simplifiedLabel;
 	private String label;
 	private NodeType type;
+    private boolean showLabel;
 	
 	/**
 	 * New node data for a labelled node (with label).
@@ -31,9 +38,10 @@ public class NodeData extends DomGraphPopupTarget {
 	public NodeData(NodeType type, String name, String label, JDomGraph parent) {
 	    super(parent);
 	    
-		this.name = name;
-		this.label = label;
+        this.name = name;
+		setLabel(label);
 		this.type = type;
+        showLabel = false;
 	}
 	
 	/**
@@ -48,7 +56,16 @@ public class NodeData extends DomGraphPopupTarget {
 		this.name = name;
 		this.type = type;
 		this.label = "";
+        showLabel = false;
 	}
+    
+    private void setLabel(String label) {
+        Pattern p = Pattern.compile("\\s+\\S+:");
+        Matcher m = p.matcher(label);
+        simplifiedLabel = m.replaceAll(",");
+        
+        this.label = label;
+    }
 	
 	public String getMenuLabel() {
 	    if( label.equals("") ) {
@@ -86,6 +103,28 @@ public class NodeData extends DomGraphPopupTarget {
 	}
 	
 	public String toString() {
-		return label;
+		
+		if(type.equals(NodeType.labelled)) {
+			if(showLabel) {
+				return simplifiedLabel;
+			} else {
+				return name;
+			}
+			
+		} else {
+			return "(" + name + ")";
+		}
 	}
+    
+    public void setShowLabel(boolean b) {
+        showLabel = b;
+    }
+
+    public String getToolTipText() {
+        if(getType().equals(NodeType.labelled)) {
+            return getLabel() + " (" + getName() + ")";
+        } else {
+            return "<hole> (" + getName() +")";
+        }
+    }
 }

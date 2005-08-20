@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry sourcepath="C:/Programme/Java/jgraph/src" kind="lib" path="packages/jgraph.jar">
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="packages/EXML.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/itext-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/java-getopt-1.0.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/jgraph.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/jgraphaddons.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/junit.jar"/>
+	<classpathentry kind="lib" path="packages/DomgraphSwig.jar">
 		<attributes>
-			<attribute value="file:/C:/Programme/Java/jgraph/doc/" name="javadoc_location"/>
+			<attribute value="LeonardoLayout/packages" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="C:/Programme/Java/jgraph/jgraphaddons/src" kind="lib" path="packages/jgraphaddons.jar">
-		<attributes>
-			<attribute value="file:/C:/Programme/Java/jgraph/jgraphaddons/doc/" name="javadoc_location"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="packages/java-getopt-1.0.9.jar"/>
-	<classpathentry kind="lib" path="packages/junit.jar"/>
-	<classpathentry kind="lib" path="packages/EXML.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
