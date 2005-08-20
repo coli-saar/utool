@@ -283,6 +283,7 @@ public class Main  {
 		
 		// solving?
 		if(Preferences.isAutoCount() && Preferences.utoolPresent()) {
+		
 			statusBar.showProgressBar();
 			
 			tab.solve();
@@ -433,6 +434,10 @@ public class Main  {
         } catch(UnsatisfiedLinkError e) {
             System.err.println("Error while loading libdomgraph library: " + e.getMessage());
             Preferences.setUtoolPresent(false);
+            JOptionPane.showMessageDialog(window,
+            	    "No Utool-Functions available.",
+            	    "LibDomgraph-Library not found!",
+            	    JOptionPane.WARNING_MESSAGE);
         }
         
         
@@ -463,6 +468,7 @@ public class Main  {
         menuBar = new JDomGraphMenu(listener);
         window.setJMenuBar(menuBar);
         statusBar = new JDomGraphStatusBar(listener);
+     
         
         ttm.registerComponent(slider);
         ttm.registerComponent(statusBar);

@@ -683,7 +683,6 @@ public class JDomGraphTab extends JPanel {
     					hn, 			// indicates hypernormality (graphs)
     					ll; 		 	// indicates leaf labeling (graphs)
     	
-    	private String numOfSF; 
     	
     	private Set<JLabel> classifyLabels;
     	

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
@@ -21,9 +22,12 @@ import javax.swing.JTextField;
 public class JDomGraphStatusBar extends JPanel {
 	
 	// several panels
-	private JPanel progressPanel;  	// showed while solving
+	private JPanel progressPanel,	// showed while solving
+				   emptyPanel;  	// showed if there is no graph.
 	
 	
+	
+	private JLabel emptyLabel;
 	
 	// shows the number of the recent solved form
 	private JTextField solvedForm;
@@ -31,7 +35,7 @@ public class JDomGraphStatusBar extends JPanel {
 	
 	// layout of the "root" JPanel
 	private CardLayout layout;
-	
+
 	
 	// progress bar for solving process
 	private JProgressBar progressBar;
@@ -52,14 +56,23 @@ public class JDomGraphStatusBar extends JPanel {
 		layout = new CardLayout();
 		setLayout(layout);
         
+		emptyLabel = new JLabel("There is no graph to show.");
+		emptyPanel = new JPanel();
+		emptyPanel.add(emptyLabel, BorderLayout.CENTER);
+		layout.addLayoutComponent(emptyPanel,"empty");
+		add(emptyPanel,"empty");
 		
- 
 		// progress bar for solving
 		// TODO make that smaller...
 		progressPanel = new JPanel(new BorderLayout());
 		progressBar = new JProgressBar(0, 1);
 		progressBar.setStringPainted(true); 
-		progressBar.setString("Solving..."); 
+		
+		if( Preferences.utoolPresent() ) {
+			progressBar.setString("Solving..."); 
+		} else {
+			progressBar.setString("Loading...");
+		}
 		progressBar.setIndeterminate(true);
 		progressBar.setPreferredSize(new Dimension(200,50));
 		progressPanel.add(progressBar, BorderLayout.CENTER);
@@ -95,7 +108,6 @@ public class JDomGraphStatusBar extends JPanel {
 		if(Main.getVisibleTab() == null) {
 			showEmptybar();
 		} else {
-			
 			showBar(Main.getVisibleTab().getBarcode());
 		}
 	}
