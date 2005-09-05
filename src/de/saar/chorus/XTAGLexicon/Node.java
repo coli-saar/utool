@@ -4,7 +4,7 @@ package de.saar.chorus.XTAGLexicon;
 import java.io.*;
 import java.util.*;
 
-public abstract class Node {
+public abstract class Node implements Cloneable {
     
     // Kategorie
     protected String cat;
@@ -105,6 +105,10 @@ public abstract class Node {
         return cat;
     }
     
+    public String getIndex() {
+        return index;
+    }
+    
     public void setWord(String newIndex){
         index = newIndex;
     }
@@ -146,8 +150,11 @@ public abstract class Node {
      * @param anchors the anchors
      * @param lookUp the word the user is searching for
      * @return the copied node
-     */ 
+     * 
+     * @obsolete This is now done by Tree.lexicalise
+     * 
     public abstract Node copyAndReplace(List<Anchor> anchors, String lookUp);
+    */
     
     /**
      * lexicalize the trees
@@ -199,4 +206,10 @@ public abstract class Node {
     public abstract String getAnchor();
     
     public abstract String toString();
+    
+    public abstract Node clone();
+    
+    public String getName() {
+        return Tree.xtagNodeName(cat,index);
+    }
 }

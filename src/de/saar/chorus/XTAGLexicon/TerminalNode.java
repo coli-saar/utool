@@ -36,10 +36,11 @@ public final class TerminalNode extends LeafNode {
 	 * @param anchors the anchors
 	 * @param lookUp the word the user is searching for
 	 * @return the copied node
-	 */ 
+	 *
 	public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 		return new TerminalNode(cat, index);
 	}
+    */
 	
 	public void setCat(String newCat){
 		this.cat = newCat;
@@ -107,4 +108,8 @@ public final class TerminalNode extends LeafNode {
 		return "T:" + getCat();
 	}
 	
+    public TerminalNode clone() {
+        return new TerminalNode(cat,index);
+    }
+
 }

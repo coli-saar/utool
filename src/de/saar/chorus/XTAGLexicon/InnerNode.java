@@ -151,15 +151,18 @@ public final class InnerNode extends Node {
 	 * @param anchors the anchors
 	 * @param lookUp the word the user is searching for
 	 * @return the copied node
-	 */ 
+	 *   
+     * @obsolete This is now done by Tree.lexicalise
+	 * 
 	public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 		Node copiedNode = new InnerNode(cat, index);
 		for (Node it : children){
 			Node copiedChild = it.copyAndReplace(anchors, lookUp);
-			copiedNode.addChild(copiedChild);}
+			copiedNode.addChild(copiedChild);
+		}
 		return copiedNode;
 	}
-	
+	*/
 	
 	
 	/**
@@ -334,6 +337,9 @@ public final class InnerNode extends Node {
 		
 		return b.toString();
 	}
-	
+
+    public InnerNode clone() {
+        return new InnerNode(cat,index);
+    }
 	
 }

@@ -495,7 +495,7 @@ abstract public class ImprovedJGraph<NodeType,
     }
     
     /**
-     * Get the name (= ID) of the dominance graph.
+     * Get the name (= ID) of the  graph.
      * 
      * @return Returns the name.
      */
@@ -641,5 +641,4 @@ abstract public class ImprovedJGraph<NodeType,
             return edgeOrder.get(x).compareTo(edgeOrder.get(y));
         }
     }
-    
 }

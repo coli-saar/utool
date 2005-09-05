@@ -30,26 +30,28 @@ public final class AnchorNode extends LeafNode {
 	 * @param anchors the anchors
 	 * @param lookUp the word the user is searching for
 	 * @return the replacement
-	 */ 
+     * 
+     * @obsolete This is now done by Tree.lexicalise
+	 *
 	public Node copyAndReplace(List<Anchor> anchors, String lookUp){
 		Node newAnchorNode = new InnerNode(this.cat, this.index);
 		TerminalNode newTerminalNode = new TerminalNode(cat, null);
 		
-		for (Iterator<Anchor> it = anchors.iterator();
-		it.hasNext();) {
-			Anchor anchor = it.next();
+		for (Anchor anchor : anchors) {
 			if (anchor.getPos().equals(cat)){
 				newTerminalNode.setIsAnchor(true);
 				if (anchor.isSpecial()){
 					newTerminalNode.setCat(lookUp);
 				}
 				else {
-					newTerminalNode.setCat(anchor.getStem());}
+					newTerminalNode.setCat(anchor.getStem());
+				}
 			}
 		}
 		newAnchorNode.addChild(newTerminalNode);
 		return newAnchorNode;
 	}
+    */
 	
 	/**
 	 * print the node in a StringBuffer xml-style
@@ -106,4 +108,7 @@ public final class AnchorNode extends LeafNode {
 		return "A:" + getCat();
 	}
 	
+    public AnchorNode clone() {
+        return new AnchorNode(cat,index);
+    }
 }

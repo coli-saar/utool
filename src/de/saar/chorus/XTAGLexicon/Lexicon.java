@@ -3,7 +3,13 @@
  */
 package de.saar.chorus.XTAGLexicon;
 
+import java.io.File;
 import java.util.*;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.helpers.DefaultHandler;
 
 public class Lexicon {
     
@@ -27,107 +33,154 @@ public class Lexicon {
      * @param word the word
      * @return a set of trees for that word
      */
-    public Set<Node> lookup(String word) 
-    throws Exception
+    public Set<Tree> lookup(String word) throws Exception
     {
         //collect the trees in this set
-        Set<Node> result = new HashSet<Node>();
+        Set<Tree> result = new HashSet<Tree>();
         
-        try{
-            //try to find the word in morphSet
-            Set<MorphInfo> morphSet = morph.get(word);
-            //if word not in morphSet, return
-            if (morphSet == null){
-                throw new Exception("Not in Lexicon : "+word);}
-            //for all the MorphInfos of the word
-            for (MorphInfo it : morphSet){
-                //get the root and try to find it in syntSet
-                String entry = it.getRoot();
-                Set<SyntInfo> syntSet = syntax.get(entry);
-                //if root not in syntSet, return
-                if (syntSet == null){
-                    throw new Exception("Not in Syntax : "+word);}
-                //for all SyntInfos of the word
-                for (SyntInfo nextSynt : syntSet){
-                    //get the Trees, Families and Anchors
-                    Set<String> syntTrees = nextSynt.getTrees();
-                    Set<String> syntFamilies = nextSynt.getFamilies();
-                    List<Anchor> syntAnchors = nextSynt.getAnchors();
-                    if (syntTrees != null){
-                        //for all trees
-                        for (String it3 : syntTrees){
-                            //get the root Node
-                            Node nextNode = trees.get(it3).getRoot();
-                            if (nextNode != null){
-                                //copy the tree and replace the anchors
-                                Node replacedNode = nextNode.copyAndReplace(syntAnchors, word);
-                                //add this tree to the result
-                                result.add(replacedNode);
-                                List<Node> nodes = new ArrayList<Node>();
-                                //lexicalize this tree, put the resulting new
-                                //trees in nodes
-                                replacedNode.lexicalize(nodes, word);
-                                //add all trees in nodes to the result
-                                result.addAll(nodes);}
+        //try to find the word in morphSet
+        Set<MorphInfo> morphSet = morph.get(word);
+        //if word not in morphSet, return
+        if (morphSet == null){
+            throw new Exception("Not in Lexicon : "+word);}
+        //for all the MorphInfos of the word
+        for (MorphInfo it : morphSet){
+            //get the root and try to find it in syntSet
+            String entry = it.getRoot();
+            Set<SyntInfo> syntSet = syntax.get(entry);
+            //if root not in syntSet, return
+            if (syntSet == null){
+                throw new Exception("Not in Syntax : "+word);}
+            //for all SyntInfos of the word
+            for (SyntInfo nextSynt : syntSet){
+                Set<String> syntTrees = nextSynt.getTrees();
+                Set<String> syntFamilies = nextSynt.getFamilies();
+                List<Anchor> syntAnchors = nextSynt.getAnchors();
+                
+                // add the trees listed in the SyntInfo
+                if (syntTrees != null) {
+                    for (String treename : syntTrees){
+                        Tree tree = trees.get(treename);
+                        if (tree != null) {
+                            addSplitTrees(tree, syntAnchors, word, result);
                         }
-                    }
-                    if (syntFamilies != null){
-                        //for all families
-                        for (String it3 : syntFamilies){
-                            //get the trees of the family
-                            Set<String> nextTrees = families.get(it3);
-                            //for all of these trees
-                            for (String it4 : nextTrees){
-                                //get the root Node
-                                Node nextNode = trees.get(it4).getRoot();
-                                if (nextNode != null){
-                                    //copy the tree and replace the anchors
-                                    Node replacedNode = 
-                                        nextNode.copyAndReplace(syntAnchors, word);
-                                    //add this tree to the result
-                                    result.add(replacedNode);
-                                    List<Node> nodes = new ArrayList<Node>();
-                                    //lexicalize this tree, put the resulting 
-                                    //new trees in nodes
-                                    replacedNode.lexicalize(nodes, word);
-                                    //add all trees in nodes to the result
-                                    result.addAll(nodes);}
-                            }
-                        }
-                        
                     }
                 }
-            } 
-        }
+                
+                // add the trees from all families listed in the SyntInfo
+                if (syntFamilies != null){
+                    for (String familyname : syntFamilies) {
+                        for (String treename : families.get(familyname) ) {
+                            Tree tree = trees.get(treename);
+                            addSplitTrees(tree, syntAnchors, word, result);
+                        }
+                    }
+                }
+            }
+        } 
         
         
-        catch (NullPointerException e){
-            System.out.println("NullPointerException in Lexikon");}
         //return the result
         return result;
     }
     
-    public void addMorph(String word, String root, String pos) {
+
+    /**
+     * look up a word 
+     * @param word the word
+     * @return a set of trees for that word
+     */
+    public Set<Tree> lookupNonSplit(String word) throws Exception
+    {
+        //collect the trees in this set
+        Set<Tree> result = new HashSet<Tree>();
+        
+        //try to find the word in morphSet
+        Set<MorphInfo> morphSet = morph.get(word);
+        //if word not in morphSet, return
+        if (morphSet == null){
+            throw new Exception("Not in Lexicon : "+word);}
+        //for all the MorphInfos of the word
+        for (MorphInfo it : morphSet){
+            //get the root and try to find it in syntSet
+            String entry = it.getRoot();
+            Set<SyntInfo> syntSet = syntax.get(entry);
+            //if root not in syntSet, return
+            if (syntSet == null){
+                throw new Exception("Not in Syntax : "+word);}
+            //for all SyntInfos of the word
+            for (SyntInfo nextSynt : syntSet){
+                Set<String> syntTrees = nextSynt.getTrees();
+                Set<String> syntFamilies = nextSynt.getFamilies();
+                List<Anchor> syntAnchors = nextSynt.getAnchors();
+                
+                // add the trees listed in the SyntInfo
+                if (syntTrees != null) {
+                    for (String treename : syntTrees){
+                        Tree tree = trees.get(treename);
+                        if (tree != null) {
+                            addInstantiatedTrees(tree, syntAnchors, word, result);
+                        }
+                    }
+                }
+                
+                // add the trees from all families listed in the SyntInfo
+                if (syntFamilies != null){
+                    for (String familyname : syntFamilies) {
+                        for (String treename : families.get(familyname) ) {
+                            Tree tree = trees.get(treename);
+                            addInstantiatedTrees(tree, syntAnchors, word, result);
+                        }
+                    }
+                }
+            }
+        } 
+        
+        
+        //return the result
+        return result;
+    }
+    
+    private void addSplitTrees(Tree tree, List<Anchor> syntAnchors, String word, Collection<Tree> result) {
+        // copy the tree and replace the anchors
+        Tree instance = tree.instantiate(syntAnchors, word);
+        //result.add(instance);         // add this tree to the result -- why do we want this?? AK
+        
+        // split into strictly lexicalised parts
+        for( Tree part : instance.splitIntoStrictlyLexicalisedParts(word) ) {
+            result.add(part);
+        }
+    }
+
+    
+    private void addInstantiatedTrees(Tree tree, List<Anchor> syntAnchors, String word, Collection<Tree> result) {
+        // copy the tree and replace the anchors
+        Tree instance = tree.instantiate(syntAnchors, word);
+        result.add(instance);  
+    }
+
+    public void addMorph(String word, String root, String pos, String agr) {
         Set<MorphInfo> infos = morph.get(word);
         
         if (infos == null) {
             infos = new HashSet<MorphInfo>();
             morph.put(word, infos);
         }
-        infos.add(new MorphInfo(root, pos));
+        infos.add(new MorphInfo(root, pos, agr));
     }
     
     public void addSyntax(String root,
             List<Anchor> anchors, 
             Set<String> trees,
-            Set<String> families)
+            Set<String> families,
+            List<UnificationEquation> equations)
     {
         Set<SyntInfo> infos = syntax.get(root);
         
         if (infos == null)
             syntax.put(root, infos = new HashSet<SyntInfo>());
         
-        infos.add(new SyntInfo(root, anchors, trees, families));
+        infos.add(new SyntInfo(root, anchors, trees, families, equations));
     }
     
     public void addFamily(String name, Set<String> trees) {
@@ -141,6 +194,36 @@ public class Lexicon {
         //System.out.print("\n");
         
         trees.put(tree.getName(), tree);
+    }
+    
+    
+    public static Lexicon readFromDirectory(String directory, boolean verbose) {
+        Lexicon lexicon = new Lexicon(new POSScaler());
+        
+        if( verbose )  System.err.println("reading trees.xml ...");
+        parse(directory + "/trees.xml", new TreeHandler(lexicon));
+        
+        if( verbose )  System.err.println("reading families.xml ...");
+        parse(directory + "/families.xml", new FamilyHandler(lexicon));
+        
+        if( verbose )  System.err.println("reading morphology.xml ...");
+        parse(directory + "/morphology.xml", new MorphHandler(lexicon));
+        
+        if( verbose )  System.err.println("reading syntax.xml ...");
+        parse(directory + "/syntax.xml", new SyntHandler(lexicon));
+        
+        return lexicon;
+    }
+    
+    private static void parse(String filename, DefaultHandler handler) {
+        try {   
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            
+            parser.parse(new File(filename), handler);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
 }

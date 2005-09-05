@@ -52,21 +52,22 @@ public class XDGMain {
                 filterAll = true;}
             else {filterCat = true;}
         }
-        Set<Node> treeSet = new HashSet<Node>();
+        Set<Tree> treeSet = new HashSet<Tree>();
         try{
             for (int i = 1; i<sentence.length;i++){
                 String word = sentence[i];
-                for (Node node : lexicon.lookup(word)) {
+                for (Tree tree : lexicon.lookup(word)) {
+                    Node root = tree.getRoot();
                     if (filterAll){
-                        if (! node.containsEmpty()) {
-                            treeSet.add(node);}
+                        if (! root.containsEmpty()) {
+                            treeSet.add(tree);}
                     }
                     else {
                         if (filterCat){
-                            if (! node.containsEmpty(sentence[0])) {
-                                treeSet.add(node);}
+                            if (! root.containsEmpty(sentence[0])) {
+                                treeSet.add(tree);}
                         }
-                        else {treeSet.add(node);}
+                        else {treeSet.add(tree);}
                     }
                 }
                 

@@ -1,9 +1,7 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
-import java.io.*;
-import javax.xml.parsers.*;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class TreeHandler extends DefaultHandler {
@@ -44,7 +42,7 @@ public class TreeHandler extends DefaultHandler {
             String cat = attrs.getValue("cat");
             String index = attrs.getValue("index");
             node = new InnerNode(cat, index, node);
-            tree.addNode(Tree.xtagNodeName(cat,index), node);
+            tree.addNode(node);
         }
         else if (name.equals("leaf")) {
             String type = attrs.getValue("type");

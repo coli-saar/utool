@@ -14,29 +14,45 @@ public class MorphHandler extends DefaultHandler {
     Lexicon lexicon;
     // Aktuelles index-Element
     String index;
-
+    
+    String root, pos, agr;
+    
     public MorphHandler(Lexicon lexicon) {
-	super();
-	this.lexicon = lexicon;
-	this.index = null;
+        super();
+        this.lexicon = lexicon;
+        this.index = null;
     }
-
+    
     public void startElement(String namespaceURI,
-                             String sName,
-                             String qName,
-                             Attributes attrs)
-	throws SAXException
+            String sName,
+            String qName,
+            Attributes attrs)
+    throws SAXException
     {
-	String element = sName.equals("") ? qName : sName;
-
-	if (element.equals("index")) {
-	    index = attrs.getValue("id");
-	}
-	else if (element.equals("entry")) {
-	    String root = attrs.getValue("root");
-	    String pos = attrs.getValue("pos");
-	    lexicon.addMorph(index, root, pos);
-	}
+        String element = sName.equals("") ? qName : sName;
+        
+        if (element.equals("index")) {
+            index = attrs.getValue("id");
+            root = null;
+            pos = null;
+            agr = null;
+        }
+        else if (element.equals("entry")) {
+            root = attrs.getValue("root");
+            pos = attrs.getValue("pos");
+        } else if( element.equals("feature") ) {
+            agr = attrs.getValue("value");
+        }
     }
 
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        String element = localName.equals("") ? qName : localName;
+        
+        if( element.equals("entry")) {
+            lexicon.addMorph(index, root, pos, agr);
+        }
+    }
+    
+    
+    
 }
