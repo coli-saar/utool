@@ -32,4 +32,8 @@ public class Anchor {
         return special;
     }
     
+    public String getReferredNodeName() {
+        return pos;
+    }
+    
 }

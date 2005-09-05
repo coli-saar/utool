@@ -4,48 +4,29 @@
 
 package de.saar.chorus.XTAGLexicon;
 
-import java.io.File;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.helpers.DefaultHandler;
+import de.saar.getopt.ConvenientGetopt;
 
 public class Main {
+    public static String xmlpath;
     
     public static void main (String args[]){
-	Lexicon lexicon = new Lexicon(new POSScaler());
+        ConvenientGetopt getopt = new ConvenientGetopt("XTAG Test", "", "");
+        getopt.addOption('d', "grammar-directory", ConvenientGetopt.REQUIRED_ARGUMENT, "Specify directory that contains the XML grammar files.", ".");
+        getopt.parse(args);
 
-	System.err.println("reading trees.xml ...");
-	parse("trees.xml", new TreeHandler(lexicon));
-	System.err.println("reading families.xml ...");
-	parse("families.xml", new FamilyHandler(lexicon));
-	System.err.println("reading morphology.xml ...");
-	parse("morphology.xml", new MorphHandler(lexicon));
-	System.err.println("reading syntax.xml ...");
-	parse("syntax.xml", new SyntHandler(lexicon));
-
-	for (int i = 0; i < args.length; ++i) {
-	    System.out.println(args[i]+":");
-	    try{
-		for (Node root : lexicon.lookup(args[i])) {
-		    root.printLisp();
-		    System.out.print("\n");
-		}
-	    }
-	    catch (Exception e){
-		System.out.println(e.getMessage());}
-	}
+        Lexicon lexicon = Lexicon.readFromDirectory(getopt.getValue('d'), true);
+        
+        for (String word : getopt.getRemaining() ) {
+            System.out.println(word+":");
+            try{
+                for (Tree tree : lexicon.lookup(word)) {
+                    System.out.println(tree + "\n");
+                }
+            }
+            catch (Exception e){
+                System.out.println(e.getMessage());}
+        }
     }
-
-
-    public static void parse(String filename, DefaultHandler handler) {
-	try {	
-	    SAXParserFactory factory = SAXParserFactory.newInstance();
-	    SAXParser parser = factory.newSAXParser();
-	
-	    parser.parse(new File(filename), handler);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
+    
     
 }

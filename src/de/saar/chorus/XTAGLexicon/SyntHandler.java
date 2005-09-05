@@ -16,6 +16,7 @@ public class SyntHandler extends DefaultHandler {
     private Set<String> trees;
     private Set<String> families;
     private String index;
+    private List<UnificationEquation> equations;
     
     public SyntHandler (Lexicon lexicon) {
         this.lexicon = lexicon;
@@ -23,6 +24,7 @@ public class SyntHandler extends DefaultHandler {
         this.index = null;
         this.trees = null;
         this.families = null;
+        this.equations = null;
     }
     
     public void startElement(String namespaceURI,
@@ -40,6 +42,7 @@ public class SyntHandler extends DefaultHandler {
             anchors = new ArrayList<Anchor>();
             trees = new HashSet<String>();
             families = new HashSet<String>();
+            equations = new ArrayList<UnificationEquation>();
         }
         else if (name.equals("tree")) {
             trees.add(attrs.getValue("idref"));
@@ -52,6 +55,8 @@ public class SyntHandler extends DefaultHandler {
             String pos = attrs.getValue("pos");
 
             anchors.add(new Anchor(word, pos, word.equals(index)));
+        } else if( name.equals("feature")) {
+            UnificationEquation.Feature ft = new UnificationEquation.Feature(attrs.getValue("node"), UnificationEquation.Side.top, attrs.getValue("ft"));
         }
     }
     
@@ -63,7 +68,7 @@ public class SyntHandler extends DefaultHandler {
         String name = sName.equals("") ? qName : sName;
         
         if (name.equals("entry")) {
-            lexicon.addSyntax(index, anchors, trees, families);
+            lexicon.addSyntax(index, anchors, trees, families, equations);
         }
     }
 }

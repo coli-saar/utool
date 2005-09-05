@@ -3,6 +3,7 @@ package de.saar.chorus.XTAGLexicon;
 
 /*
  * A SyntInfo object represents one line in syntax-coded.db.flat.
+ * It describes the mapping of a word stem to trees or tree families.
  *  
  */
 
@@ -22,14 +23,19 @@ public class SyntInfo {
     // Die Werte im Families-Knoten
     private Set<String> families;
     
+    // die Unifikationsgleichungen
+    private List<UnificationEquation> equations;
+    
     public SyntInfo(String index, 
             List<Anchor> anchors,
             Set<String> trees,
-            Set<String> families) {
+            Set<String> families,
+            List<UnificationEquation> equations) {
         this.index = index;
         this.anchors = anchors;
         this.trees = trees;
         this.families = families;
+        this.equations = equations;
     }
     
     public Set<String> getTrees() {
@@ -47,6 +53,10 @@ public class SyntInfo {
     
     public int hashCode() {
         return index.hashCode();
+    }
+
+    public List<UnificationEquation> getEquations() {
+        return equations;
     }
     
 }

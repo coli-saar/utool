@@ -1,7 +1,7 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Writer;
 
 public final class SubstitutionNode extends LeafNode {
 	
@@ -34,10 +34,11 @@ public final class SubstitutionNode extends LeafNode {
 	 * @param anchors the anchors
 	 * @param lookUp the word the user is searching for
 	 * @return the copied node
-	 */ 
+	 *
 	public Node copyAndReplace(List<Anchor> anchors, String lookUp) {
 		return new SubstitutionNode(cat, index);
 	}
+    */
 	
 	
 	/**
@@ -78,4 +79,8 @@ public final class SubstitutionNode extends LeafNode {
 		return cat + "!";
 	}
 	
+    public SubstitutionNode clone() {
+        return new SubstitutionNode(cat,index);
+    }
+
 }

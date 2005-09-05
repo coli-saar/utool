@@ -1,7 +1,14 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class Converter {
     
@@ -37,9 +44,9 @@ public class Converter {
      * set of trees into the global variables
      * @param treeSet the tree set
      */
-    public void convert(Collection<Node> treeSet){
-        for (Node node : treeSet) {
-        	convert(node);
+    public void convert(Collection<Tree> treeSet){
+        for (Tree tree : treeSet) {
+        	convert(tree.getRoot());
         }
         addresses.add("M.");
         updateInLp();

@@ -25,9 +25,9 @@ public class SocketMain {
 	public StringBuffer lookUp(StringBuffer result, String lookUp){
 		try{int counter = 1;
 		result.append("<?xml version=\"1.0\"?>\n<lexicon>\n");
-		for (Node root : lexicon.lookup(lookUp)) {
+		for (Tree tree : lexicon.lookup(lookUp)) {
 			result.append(" <----- Baum Nummer "+counter+" ----->\n");
-			root.printXMLInBuffer(result," ");
+			tree.getRoot().printXMLInBuffer(result," ");
 			result.append("\n");
 			counter++;
 		}

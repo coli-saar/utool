@@ -30,10 +30,13 @@ public final class FootNode extends LeafNode {
 	 * @param anchors the anchors
 	 * @param lookUp the word the user is searching for
 	 * @return the copied node
-	 */ 
+     * 
+     * @obsolete This is now done by Tree.lexicalise
+	 * 
 	public Node copyAndReplace(List<Anchor> anchors, String lookUp) {
 		return new FootNode(cat, index);
 	}
+    */
 	
 	
 	/**
@@ -71,8 +74,12 @@ public final class FootNode extends LeafNode {
 	}
 
 	public String toString() {
-		return "*";
+		return cat + "*";
 	}
 	
+    public FootNode clone() {
+        return new FootNode(cat,index);
+    }
+
 }
 
