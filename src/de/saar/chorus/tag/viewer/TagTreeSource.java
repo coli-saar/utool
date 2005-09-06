@@ -7,36 +7,20 @@
 
 package de.saar.chorus.tag.viewer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.saar.chorus.XTAGLexicon.Tree;
-import de.saar.chorus.jgraph.IGraphSource;
-import de.saar.chorus.jgraph.ImprovedJGraph;
+import de.saar.chorus.jgraph.LazyGraphSource;
 
-public class TagTreeSource implements IGraphSource {
+public class TagTreeSource extends LazyGraphSource<JTagTree> {
     private List<Tree> trees;
-    private Map<Tree,JTagTree> map;
     
     public TagTreeSource(List<Tree> trees) {
+        super(trees.size());
         this.trees = trees;
-        map = new HashMap<Tree,JTagTree>();
     }
     
-
-    public int size() {
-        return trees.size();
+    protected JTagTree compute(int i) {
+        return new JTagTree(trees.get(i));
     }
-
-    public ImprovedJGraph get(int index) {
-        Tree tree = trees.get(index);
-        
-        if( map.containsKey(tree)) {
-            return map.get(tree);
-        } else {
-            return new JTagTree(tree);
-        }
-    }
-
 }
