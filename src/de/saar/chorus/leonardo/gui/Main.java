@@ -434,10 +434,6 @@ public class Main  {
         } catch(UnsatisfiedLinkError e) {
             System.err.println("Error while loading libdomgraph library: " + e.getMessage());
             Preferences.setUtoolPresent(false);
-            JOptionPane.showMessageDialog(window,
-            	    "No Utool-Functions available.",
-            	    "LibDomgraph-Library not found!",
-            	    JOptionPane.WARNING_MESSAGE);
         }
         
         
