@@ -35,6 +35,7 @@ public class GraphScroller extends JPanel implements ActionListener {
     private JTextField indexField;
     private JPanel indexScroller;
     
+    private Boolean gotScrollBar;
     /**
      * @param label the label that is displayed before the buttons and text field in the status bar
      * @param graphs a GraphSource
@@ -48,6 +49,8 @@ public class GraphScroller extends JPanel implements ActionListener {
         
         this.graphs = graphs;
         this.apptitle = apptitle;
+        
+        gotScrollBar = false;
         
         seen = new HashMap<ImprovedJGraph,JScrollPane>();
         
@@ -87,7 +90,7 @@ public class GraphScroller extends JPanel implements ActionListener {
         validate();
         
         if( seen.containsKey(current) ) {
-            add(seen.get(current), BorderLayout.NORTH);
+        	((JFrame) SwingUtilities.getRoot(this)).add(seen.get(current), BorderLayout.NORTH);
         } else {
             JFrame f = new JFrame("JGraph Test");
             f.add(current);
@@ -98,20 +101,21 @@ public class GraphScroller extends JPanel implements ActionListener {
 
             JScrollPane graphPane = new JScrollPane(current);
             graphPane.setBackground(Color.WHITE);
-            add(graphPane, BorderLayout.NORTH);
+            add(graphPane, BorderLayout.CENTER);
                 
             seen.put(current, graphPane);
         }
         
-        //JFrame f = new JFrame();
-        //add(indexScroller,BorderLayout.SOUTH);
-
-//        add(indexScroller,BorderLayout.SOUTH);
-
+        
         JFrame f = (JFrame) SwingUtilities.getRoot(this);
+        
+        if(! gotScrollBar) {
+        	f.add(indexScroller,BorderLayout.SOUTH);
+        	gotScrollBar = true;
+        }
+        
         Dimension size = f.getSize();
-        f.add(indexScroller,BorderLayout.SOUTH);
-        f.add(this);
+        
         if( apptitle != null ) {
             if( current.getName() != null ) {
                 f.setTitle(current.getName() + " - " + apptitle);
