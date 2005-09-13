@@ -10,6 +10,7 @@ package de.saar.chorus.jgraph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -102,10 +103,15 @@ public class GraphScroller extends JPanel implements ActionListener {
             seen.put(current, graphPane);
         }
         
-        add(indexScroller,BorderLayout.SOUTH);
+        //JFrame f = new JFrame();
+        //add(indexScroller,BorderLayout.SOUTH);
+
+//        add(indexScroller,BorderLayout.SOUTH);
 
         JFrame f = (JFrame) SwingUtilities.getRoot(this);
-        
+        Dimension size = f.getSize();
+        f.add(indexScroller,BorderLayout.SOUTH);
+        f.add(this);
         if( apptitle != null ) {
             if( current.getName() != null ) {
                 f.setTitle(current.getName() + " - " + apptitle);
@@ -113,11 +119,16 @@ public class GraphScroller extends JPanel implements ActionListener {
                 f.setTitle(apptitle);
             }
         }
-        
-        Dimension size = f.getSize();
         f.pack();
-        f.setSize(size);
+      
+       
+        f.pack();
         f.validate();
+        
+        f.setSize(size);
+        
+        f.validate();
+    
     }
 
     

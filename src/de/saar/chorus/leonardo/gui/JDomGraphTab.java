@@ -692,7 +692,7 @@ public class JDomGraphTab extends JPanel {
     	  * Sets up a new <code>SolvedFormBar</code> by
     	  * initalizing the fields and doing the layout.
     	  * 
-    	  * TODO do the layout properly (that is more aesthetic)
+    	  * TODO do the layout properly (that is 'more aesthetic')
     	  */
     	private DominanceGraphBar() {
     		super(); 
@@ -706,7 +706,11 @@ public class JDomGraphTab extends JPanel {
     		if( isSolvedYet ) {
     			numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
     		} else {
-    			numberOfForms.setText("This graph has an unknown number of solved forms.");
+    			if(Preferences.utoolPresent()) {
+    				numberOfForms.setText("This graph has an unknown number of solved forms.");    		
+    			} else {
+    				numberOfForms.setText("Cannot determine the number of solved forms because libdomgraph is unavailable.");
+    			}
     		}
     		
     		add(numberOfForms, BorderLayout.CENTER);
@@ -815,24 +819,20 @@ public class JDomGraphTab extends JPanel {
     				ll.setToolTipText("Not Leaf-Labelled");
     			}
     			
-    		} else {
-    			for( JLabel label : classifyLabels ) {
-    				label.setText("??");
-    				label.setToolTipText("No Classifying available.");
-    			}
-    		}
-    		classified.setAlignmentY(SwingConstants.HORIZONTAL);
-    		classified.add(new JLabel("Classify: "));
-    		classified.add(norm);
-    		classified.add(comp);
-    		
-    		classified.add(ll);
-    		classified.add(hn);
-    		
-    		classified.setForeground(Color.RED);
-    		classified.setAlignmentX(SwingConstants.LEFT);
-    		
-    		add(classified, BorderLayout.EAST);
+    			classified.setAlignmentY(SwingConstants.HORIZONTAL);
+        		classified.add(new JLabel("Classify: "));
+        		classified.add(norm);
+        		classified.add(comp);
+        		
+        		classified.add(ll);
+        		classified.add(hn);
+        		
+        		classified.setForeground(Color.RED);
+        		classified.setAlignmentX(SwingConstants.LEFT);
+        		
+        		add(classified, BorderLayout.EAST);
+    			
+    		} 
     		
     		if( ! Preferences.utoolPresent() ) {
     			solve.setEnabled(false);
