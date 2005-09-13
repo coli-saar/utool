@@ -35,7 +35,9 @@ public class GraphScroller extends JPanel implements ActionListener {
     private JTextField indexField;
     private JPanel indexScroller;
     
+
     private Boolean gotScrollBar;
+
     /**
      * @param label the label that is displayed before the buttons and text field in the status bar
      * @param graphs a GraphSource
@@ -50,8 +52,10 @@ public class GraphScroller extends JPanel implements ActionListener {
         this.graphs = graphs;
         this.apptitle = apptitle;
         
+
         gotScrollBar = false;
         
+
         seen = new HashMap<ImprovedJGraph,JScrollPane>();
         
         next = new JButton(">");
@@ -82,7 +86,8 @@ public class GraphScroller extends JPanel implements ActionListener {
     }
 
     public void selectGraph(int idx) {
-        current = graphs.get(idx);
+       
+    	current = graphs.get(idx);
         
         removeAll();
         
@@ -90,7 +95,8 @@ public class GraphScroller extends JPanel implements ActionListener {
         validate();
         
         if( seen.containsKey(current) ) {
-        	((JFrame) SwingUtilities.getRoot(this)).add(seen.get(current), BorderLayout.NORTH);
+        	add(seen.get(current), BorderLayout.CENTER);
+            validate();
         } else {
             JFrame f = new JFrame("JGraph Test");
             f.add(current);
@@ -101,21 +107,28 @@ public class GraphScroller extends JPanel implements ActionListener {
 
             JScrollPane graphPane = new JScrollPane(current);
             graphPane.setBackground(Color.WHITE);
+
             add(graphPane, BorderLayout.CENTER);
-                
+
             seen.put(current, graphPane);
+            
+            validate();
         }
         
         
+
         JFrame f = (JFrame) SwingUtilities.getRoot(this);
         
-        if(! gotScrollBar) {
-        	f.add(indexScroller,BorderLayout.SOUTH);
-        	gotScrollBar = true;
-        }
+
+        //if(! gotScrollBar) {
+        	add(indexScroller,BorderLayout.SOUTH);
+        	//gotScrollBar = true;
+        	
+        //}
         
         Dimension size = f.getSize();
         
+
         if( apptitle != null ) {
             if( current.getName() != null ) {
                 f.setTitle(current.getName() + " - " + apptitle);
@@ -129,7 +142,10 @@ public class GraphScroller extends JPanel implements ActionListener {
         f.pack();
         f.validate();
         
-        f.setSize(size);
+
+        f.doLayout();
+        f.setBounds(new Rectangle(size));
+                
         
         f.validate();
     
