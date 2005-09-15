@@ -4,6 +4,7 @@ import static de.saar.chorus.jgraph.GecodeTreeLayoutSettings.nodeXDistance;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
 
@@ -42,6 +43,21 @@ class GraphLayoutCursor extends GraphNodeCursor {
 			layout = theLayout;
 	    }
 	    
+	    
+	    /**
+		 * Creates a new <code>GraphLayoutCursor</code>
+		 * 
+		 * @param theNode the graph root
+		 * @param theLayout the layout algorithm to store the coordinates
+		 * @param theGraph the graph to layout
+		 */
+	    public GraphLayoutCursor(DefaultGraphCell theNode,  Set<DefaultGraphCell> theNodes,
+								GecodeTreeLayout theLayout, ImprovedJGraph theGraph) {
+	        super(theNode, theGraph, theNodes);
+			
+			graph=theGraph;
+			layout = theLayout;
+	    }
 	    /**
 	     * @return the recently processed node
 	     */

@@ -1,5 +1,7 @@
 package de.saar.chorus.jgraph;
 
+import java.util.Set;
+
 import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.treelayout.NodeCursorInterface;
@@ -23,6 +25,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
 	private DefaultGraphCell startNode;	// the graph root
     private DefaultGraphCell node;		// the recently processed node
     private ImprovedJGraph graph;			// the graph to layout
+    private Set<DefaultGraphCell> nodesToLayout;
 	
     /**
      * A new instance of <code>GraphNodeCursor<code>
@@ -35,6 +38,22 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
         this.startNode = theNode;
         this.node = theNode;
 		this.graph = theGraph;
+		nodesToLayout = theGraph.getNodes();
+    }
+    
+    /**
+     * A new instance of <code>GraphNodeCursor<code>
+     * 
+     * @param theNode the graph root
+     * @param theGraph the graph to layout
+     */
+    public GraphNodeCursor(DefaultGraphCell theNode, 
+								ImprovedJGraph theGraph,
+								Set<DefaultGraphCell> allowedNodes) {
+        this.startNode = theNode;
+        this.node = theNode;
+		this.graph = theGraph;
+		nodesToLayout = allowedNodes;
     }
 	
     /**
@@ -56,7 +75,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
     	 * The node must not be the start node, neither the
     	 * graph root.
     	 */
-        return ((node != startNode) && !graph.isRoot(node));
+        return ((node != startNode) && !graph.isRoot(node) && nodesToLayout.contains( graph.getParents(node).get(0) ));
     }
     
     /**
@@ -74,7 +93,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * @return true if there are one ore more children
      */
     public boolean mayMoveDownwards() {
-        return !graph.getChildren(node).isEmpty();
+        return !graph.getChildren(node).isEmpty() && nodesToLayout.contains( graph.getChildren(node).get(0) );
     }
     
     /**
@@ -93,7 +112,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      */
     public boolean mayMoveSidewards() {
 		DefaultGraphCell sibling = graph.getRightSibling(node);
-        return sibling != null;
+        return (sibling != null) && nodesToLayout.contains(graph.getRightSibling(node));
     }
     
     /**
