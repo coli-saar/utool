@@ -29,9 +29,11 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
-import org.jgraph.layout.JGraphLayoutAlgorithm;
 import org.jgraph.util.JGraphUtilities;
 
+import de.saar.chorus.jgraph.GecodeTreeLayout;
+import de.saar.chorus.jgraph.GraphDrawingCursor;
+import de.saar.chorus.jgraph.GraphLayoutCursor;
 import de.saar.chorus.treelayout.BoundingBox;
 import de.saar.chorus.treelayout.PostOrderNodeVisitor;
 import de.saar.chorus.treelayout.PreOrderNodeVisitor;
@@ -46,7 +48,7 @@ import de.saar.chorus.treelayout.Shape;
  * @author Alexander Koller
  * @author Michaela Regneri
  */
-public class DomGraphLayout extends JGraphLayoutAlgorithm {
+public class DomGraphLayout extends GecodeTreeLayout {
 	
 	// the dominance graph
 	private JDomGraph graph; 
@@ -97,7 +99,7 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 	 * @param gr the graph to compute the layout for
 	 */
 	DomGraphLayout(JDomGraph gr) {
-		
+		super(gr);
 		/*
 		 * initializing the graph and its attributes
 		 * by getting them from the graph
@@ -730,13 +732,13 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 			 
 			 // computing the x-positions, dependent on the _direct_
 			 // parent
-			 FragmentLayoutCursor layCursor = new FragmentLayoutCursor(root, frag, this, graph);
+			 GraphLayoutCursor layCursor = new GraphLayoutCursor(root, this, graph, frag.getNodes());
 		     PostOrderNodeVisitor postVisitor = new PostOrderNodeVisitor(layCursor);
 		     postVisitor.run();
 			 
 			 // another DFS computes the y- and x-positions relativ to the
 			 // _root_
-			 FragmentDrawingCursor drawCursor = new FragmentDrawingCursor(root, frag, this, graph);
+			 GraphDrawingCursor drawCursor = new GraphDrawingCursor(root, this, graph, frag.getNodes());
 			 PreOrderNodeVisitor preVisitor = new PreOrderNodeVisitor(drawCursor);
 		     preVisitor.run();
 			 
@@ -783,6 +785,10 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
         return extR - extL;
     }
 	
+    public void putNodeToShape(DefaultGraphCell node, Shape shape) {
+        nodesToShape.put(node,shape);
+    }
+    
 	/**
 	 * computes the dimensions of all fragments using
 	 * computeFragHeight and computeFragWidth.
@@ -1675,8 +1681,14 @@ public class DomGraphLayout extends JGraphLayoutAlgorithm {
 		return graph.computeNodeWidth(node);
 	}
 	
-	
+	public Shape getNodesToShape(DefaultGraphCell node) {
+		return nodesToShape.get(node);
+	}
 
+	public void addRelXtoRoot(DefaultGraphCell node, Integer x) {
+        relXtoRoot.put(node,x);
+    }
+	
 	/**
 	 * @return Returns the relXtoRoot.
 	 */
