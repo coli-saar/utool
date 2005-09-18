@@ -21,7 +21,7 @@ import org.jgraph.graph.DefaultGraphCell;
  * @author Michaela Regneri
  *
  */
-class GraphDrawingCursor extends GraphNodeCursor {
+public class GraphDrawingCursor extends GraphNodeCursor {
 	int x;	// the recent x-coordinate
     int y;  // the recent y-coordinate
     
@@ -49,9 +49,11 @@ class GraphDrawingCursor extends GraphNodeCursor {
 	 * @param theNode the graph root
 	 * @param theLayout the layout algorithm to store the coordinates
 	 * @param aGraph the graph to layout
+	 * @param theNodes nodes the layout shall arrange 
 	 */
-    public GraphDrawingCursor(DefaultGraphCell theNode, Set<DefaultGraphCell> theNodes,
-						GecodeTreeLayout theLayout, ImprovedJGraph aGraph) {
+    public GraphDrawingCursor(DefaultGraphCell theNode,
+						GecodeTreeLayout theLayout, ImprovedJGraph aGraph, 
+						 Set<DefaultGraphCell> theNodes) {
         super(theNode, aGraph, theNodes);
         this.x = 0;
         this.y = 0;

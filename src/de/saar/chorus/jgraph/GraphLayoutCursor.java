@@ -24,9 +24,10 @@ import de.saar.chorus.treelayout.ShapeList;
  * @author Michaela Regneri
  *
  */
-class GraphLayoutCursor extends GraphNodeCursor {
+public class GraphLayoutCursor extends GraphNodeCursor {
 		ImprovedJGraph graph;
 		GecodeTreeLayout layout;
+		Set<DefaultGraphCell> nodes;
 		
 		/**
 		 * Creates a new <code>GraphLayoutCursor</code>
@@ -50,13 +51,16 @@ class GraphLayoutCursor extends GraphNodeCursor {
 		 * @param theNode the graph root
 		 * @param theLayout the layout algorithm to store the coordinates
 		 * @param theGraph the graph to layout
+		 * @param theNodes nodes the layout shall arrange
 		 */
-	    public GraphLayoutCursor(DefaultGraphCell theNode,  Set<DefaultGraphCell> theNodes,
-								GecodeTreeLayout theLayout, ImprovedJGraph theGraph) {
+	    public GraphLayoutCursor(DefaultGraphCell theNode,  
+								GecodeTreeLayout theLayout, ImprovedJGraph theGraph, 
+								Set<DefaultGraphCell> theNodes) {
 	        super(theNode, theGraph, theNodes);
 			
 			graph=theGraph;
 			layout = theLayout;
+			nodes = theNodes;
 	    }
 	    /**
 	     * @return the recently processed node
@@ -71,13 +75,13 @@ class GraphLayoutCursor extends GraphNodeCursor {
 	     */
 	    public void processCurrentNode() {
 	        DefaultGraphCell currentNode = getVisualNode();
-			if( graph.isRoot(currentNode) ) {
+			if( graph.isRoot(currentNode) || (! nodes.contains(graph.getParents(currentNode).get(0)))) {
                 layout.addRelXtoParent(currentNode,0);
 			}
             
 			Extent extent = new Extent(layout.getNodeWidth(currentNode));
 			Shape shape;
-			if ( graph.isLeaf(currentNode) ) {
+			if ( graph.isLeaf(currentNode) || (! nodes.contains(graph.getChildren(currentNode).get(0)))) {
 				shape = new Shape(extent);
 			} else {
 				ShapeList childShapes = new ShapeList(nodeXDistance);

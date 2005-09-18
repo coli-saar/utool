@@ -46,6 +46,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * 
      * @param theNode the graph root
      * @param theGraph the graph to layout
+     * @param allowedNodes nodes the layout shall arrange, all are taken if not specified
      */
     public GraphNodeCursor(DefaultGraphCell theNode, 
 								ImprovedJGraph theGraph,
@@ -75,7 +76,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
     	 * The node must not be the start node, neither the
     	 * graph root.
     	 */
-        return ((node != startNode) && !graph.isRoot(node) && nodesToLayout.contains( graph.getParents(node).get(0) ));
+        return ((node != startNode) && (!graph.isRoot(node)) && nodesToLayout.contains( graph.getParents(node).get(0) ));
     }
     
     /**
@@ -93,7 +94,7 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * @return true if there are one ore more children
      */
     public boolean mayMoveDownwards() {
-        return !graph.getChildren(node).isEmpty() && nodesToLayout.contains( graph.getChildren(node).get(0) );
+        return (!graph.getChildren(node).isEmpty()) && nodesToLayout.contains( graph.getChildren(node).get(0) );
     }
     
     /**
