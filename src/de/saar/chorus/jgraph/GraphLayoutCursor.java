@@ -42,6 +42,7 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 			
 			graph=theGraph;
 			layout = theLayout;
+			nodes = theGraph.getNodes();
 	    }
 	    
 	    
