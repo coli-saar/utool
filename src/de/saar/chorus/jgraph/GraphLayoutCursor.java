@@ -26,7 +26,7 @@ import de.saar.chorus.treelayout.ShapeList;
  */
 public class GraphLayoutCursor extends GraphNodeCursor {
 		ImprovedJGraph graph;
-		GecodeTreeLayout layout;
+		ImprovedJGraphLayout layout;
 		Set<DefaultGraphCell> nodes;
 		
 		/**
@@ -37,7 +37,7 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 		 * @param theGraph the graph to layout
 		 */
 	    public GraphLayoutCursor(DefaultGraphCell theNode,  
-								GecodeTreeLayout theLayout, ImprovedJGraph theGraph) {
+								ImprovedJGraphLayout theLayout, ImprovedJGraph theGraph) {
 	        super(theNode, theGraph);
 			
 			graph=theGraph;
@@ -55,7 +55,7 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 		 * @param theNodes nodes the layout shall arrange
 		 */
 	    public GraphLayoutCursor(DefaultGraphCell theNode,  
-								GecodeTreeLayout theLayout, ImprovedJGraph theGraph, 
+								ImprovedJGraphLayout theLayout, ImprovedJGraph theGraph, 
 								Set<DefaultGraphCell> theNodes) {
 	        super(theNode, theGraph, theNodes);
 			

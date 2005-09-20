@@ -10,7 +10,6 @@ package de.saar.chorus.jgraph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -36,7 +35,7 @@ public class GraphScroller extends JPanel implements ActionListener {
     private JPanel indexScroller;
     
 
-    private Boolean gotScrollBar;
+    private Boolean frameHasMeaningfulSize;
 
     /**
      * @param label the label that is displayed before the buttons and text field in the status bar
@@ -53,7 +52,7 @@ public class GraphScroller extends JPanel implements ActionListener {
         this.apptitle = apptitle;
         
 
-        gotScrollBar = false;
+        frameHasMeaningfulSize = false;
         
 
         seen = new HashMap<ImprovedJGraph,JScrollPane>();
@@ -118,16 +117,14 @@ public class GraphScroller extends JPanel implements ActionListener {
         
 
         JFrame f = (JFrame) SwingUtilities.getRoot(this);
-        
+        Dimension size = f.getSize();
 
         //if(! gotScrollBar) {
         	add(indexScroller,BorderLayout.SOUTH);
         	//gotScrollBar = true;
         	
         //}
-        
-        /*Dimension size = f.getSize();
-        
+        /*
         if( ! gotScrollBar ) {
         	f.setPreferredSize(size);
         	gotScrollBar = true;
@@ -148,11 +145,13 @@ public class GraphScroller extends JPanel implements ActionListener {
         
 
         f.doLayout();
-        Dimension size = f.getSize();
         
-        if( ! gotScrollBar ) {
-        	f.setPreferredSize(size);
-        	gotScrollBar = true;
+        
+        if( ! frameHasMeaningfulSize ) {
+        	f.setPreferredSize(f.getSize());
+        	frameHasMeaningfulSize = true;
+        } else if( ! f.getSize().equals(size)) {
+            f.setPreferredSize(size);
         }
        // f.setBounds(new Rectangle(size));
                 

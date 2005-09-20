@@ -31,9 +31,9 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
-import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.GraphDrawingCursor;
 import de.saar.chorus.jgraph.GraphLayoutCursor;
+import de.saar.chorus.jgraph.ImprovedJGraphLayout;
 import de.saar.chorus.treelayout.BoundingBox;
 import de.saar.chorus.treelayout.PostOrderNodeVisitor;
 import de.saar.chorus.treelayout.PreOrderNodeVisitor;
@@ -48,7 +48,7 @@ import de.saar.chorus.treelayout.Shape;
  * @author Alexander Koller
  * @author Michaela Regneri
  */
-public class DomGraphLayout extends GecodeTreeLayout {
+public class DomGraphLayout extends ImprovedJGraphLayout {
 	
 	// the dominance graph
 	private JDomGraph graph; 
@@ -99,7 +99,6 @@ public class DomGraphLayout extends GecodeTreeLayout {
 	 * @param gr the graph to compute the layout for
 	 */
 	DomGraphLayout(JDomGraph gr) {
-		super(gr);
 		/*
 		 * initializing the graph and its attributes
 		 * by getting them from the graph
