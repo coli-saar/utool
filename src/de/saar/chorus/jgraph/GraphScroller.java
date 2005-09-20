@@ -119,17 +119,14 @@ public class GraphScroller extends JPanel implements ActionListener {
         JFrame f = (JFrame) SwingUtilities.getRoot(this);
         Dimension size = f.getSize();
 
-        //if(! gotScrollBar) {
-        	add(indexScroller,BorderLayout.SOUTH);
-        	//gotScrollBar = true;
+        if( frameHasMeaningfulSize && (! f.getPreferredSize().equals(size)) ) {
+            f.setPreferredSize(size);
+        }
+      
+       	add(indexScroller,BorderLayout.SOUTH);
         	
-        //}
-        /*
-        if( ! gotScrollBar ) {
-        	f.setPreferredSize(size);
-        	gotScrollBar = true;
-        }*/
-
+        	
+      
         if( apptitle != null ) {
             if( current.getName() != null ) {
                 f.setTitle(current.getName() + " - " + apptitle);
@@ -150,10 +147,8 @@ public class GraphScroller extends JPanel implements ActionListener {
         if( ! frameHasMeaningfulSize ) {
         	f.setPreferredSize(f.getSize());
         	frameHasMeaningfulSize = true;
-        } else if( ! f.getSize().equals(size)) {
-            f.setPreferredSize(size);
-        }
-       // f.setBounds(new Rectangle(size));
+        } 
+       
                 
         
         f.validate();
