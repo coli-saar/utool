@@ -11,7 +11,6 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.layout.JGraphLayoutAlgorithm;
 
 import de.saar.chorus.treelayout.BoundingBox;
 import de.saar.chorus.treelayout.PostOrderNodeVisitor;
@@ -27,7 +26,7 @@ import de.saar.chorus.treelayout.Shape;
  * @author Michaela Regneri
  *
  */
-public class GecodeTreeLayout extends JGraphLayoutAlgorithm {
+public class GecodeTreeLayout extends ImprovedJGraphLayout {
 	
 	// the solved form to layout
 	private ImprovedJGraph graph;

@@ -25,7 +25,7 @@ public class GraphDrawingCursor extends GraphNodeCursor {
 	int x;	// the recent x-coordinate
     int y;  // the recent y-coordinate
     
-    GecodeTreeLayout layout; // the layout object to store 
+    ImprovedJGraphLayout layout; // the layout object to store 
     						 // the coordinates in
 	
 	/**
@@ -36,7 +36,7 @@ public class GraphDrawingCursor extends GraphNodeCursor {
 	 * @param aGraph the graph to layout
 	 */
     public GraphDrawingCursor(DefaultGraphCell theNode, 
-						GecodeTreeLayout theLayout, ImprovedJGraph aGraph) {
+						ImprovedJGraphLayout theLayout, ImprovedJGraph aGraph) {
         super(theNode, aGraph);
         this.x = 0;
         this.y = 0;
@@ -52,7 +52,7 @@ public class GraphDrawingCursor extends GraphNodeCursor {
 	 * @param theNodes nodes the layout shall arrange 
 	 */
     public GraphDrawingCursor(DefaultGraphCell theNode,
-						GecodeTreeLayout theLayout, ImprovedJGraph aGraph, 
+						ImprovedJGraphLayout theLayout, ImprovedJGraph aGraph, 
 						 Set<DefaultGraphCell> theNodes) {
         super(theNode, aGraph, theNodes);
         this.x = 0;
