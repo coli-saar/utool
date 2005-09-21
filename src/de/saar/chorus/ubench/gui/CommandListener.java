@@ -421,6 +421,21 @@ public class CommandListener implements ActionListener, ItemListener {
         				"Libdomgraph version " + solv.getLibdomgraphVersion() + " loaded.",
         				"About libdomgraph",
         				JOptionPane.INFORMATION_MESSAGE);
+        } else if (command.equals("about") ) {
+        	JOptionPane.showMessageDialog(Main.getWindow(),
+    				"Ubench version 1.0" + System.getProperty("line.separator")
+    				+ "created by the CHORUS project, SFB 378, Saarland University"
+    				+ System.getProperty("line.separator") +System.getProperty("line.separator") +
+    				"libdomgraph version 2.0pre" + System.getProperty("line.separator") +
+    				"created by the CHORUS project, SFB 378, Saarland University"
+    				+ System.getProperty("line.separator") +System.getProperty("line.separator") +
+    				"JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
+    				"(c) by Gaudenz Alder et al. 2001-2004" + 
+    				System.getProperty("line.separator") + System.getProperty("line.separator")
+    				+ "iText version 1.3.1" + System.getProperty("line.separator") +
+    				"(c) by Bruno Lowagie 2005",
+    				"About Ubench", 
+    				JOptionPane.INFORMATION_MESSAGE);
         }
     }
     

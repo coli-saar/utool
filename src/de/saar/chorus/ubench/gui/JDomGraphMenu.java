@@ -26,7 +26,8 @@ public class JDomGraphMenu extends JMenuBar {
 	private JMenu fileMenu,   // operating on files
 				  graphMenu,  // operating on the visible graph	
 				  viewMenu,   // (general) view preferences 
-				  utoolMenu;  // solving
+				  utoolMenu,  // solving
+				  helpMenu;	  // Help / About	 
 	
 	// the menu items
 	private JMenuItem 
@@ -47,7 +48,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  fitAll,        // checkbox indicating whether or not the recent
 									 // and all further loaded graphs shall be zoomed
 									 // out until fitting the window
-					  utoolInfo;
+					  utoolInfo,
+					  about;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -213,6 +215,20 @@ public class JDomGraphMenu extends JMenuBar {
         
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
+        
+        helpMenu = new JMenu("Help");
+        helpMenu.setActionCommand("help");
+        helpMenu.addActionListener(listener);
+        helpMenu.setMnemonic(KeyEvent.VK_H);
+        
+        about = new JMenuItem("About...");
+        about.setActionCommand("about");
+        about.addActionListener(listener);
+        about.setMnemonic(KeyEvent.VK_A);
+        
+        helpMenu.add(about);
+        add(helpMenu);
+        
 	}
 	
 	/**
