@@ -155,12 +155,10 @@ class XdgWriter {
 	        "		 <list>\n");
 	        
 	        //<!-- HIER: die Reihenfolge der LP-Label -->\n
-	        //    <constant data=\"p0l\"/>\n");
-	        //sb.append("	      <constant data=\"sentence\"/>\n");
-	        sb.append("	      <constant data=\"dum\"/>\n");
 	        for (String ad : addresses) {
 	            sb.append("	      <constant data=\""+ad+"\"/>\n");
 	        }
+	        sb.append("	      <constant data=\"dum\"/>\n");
 	        
 	        sb.append("		 </list>\n"+
 	                "	     </arg>\n"+
