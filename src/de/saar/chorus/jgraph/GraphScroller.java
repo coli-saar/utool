@@ -83,7 +83,7 @@ public class GraphScroller extends JPanel implements ActionListener {
         
         indexScroller.setMaximumSize(new Dimension(1500,indexScroller.getPreferredSize().height));
     }
-
+    
     public void selectGraph(int idx) {
        
     	current = graphs.get(idx);
@@ -125,8 +125,6 @@ public class GraphScroller extends JPanel implements ActionListener {
       
        	add(indexScroller,BorderLayout.SOUTH);
         	
-        	
-      
         if( apptitle != null ) {
             if( current.getName() != null ) {
                 f.setTitle(current.getName() + " - " + apptitle);
@@ -142,7 +140,6 @@ public class GraphScroller extends JPanel implements ActionListener {
         
 
         f.doLayout();
-        
         
         if( ! frameHasMeaningfulSize ) {
         	f.setPreferredSize(f.getSize());

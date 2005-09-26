@@ -173,7 +173,7 @@ public class DomGraphGXLCodec {
 					}
 				}
 			}
-		} // end of document loop´
+		} // end of document loop
         
      //   graph.computeAdjacency();
 	}
