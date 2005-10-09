@@ -44,7 +44,12 @@
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
-               includes="${chorus}/ubench/*.java,${chorus}/jgraph/*.java,${chorus}/treelayout/*.java,${chorus}/ubench/gui/*.java,${chorus}/ubench/utool/*.java,${coli}/getopt/*.java"
+               includes="${chorus}/ubench/*.java,
+							${chorus}/jgraph/*.java,
+							${chorus}/treelayout/*.java,
+							${chorus}/ubench/gui/*.java,
+							${chorus}/ubench/utool/*.java,
+							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
 			<classpath>
@@ -118,7 +123,7 @@
 	       unpacked version is already up to date. Up-to-dateness is
 	       recorded with a timestamp. "unpack.jar.id" is a unique id for
 	       this Jar. -->
-	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
+	<target name="unpack" depends="check.unpack" unless="nobuild.unpack" if="unpack.jar.present">
 		<unjar src="${unpack.jar}" dest="${build.classes}" />
 		<touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
 	</target>
@@ -128,34 +133,42 @@
 	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
+		
+		<available file="${jgraph.jar}" property="jgraph.jar.present"/>
+		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+		<available file="${getopt.jar}" property="getopt.jar.present"/>
+		<available file="${itext.jar}" property="itext.jar.present"/>
+		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+		<available file="${unpack.jar}" property="unpack.jar.present"/>
+	
 	</target>
 
 	<target name="jgraph.unpacked" depends="init">
-		<antcall target="unpack">
+		<antcall target="unpack" if="jgraph.jar.present">
 			<param name="unpack.jar" value="${jgraph.jar}" />
 			<param name="unpack.jar.id" value="jgraph" />
 		</antcall>
-		<antcall target="unpack">
+		<antcall target="unpack" if="jgraphaddons.jar.present">
 			<param name="unpack.jar" value="${jgraphaddons.jar}" />
 			<param name="unpack.jar.id" value="jgraphaddons" />
 		</antcall>
 	</target>
 
-	<target name="getopt.unpacked" depends="init">
+	<target name="getopt.unpacked" depends="init" if="getopt.jar.present">
 		<antcall target="unpack">
 			<param name="unpack.jar" value="${getopt.jar}" />
 			<param name="unpack.jar.id" value="getopt" />
 		</antcall>
 	</target>
 
-	<target name="itext.unpacked" depends="init">
+	<target name="itext.unpacked" depends="init" if="itext.jar.present">
 		<antcall target="unpack">
 			<param name="unpack.jar" value="${itext.jar}" />
 			<param name="unpack.jar.id" value="itext" />
 		</antcall>
 	</target>
 
-	<target name="utool-swig.unpacked" depends="init">
+	<target name="utool-swig.unpacked" depends="init" if="itext.jar.present">
 		<antcall target="unpack">
 			<param name="unpack.jar" value="${utool-swig.jar}" />
 			<param name="unpack.jar.id" value="utool-swig" />
@@ -193,10 +206,9 @@
 		<mkdir dir="${build.classes}/timestamps-unpackjar" />
 		<mkdir dir="${build.lib}" />
 		<mkdir dir="${build.src}" />
-
 		<mkdir dir="${reports.tests}" />
-
 		<mkdir dir="${doc.api}" />
+		
 	</target>
 
 	<!-- Delete all compiled files -->
@@ -205,5 +217,9 @@
 		<delete dir="${build.lib}" />
 		<delete dir="${build.src}" />
 		<delete dir="${doc.api}" />
+	</target>
+	
+	<target name="prepare">
+		<delete dir="${coli}" />
 	</target>
 </project>
