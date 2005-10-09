@@ -143,12 +143,12 @@
 	
 	</target>
 
-	<target name="jgraph.unpacked" depends="init">
-		<antcall target="unpack" if="jgraph.jar.present">
+	<target name="jgraph.unpacked" depends="init" if="jgraph.jar.present">
+		<antcall target="unpack" >
 			<param name="unpack.jar" value="${jgraph.jar}" />
 			<param name="unpack.jar.id" value="jgraph" />
 		</antcall>
-		<antcall target="unpack" if="jgraphaddons.jar.present">
+		<antcall target="unpack" >
 			<param name="unpack.jar" value="${jgraphaddons.jar}" />
 			<param name="unpack.jar.id" value="jgraphaddons" />
 		</antcall>
