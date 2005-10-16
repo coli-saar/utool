@@ -31,7 +31,7 @@
 
 
 
-	<property name="ubench.jar" value="${build.lib}/Ubench.jar" />
+	<property name="ubench.jar" value="${build.lib}/Ubench-1.0.jar" />
 	<property name="ubench.jar.classes" value="${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/ubench/utool/*,${chorus}/jgraph/*,${coli}/getopt/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
@@ -72,6 +72,51 @@
 
 	</target>
 
+
+	
+	<target name="dist" depends="init,jgraph.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
+		
+		
+		<javac srcdir="${source}"
+               destdir="${build.classes}"
+               debug="true"
+               includes="${chorus}/ubench/*.java,
+							${chorus}/jgraph/*.java,
+							${chorus}/treelayout/*.java,
+							${chorus}/ubench/gui/*.java,
+							${chorus}/ubench/utool/*.java,
+							${coli}/getopt/*.java"
+               excludes="**/Test*.java"
+               source="1.5">
+			<classpath>
+				<pathelement path="${jgraph.jar}" />
+				<pathelement path="${jgraphaddons.jar}" />
+				<pathelement path="${getopt.jar}" />
+				<pathelement path="${itext.jar}" />
+				<pathelement path="${utool-swig.jar}" />
+			</classpath>
+		</javac>
+
+
+		<copy todir="tmp_source/src">
+				<fileset dir="${source}"/>
+		</copy>
+					
+		
+		<jar jarfile="${ubench.jar}"
+             basedir="${build.classes}"
+             includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
+			<manifest>
+				<attribute name="Main-Class"
+                           value="de.saar.chorus.ubench.gui.Main" />
+			</manifest>
+			
+			<fileset dir="tmp_source"/>
+		</jar>
+
+		<delete dir="tmp_source/" />
+	</target>
+	
 	<!-- JUnit -->
 	<!-- If the JUnit targets don't work, make sure that junit.jar is in
 	     the classpath, e.g.
@@ -220,6 +265,15 @@
 	</target>
 	
 	<target name="prepare">
-		<delete dir="${coli}" />
+		<mkdir dir="temp/classes" />
+		<copy todir="temp/classes">
+			<fileset dir="${build.classes}"/>
+		</copy>
+		<delete dir="${build.classes}"/>
+		<copy todir="{build.classes}">
+			<fileset dir="temp/classes"/>
+		</copy>
+		<delete dir="temp/classes"/>
+		
 	</target>
 </project>
