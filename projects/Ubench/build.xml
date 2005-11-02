@@ -89,17 +89,22 @@
                excludes="**/Test*.java"
                source="1.5">
 			<classpath>
-				<pathelement path="${jgraph.jar}" />
-				<pathelement path="${jgraphaddons.jar}" />
-				<pathelement path="${getopt.jar}" />
-				<pathelement path="${itext.jar}" />
-				<pathelement path="${utool-swig.jar}" />
+				<pathelement path="${jgraph.unpacked.classes}" />
+				<pathelement path="${getopt.unpacked.classes}" />
+				<pathelement path="${itext.unpacked.classes}" />
+				<pathelement path="${utool-swig.unpacked.classes}" />
 			</classpath>
 		</javac>
 
 
 		<copy todir="tmp_source/src">
-				<fileset dir="${source}"/>
+				<fileset dir="${source}"
+					includes="**/jgraph/**,**/ubench/**,**/treelayout/**"/>
+		</copy>
+		
+		<mkdir dir="tmp_build/projects/Ubench"/>
+		<copy todir="tmp_build/projects/Ubench">
+				<fileset dir="../../projects/Ubench/" includes="*.xml" />
 		</copy>
 					
 		
@@ -112,9 +117,11 @@
 			</manifest>
 			
 			<fileset dir="tmp_source"/>
+			<fileset dir="tmp_build"/>		
 		</jar>
 
 		<delete dir="tmp_source/" />
+		<delete dir="tmp_build/"/>
 	</target>
 	
 	<!-- JUnit -->
@@ -168,7 +175,7 @@
 	       unpacked version is already up to date. Up-to-dateness is
 	       recorded with a timestamp. "unpack.jar.id" is a unique id for
 	       this Jar. -->
-	<target name="unpack" depends="check.unpack" unless="nobuild.unpack" if="unpack.jar.present">
+	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
 		<unjar src="${unpack.jar}" dest="${build.classes}" />
 		<touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
 	</target>
@@ -179,12 +186,6 @@
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
 		
-		<available file="${jgraph.jar}" property="jgraph.jar.present"/>
-		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
-		<available file="${getopt.jar}" property="getopt.jar.present"/>
-		<available file="${itext.jar}" property="itext.jar.present"/>
-		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
-		<available file="${unpack.jar}" property="unpack.jar.present"/>
 	
 	</target>
 
@@ -254,6 +255,13 @@
 		<mkdir dir="${reports.tests}" />
 		<mkdir dir="${doc.api}" />
 		
+		<available file="${jgraph.jar}" property="jgraph.jar.present"/>
+				<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+				<available file="${getopt.jar}" property="getopt.jar.present"/>
+				<available file="${itext.jar}" property="itext.jar.present"/>
+				<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+				<available file="${unpack.jar}" property="unpack.jar.present"/>
+		
 	</target>
 
 	<!-- Delete all compiled files -->
@@ -265,15 +273,11 @@
 	</target>
 	
 	<target name="prepare">
-		<mkdir dir="temp/classes" />
-		<copy todir="temp/classes">
-			<fileset dir="${build.classes}"/>
+		<mkdir dir="${build.classes}" />
+		<copy todir="${build.classes}">
+			<fileset dir="../"/>
 		</copy>
-		<delete dir="${build.classes}"/>
-		<copy todir="{build.classes}">
-			<fileset dir="temp/classes"/>
-		</copy>
-		<delete dir="temp/classes"/>
+		<delete dir="${build.classes}/de"/>
 		
 	</target>
 </project>
