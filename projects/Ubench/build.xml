@@ -31,7 +31,8 @@
 
 
 
-	<property name="ubench.jar" value="${build.lib}/Ubench-1.0.jar" />
+	<property name="ubench-dist.jar" value="${build.lib}/Ubench-1.0.jar" />
+	<property name="ubench.jar" value="${build.lib}/Ubench.jar" />
 	<property name="ubench.jar.classes" value="${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/ubench/utool/*,${chorus}/jgraph/*,${coli}/getopt/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
@@ -52,12 +53,9 @@
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
+			
 			<classpath>
-				<pathelement path="${jgraph.jar}" />
-				<pathelement path="${jgraphaddons.jar}" />
-				<pathelement path="${getopt.jar}" />
-				<pathelement path="${itext.jar}" />
-				<pathelement path="${utool-swig.jar}" />
+				<pathelement path="${build.classes}" />
 			</classpath>
 		</javac>
 
@@ -88,27 +86,25 @@
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
-			<classpath>
-				<pathelement path="${jgraph.unpacked.classes}" />
-				<pathelement path="${getopt.unpacked.classes}" />
-				<pathelement path="${itext.unpacked.classes}" />
-				<pathelement path="${utool-swig.unpacked.classes}" />
-			</classpath>
+						
+						<classpath>
+							<pathelement path="${build.classes}" />
+						</classpath>
 		</javac>
 
 
-		<copy todir="tmp_source/src">
+		<copy todir="tmp_Ubench/src">
 				<fileset dir="${source}"
-					includes="**/jgraph/**,**/ubench/**,**/treelayout/**"/>
+					includes="**/jgraph/**,**/ubench/**,**/treelayout/**, **/gui/**"/>
 		</copy>
 		
-		<mkdir dir="tmp_build/projects/Ubench"/>
-		<copy todir="tmp_build/projects/Ubench">
+	
+		<copy todir="tmp_Ubench/projects/Ubench">
 				<fileset dir="../../projects/Ubench/" includes="*.xml" />
 		</copy>
-					
 		
-		<jar jarfile="${ubench.jar}"
+		
+		<jar jarfile="${ubench-dist.jar}"
              basedir="${build.classes}"
              includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
 			<manifest>
@@ -116,12 +112,10 @@
                            value="de.saar.chorus.ubench.gui.Main" />
 			</manifest>
 			
-			<fileset dir="tmp_source"/>
-			<fileset dir="tmp_build"/>		
+			<fileset dir="tmp_Ubench/"/>
 		</jar>
 
-		<delete dir="tmp_source/" />
-		<delete dir="tmp_build/"/>
+		<delete dir="tmp_Ubench/" />
 	</target>
 	
 	<!-- JUnit -->
@@ -275,9 +269,12 @@
 	<target name="prepare">
 		<mkdir dir="${build.classes}" />
 		<copy todir="${build.classes}">
-			<fileset dir="../"/>
+			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
 		</copy>
-		<delete dir="${build.classes}/de"/>
 		
+		
+		<delete> 
+			<fileset dir="${build.classes}/de" includes="**/jgraph/**,**/ubench/**,**/treelayout/**, **/gui/**"/>
+		</delete>
 	</target>
 </project>
