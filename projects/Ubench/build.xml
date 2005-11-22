@@ -13,10 +13,10 @@
 
 	<property name="jgraph.unpacked.classes" value="org/jgraph/**" />
 	<property name="itext.unpacked.classes" value="com/lowagie/**" />
-	
+
 	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
-	
+
 	<property name="utool-swig.jar" location="${packages}/DomgraphSwig.jar" />
 	<property name="utool-swig.unpacked.classes" value="de/saar/chorus/libdomgraph/*" />
 
@@ -53,7 +53,7 @@
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
-			
+
 			<classpath>
 				<pathelement path="${build.classes}" />
 			</classpath>
@@ -71,10 +71,10 @@
 	</target>
 
 
-	
+
 	<target name="dist" depends="init,jgraph.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
-		
-		
+
+
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -86,24 +86,24 @@
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
-						
-						<classpath>
-							<pathelement path="${build.classes}" />
-						</classpath>
+
+			<classpath>
+				<pathelement path="${build.classes}" />
+			</classpath>
 		</javac>
 
 
 		<copy todir="tmp_Ubench/src">
-				<fileset dir="${source}"
-					includes="**/jgraph/**,**/ubench/**,**/treelayout/**, **/gui/**"/>
+			<fileset dir="${source}"
+					includes="${ubench.jar.classes}"/>
 		</copy>
-		
-	
+
+
 		<copy todir="tmp_Ubench/projects/Ubench">
-				<fileset dir="../../projects/Ubench/" includes="*.xml" />
+			<fileset dir="../../projects/Ubench/" includes="*.xml" />
 		</copy>
-		
-		
+
+
 		<jar jarfile="${ubench-dist.jar}"
              basedir="${build.classes}"
              includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
@@ -111,13 +111,13 @@
 				<attribute name="Main-Class"
                            value="de.saar.chorus.ubench.gui.Main" />
 			</manifest>
-			
+
 			<fileset dir="tmp_Ubench/"/>
 		</jar>
 
 		<delete dir="tmp_Ubench/" />
 	</target>
-	
+
 	<!-- JUnit -->
 	<!-- If the JUnit targets don't work, make sure that junit.jar is in
 	     the classpath, e.g.
@@ -179,8 +179,8 @@
 	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
-		
-	
+
+
 	</target>
 
 	<target name="jgraph.unpacked" depends="init" if="jgraph.jar.present">
@@ -215,7 +215,7 @@
 		</antcall>
 	</target>
 
-				
+
 	<!-- Javadoc -->
 
 	<target name="javadoc" depends="ubench">
@@ -248,33 +248,32 @@
 		<mkdir dir="${build.src}" />
 		<mkdir dir="${reports.tests}" />
 		<mkdir dir="${doc.api}" />
-		
+
 		<available file="${jgraph.jar}" property="jgraph.jar.present"/>
-				<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
-				<available file="${getopt.jar}" property="getopt.jar.present"/>
-				<available file="${itext.jar}" property="itext.jar.present"/>
-				<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
-				<available file="${unpack.jar}" property="unpack.jar.present"/>
-		
+		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+		<available file="${getopt.jar}" property="getopt.jar.present"/>
+		<available file="${itext.jar}" property="itext.jar.present"/>
+		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+		<available file="${unpack.jar}" property="unpack.jar.present"/>
+
 	</target>
 
 	<!-- Delete all compiled files -->
 	<target name="clean">
-		<delete dir="${build.classes}" />
+		<delete>
+			<fileset dir="${build.classes}" includes="${ubench.jar.classes}" />
+		</delete>
 		<delete dir="${build.lib}" />
-		<delete dir="${build.src}" />
 		<delete dir="${doc.api}" />
 	</target>
-	
+
 	<target name="prepare">
 		<mkdir dir="${build.classes}" />
 		<copy todir="${build.classes}">
 			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
 		</copy>
-		
-		
-		<delete> 
-			<fileset dir="${build.classes}/de" includes="**/jgraph/**,**/ubench/**,**/treelayout/**, **/gui/**"/>
-		</delete>
+
+		<antcall target="clean"/>
+
 	</target>
 </project>
