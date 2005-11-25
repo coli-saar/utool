@@ -124,43 +124,7 @@
 	     
 	        CLASSPATH=packages/junit.jar:$CLASSPATH ant leonardo-run-tests
 	-->
-	<target name="ubench-compile-tests" depends="ubench">
-		<javac srcdir="${source}"
-	           destdir="${build.classes}"
-		   includes="${chorus}/ubench/Test*.java"
-		   source="1.5">
-			<classpath>
-				<pathelement path="${jgraph.jar}" />
-				<pathelement path="${jgraphaddons.jar}" />
-				<pathelement path="${getopt.jar}" />
-				<pathelement path="${leonardo.jar}" />
-				<pathelement path="${junit.jar}" />
-			</classpath>
-		</javac>
-	</target>
 
-	<target name="ubench-run-tests" depends="ubench-compile-tests">
-		<junit >
-			<!--  printsummary="yes" -->
-			<classpath>
-				<pathelement path="${leonardo.jar}" />
-				<pathelement path="${jgraph.jar}" />
-				<pathelement path="${jgraphaddons.jar}" />
-				<pathelement path="${getopt.jar}" />
-				<pathelement path="${junit.jar}" />
-			</classpath>
-
-			<formatter type="plain" />
-
-			<batchtest todir="${reports.tests}">
-				<fileset dir="${build.classes}">
-					<include name="${chorus}/ubench/Test*.class" />
-					<exclude name="**/*$*" />
-					<exclude name="**/*+*" />
-				</fileset>
-			</batchtest>
-		</junit>
-	</target>
 
 
 	<!-- JAR Unpacking -->
