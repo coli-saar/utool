@@ -13,5 +13,6 @@
 			<attribute value="LeonardoLayout/packages" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="projects/XTagLexicon/build/XTAGLexicon.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
