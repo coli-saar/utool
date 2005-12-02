@@ -231,12 +231,16 @@
 		<delete dir="${doc.api}" />
 	</target>
 
+	
+	
 	<target name="prepare">
 		<mkdir dir="${build.classes}" />
 		<copy todir="${build.classes}">
 			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
 		</copy>
-
+		<delete>
+			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
+		</delete>
 		<antcall target="clean"/>
 
 	</target>
