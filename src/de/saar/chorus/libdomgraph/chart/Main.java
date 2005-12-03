@@ -11,6 +11,11 @@ import javax.swing.JOptionPane;
 import de.saar.chorus.libdomgraph.Chart;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
+import de.saar.chorus.libdomgraph.FragmentSetVector;
+import de.saar.chorus.libdomgraph.NodeData;
+import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
+import de.saar.chorus.libdomgraph.Split;
+import de.saar.chorus.libdomgraph.SplitVector;
 import de.saar.chorus.ubench.DomGraphGXLCodec;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
@@ -114,27 +119,69 @@ public class Main {
 		
 		StringBuffer chartPrint = new StringBuffer();
 		
+		chartPrint.append("chart edges: \n");
+		
 		if( chart != null ) {
-					chartPrint.append("chart edges: \n");
-					/*ChartEdgeMap chartEdges = chart.getEdges();
-				for ( int i = 0; i< chartEdges.size(); i++ ) {
-					chartPrint.append( i+1 );
-					chartPrint.append(") --> Splits: \n");
-					
-					
-				}*/
+			
+			FragmentSetVector fragSets = new FragmentSetVector();
+			int numOfWccs = chart.computeWccFragmentSets(fragSets);
+			
+			for( int i = 0; i< fragSets.size(); i++ ) {
 				
+				SplitVector recentSplits = chart.getEdgesFor(fragSets.get(i));
+				chartPrint.append("STEP " + (i+1) + System.getProperty("line.separator"));
 				
-				chartPrint.append(System.getProperty("line.separator"));
+				for( int h = 0; h < recentSplits.size(); h++) {
+					Split lastSplit = recentSplits.get(h);
+					FragmentSetVector splitSets = new FragmentSetVector();
+					lastSplit.getAllSubgraphs(splitSets);
+					
+					chartPrint.append(printPath(0, chart, lastSplit.getRoot(), 
+							splitSets, new StringBuffer() ) ); 	
+				}
+			}
 			
 			
-			chartPrint.append("The SWIG representation: " +
-					System.getProperty("line.separator"));
-			chartPrint.append(chart.toString());
-			
+			chartPrint.append(System.getProperty("line.separator"));
+		
 		}
 		
 		return chartPrint;
+	}
+	
+	private static StringBuffer printPath(int level, Chart chart, SWIGTYPE_p_Node root, 
+			FragmentSetVector subgraphs, StringBuffer repr) {
+		
+		int newlevel = level;
+		newlevel++;
+		
+		StringBuffer toReturn = repr;
+		
+		toReturn.append("------------------------" + System.getProperty("line.separator"));
+		toReturn.append("LEVEL: " + level + System.getProperty("line.separator") + 
+				"Root: " + graph.getData(root).getName() + " --> " 
+				+ System.getProperty("line.separator"));
+		toReturn.append(subgraphs.size() + " subgraphs: " + System.getProperty("line.separator"));
+		for( int i = 0; i < subgraphs.size(); i++) {
+			SplitVector newSplits = chart.getEdgesFor(subgraphs.get(i));
+			
+			
+			if( newSplits != null ) {
+				for( int h = 0; h < newSplits.size(); h++) {
+					FragmentSetVector allSubgraphs = new FragmentSetVector();
+					Split recentSplit = newSplits.get(h);
+					recentSplit.getAllSubgraphs(allSubgraphs);
+					
+					printPath(newlevel, chart, 
+							recentSplit.getRoot(), allSubgraphs, toReturn );
+				}
+			} else {
+				
+				toReturn.append("(leaf) at LEVEL " + newlevel + System.getProperty("line.separator"));
+			}
+		}
+		return toReturn;
+		
 	}
 	
 	/**
