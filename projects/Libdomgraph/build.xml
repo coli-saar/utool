@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+
+<project name="chart" default="chart">
+	<property name="build" location="../../build" />
+	<property name="source" location="../../src" />
+	<property name="packages" location="../../packages" />
+
+
+
+
+	<property name="jgraph.jar" location="${packages}/jgraph.jar" />
+	<property name="jgraphaddons.jar"
+	location="${packages}/jgraphaddons.jar" /> 
+       <property name="jgraph.unpacked.classes" value="org/jgraph/**"
+	/>
+       <property name="getopt.jar"
+	location="${packages}/java-getopt-1.0.9.jar" /> 
+	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
+	<property name="utool-swig.jar"
+	location="${packages}/DomgraphSwig.jar" /> 
+	<property name="utool-swig.unpacked.classes"
+	value="de/saar/chorus/libdomgraph/*" /> 	
+
+
+        <property name="build.classes" location="${build}/classes" />
+	<property name="build.lib" location="${build}/lib" />
+	<property name="build.src" location="${build}/src" />
+
+	<property name="coli" value="de/saar" />
+	<property name="chorus" value="de/saar/chorus" />
+
+	<property name="chart.jar" value="${build.lib}/Chart.jar" />
+	<property name="chart.jar.classes"
+	value="${chorus}/libdomgraph/*,${chorus}/libdomgraph/chart/*,${chorus}/ubench/utool/*,${chorus}/jgraph/*,${coli}/getopt/*"/>   
+
+	<target name="chart" depends="init,jgraph.unpacked,getopt.unpacked,utool-swig.unpacked">
+		<javac srcdir="${source}"
+               destdir="${build.classes}"
+               debug="true"
+               includes="${chorus}/libdomgraph/chart/*.java,
+							${chorus}/jgraph/*.java,                                                      
+                                                        ${chorus}/libdomgraph/*.java,
+							${chorus}/ubench/utool/*.java,
+							${coli}/getopt/*.java"
+              
+               source="1.5">
+
+			<classpath>
+				<pathelement path="${build.classes}" />
+			</classpath>
+		</javac>
+
+		<jar jarfile="${chart.jar}"
+             basedir="${build.classes}"
+             includes="${chart.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${utool-swig.unpacked.classes}">
+			<manifest>
+				<attribute name="Main-Class"
+                           value="de.saar.chorus.libdomgraph.chart.Main" />
+			</manifest>
+		</jar>
+
+	</target>
+
+
+	<target name="init">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build.classes}" />
+		<mkdir dir="${build.classes}/timestamps-unpackjar" />
+		<mkdir dir="${build.lib}" />
+	
+
+		<available file="${jgraph.jar}" property="jgraph.jar.present"/>
+		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+		<available file="${getopt.jar}" property="getopt.jar.present"/>
+	
+		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+		<available file="${unpack.jar}" property="unpack.jar.present"/>
+
+	</target>
+
+	<!-- Delete all compiled files -->
+	<target name="clean">
+		<delete>
+			<fileset dir="${build.classes}" includes="${chart.jar.classes}" />
+		</delete>
+		<delete dir="${build.lib}" />
+		<delete dir="${doc.api}" />
+	</target>
+	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
+		<unjar src="${unpack.jar}" dest="${build.classes}" />
+		<touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
+	</target>
+
+	<target name="check.unpack">
+		<uptodate property="nobuild.unpack"
+	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
+			<srcfiles dir="." includes="${unpack.jar}" />
+		</uptodate>
+
+
+	</target>	<target name="jgraph.unpacked" depends="init" if="jgraph.jar.present">
+		<antcall target="unpack" >
+			<param name="unpack.jar" value="${jgraph.jar}" />
+			<param name="unpack.jar.id" value="jgraph" />
+		</antcall>
+		<antcall target="unpack" >
+			<param name="unpack.jar" value="${jgraphaddons.jar}" />
+			<param name="unpack.jar.id" value="jgraphaddons" />
+		</antcall>
+	</target>
+
+	<target name="getopt.unpacked" depends="init" if="getopt.jar.present">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${getopt.jar}" />
+			<param name="unpack.jar.id" value="getopt" />
+		</antcall>
+	</target>
+
+	<target name="utool-swig.unpacked" depends="init" >
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${utool-swig.jar}" />
+			<param name="unpack.jar.id" value="utool-swig" />
+		</antcall>
+	</target>
+</project>
