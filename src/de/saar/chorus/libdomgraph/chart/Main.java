@@ -2,8 +2,12 @@ package de.saar.chorus.libdomgraph.chart;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -12,7 +16,6 @@ import de.saar.chorus.libdomgraph.Chart;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
 import de.saar.chorus.libdomgraph.FragmentSetVector;
-import de.saar.chorus.libdomgraph.NodeData;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
 import de.saar.chorus.libdomgraph.SplitVector;
@@ -29,6 +32,10 @@ public class Main {
 	private static DomGraph graph;
 	private static DomSolver solver;
 	private static Chart chart;
+	private static int splitCount; //for debugging
+	
+	
+	
 	/**
 	 * 
 	 * @param fileName
@@ -85,12 +92,12 @@ public class Main {
 	 */
 	public static DomGraph genericLoadGraph(String filename) {
 		try {
-            System.loadLibrary("DomgraphSwig");
-            
-        } catch(UnsatisfiedLinkError e) {
-            System.err.println("Error while loading libdomgraph library: " + e.getMessage());
-            
-        }
+			System.loadLibrary("DomgraphSwig");
+			
+		} catch(UnsatisfiedLinkError e) {
+			System.err.println("Error while loading libdomgraph library: " + e.getMessage());
+			
+		}
 		
 		if( filename.endsWith(".xml") ) {
 			solver = new DomSolver();
@@ -149,19 +156,26 @@ public class Main {
 				// iterating over the splits 
 				for( int h = 0; h < recentSplits.size(); h++) {
 					Split lastSplit = recentSplits.get(h);
+					splitCount++;
 					
 					//determining the subgraphs of the split
 					FragmentSetVector splitSets = new FragmentSetVector();
 					lastSplit.getAllSubgraphs(splitSets);
 					
+					String rootName = graph.getData(lastSplit.getRoot()).getName();
+					
+					
+				
 					//recurcive printing the dependencies for every split
 					chartPrint.append(printPath(0, chart, lastSplit.getRoot(), 
 							splitSets, new StringBuffer() ) ); 	
+					
+					
 				}
 			}
 			
 			chartPrint.append(System.getProperty("line.separator"));
-		
+			
 		}
 		
 		return chartPrint;
@@ -198,8 +212,6 @@ public class Main {
 				"Root: " + graph.getData(root).getName() + " --> " 
 				+ System.getProperty("line.separator"));
 		
-		// printing the number of Subgraphs to consider
-		toReturn.append(subgraphs.size() + " subgraph(s): " + System.getProperty("line.separator"));
 		
 		// iterating through the Subgraphs to get the Splits
 		// for them
@@ -214,15 +226,21 @@ public class Main {
 				
 				// iterate over them to handle each of them
 				for( int h = 0; h < newSplits.size(); h++) {
-					
 					// the recent new split
 					Split recentSplit = newSplits.get(h);
 					
 					// for the subgraphs of the recent new split
 					FragmentSetVector allSubgraphs = new FragmentSetVector();
 					
+					SWIGTYPE_p_Node recentRoot = recentSplit.getRoot();
+					String rootName = graph.getData(recentRoot).getName();
+					
 					// filling the subgraph-vector
 					recentSplit.getAllSubgraphs(allSubgraphs);
+					
+					
+			
+					splitCount ++;
 					
 					// next recursion step: the next level, the 
 					// new split, consisting of the transmitted root & subgraphs,
@@ -230,16 +248,11 @@ public class Main {
 					// continued.
 					printPath(newlevel, chart, 
 							recentSplit.getRoot(), allSubgraphs, toReturn );
+					
+					
+				
 				}
-			} else {
-				// if there are no Splits for the recent FragmentSet,
-				// it should consist of a leaf.
-				/*
-				 * TODO: figure out how to get the nodes out of a 
-				 *       FragmentSet.  
-				 */
-				toReturn.append("(leaf) at LEVEL " + newlevel + System.getProperty("line.separator") );
-			}
+			} 
 		}
 		return toReturn;
 		
@@ -252,7 +265,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println(System.getProperty("java.library.path"));
+		
 		if( args != null ) {
 			graph = genericLoadGraph( args[0] );
 		} else 
@@ -261,7 +274,19 @@ public class Main {
 		
 		solver.solve();
 		chart = solver.getChart();
-		System.out.print(chartToString());
+		splitCount = 0;
+		try {
+			File logfile = new File("chartlog.txt");
+			PrintWriter writeFile = new PrintWriter(new FileWriter(logfile));
+			
+			writeFile.write(chartToString().toString());
+			writeFile.write("Number of determined Splits: " + splitCount + "\n");
+			writeFile.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println(splitCount);
+		System.err.println(chart.size());
 	}
 	
 }
