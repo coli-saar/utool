@@ -252,7 +252,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+		System.out.println(System.getProperty("java.library.path"));
 		if( args != null ) {
 			graph = genericLoadGraph( args[0] );
 		} else 

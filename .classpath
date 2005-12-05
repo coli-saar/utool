@@ -8,11 +8,8 @@
 	<classpathentry exported="true" kind="lib" path="packages/jgraph.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/jgraphaddons.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/junit.jar"/>
-	<classpathentry exported="true" kind="lib" path="packages/DomgraphSwig.jar">
-		<attributes>
-			<attribute value="LeonardoLayout/packages" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="projects/XTagLexicon/build/XTAGLexicon.jar"/>
+	<classpathentry exported="true" kind="lib" path="projects/XTagLexicon/build/XTAGLexicon.jar"/>
+	<classpathentry kind="lib" path="packages/DomgraphSwig.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/DomgraphSwig"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
