@@ -6,8 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import de.saar.chorus.libdomgraph.Chart;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
+import de.saar.chorus.libdomgraph.FragmentSet;
 import de.saar.chorus.libdomgraph.FragmentSetVector;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
@@ -33,7 +34,7 @@ public class Main {
 	private static DomSolver solver;
 	private static Chart chart;
 	private static int splitCount; //for debugging
-	
+	private static Set<FragmentSet> seen;
 	
 	
 	/**
@@ -217,6 +218,13 @@ public class Main {
 		// for them
 		for( int i = 0; i < subgraphs.size(); i++) {
 			
+			if(seen.contains(subgraphs.get(i))) {
+				System.err.println("tadaaa.");
+				continue;
+			}
+			
+			seen.add(subgraphs.get(i));
+			
 			// asking the chart for the Splits of the currently
 			// considered subgraph (=FragmentSet)
 			SplitVector newSplits = chart.getEdgesFor(subgraphs.get(i));
@@ -258,6 +266,7 @@ public class Main {
 		
 	}
 	
+	
 	/**
 	 * This loads a <code>DomGraph</code> whose file representation
 	 * is read from the commandline, solves the graph and
@@ -275,6 +284,7 @@ public class Main {
 		solver.solve();
 		chart = solver.getChart();
 		splitCount = 0;
+		seen = new HashSet<FragmentSet>();
 		try {
 			File logfile = new File("chartlog.txt");
 			PrintWriter writeFile = new PrintWriter(new FileWriter(logfile));
