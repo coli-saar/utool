@@ -31,7 +31,7 @@
 
 	<property name="chart.jar" value="${build.lib}/Chart.jar" />
 	<property name="chart.jar.classes"
-	value="${chorus}/libdomgraph/*,${chorus}/libdomgraph/chart/*,${chorus}/ubench/utool/*,${chorus}/jgraph/*,${coli}/getopt/*"/>   
+	value="${chorus}/libdomgraph/*,${chorus}/libdomgraph/chart/*,${chorus}/ubench/utool/*,${chorus}/ubench/* ,${chorus}/jgraph/*,${coli}/getopt/*"/>   
 
 	<target name="chart" depends="init,jgraph.unpacked,getopt.unpacked,utool-swig.unpacked">
 		<javac srcdir="${source}"
@@ -39,8 +39,9 @@
                debug="true"
                includes="${chorus}/libdomgraph/chart/*.java,
 							${chorus}/jgraph/*.java,                                                      
-                                                        ${chorus}/libdomgraph/*.java,
+                            ${chorus}/libdomgraph/*.java,
 							${chorus}/ubench/utool/*.java,
+							${chorus}/ubench/*.java
 							${coli}/getopt/*.java"
               
                source="1.5">
