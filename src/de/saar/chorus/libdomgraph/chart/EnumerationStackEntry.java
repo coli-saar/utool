@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
+import de.saar.chorus.libdomgraph.SplitVector;
 
 public class EnumerationStackEntry {
 	
@@ -32,6 +33,31 @@ public class EnumerationStackEntry {
 			currentSplit = spl.get(0);
 			lastElement = spl.get(spl.size() - 1);
 			splitIterator = spl.iterator();
+		}
+		
+		edgeAccu = new ArrayList<DomEdge>();
+	}
+	
+	EnumerationStackEntry(SWIGTYPE_p_Node dom, SplitVector spl,
+			List<AgendaEntry> agend) {
+		dominator = dom;
+		splits = new ArrayList<Split>();
+		
+		
+		
+		agendaCopy = new ArrayList<AgendaEntry>();
+		
+		if( agend != null ) {
+			agendaCopy.addAll(agend);
+		}
+		
+		if( (spl != null) && (! spl.isEmpty() )  ) {
+			
+			splits = WrapperTools.vectorToList(spl);
+			
+			currentSplit = splits.get(0);
+			lastElement = splits.get((int) spl.size() - 1);
+			splitIterator = splits.iterator();
 		}
 		
 		edgeAccu = new ArrayList<DomEdge>();
