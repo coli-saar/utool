@@ -15,14 +15,14 @@ public class EnumerationStackEntry {
 	private Split currentSplit;
 	private List<Split> splits; // points into chart
 	private Split lastElement;
-	private List<AgendaEntry> agendaCopy;
+	private Agenda agendaCopy;
 	private Iterator<Split> splitIterator;
 	
 	EnumerationStackEntry(SWIGTYPE_p_Node dom, List<Split> spl,
-			List<AgendaEntry> agend) {
+			Agenda agend) {
 		dominator = dom;
 		splits = spl;
-		agendaCopy = new ArrayList<AgendaEntry>();
+		agendaCopy = new Agenda();
 		
 		if( agend != null ) {
 			agendaCopy.addAll(agend);
@@ -45,7 +45,7 @@ public class EnumerationStackEntry {
 		
 		
 		
-		agendaCopy = new ArrayList<AgendaEntry>();
+		agendaCopy = new Agenda();
 		
 		if( agend != null ) {
 			agendaCopy.addAll(agend);
@@ -152,14 +152,14 @@ public class EnumerationStackEntry {
 	/**
 	 * @return Returns the agendaCopy.
 	 */
-	public List<AgendaEntry> getAgendaCopy() {
+	public Agenda getAgendaCopy() {
 		return agendaCopy;
 	}
 
 	/**
 	 * @param agendaCopy The agendaCopy to set.
 	 */
-	public void setAgendaCopy(List<AgendaEntry> agendaCopy) {
+	public void setAgendaCopy(Agenda agendaCopy) {
 		this.agendaCopy = agendaCopy;
 	}
 	
