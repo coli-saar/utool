@@ -11,7 +11,7 @@ import de.saar.chorus.libdomgraph.Split;
 
 public class EnumerationState {
 	private Chart chart;
-	private List<AgendaEntry> agenda;
+	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
 	private List<FragmentSet> allocatedFragsets;
 	int num_allocatedFragsets;
@@ -27,7 +27,7 @@ public class EnumerationState {
 		for( FragmentSet fragSet : allocatedFragsets ) {
 			
 			if(! (fragSet.size() == 0 ))
-				agenda.add(new AgendaEntry(nullNode, fragSet));
+				agenda.addEntry(new AgendaEntry(nullNode, fragSet));
 		}
 		
 		stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
@@ -73,23 +73,43 @@ public class EnumerationState {
 	
 	
 	void addSplitToAgenda(Split sp) {
-		/*
-		 * TODO implement me;
-		 * 
-		 * ? create apropriate map-templates
-		 * in SWIG-interface ?
-		 */
+		
+		List<SWIGTYPE_p_Node> roots = 
+			WrapperTools.vectorToList(sp.getChildRoots());
+		
+		for( SWIGTYPE_p_Node node : roots ) {
+			List<FragmentSet> childFrags =
+				WrapperTools.vectorToList(sp.getChildFor(node));
+			
+			for(FragmentSet fragSet : childFrags) {
+				AgendaEntry newEntry = new AgendaEntry(node,fragSet);
+				agenda.addEntry(newEntry);
+			}
+		}
+		
 	}
 	
 	void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
 		Split sp = ese.getCurrentSplit();
 		
-		/*
-		 * TODO implement me;
-		 *  
-		 * ? create apropriate map-templates
-		 * in SWIG-interface ?
-		 */
+		List<SWIGTYPE_p_Node> roots = 
+			WrapperTools.vectorToList(sp.getChildRoots());
+		
+		for( SWIGTYPE_p_Node node : roots ) {
+			List<FragmentSet> childFrags =
+				WrapperTools.vectorToList(sp.getChildFor(node));
+			
+			for(FragmentSet fragSet : childFrags) {
+				
+				if( fragSet.size() == 1 ) {
+					ese.addDomEdge(new DomEdge(node, fragSet.getFirstNode()));
+				} else {
+					
+					AgendaEntry newEntry = new AgendaEntry(node,fragSet);
+					agenda.addEntry(newEntry);
+				}
+			}
+		}
 	}
 	
 	void step() {
@@ -132,15 +152,16 @@ public class EnumerationState {
 		} else {
 			
 			// (Down)
-			agTop = agenda.get(agenda.size() - 1);
+			agTop = agenda.getAndRemoveNext();
 			topNode = agTop.getKey();
 			topFragset = agTop.getValue();
 			
-			agenda.remove(agenda.size() - 1);
+			
 			
 			if (topFragset.size() > 1 ) {
 				EnumerationStackEntry newTop = new EnumerationStackEntry(topNode, 
-						chart.getEdgesFor(topFragset), agenda);
+						WrapperTools.vectorToList(chart.getEdgesFor(topFragset)),
+						agenda);
 				
 				if( topNode != null ) {
 					newTop.addDomEdge( Agenda.makeDomEdge(topNode, 
