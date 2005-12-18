@@ -2,7 +2,7 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
+import edu.mit.techniques.FOL.Sentence;
 
 
 

@@ -1,7 +1,27 @@
 package edu.mit.techniques.FOL.parser;
 
-import java.io.*;
-import edu.mit.techniques.FOL.*;
+import java.io.IOException;
+import java.io.StringReader;
+
+import edu.mit.techniques.FOL.AtomicProposition;
+import edu.mit.techniques.FOL.CompoundProposition;
+import edu.mit.techniques.FOL.Conjunction;
+import edu.mit.techniques.FOL.ConstantTerm;
+import edu.mit.techniques.FOL.Disjunction;
+import edu.mit.techniques.FOL.Equivalence;
+import edu.mit.techniques.FOL.Existential;
+import edu.mit.techniques.FOL.FalseProposition;
+import edu.mit.techniques.FOL.Function;
+import edu.mit.techniques.FOL.Implication;
+import edu.mit.techniques.FOL.Negation;
+import edu.mit.techniques.FOL.Proposition;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Symbol;
+import edu.mit.techniques.FOL.Term;
+import edu.mit.techniques.FOL.TermList;
+import edu.mit.techniques.FOL.TrueProposition;
+import edu.mit.techniques.FOL.Universal;
+import edu.mit.techniques.FOL.Variable;
 
 // Takes a tokenizer, returns a sentence
 

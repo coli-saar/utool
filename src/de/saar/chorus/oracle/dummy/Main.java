@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import de.saar.chorus.oracle.*;
+import de.saar.chorus.oracle.EvaluatingOracle;
+import de.saar.chorus.oracle.Message;
 
 
 /* 

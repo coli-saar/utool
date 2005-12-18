@@ -1,8 +1,9 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 /* NOTE: Oracles create new spaces whenever a new client

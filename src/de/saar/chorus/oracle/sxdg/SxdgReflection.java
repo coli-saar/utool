@@ -1,16 +1,21 @@
 
 package de.saar.chorus.oracle.sxdg;
 
-import de.saar.chorus.oracle.*;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import java.util.*;
-import java.io.*;
-
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import de.saar.chorus.oracle.SortedEvaluatingSearchSpace;
 
 
 class SxdgReflection {

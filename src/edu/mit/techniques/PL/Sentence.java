@@ -1,6 +1,6 @@
 package edu.mit.techniques.PL;
 
-import java.util.*;
+import java.util.Set;
 
 /** Abstract class representing a sentence in propositional logic. It
     is the base class of all the propositional connectives and

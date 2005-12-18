@@ -1,6 +1,6 @@
 package de.saar.chorus.oracle.dummy;
 
-import de.saar.chorus.oracle.*;
+import de.saar.chorus.oracle.Evaluator;
 
 
 class DummyEvaluator implements Evaluator<String> {

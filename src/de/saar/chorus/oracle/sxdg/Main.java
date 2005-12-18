@@ -1,8 +1,14 @@
 
 package de.saar.chorus.oracle.sxdg;
 
-import de.saar.chorus.oracle.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import de.saar.chorus.oracle.EvaluatingOracle;
+import de.saar.chorus.oracle.Evaluator;
+import de.saar.chorus.oracle.Message;
+import de.saar.chorus.oracle.SortedEvaluatingSearchSpace;
 
 
 /* 

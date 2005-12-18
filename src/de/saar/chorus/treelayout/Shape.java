@@ -8,7 +8,8 @@
 
 package de.saar.chorus.treelayout;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * 

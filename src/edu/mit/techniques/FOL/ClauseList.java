@@ -1,7 +1,7 @@
 package edu.mit.techniques.FOL;
 
+import java.io.PrintStream;
 import java.util.Vector;
-import java.io.*;
 
 public class ClauseList {
 

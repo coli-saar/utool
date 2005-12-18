@@ -2,6 +2,7 @@ package de.saar.chorus.libdomgraph.chart;
 
 import java.util.Map;
 
+import de.saar.chorus.libdomgraph.DomEdgePair;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 
 public class DomEdge implements Map.Entry<SWIGTYPE_p_Node, SWIGTYPE_p_Node> {
@@ -20,6 +21,10 @@ public class DomEdge implements Map.Entry<SWIGTYPE_p_Node, SWIGTYPE_p_Node> {
 	public SWIGTYPE_p_Node getKey() {
 		// TODO Auto-generated method stub
 		return key;
+	}
+	
+	public DomEdgePair toDomEdgePair() {
+		return new DomEdgePair(key, value);
 	}
 
 	/* (non-Javadoc)

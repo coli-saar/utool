@@ -1,6 +1,6 @@
 package edu.mit.techniques.FOL;
 
-import java.util.*;
+import java.util.Vector;
 
 abstract public class Proposition extends Sentence {
 

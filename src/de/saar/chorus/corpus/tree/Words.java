@@ -11,7 +11,10 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
 
 
 class Words {

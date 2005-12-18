@@ -1,7 +1,9 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class SortedEvaluatingSearchSpace<DomainType> 

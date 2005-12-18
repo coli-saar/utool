@@ -1,7 +1,7 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Writer;
 
 public final class FootNode extends LeafNode {
 	

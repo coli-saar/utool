@@ -3,8 +3,7 @@
 package de.saar.theoremprovers.mace;
 
 
-import de.saar.convenientprocess.*;
-
+import de.saar.convenientprocess.ConvenientProcess;
 import edu.mit.techniques.FOL.Negation;
 import edu.mit.techniques.FOL.Sentence;
 

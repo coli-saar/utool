@@ -11,13 +11,19 @@
 
 package de.saar.chorus.xmltree;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import javax.swing.*;
-import java.io.*;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 
-import electric.xml.*;
+import javax.swing.JPanel;
+
+import electric.xml.Child;
+import electric.xml.Children;
+import electric.xml.Document;
+import electric.xml.Element;
+import electric.xml.Text;
 
 
 /**

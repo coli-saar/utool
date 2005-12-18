@@ -1,7 +1,8 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class EvaluatingOracle<SpaceType extends EvaluatingSearchSpace<DomainType>,
 DomainType>

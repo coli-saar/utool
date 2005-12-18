@@ -1,7 +1,8 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
+import edu.mit.techniques.FOL.Conjunction;
+import edu.mit.techniques.FOL.Sentence;
 
 
 class TestEntDirection extends GenericTest {

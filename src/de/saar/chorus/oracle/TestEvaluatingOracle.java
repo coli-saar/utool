@@ -1,8 +1,12 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
-import junit.framework.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class TestEvaluatingOracle extends TestCase {
     private class StringEvaluator implements Evaluator<String> {

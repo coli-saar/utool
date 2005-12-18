@@ -1,7 +1,6 @@
 
 package de.saar.theoremprovers.mace;
 
-import java.util.*;
 
 
 

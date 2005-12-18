@@ -1,6 +1,6 @@
 package edu.mit.techniques.PL;
 
-import java.util.*;
+import java.util.Set;
 
 /** Represents the negation of a <code>Variable</code>. */
 public class Negation extends Sentence {

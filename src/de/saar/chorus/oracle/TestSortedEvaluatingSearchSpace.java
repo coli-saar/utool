@@ -1,6 +1,8 @@
 package de.saar.chorus.oracle;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 public class TestSortedEvaluatingSearchSpace extends TestCase {

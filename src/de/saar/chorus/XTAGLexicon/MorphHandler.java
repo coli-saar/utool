@@ -3,9 +3,8 @@
  */
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
-import java.io.*;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class MorphHandler extends DefaultHandler {

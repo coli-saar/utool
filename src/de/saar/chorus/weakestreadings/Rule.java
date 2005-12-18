@@ -1,8 +1,9 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Variable;
+import edu.mit.techniques.FOL.parser.Parser;
 
 
 class Rule {

@@ -1,7 +1,10 @@
 package edu.mit.techniques.FOL;
 
-import java.util.*;
-import java.io.*;
+import java.io.PrintStream;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * A Clause is a set of Literals, implicitly disjoined.

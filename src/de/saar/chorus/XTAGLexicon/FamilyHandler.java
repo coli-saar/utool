@@ -1,9 +1,10 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
-import java.io.*;
-import org.xml.sax.*;
-import javax.xml.parsers.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 

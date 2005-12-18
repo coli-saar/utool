@@ -1,8 +1,9 @@
 package de.saar.chorus.XTAGLexicon;
 
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
 
 public abstract class Node implements Cloneable {
     

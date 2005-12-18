@@ -1,7 +1,6 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
 
 public abstract class Oracle<SpaceType extends SearchSpace<DomainType>, DomainType> {
 	protected SpaceType space;

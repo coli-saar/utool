@@ -1,8 +1,10 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 public class SearchSpace<DomainType> {

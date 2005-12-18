@@ -31,15 +31,21 @@
 
 package de.saar.chorus.ubench;
 
-import java.io.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import org.jgraph.graph.*;
-import org.w3c.dom.*;
+import org.jgraph.graph.DefaultGraphCell;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

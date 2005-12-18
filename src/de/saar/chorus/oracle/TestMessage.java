@@ -1,10 +1,12 @@
 
 package de.saar.chorus.oracle;
 
-import junit.framework.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.*;
-import org.w3c.dom.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 

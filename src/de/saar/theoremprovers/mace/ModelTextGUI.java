@@ -4,8 +4,8 @@
 package de.saar.theoremprovers.mace;
 
 
-import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.parser.Parser;
 
 
 

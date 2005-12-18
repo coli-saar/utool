@@ -8,12 +8,13 @@ package de.saar.chorus.ubench;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
-import org.jgraph.graph.*;
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultGraphCell;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.JGraphUtilities;
 
 /**
