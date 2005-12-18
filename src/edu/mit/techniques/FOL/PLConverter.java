@@ -1,7 +1,13 @@
 package edu.mit.techniques.FOL;
 
-import java.util.*;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import edu.mit.techniques.FOL.parser.Parser;
 

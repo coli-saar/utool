@@ -3,8 +3,13 @@ package de.saar.theoremprovers.spass;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import de.saar.convenientprocess.*;
-import edu.mit.techniques.FOL.*;
+import de.saar.convenientprocess.ConvenientProcess;
+import edu.mit.techniques.FOL.ConstantTerm;
+import edu.mit.techniques.FOL.Function;
+import edu.mit.techniques.FOL.Proposition;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Term;
+import edu.mit.techniques.FOL.TermList;
 
 
 public class Spass {

@@ -2,7 +2,11 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
+import edu.mit.techniques.FOL.CompoundProposition;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Symbol;
+import edu.mit.techniques.FOL.TermList;
+import edu.mit.techniques.FOL.Variable;
 
 
 

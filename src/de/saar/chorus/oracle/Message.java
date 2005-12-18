@@ -1,16 +1,18 @@
 package de.saar.chorus.oracle;
 
-import java.util.*;
-import java.util.regex.*;
-import java.io.*;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-// Use SAX rather than EXML to parse the input file to keep the 
-// memory requirements constant rather than linear in the size of the file.
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 public class Message {

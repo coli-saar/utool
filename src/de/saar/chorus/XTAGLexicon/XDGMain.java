@@ -5,11 +5,13 @@
 package de.saar.chorus.XTAGLexicon;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.helpers.DefaultHandler;
-import java.util.*;
-import java.io.*;
 
 public class XDGMain {
     

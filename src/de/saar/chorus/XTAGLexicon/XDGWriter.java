@@ -1,6 +1,7 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
+import java.util.Set;
+import java.util.SortedSet;
 
 
 public class XDGWriter {

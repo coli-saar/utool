@@ -10,11 +10,15 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
-import java.io.*;
-import electric.xml.Element;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
 import electric.xml.Child;
 import electric.xml.Children;
+import electric.xml.Element;
 
 
 

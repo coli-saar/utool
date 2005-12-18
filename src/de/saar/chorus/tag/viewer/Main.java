@@ -7,7 +7,6 @@
 
 package de.saar.chorus.tag.viewer;
 
-import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
 

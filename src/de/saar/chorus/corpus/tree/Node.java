@@ -9,11 +9,13 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import electric.xml.Element;
 import electric.xml.Attribute;
 import electric.xml.Attributes;
+import electric.xml.Element;
 
 
 /**

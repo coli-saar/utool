@@ -2,11 +2,11 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
+import java.lang.reflect.Field;
 
-import java.util.*;
-import java.lang.reflect.*;
+import edu.mit.techniques.FOL.Implication;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.parser.Parser;
 
 
 abstract class Entailment {

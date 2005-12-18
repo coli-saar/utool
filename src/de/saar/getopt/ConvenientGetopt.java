@@ -7,7 +7,12 @@ package de.saar.getopt;
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class encapsulates the GNU Getopt library and makes it more convenient

@@ -1,6 +1,7 @@
 package de.saar.chorus.XTAGLexicon;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Diese Klasse erstellt eine Map, die 

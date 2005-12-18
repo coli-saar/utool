@@ -1,6 +1,7 @@
 package edu.mit.techniques.PL;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Represents an atomic variable.  Variables are named with single
     characters. */

@@ -12,9 +12,13 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
-import java.io.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
+import java.util.zip.GZIPInputStream;
 
 import electric.xml.Element;
 import electric.xml.Elements;

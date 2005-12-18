@@ -1,6 +1,8 @@
 package edu.mit.techniques.FOL.parser;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.Reader;
+import java.io.StreamTokenizer;
 
 class Tokenizer {
 

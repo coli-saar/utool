@@ -7,9 +7,6 @@
 
 package de.saar.chorus.ubench.utool;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 

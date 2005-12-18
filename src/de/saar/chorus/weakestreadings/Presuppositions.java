@@ -1,10 +1,18 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import java.util.*;
+import edu.mit.techniques.FOL.Conjunction;
+import edu.mit.techniques.FOL.Disjunction;
+import edu.mit.techniques.FOL.Existential;
+import edu.mit.techniques.FOL.Implication;
+import edu.mit.techniques.FOL.Negation;
+import edu.mit.techniques.FOL.Quantifier;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Universal;
+import edu.mit.techniques.FOL.Variable;
 
 
 class Presuppositions {

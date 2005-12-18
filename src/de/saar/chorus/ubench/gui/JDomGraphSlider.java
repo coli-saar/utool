@@ -1,9 +1,6 @@
 package de.saar.chorus.ubench.gui;
 
-import java.awt.event.KeyEvent;
-
 import javax.swing.JSlider;
-import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 

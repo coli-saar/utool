@@ -1,7 +1,7 @@
 
 package de.saar.chorus.oracle;
 
-import java.util.*;
+import java.util.List;
 
 
 public class EvaluatingSearchSpace<DomainType> extends SearchSpace<DomainType> {

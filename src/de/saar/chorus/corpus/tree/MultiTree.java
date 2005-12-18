@@ -12,11 +12,8 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
-
-import electric.xml.Element;
-import electric.xml.Child;
 import electric.xml.Children;
+import electric.xml.Element;
 import electric.xml.XPath;
 
 

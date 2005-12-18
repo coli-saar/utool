@@ -12,7 +12,7 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
+import java.util.Vector;
 
 
 /**

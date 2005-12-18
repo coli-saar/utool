@@ -23,14 +23,16 @@
 
 package de.saar.chorus.corpus.tree;
 
-import java.util.*;
-import java.io.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
+import electric.xml.Attribute;
+import electric.xml.Attributes;
 import electric.xml.Element;
 import electric.xml.Elements;
 import electric.xml.XPath;
-import electric.xml.Attributes;
-import electric.xml.Attribute;
 
 
 

@@ -1,23 +1,21 @@
 package de.saar.chorus.libdomgraph.chart;
 
+
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import de.saar.chorus.libdomgraph.Chart;
+import de.saar.chorus.libdomgraph.DomEdgeVector;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
-import de.saar.chorus.libdomgraph.FragmentSet;
 import de.saar.chorus.libdomgraph.FragmentSetVector;
-import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
 import de.saar.chorus.libdomgraph.SplitVector;
 import de.saar.chorus.ubench.DomGraphGXLCodec;
@@ -34,7 +32,7 @@ public class Main {
 	private static DomSolver solver;
 	private static Chart chart;
 	private static int splitCount; //for debugging
-	private static Set<FragmentSet> seen;
+	private static Set<Split> seen;
 	
 	
 	/**
@@ -157,19 +155,25 @@ public class Main {
 				// iterating over the splits 
 				for( int h = 0; h < recentSplits.size(); h++) {
 					Split lastSplit = recentSplits.get(h);
-					splitCount++;
+					
 					
 					//determining the subgraphs of the split
-					FragmentSetVector splitSets = new FragmentSetVector();
-					lastSplit.getAllSubgraphs(splitSets);
+					//FragmentSetVector splitSets = new FragmentSetVector();
+					//lastSplit.getAllSubgraphs(splitSets);
 					
 					String rootName = graph.getData(lastSplit.getRoot()).getName();
 					
 					
 				
 					//recurcive printing the dependencies for every split
-					chartPrint.append(printPath(0, chart, lastSplit.getRoot(), 
-							splitSets, new StringBuffer() ) ); 	
+					
+					if(! seen.contains(lastSplit)) {
+						splitCount++;
+						seen.add(lastSplit);
+						chartPrint.append(printPath(0, chart, 
+								lastSplit, new StringBuffer() ) ); 
+					}
+						
 					
 					
 				}
@@ -193,10 +197,12 @@ public class Main {
 	 * @param repr the (sucessive growing) textual representation
 	 * @return the textual representation of the whole initial Split
 	 */
-	private static StringBuffer printPath(int level, Chart chart, SWIGTYPE_p_Node root, 
-			FragmentSetVector subgraphs, StringBuffer repr) {
+	private static StringBuffer printPath(int level, Chart chart, Split recentSplit, StringBuffer repr) {
 		
 		int newlevel = level;
+		Split split = recentSplit;
+		FragmentSetVector subgraphs = new FragmentSetVector();
+		split.getAllSubgraphs(subgraphs);
 		
 		// switching to the next level for further
 		// recursion steps
@@ -210,7 +216,7 @@ public class Main {
 		// printing the recursion level and the Node-Name of the
 		// current Split-Root
 		toReturn.append("LEVEL: " + level + System.getProperty("line.separator") + 
-				"Root: " + graph.getData(root).getName() + " --> " 
+				"Root: " + graph.getData(split.getRoot()).getName() + " --> " 
 				+ System.getProperty("line.separator"));
 		
 		
@@ -218,12 +224,7 @@ public class Main {
 		// for them
 		for( int i = 0; i < subgraphs.size(); i++) {
 			
-			if(seen.contains(subgraphs.get(i))) {
-				System.err.println("tadaaa.");
-				continue;
-			}
 			
-			seen.add(subgraphs.get(i));
 			
 			// asking the chart for the Splits of the currently
 			// considered subgraph (=FragmentSet)
@@ -235,32 +236,29 @@ public class Main {
 				// iterate over them to handle each of them
 				for( int h = 0; h < newSplits.size(); h++) {
 					// the recent new split
-					Split recentSplit = newSplits.get(h);
-					
-					// for the subgraphs of the recent new split
-					FragmentSetVector allSubgraphs = new FragmentSetVector();
-					
-					SWIGTYPE_p_Node recentRoot = recentSplit.getRoot();
-					String rootName = graph.getData(recentRoot).getName();
-					
-					// filling the subgraph-vector
-					recentSplit.getAllSubgraphs(allSubgraphs);
+					Split nextSplit = newSplits.get(h);
 					
 					
-			
-					splitCount ++;
-					
-					// next recursion step: the next level, the 
-					// new split, consisting of the transmitted root & subgraphs,
-					// the chart is always the same, the StringBuffer will be
-					// continued.
-					printPath(newlevel, chart, 
-							recentSplit.getRoot(), allSubgraphs, toReturn );
-					
-					
-				
-				}
-			} 
+					if(seen.contains(nextSplit)) {
+						System.err.println("tadaaa.");
+						
+					} else {
+						splitCount ++;
+						seen.add(nextSplit);
+						
+						
+						// next recursion step: the next level, the 
+						// new split, consisting of the transmitted root & subgraphs,
+						// the chart is always the same, the StringBuffer will be
+						// continued.
+						printPath(newlevel, chart, 
+								nextSplit, toReturn );
+						
+						
+						
+					}
+				} 
+			}
 		}
 		return toReturn;
 		
@@ -283,8 +281,8 @@ public class Main {
 		
 		solver.solve();
 		chart = solver.getChart();
-		splitCount = 0;
-		seen = new HashSet<FragmentSet>();
+		/*splitCount = 0;
+		seen = new HashSet<Split>();
 		try {
 			File logfile = new File("chartlog.txt");
 			PrintWriter writeFile = new PrintWriter(new FileWriter(logfile));
@@ -296,7 +294,26 @@ public class Main {
 			e.printStackTrace();
 		}
 		System.out.println(splitCount);
-		System.err.println(chart.size());
+		System.err.println(chart.size());*/
+		FragmentSetVector fragSets = new FragmentSetVector();
+		int numOfWccs = chart.computeWccFragmentSets(fragSets);
+		
+		EnumerationState enumState = new EnumerationState(chart, 
+				WrapperTools.vectorToList(fragSets));
+		
+		
+		int sFormCounter = 0;
+		
+		while( ! enumState.isFinished() ) {
+		
+			enumState.findNextSolvedForm();
+			if(enumState.representsSolvedForm())
+			sFormCounter++;
+		}
+	
+		System.out.println("Computed solved forms: " + sFormCounter);
+		System.err.println("Real number of solved forms: " + chart.countSolvedForms());
+		//graph.setDominanceEdges();
 	}
 	
 }

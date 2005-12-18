@@ -3,10 +3,14 @@
 
 package de.saar.chorus.weakestreadings;
 
-import edu.mit.techniques.FOL.*;
-import edu.mit.techniques.FOL.parser.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import java.util.*;
+import edu.mit.techniques.FOL.Conjunction;
+import edu.mit.techniques.FOL.Implication;
+import edu.mit.techniques.FOL.Sentence;
+import edu.mit.techniques.FOL.Variable;
 
 
 class PresuppStore {

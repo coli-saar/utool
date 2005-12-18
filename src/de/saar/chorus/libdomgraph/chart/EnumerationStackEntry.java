@@ -30,16 +30,18 @@ public class EnumerationStackEntry {
 		
 		if( (spl != null) && (! spl.isEmpty() )  ) {
 			
-			currentSplit = spl.get(0);
-			lastElement = spl.get(spl.size() - 1);
-			splitIterator = spl.iterator();
+			splitIterator = splits.iterator();
+			currentSplit = splitIterator.next();
+			
+			lastElement = splits.get(splits.size() - 1);
+			
 		}
 		
 		edgeAccu = new ArrayList<DomEdge>();
 	}
 	
 	EnumerationStackEntry(SWIGTYPE_p_Node dom, SplitVector spl,
-			List<AgendaEntry> agend) {
+			Agenda agend) {
 		dominator = dom;
 		splits = new ArrayList<Split>();
 		
@@ -51,13 +53,14 @@ public class EnumerationStackEntry {
 			agendaCopy.addAll(agend);
 		}
 		
-		if( (spl != null) && (! spl.isEmpty() )  ) {
-			
+		//if( (spl != null) && (! spl.isEmpty() )  ) {
+			if( spl != null ) {	
 			splits = WrapperTools.vectorToList(spl);
-			
-			currentSplit = splits.get(0);
-			lastElement = splits.get((int) spl.size() - 1);
+
 			splitIterator = splits.iterator();
+			currentSplit = splitIterator.next();
+			lastElement = splits.get((int) splits.size() - 1);
+			
 		}
 		
 		edgeAccu = new ArrayList<DomEdge>();
@@ -68,7 +71,10 @@ public class EnumerationStackEntry {
 	}
 	
 	public boolean isLastSplit() {
-		return (! splitIterator.hasNext() );
+		if( splitIterator == null ) {
+			return true;
+		}
+		return ( (! splitIterator.hasNext()) || currentSplit.equals(lastElement));
 	}
 	
 	public void addDomEdge(DomEdge edge) {

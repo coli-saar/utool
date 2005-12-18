@@ -2,8 +2,9 @@
 
 package de.saar.chorus.oracle.dummy;
 
-import de.saar.chorus.oracle.*;
-import java.util.*;
+import java.util.LinkedList;
+
+import de.saar.chorus.oracle.EvaluatingSearchSpace;
 
 class DummySpace extends EvaluatingSearchSpace<String> {
 	private LinkedList<String> stateQueue;

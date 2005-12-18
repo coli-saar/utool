@@ -14,8 +14,6 @@ import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
 import de.saar.chorus.libdomgraph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.NodeData;
-import de.saar.chorus.ubench.NodeType;
 
 
 public class DomGraphConverter {

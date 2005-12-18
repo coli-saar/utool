@@ -20,16 +20,23 @@ public class EnumerationState {
 	
 	EnumerationState(Chart ch, List<FragmentSet> fsets) {
 		
+		chart = ch;
+		agenda = new Agenda();
 		nullNode = null; 
 		allocatedFragsets = new ArrayList<FragmentSet>(fsets);
 		num_allocatedFragsets = fsets.size();
+		stack = new Stack<EnumerationStackEntry>();
 		
-		for( FragmentSet fragSet : allocatedFragsets ) {
+		
+		for( FragmentSet fragSet : fsets ) {
 			
-			if(! (fragSet.size() == 0 ))
+			if(! (fragSet.size() == 0 )) {
 				agenda.addEntry(new AgendaEntry(nullNode, fragSet));
+				System.out.println("Start-Agenda-Entry (constructor)");
+			}
 		}
 		
+		//Null-Element on Stack
 		stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
 		
 		lastAppliedRuleWasSingleton = false; 
@@ -39,8 +46,9 @@ public class EnumerationState {
 	boolean representsSolvedForm(){
 		return (agenda.isEmpty() && stack.size() > 0 );
 	}
-	boolean isFinished(){
-		
+	
+	
+	boolean isFinished(){	
 		return (agenda.isEmpty() && stack.isEmpty() );
 	}
 	
@@ -61,41 +69,31 @@ public class EnumerationState {
 	void findNextSolvedForm() {
 		if( !isFinished() ) {
 			do {
+				System.out.println("step()");
 				step();
+				
 			} while(!agenda.isEmpty());
 			
 			if( isFinished() ) {
-				Agenda.deleteAgendaEntries();
-				Agenda.clearDomEdges();
+				agenda.clear();
+				
+			} else {
+				
+				System.out.println("===== SOLVED FORM ===="); //Debug
 			}
-		}
+		} 
 	}
 	
-	
-	void addSplitToAgenda(Split sp) {
-		
-		List<SWIGTYPE_p_Node> roots = 
-			WrapperTools.vectorToList(sp.getChildRoots());
-		
-		for( SWIGTYPE_p_Node node : roots ) {
-			List<FragmentSet> childFrags =
-				WrapperTools.vectorToList(sp.getChildFor(node));
-			
-			for(FragmentSet fragSet : childFrags) {
-				AgendaEntry newEntry = new AgendaEntry(node,fragSet);
-				agenda.addEntry(newEntry);
-			}
-		}
-		
-	}
 	
 	void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
 		Split sp = ese.getCurrentSplit();
-		
+	
 		List<SWIGTYPE_p_Node> roots = 
 			WrapperTools.vectorToList(sp.getChildRoots());
 		
+				
 		for( SWIGTYPE_p_Node node : roots ) {
+			
 			List<FragmentSet> childFrags =
 				WrapperTools.vectorToList(sp.getChildFor(node));
 			
@@ -103,8 +101,12 @@ public class EnumerationState {
 				
 				if( fragSet.size() == 1 ) {
 					ese.addDomEdge(new DomEdge(node, fragSet.getFirstNode()));
+				System.out.println("Singelton DomEdge : "
+						+ chart.getGraph().getData(node).getName()
+						+ " ---> " + 
+						chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
 				} else {
-					
+					System.out.println("New AgendaEntry -- Root: "+ chart.getGraph().getData(node).getName());
 					AgendaEntry newEntry = new AgendaEntry(node,fragSet);
 					agenda.addEntry(newEntry);
 				}
@@ -121,6 +123,7 @@ public class EnumerationState {
 		// 1. Apply (Up) as long as possible
 		if ( agenda.isEmpty() ) {
 			while( top.isLastSplit() ) {
+				System.out.println("pop-up"); //debug
 				stack.pop();
 				if (stack.isEmpty() )
 					return;
@@ -135,37 +138,52 @@ public class EnumerationState {
 		
 		if( agenda.isEmpty() ) {
 			// (Step)
-			
+			System.out.println("step-side");
 			top.clearAccu();
 			top.nextSplit();
 			
 			if ( top.getDominator() != null ) {
-				top.addDomEdge(Agenda.makeDomEdge(top.getDominator(), 
+				top.addDomEdge(new DomEdge(top.getDominator(), 
 						top.getCurrentSplit().getRoot()));
+				
+				System.out.println("new DomEdge: " + 
+						chart.getGraph().getData(top.getDominator()).getName() + 
+						" ---> " + 
+						chart.getGraph().getData(top.getCurrentSplit().getRoot()).getName()) ;
+				
 			}
 			
 			if(! top.getAgendaCopy().isEmpty() ) {
+				System.out.println("COPY AGENDA"); //debug
 				agenda.addAll(top.getAgendaCopy());
 			}
 			
 			addSplitToAgendaAndAccu( top );
 		} else {
-			
+			System.out.println("down");
 			// (Down)
 			agTop = agenda.getAndRemoveNext();
 			topNode = agTop.getKey();
 			topFragset = agTop.getValue();
 			
-			
+	
 			
 			if (topFragset.size() > 1 ) {
+				
 				EnumerationStackEntry newTop = new EnumerationStackEntry(topNode, 
 						WrapperTools.vectorToList(chart.getEdgesFor(topFragset)),
 						agenda);
+
 				
 				if( topNode != null ) {
-					newTop.addDomEdge( Agenda.makeDomEdge(topNode, 
+					
+					newTop.addDomEdge( new DomEdge(topNode, 
 							newTop.getCurrentSplit().getRoot() ) );
+				
+					System.out.println("new DomEdge: " + 
+							chart.getGraph().getData(topNode).getName() + 
+							" ---> " + 
+							chart.getGraph().getData(newTop.getCurrentSplit().getRoot()).getName()) ;
 				}
 				
 				stack.push(newTop);

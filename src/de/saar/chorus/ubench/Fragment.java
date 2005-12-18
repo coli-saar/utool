@@ -4,13 +4,14 @@
  */
 package de.saar.chorus.ubench;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.*;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
-import org.jgraph.util.*;
+import org.jgraph.util.JGraphUtilities;
 
 /**
  * A fragment in a dominance graph. This fragment contains nodes (labelled

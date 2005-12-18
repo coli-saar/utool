@@ -1,6 +1,5 @@
 package edu.mit.techniques.FOL;
 
-import java.util.Vector;
 
 abstract public class Connective extends Sentence {
 

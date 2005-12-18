@@ -1,7 +1,6 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
