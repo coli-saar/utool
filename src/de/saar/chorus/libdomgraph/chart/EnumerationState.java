@@ -53,9 +53,9 @@ public class EnumerationState {
 	}
 	
 	
-	List<DomEdge> extractDomEdges() {
+	List<JDomEdge> extractDomEdges() {
 		
-		List<DomEdge> toReturn = new ArrayList<DomEdge>();
+		List<JDomEdge> toReturn = new ArrayList<JDomEdge>();
 		
 		for( EnumerationStackEntry ese : stack) {
 			toReturn.addAll(ese.getEdgeAccu());
@@ -97,21 +97,40 @@ public class EnumerationState {
 			List<FragmentSet> childFrags =
 				WrapperTools.vectorToList(sp.getChildFor(node));
 			
+
 			for(FragmentSet fragSet : childFrags) {
 				
 				if( fragSet.size() == 1 ) {
-					ese.addDomEdge(new DomEdge(node, fragSet.getFirstNode()));
-				System.out.println("Singelton DomEdge : "
-						+ chart.getGraph().getData(node).getName()
-						+ " ---> " + 
-						chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
+					ese.addDomEdge(new JDomEdge(node, fragSet.getFirstNode()));
+				System.out.println("Singelton JDomEdge : "
+					//	+ chart.getGraph().getData(node).getName()
+						+ " ---> "); //+ 
+					//	chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
 				} else {
-					System.out.println("New AgendaEntry -- Root: "+ chart.getGraph().getData(node).getName());
+					//System.out.println("New AgendaEntry -- Root: "+ chart.getGraph().getData(node).getName());
 					AgendaEntry newEntry = new AgendaEntry(node,fragSet);
 					agenda.addEntry(newEntry);
 				}
 			}
 		}
+		
+		List<FragmentSet> otherFragments = WrapperTools.vectorToList(sp.getOtherFragmentSets());
+		
+		for(FragmentSet fragSet : otherFragments) {
+			
+			if( fragSet.size() == 1 ) {
+				ese.addDomEdge(new JDomEdge(sp.getRoot(), fragSet.getFirstNode()));
+			System.out.println("Singelton JDomEdge : "
+				//	+ chart.getGraph().getData(node).getName()
+					+ " ---> "); //+ 
+				//	chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
+			} else {
+				//System.out.println("New AgendaEntry -- Root: "+ chart.getGraph().getData(node).getName());
+				AgendaEntry newEntry = new AgendaEntry(sp.getRoot(),fragSet);
+				agenda.addEntry(newEntry);
+			}
+		}
+		
 	}
 	
 	void step() {
@@ -143,13 +162,13 @@ public class EnumerationState {
 			top.nextSplit();
 			
 			if ( top.getDominator() != null ) {
-				top.addDomEdge(new DomEdge(top.getDominator(), 
+				top.addDomEdge(new JDomEdge(top.getDominator(), 
 						top.getCurrentSplit().getRoot()));
 				
-				System.out.println("new DomEdge: " + 
-						chart.getGraph().getData(top.getDominator()).getName() + 
-						" ---> " + 
-						chart.getGraph().getData(top.getCurrentSplit().getRoot()).getName()) ;
+				System.out.println("new JDomEdge: " + 
+						//chart.getGraph().getData(top.getDominator()).getName() + 
+						" ---> " );//+ 
+						//chart.getGraph().getData(top.getCurrentSplit().getRoot()).getName()) ;
 				
 			}
 			
@@ -177,13 +196,13 @@ public class EnumerationState {
 				
 				if( topNode != null ) {
 					
-					newTop.addDomEdge( new DomEdge(topNode, 
+					newTop.addDomEdge( new JDomEdge(topNode, 
 							newTop.getCurrentSplit().getRoot() ) );
 				
-					System.out.println("new DomEdge: " + 
-							chart.getGraph().getData(topNode).getName() + 
-							" ---> " + 
-							chart.getGraph().getData(newTop.getCurrentSplit().getRoot()).getName()) ;
+					System.out.println("new JDomEdge: " + 
+						//	chart.getGraph().getData(topNode).getName() + 
+							" ---> ");// + 
+						//	chart.getGraph().getData(newTop.getCurrentSplit().getRoot()).getName()) ;
 				}
 				
 				stack.push(newTop);
