@@ -11,7 +11,7 @@ import de.saar.chorus.libdomgraph.SplitVector;
 public class EnumerationStackEntry {
 	
 	private SWIGTYPE_p_Node dominator;
-	private List<DomEdge> edgeAccu;
+	private List<JDomEdge> edgeAccu;
 	private Split currentSplit;
 	private List<Split> splits; // points into chart
 	private Split lastElement;
@@ -37,7 +37,7 @@ public class EnumerationStackEntry {
 			
 		}
 		
-		edgeAccu = new ArrayList<DomEdge>();
+		edgeAccu = new ArrayList<JDomEdge>();
 	}
 	
 	EnumerationStackEntry(SWIGTYPE_p_Node dom, SplitVector spl,
@@ -63,7 +63,7 @@ public class EnumerationStackEntry {
 			
 		}
 		
-		edgeAccu = new ArrayList<DomEdge>();
+		edgeAccu = new ArrayList<JDomEdge>();
 	}
 	
 	public void nextSplit() {
@@ -77,7 +77,7 @@ public class EnumerationStackEntry {
 		return ( (! splitIterator.hasNext()) || currentSplit.equals(lastElement));
 	}
 	
-	public void addDomEdge(DomEdge edge) {
+	public void addDomEdge(JDomEdge edge) {
 		edgeAccu.add(edge);
 	}
 	
@@ -102,14 +102,14 @@ public class EnumerationStackEntry {
 	/**
 	 * @return Returns the edgeAccu.
 	 */
-	public List<DomEdge> getEdgeAccu() {
+	public List<JDomEdge> getEdgeAccu() {
 		return edgeAccu;
 	}
 
 	/**
 	 * @param edgeAccu The edgeAccu to set.
 	 */
-	public void setEdgeAccu(List<DomEdge> edgeAccu) {
+	public void setEdgeAccu(List<JDomEdge> edgeAccu) {
 		this.edgeAccu = edgeAccu;
 	}
 

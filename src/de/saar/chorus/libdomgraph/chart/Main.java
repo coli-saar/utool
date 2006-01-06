@@ -1,18 +1,21 @@
 package de.saar.chorus.libdomgraph.chart;
 
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 
 import de.saar.chorus.libdomgraph.Chart;
-import de.saar.chorus.libdomgraph.DomEdgeVector;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
 import de.saar.chorus.libdomgraph.FragmentSetVector;
@@ -29,6 +32,7 @@ import de.saar.chorus.ubench.utool.JDomGraphConverter;
 public class Main {
 	
 	private static DomGraph graph;
+	private static JDomGraph jDomGraph;
 	private static DomSolver solver;
 	private static Chart chart;
 	private static int splitCount; //for debugging
@@ -41,12 +45,12 @@ public class Main {
 	 * @return
 	 */
 	public static JDomGraph loadGraph(String fileName) {
-		JDomGraph loadedGraph = new JDomGraph();
+		jDomGraph = new JDomGraph();
 		try {
 			File gxl = new File(fileName);	
 			Reader input = new FileReader(gxl);
-			DomGraphGXLCodec.decode(input, loadedGraph);
-			for( Fragment frag : loadedGraph.getFragments() ) {
+			DomGraphGXLCodec.decode(input, jDomGraph);
+			for( Fragment frag : jDomGraph.getFragments() ) {
 				System.out.println(frag);
 			}
 		} catch (IOException e ) {
@@ -57,7 +61,7 @@ public class Main {
 			System.exit(1);
 		}
 		
-		return loadedGraph;
+		return jDomGraph;
 	}
 	
 	/**
@@ -79,7 +83,8 @@ public class Main {
 			return null;
 		} else {
 			DomGraphConverter conv = new DomGraphConverter(solver, solver.getGraph());
-			return conv.toJDomGraph();
+			jDomGraph = conv.toJDomGraph();
+			return jDomGraph;
 		}
 	}    
 	
@@ -303,12 +308,37 @@ public class Main {
 		
 		
 		int sFormCounter = 0;
+		//DomGraphConverter newConv = new DomGraphConverter(solver,graph);
 		
+		
+		List<JDomEdge> recentEdges = new ArrayList<JDomEdge>();
 		while( ! enumState.isFinished() ) {
-		
+			
 			enumState.findNextSolvedForm();
-			if(enumState.representsSolvedForm())
-			sFormCounter++;
+			if(enumState.representsSolvedForm()) {
+				sFormCounter++;
+				JDomGraph nextSolvedForm = jDomGraph.clone();
+				
+				recentEdges = enumState.extractDomEdges();
+				
+				
+				nextSolvedForm.clearDominanceEdges();
+				nextSolvedForm.addAllJDomEdges(recentEdges, graph);
+				nextSolvedForm.computeFragments();
+			
+				JFrame debugWindow = new JFrame("A Solved Form");
+				debugWindow.addWindowListener(new WindowAdapter() {
+		            public void windowClosing(WindowEvent e) {
+		                System.exit(0);
+		            }
+		        });
+				debugWindow.add(new JScrollPane(nextSolvedForm));
+				debugWindow.pack();
+				nextSolvedForm.computeLayout();
+				debugWindow.validate();
+				debugWindow.setVisible(true);
+			}
+			
 		}
 	
 		System.out.println("Computed solved forms: " + sFormCounter);

@@ -414,6 +414,7 @@ abstract public class ImprovedJGraph<NodeType,
      * 
      */
     public void computeAdjacency() {
+    	
         children.clear();
         parents.clear();
         
@@ -574,6 +575,7 @@ abstract public class ImprovedJGraph<NodeType,
      */
     public boolean isForest() {
         for( DefaultGraphCell node : nodes ) {
+        	
             if( parents.get(node).size() > 1 ) {
                 return false;
             }

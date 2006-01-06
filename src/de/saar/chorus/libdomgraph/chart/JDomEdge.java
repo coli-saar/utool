@@ -5,12 +5,12 @@ import java.util.Map;
 import de.saar.chorus.libdomgraph.DomEdgePair;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 
-public class DomEdge implements Map.Entry<SWIGTYPE_p_Node, SWIGTYPE_p_Node> {
+public class JDomEdge implements Map.Entry<SWIGTYPE_p_Node, SWIGTYPE_p_Node> {
 
 	private SWIGTYPE_p_Node key;
 	private SWIGTYPE_p_Node value;
 	
-	DomEdge(SWIGTYPE_p_Node source, SWIGTYPE_p_Node target) {
+	JDomEdge(SWIGTYPE_p_Node source, SWIGTYPE_p_Node target) {
 		key = source;
 		value = target;
 	}

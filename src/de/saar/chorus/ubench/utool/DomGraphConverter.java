@@ -49,7 +49,7 @@ public class DomGraphConverter {
         return jgraph;
     }
     
-    de.saar.chorus.ubench.NodeData toLeonardoNodeData(de.saar.chorus.libdomgraph.NodeData data) {
+    public de.saar.chorus.ubench.NodeData toLeonardoNodeData(de.saar.chorus.libdomgraph.NodeData data) {
         de.saar.chorus.ubench.NodeType type;
         String name = data.getName();
         

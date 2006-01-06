@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,8 @@ import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
+import de.saar.chorus.libdomgraph.DomGraph;
+import de.saar.chorus.libdomgraph.chart.JDomEdge;
 
 /**
  * A Swing component that represents a dominance graph.
@@ -291,6 +294,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		if(isForest()) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
+			System.err.println("TreeLayout");
 		}  else {
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
 		}
@@ -678,5 +682,38 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
         for( DefaultGraphCell node : nodes ) {
             getNodeData(node).setShowLabel(b);
         }
+    }
+    
+    /**
+     * 
+     * @param edge
+     * @param srcGraph
+     */
+    public void addJDomEdge(JDomEdge edge, DomGraph srcGraph) {
+    	DefaultGraphCell src = getNodeForName(srcGraph.getData(
+    			edge.getKey()).getName());
+    	DefaultGraphCell tgt = getNodeForName(srcGraph.getData(
+    			edge.getValue()).getName());
+    	
+    	addEdge(new EdgeData(EdgeType.dominance, "", this), src, tgt);
+    }
+    
+    /**
+     * 
+     * @param edges
+     * @param srcGraph
+     */
+    public void addAllJDomEdges(Collection<JDomEdge> edges, DomGraph srcGraph) {
+    	for(JDomEdge edg : edges) {
+    		addJDomEdge(edg, srcGraph);
+    	}
+    }
+    
+    public void clearDominanceEdges() {
+    	for(DefaultEdge edge : dominanceEdges) {
+			getModel().remove(new Object[]{ edge });
+			edges.remove(edge);
+		}
+    	dominanceEdges.clear();
     }
 }
