@@ -16,9 +16,11 @@
 	<property name="getopt.jar"
 	location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
-	<property name="utool-swig.jar"
+	
+<property name="utool-swig.jar"
 	location="${packages}/DomgraphSwig.jar" />
-	<property name="utool-swig.unpacked.classes"
+	
+<property name="utool-swig.unpacked.classes"
 	value="de/saar/chorus/libdomgraph/*" />
 
 
@@ -30,7 +32,8 @@
 	<property name="chorus" value="de/saar/chorus" />
 
 	<property name="chart.jar" value="${build.lib}/Chart.jar" />
-	<property name="chart.jar.classes"
+	
+<property name="chart.jar.classes"
 	value="${chorus}/libdomgraph/*,${chorus}/libdomgraph/chart/*,${chorus}/ubench/utool/*,${chorus}/ubench/* ,${chorus}/jgraph/*,${coli}/getopt/*"/>
 
 	<target name="chart" depends="init,jgraph.unpacked,getopt.unpacked,utool-swig.unpacked">
@@ -38,11 +41,11 @@
                destdir="${build.classes}"
                debug="true"
                includes="${chorus}/libdomgraph/chart/*.java,
-							${chorus}/jgraph/*.java,                                                      
-                            ${chorus}/libdomgraph/*.java,
-							${chorus}/ubench/utool/*.java,
-							${chorus}/ubench/*.java
-							${coli}/getopt/*.java"
+			 ${chorus}/jgraph/*.java,                                                      
+                         ${chorus}/libdomgraph/*.java,
+		         ${chorus}/ubench/utool/*.java,
+			 ${chorus}/ubench/*.java
+			 ${coli}/getopt/*.java"
 			excludes="**/Test*.java"
                source="1.5">
 
@@ -75,14 +78,14 @@
 		<available file="${getopt.jar}" property="getopt.jar.present"/>
 
 		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
-		<available file="${unpack.jar}" property="unpack.jar.present"/>
+	
 
 	</target>
 
 	<!-- Delete all compiled files -->
 	<target name="clean">
 		<delete>
-			<fileset dir="${build.classes}" includes="${chart.jar.classes}" />
+			<fileset dir="${build.classes}" />
 		</delete>
 		<delete dir="${build.lib}" />
 		<delete dir="${doc.api}" />
