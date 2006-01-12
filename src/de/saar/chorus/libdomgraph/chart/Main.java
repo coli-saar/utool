@@ -37,6 +37,7 @@ public class Main {
 	private static Chart chart;
 	private static int splitCount; //for debugging
 	private static Set<Split> seen;
+        private static int windowCounter = 0;
 	
 	
 	/**
@@ -308,6 +309,7 @@ public class Main {
 		
 		
 		int sFormCounter = 0;
+                
 		//DomGraphConverter newConv = new DomGraphConverter(solver,graph);
 		
 		
@@ -326,10 +328,13 @@ public class Main {
 				nextSolvedForm.addAllJDomEdges(recentEdges, graph);
 				nextSolvedForm.computeFragments();
 			
-				JFrame debugWindow = new JFrame("A Solved Form");
+				JFrame debugWindow = new JFrame("Solved Form No " + sFormCounter);
+                                windowCounter++;
 				debugWindow.addWindowListener(new WindowAdapter() {
 		            public void windowClosing(WindowEvent e) {
-		                System.exit(0);
+                                windowCounter--;
+		                if(windowCounter == 0) 
+				    System.exit(0);
 		            }
 		        });
 				debugWindow.add(new JScrollPane(nextSolvedForm));
