@@ -1,30 +1,37 @@
 package de.saar.chorus.libdomgraph.chart;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import de.saar.chorus.libdomgraph.Chart;
+import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.FragmentSet;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
+import de.saar.chorus.ubench.JDomGraph;
 
 public class EnumerationState {
+	private DomGraph domGraph;
+	private JDomGraph jGraph;
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
-	private List<FragmentSet> allocatedFragsets;
-	int num_allocatedFragsets;
+	int num_Fragsets;
 	boolean lastAppliedRuleWasSingleton;
 	private SWIGTYPE_p_Node nullNode;
 	
-	EnumerationState(Chart ch, List<FragmentSet> fsets) {
+	EnumerationState(Chart ch, List<FragmentSet> fsets,
+			JDomGraph graph) {
 		
 		chart = ch;
+		domGraph = chart.getGraph();
+		jGraph = graph;
 		agenda = new Agenda();
 		nullNode = null; 
-		allocatedFragsets = new ArrayList<FragmentSet>(fsets);
-		num_allocatedFragsets = fsets.size();
+		num_Fragsets = fsets.size();
 		stack = new Stack<EnumerationStackEntry>();
 		
 		
@@ -53,9 +60,9 @@ public class EnumerationState {
 	}
 	
 	
-	List<JDomEdge> extractDomEdges() {
+	Set<DomEdge> extractDomEdges() {
 		
-		List<JDomEdge> toReturn = new ArrayList<JDomEdge>();
+		Set<DomEdge> toReturn = new HashSet<DomEdge>();
 		
 		for( EnumerationStackEntry ese : stack) {
 			toReturn.addAll(ese.getEdgeAccu());
@@ -101,8 +108,9 @@ public class EnumerationState {
 			for(FragmentSet fragSet : childFrags) {
 				
 				if( fragSet.size() == 1 ) {
-					ese.addDomEdge(new JDomEdge(node, fragSet.getFirstNode()));
-				System.out.println("Singelton JDomEdge : "
+					ese.addDomEdge(new DomEdge(node, fragSet.getFirstNode(),
+							domGraph, jGraph));
+				System.out.println("Singelton DomEdge : "
 					//	+ chart.getGraph().getData(node).getName()
 						+ " ---> "); //+ 
 					//	chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
@@ -119,8 +127,9 @@ public class EnumerationState {
 		for(FragmentSet fragSet : otherFragments) {
 			
 			if( fragSet.size() == 1 ) {
-				ese.addDomEdge(new JDomEdge(sp.getRoot(), fragSet.getFirstNode()));
-			System.out.println("Singelton JDomEdge : "
+				ese.addDomEdge(new DomEdge(sp.getRoot(), fragSet.getFirstNode(),
+						domGraph, jGraph));
+			System.out.println("Singelton DomEdge : "
 				//	+ chart.getGraph().getData(node).getName()
 					+ " ---> "); //+ 
 				//	chart.getGraph().getData(fragSet.getFirstNode()).getName()); //debug
@@ -162,10 +171,11 @@ public class EnumerationState {
 			top.nextSplit();
 			
 			if ( top.getDominator() != null ) {
-				top.addDomEdge(new JDomEdge(top.getDominator(), 
-						top.getCurrentSplit().getRoot()));
+				top.addDomEdge(new DomEdge(top.getDominator(), 
+						top.getCurrentSplit().getRoot(),
+						domGraph, jGraph));
 				
-				System.out.println("new JDomEdge: " + 
+				System.out.println("new DomEdge: " + 
 						//chart.getGraph().getData(top.getDominator()).getName() + 
 						" ---> " );//+ 
 						//chart.getGraph().getData(top.getCurrentSplit().getRoot()).getName()) ;
@@ -196,10 +206,11 @@ public class EnumerationState {
 				
 				if( topNode != null ) {
 					
-					newTop.addDomEdge( new JDomEdge(topNode, 
-							newTop.getCurrentSplit().getRoot() ) );
+					newTop.addDomEdge( new DomEdge(topNode, 
+							newTop.getCurrentSplit().getRoot(),
+							domGraph, jGraph) );
 				
-					System.out.println("new JDomEdge: " + 
+					System.out.println("new DomEdge: " + 
 						//	chart.getGraph().getData(topNode).getName() + 
 							" ---> ");// + 
 						//	chart.getGraph().getData(newTop.getCurrentSplit().getRoot()).getName()) ;
