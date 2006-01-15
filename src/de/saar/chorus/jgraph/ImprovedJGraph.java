@@ -439,7 +439,7 @@ abstract public class ImprovedJGraph<NodeType,
             
             DefaultGraphCell target = 
                 (DefaultGraphCell) JGraphUtilities.getTargetVertex(this, edge);
-            
+           
             children.get(source).add(target);
             parents.get(target).add(source);
         }
@@ -575,7 +575,6 @@ abstract public class ImprovedJGraph<NodeType,
      */
     public boolean isForest() {
         for( DefaultGraphCell node : nodes ) {
-        	
             if( parents.get(node).size() > 1 ) {
                 return false;
             }

@@ -33,7 +33,7 @@ import org.jgraph.util.JGraphUtilities;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
 import de.saar.chorus.libdomgraph.DomGraph;
-import de.saar.chorus.libdomgraph.chart.JDomEdge;
+import de.saar.chorus.libdomgraph.chart.DomEdge;
 
 /**
  * A Swing component that represents a dominance graph.
@@ -293,8 +293,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	public void computeLayout() {
 		
 		if(isForest()) {
-			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 			System.err.println("TreeLayout");
+			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
 		}
@@ -684,35 +684,13 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
         }
     }
     
-    /**
-     * 
-     * @param edge
-     * @param srcGraph
-     */
-    public void addJDomEdge(JDomEdge edge, DomGraph srcGraph) {
-    	DefaultGraphCell src = getNodeForName(srcGraph.getData(
-    			edge.getKey()).getName());
-    	DefaultGraphCell tgt = getNodeForName(srcGraph.getData(
-    			edge.getValue()).getName());
-    	
-    	addEdge(new EdgeData(EdgeType.dominance, "", this), src, tgt);
-    }
-    
-    /**
-     * 
-     * @param edges
-     * @param srcGraph
-     */
-    public void addAllJDomEdges(Collection<JDomEdge> edges, DomGraph srcGraph) {
-    	for(JDomEdge edg : edges) {
-    		addJDomEdge(edg, srcGraph);
-    	}
-    }
+   
     
     public void clearDominanceEdges() {
     	for(DefaultEdge edge : dominanceEdges) {
 			getModel().remove(new Object[]{ edge });
 			edges.remove(edge);
+			edgeCounter--;
 		}
     	dominanceEdges.clear();
     }
