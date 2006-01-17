@@ -35,7 +35,7 @@ public class EnumerationStackEntry {
 			
 			lastElement = splits.get(splits.size() - 1);
 			
-		}
+		} 
 		
 		edgeAccu = new ArrayList<DomEdge>();
 	}
