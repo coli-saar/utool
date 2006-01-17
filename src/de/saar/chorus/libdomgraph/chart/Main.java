@@ -130,6 +130,8 @@ public class Main {
 						JOptionPane.ERROR_MESSAGE);
 				return null;
 			} else {
+				DomGraphConverter conv = new DomGraphConverter(solver, solver.getGraph());
+				jDomGraph = conv.toJDomGraph();
 				return solver.getGraph();
 			}
 		}
@@ -399,6 +401,7 @@ public class Main {
 		}
 		
 		EnumeratorWindow window = new EnumeratorWindow(solvedForms);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
 		System.out.println("Computed solved forms: " + sFormCounter);
 		System.err.println("Real number of solved forms: " + chart.countSolvedForms());

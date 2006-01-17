@@ -205,7 +205,7 @@ public class EnumerationState {
 
 				
 				if( topNode != null ) {
-					
+					System.err.println(newTop.getCurrentSplit());
 					newTop.addDomEdge( new DomEdge(topNode, 
 							newTop.getCurrentSplit().getRoot(),
 							domGraph, jGraph) );
