@@ -13,13 +13,9 @@ public class DomEdge {
 	private String src;
 	private String tgt;
 	
-	DomEdge(SWIGTYPE_p_Node source, SWIGTYPE_p_Node target,
-				DomGraph cGraph, JDomGraph jGraph) {
+	DomEdge(SWIGTYPE_p_Node source, SWIGTYPE_p_Node target, DomGraph cGraph) {
 		src = cGraph.getData(source).getName();
 		tgt = cGraph.getData(target).getName();
-		
-	   System.out.println("Source: " +src +
-			   " -> Target: " + tgt ); //debug
 	}
 	
 	DomEdge(DefaultGraphCell source, DefaultGraphCell target, JDomGraph jGraph) {
@@ -70,4 +66,7 @@ public class DomEdge {
 			return equal;
 	}
 
+    public String toString() {
+        return src + "<" + tgt;
+    }
 }

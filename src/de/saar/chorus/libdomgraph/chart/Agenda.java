@@ -1,12 +1,7 @@
 package de.saar.chorus.libdomgraph.chart;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Stack;
-
-import de.saar.chorus.libdomgraph.FragmentSet;
-import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 
 public class Agenda {
 	
@@ -32,7 +27,7 @@ public class Agenda {
 		return agenda.peek();
 	}
 	
-	public AgendaEntry getAndRemoveNext() {
+	public AgendaEntry pop() {
 		return agenda.pop();
 	}
 	
