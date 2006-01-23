@@ -15,12 +15,12 @@ import de.saar.chorus.libdomgraph.SplitVector;
 public class WrapperTools {
 
 	public static List<Split> vectorToList(SplitVector spv) {
-		
 		List<Split> toReturn = new ArrayList<Split>();
 		
 		if( spv != null ) {
 			for( int i = 0; i < spv.size(); i++ ) {
-				toReturn.add(spv.get(i));
+                Split s = spv.get(i);
+				toReturn.add(s);
 			}
 		}
 		return toReturn;

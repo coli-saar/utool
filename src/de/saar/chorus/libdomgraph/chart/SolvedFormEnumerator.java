@@ -172,6 +172,9 @@ public class SolvedFormEnumerator {
             
 			if (topFragset.size() > 1 ) {
                 SplitVector sv = chart.getEdgesFor(topFragset);
+                
+                Assert.assertNotNull("null topFragset", topFragset);
+                
 				EnumerationStackEntry newTop = new EnumerationStackEntry(topNode, 
 						WrapperTools.vectorToList(sv), agenda);
 
