@@ -43,6 +43,8 @@ public class Main {
 	private static int splitCount; //for debugging
 	private static Set<Split> seen;
 	private static List<JDomGraph> solvedForms;
+    
+    private static int domedgesCreated = 0;
 	
 	/**
 	 * 
@@ -276,46 +278,6 @@ public class Main {
 		
 	}
 	
-	private static JDomGraph createEmptySolvedForm() {
-		JDomGraph nextSolvedForm = new JDomGraph();
-		
-		for(DefaultGraphCell cell : jDomGraph.getNodes() ) {
-			NodeData cellData = jDomGraph.getNodeData(cell);
-			NodeData cloneData;
-			if( cellData.getType().equals(NodeType.labelled)) {
-				cloneData = new NodeData(NodeType.labelled, 
-						cellData.getName(), cellData.getLabel(), nextSolvedForm); 
-			} else {
-				cloneData = new NodeData(NodeType.unlabelled, 
-						cellData.getName(), nextSolvedForm); 
-			}
-			cloneData.addMenuItem(cell.toString(), 
-					cell.toString());
-			nextSolvedForm.addNode(cloneData);
-		}
-		
-		for (DefaultEdge edge : jDomGraph.getSortedEdges() ) {
-			
-			EdgeData cellData = jDomGraph.getEdgeData(edge);
-			EdgeData cloneData;
-			
-			if( cellData.getType().equals(EdgeType.solid)) {
-				cloneData = new EdgeData(EdgeType.solid, 
-						cellData.getName(), nextSolvedForm );
-			} else {
-				continue;
-			}
-			
-			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
-			nextSolvedForm.addEdge(cloneData, nextSolvedForm.getNodeForName(
-					jDomGraph.getNodeData(
-							jDomGraph.getSourceNode(edge)).getName()), 
-					        nextSolvedForm.getNodeForName(
-					        		jDomGraph.getNodeData(jDomGraph.getTargetNode(edge)).getName()));
-		}
-		
-		return nextSolvedForm;
-	}
     
 	public static List<JDomGraph> getSolvedForms() {
 		return solvedForms;
@@ -367,29 +329,36 @@ public class Main {
         
         long endTime = System.currentTimeMillis();
         System.out.println("Enumeration took " + (endTime-startTime) + " ms.");
+        System.out.println("Total number of dom edges: " + domedgesCreated);
 		
+        /*
 		EnumeratorWindow window = new EnumeratorWindow(solvedForms);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
+        */
 		System.out.println("Computed solved forms: " + sFormCounter);
 		System.err.println("Real number of solved forms: " + chart.countSolvedForms());
 		//graph.setDominanceEdges();
 	}
 
     private static void processSolvedForm(SolvedFormEnumerator enumState, long counter) {
-        List<DomEdge> recentEdges = new ArrayList<DomEdge>(enumState.extractDomEdges()); 
+        List<DomEdge> domEdges = new ArrayList<DomEdge>(enumState.extractDomEdges()); 
         
-        jDomGraph.clearDominanceEdges();
-        
-        //JDomGraph nextSolvedForm = createEmptySolvedForm();
+        solver.deleteAllDominanceEdges();
         
         System.out.print("sf #" + counter + ": ");
         
-        for( DomEdge edge : recentEdges ) {
+        for( DomEdge edge : domEdges ) {
             System.out.print(edge + " ");
-            edge.addToSolvedForm(jDomGraph);
+            solver.newEdge(solver.getGraph(),
+                    edge.getSource(), edge.getTarget(),
+                    "(dom edge)",
+                    de.saar.chorus.libdomgraph.EdgeType.DOMINANCE_EDGE);
+//            edge.addToSolvedForm(jDomGraph);
+            domedgesCreated++;
         }
-        
+  
+        //solver.saveGraph("outputgraph" + counter + ".t.oz");
         System.out.println();
         
         /*

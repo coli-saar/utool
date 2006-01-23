@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import junit.framework.Assert;
+
 import de.saar.chorus.libdomgraph.Chart;
 import de.saar.chorus.libdomgraph.DomGraph;
 import de.saar.chorus.libdomgraph.FragmentSet;
 import de.saar.chorus.libdomgraph.SWIGTYPE_p_Node;
 import de.saar.chorus.libdomgraph.Split;
+import de.saar.chorus.libdomgraph.SplitVector;
 import de.saar.chorus.ubench.JDomGraph;
 
 public class SolvedFormEnumerator {
@@ -35,7 +38,7 @@ public class SolvedFormEnumerator {
 		
 		for( FragmentSet fragSet : fsets ) {
 			if( fragSet.size() > 0 ) {
-				agenda.addEntry(new AgendaEntry(nullNode, fragSet));
+				agenda.add(new AgendaEntry(nullNode, fragSet));
 				//System.out.println("Start-Agenda-Entry (constructor)");
 			}
 		}
@@ -112,7 +115,7 @@ public class SolvedFormEnumerator {
         } else {
             // larger fragsets: add to agenda
             AgendaEntry newEntry = new AgendaEntry(dominator,fragSet);
-            agenda.addEntry(newEntry);
+            agenda.add(newEntry);
         }
     }
 
@@ -168,10 +171,12 @@ public class SolvedFormEnumerator {
 			topFragset = agTop.getValue();
             
 			if (topFragset.size() > 1 ) {
+                SplitVector sv = chart.getEdgesFor(topFragset);
 				EnumerationStackEntry newTop = new EnumerationStackEntry(topNode, 
-						WrapperTools.vectorToList(chart.getEdgesFor(topFragset)),
-						agenda);
+						WrapperTools.vectorToList(sv), agenda);
 
+                Assert.assertNotNull("null edges", sv);
+                Assert.assertTrue("empty edges", !sv.isEmpty());
 				
 				if( topNode != null ) {
 					System.err.println(newTop.getCurrentSplit());

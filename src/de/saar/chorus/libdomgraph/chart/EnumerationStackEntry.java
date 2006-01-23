@@ -19,13 +19,13 @@ public class EnumerationStackEntry {
 	private Iterator<Split> splitIterator;
 	
 	EnumerationStackEntry(SWIGTYPE_p_Node dom, List<Split> spl,
-			Agenda agend) {
+			Agenda agenda) {
 		dominator = dom;
 		splits = spl;
 		agendaCopy = new Agenda();
 		
-		if( agend != null ) {
-			agendaCopy.addAll(agend);
+		if( agenda != null ) {
+			agendaCopy.addAll(agenda);
 		}
 		
 		if( (spl != null) && (! spl.isEmpty() )  ) {
