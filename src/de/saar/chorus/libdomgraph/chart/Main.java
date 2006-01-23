@@ -1,8 +1,6 @@
 package de.saar.chorus.libdomgraph.chart;
 
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,7 +11,6 @@ import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -45,7 +42,6 @@ public class Main {
 	private static Chart chart;
 	private static int splitCount; //for debugging
 	private static Set<Split> seen;
-    private static int windowCounter = 0;
 	private static List<JDomGraph> solvedForms;
 	
 	/**
@@ -320,7 +316,7 @@ public class Main {
 		
 		return nextSolvedForm;
 	}
-	
+    
 	public static List<JDomGraph> getSolvedForms() {
 		return solvedForms;
 	}
@@ -342,12 +338,14 @@ public class Main {
 		solver.solve();
 		chart = solver.getChart();
 		solvedForms = new ArrayList<JDomGraph>();
+        
+        long startTime = System.currentTimeMillis();
 		
 		
 		FragmentSetVector fragSets = new FragmentSetVector();
 		int numOfWccs = chart.computeWccFragmentSets(fragSets);
 		
-		EnumerationState enumState = new EnumerationState(chart, 
+		SolvedFormEnumerator enumState = new SolvedFormEnumerator(chart, 
 				WrapperTools.vectorToList(fragSets),
 				jDomGraph);
 		
@@ -357,48 +355,18 @@ public class Main {
 		//DomGraphConverter newConv = new DomGraphConverter(solver,graph);
 		
 		
-		List<DomEdge> recentEdges ;
+		
 		while( ! enumState.isFinished() ) {
 			
 			enumState.findNextSolvedForm();
 			if(enumState.representsSolvedForm()) {
-				sFormCounter++;
-				JDomGraph nextSolvedForm = createEmptySolvedForm();
-				solvedForms.add(nextSolvedForm);
-				
-				recentEdges = new ArrayList<DomEdge>(
-						enumState.extractDomEdges());
-				
-				for( DomEdge doEdge : recentEdges ) {
-					doEdge.addToSolvedForm(nextSolvedForm);
-				}
-				
-				
-				System.out.println(sFormCounter + ". sF, " + 
-						recentEdges.size() + " dominance edges");
-			
-				nextSolvedForm.computeFragments();
-				
-				
-				
-				/*JFrame debugWindow = new JFrame("Solved Form No " + sFormCounter);
-                                windowCounter++;
-				debugWindow.addWindowListener(new WindowAdapter() {
-		            public void windowClosing(WindowEvent e) {
-                                windowCounter--;
-		                if(windowCounter == 0) 
-				    System.exit(0);
-		            }
-		        });
-				debugWindow.add(new JScrollPane(nextSolvedForm));
-
-				debugWindow.pack();
-				nextSolvedForm.computeLayout();
-				debugWindow.validate();
-				debugWindow.setVisible(true);*/
+                processSolvedForm(enumState, sFormCounter++);
 			}
 			
 		}
+        
+        long endTime = System.currentTimeMillis();
+        System.out.println("Enumeration took " + (endTime-startTime) + " ms.");
 		
 		EnumeratorWindow window = new EnumeratorWindow(solvedForms);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -407,5 +375,50 @@ public class Main {
 		System.err.println("Real number of solved forms: " + chart.countSolvedForms());
 		//graph.setDominanceEdges();
 	}
-	
+
+    private static void processSolvedForm(SolvedFormEnumerator enumState, long counter) {
+        List<DomEdge> recentEdges = new ArrayList<DomEdge>(enumState.extractDomEdges()); 
+        
+        jDomGraph.clearDominanceEdges();
+        
+        //JDomGraph nextSolvedForm = createEmptySolvedForm();
+        
+        System.out.print("sf #" + counter + ": ");
+        
+        for( DomEdge edge : recentEdges ) {
+            System.out.print(edge + " ");
+            edge.addToSolvedForm(jDomGraph);
+        }
+        
+        System.out.println();
+        
+        /*
+         * System.out.println(counter + ". sF, " + 
+                recentEdges.size() + " dominance edges");
+    
+         */
+        //nextSolvedForm.computeFragments();
+    }
 }
+
+
+
+
+
+
+
+/*JFrame debugWindow = new JFrame("Solved Form No " + sFormCounter);
+                windowCounter++;
+debugWindow.addWindowListener(new WindowAdapter() {
+    public void windowClosing(WindowEvent e) {
+                windowCounter--;
+        if(windowCounter == 0) 
+    System.exit(0);
+    }
+});
+debugWindow.add(new JScrollPane(nextSolvedForm));
+
+debugWindow.pack();
+nextSolvedForm.computeLayout();
+debugWindow.validate();
+debugWindow.setVisible(true);*/

@@ -70,7 +70,7 @@ public class EnumerationStackEntry {
 		currentSplit = splitIterator.next();
 	}
 	
-	public boolean isLastSplit() {
+	public boolean isAtLastSplit() {
 		if( splitIterator == null ) {
 			return true;
 		}
