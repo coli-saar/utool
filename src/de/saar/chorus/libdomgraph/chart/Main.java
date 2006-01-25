@@ -350,7 +350,7 @@ public class Main {
         
         for( DomEdge edge : domEdges ) {
             System.out.print(edge + " ");
-            solver.newEdge(solver.getGraph(),
+            solver.newEdge(graph,
                     edge.getSource(), edge.getTarget(),
                     "(dom edge)",
                     de.saar.chorus.libdomgraph.EdgeType.DOMINANCE_EDGE);

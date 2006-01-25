@@ -9,6 +9,11 @@
 	<classpathentry exported="true" kind="lib" path="packages/jgraphaddons.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/junit.jar"/>
 	<classpathentry exported="true" kind="lib" path="projects/XTagLexicon/build/XTAGLexicon.jar"/>
-	<classpathentry kind="lib" path="packages/DomgraphSwig.jar"/>
+	<classpathentry kind="lib" path="packages/DomgraphSwig.jar">
+		<attributes>
+			<attribute value="Chorus/packages" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="packages/jgrapht-0.6.0/src" kind="lib" path="packages/jgrapht-0.6.0/jgrapht-0.6.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
