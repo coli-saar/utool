@@ -7,8 +7,6 @@
 
 package de.saar.chorus.domgraph.graph;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The data that can be stored in the node of a dominance graph -- namely,
@@ -22,8 +20,6 @@ import java.util.regex.Pattern;
  */
 public class NodeData {
     private String name;
-    private String simplifiedLabel;
-    private String label;
     private NodeType type;
     
     /**
@@ -33,46 +29,11 @@ public class NodeData {
      * @param label
      * @param type
      */
-    public NodeData(NodeType type, String name, String label) {
-        this.name = name;
-        setLabel(label);
-        this.type = type;
-    }
-    
-    /**
-     * New node data for an unlabelled node.
-     * 
-     * @param name
-     * @param type
-     */
     public NodeData(NodeType type, String name) {
         this.name = name;
         this.type = type;
-        this.label = "";
     }
     
-    private void setLabel(String label) {
-        Pattern p = Pattern.compile("\\s+\\S+:");
-        Matcher m = p.matcher(label);
-        simplifiedLabel = m.replaceAll(",");
-        
-        this.label = label;
-    }
-    
-    /**
-     * @return Returns the label.
-     */
-    public String getLabel() {
-        return label;
-    }
-    
-
-    /**
-     * @return Returns the simplified label.
-     */
-    public String getSimplifiedLabel() {
-        return simplifiedLabel;
-    }
     
     /**
      * @return Returns the name.
@@ -88,15 +49,7 @@ public class NodeData {
         return type;
     }
     
-    public String getDesc() {
-        return "(node " + name + " type=" + type + ", label=" + label + ")";
-    }
-    
     public String toString() {
-        switch(type) {
-        case LABELLED: return "<L:" + simplifiedLabel + ">";
-        case UNLABELLED: return "<U:" + name + ">";
-        default: return null;
-        }
+        return name;
     }
 }
