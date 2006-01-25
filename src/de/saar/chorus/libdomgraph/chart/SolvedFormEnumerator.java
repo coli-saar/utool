@@ -39,7 +39,7 @@ public class SolvedFormEnumerator {
 		for( FragmentSet fragSet : fsets ) {
 			if( fragSet.size() > 0 ) {
 				agenda.add(new AgendaEntry(nullNode, fragSet));
-				//System.out.println("Start-Agenda-Entry (constructor)");
+				//System.err.println("Start-Agenda-Entry (constructor)");
 			}
 		}
 		
@@ -74,14 +74,14 @@ public class SolvedFormEnumerator {
 	void findNextSolvedForm() {
 		if( !isFinished() ) {
 			do {
-				//System.out.println("step()");
+				//System.err.println("step()");
 				step();
 			} while(!agenda.isEmpty());
 			
 			if( isFinished() ) {
 				agenda.clear();
 			} else {
-				System.out.println("===== SOLVED FORM ===="); //Debug
+				System.err.println("===== SOLVED FORM ===="); //Debug
 			}
 		} 
 	}
@@ -111,7 +111,7 @@ public class SolvedFormEnumerator {
             DomEdge newEdge = new DomEdge(dominator, fragSet.getFirstNode(),
                     domGraph);
             ese.addDomEdge(newEdge);
-            System.out.println("Singleton DomEdge : " + newEdge);
+            System.err.println("Singleton DomEdge : " + newEdge);
         } else {
             // larger fragsets: add to agenda
             AgendaEntry newEntry = new AgendaEntry(dominator,fragSet);
@@ -129,7 +129,7 @@ public class SolvedFormEnumerator {
 		// 1. Apply (Up) as long as possible
 		if ( agenda.isEmpty() ) {
 			while( top.isAtLastSplit() ) {
-				System.out.println("(Up)"); //debug
+				System.err.println("(Up)"); //debug
 				stack.pop();
 				if (stack.isEmpty() )
 					return;
@@ -143,7 +143,7 @@ public class SolvedFormEnumerator {
 		// than the agenda (i.e. simulation of Singleton).
 		if( agenda.isEmpty() ) {
 			// (Step)
-			System.out.println("(Step)");
+			System.err.println("(Step)");
 			top.clearAccu();
 			top.nextSplit();
 			
@@ -153,27 +153,27 @@ public class SolvedFormEnumerator {
                         domGraph); 
 				top.addDomEdge(newEdge);
 				
-				System.out.println("new DomEdge: " + newEdge);
+				System.err.println("new DomEdge: " + newEdge);
 			}
 			
 			if(! top.getAgendaCopy().isEmpty() ) {
-				System.out.println("Retrieve agenda from stored stack entry."); //debug
+				System.err.println("Retrieve agenda from stored stack entry."); //debug
 				agenda.addAll(top.getAgendaCopy());
 			}
 			
 			addSplitToAgendaAndAccu( top );
 		} else {
             // (Down)
-            System.out.println("(Down)");
+            System.err.println("(Down)");
 
 			agTop = agenda.pop();
-			topNode = agTop.getKey();
-			topFragset = agTop.getValue();
+			topNode = agTop.getDominator();
+			topFragset = agTop.getFragmentSet();
+            
+            Assert.assertNotNull("null topFragset", topFragset);
             
 			if (topFragset.size() > 1 ) {
                 SplitVector sv = chart.getEdgesFor(topFragset);
-                
-                Assert.assertNotNull("null topFragset", topFragset);
                 
 				EnumerationStackEntry newTop = new EnumerationStackEntry(topNode, 
 						WrapperTools.vectorToList(sv), agenda);
@@ -188,7 +188,7 @@ public class SolvedFormEnumerator {
                             domGraph);
 					newTop.addDomEdge( newEdge );
 				
-					System.out.println("new DomEdge: " + newEdge);
+					System.err.println("new DomEdge: " + newEdge);
 				}
 				
 				stack.push(newTop);
