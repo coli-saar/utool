@@ -8,21 +8,22 @@
 package de.saar.chorus.domgraph.codec.gxl;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-import de.saar.chorus.domgraph.codec.Codec;
+import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -33,7 +34,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 
-public class GxlCodec implements Codec {
+public class GxlCodec extends InputCodec {
     /**
      * Reads a GXL description of a dominance graph from a file and writes it
      * into a JDomGraph object. Any previous contents of the JDomGraph object
@@ -238,19 +239,6 @@ public class GxlCodec implements Codec {
     }
 
     
-    
-    
-    /**
-     * Write a dominance graph onto an output stream as a GXL document.
-     * 
-     * TODO Implement this!
-     * 
-     * @param os the output stream to which the document is written.
-     * @param graph the dominance graph that is to be encoded.
-     */
-    public void encode(DomGraph graph, NodeLabels labels, OutputStream os) {
-        
-    }
     
 
 }

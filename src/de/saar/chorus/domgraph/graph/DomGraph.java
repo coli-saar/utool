@@ -206,6 +206,11 @@ public class DomGraph {
         
         return components.size();
     }
+
+    public void setDominanceEdges(Collection<DomEdge> domedges) {
+        // TODO IMPLEMENT ME
+        
+    }
     
 }
     
