@@ -7,9 +7,11 @@
 
 package de.saar.chorus.domgraph.graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,7 +75,35 @@ public class DomGraph {
         return graph.edgeSet();
     }
     
+    public List<Edge> getInEdges(String node, EdgeType type) {
+        List<Edge> ret = new ArrayList<Edge>();
+      
+        for( Object _edge : graph.incomingEdgesOf(node) ) {
+            Edge edge = (Edge) _edge;
+            EdgeType myType = getData(edge).getType();
+            
+            if( (type == null) || (type == myType) ) {
+                ret.add(edge);
+            }
+        }
+        
+        return ret;
+    }
     
+    public List<Edge> getOutEdges(String node, EdgeType type) {
+        List<Edge> ret = new ArrayList<Edge>();
+      
+        for( Object _edge : graph.outgoingEdgesOf(node) ) {
+            Edge edge = (Edge) _edge;
+            EdgeType myType = getData(edge).getType();
+            
+            if( (type == null) || (type == myType) ) {
+                ret.add(edge);
+            }
+        }
+        
+        return ret;
+    }
     
 
     public void hide(String node) {
@@ -118,6 +148,17 @@ public class DomGraph {
         return graph.outDegreeOf(node);
     }
     
+    public int indeg(String node, EdgeType type) {
+        return getInEdges(node,type).size();
+    }
+    
+    public int outdeg(String node, EdgeType type) {
+        return getOutEdges(node,type).size();
+    }
+    
+    public boolean isRoot(String node) {
+        return indeg(node,EdgeType.TREE) == 0;
+    }
     
 
     
@@ -143,8 +184,13 @@ public class DomGraph {
             }
             
             public void vertexTraversed(VertexTraversalEvent e) {
-                thisComponent.add((String) e.getVertex());
-                System.err.println(e.getVertex() + " is in wcc " + componentId);
+                String node = (String) e.getVertex();
+                if( isRoot(node) ) {
+                    thisComponent.add(node);
+                    System.err.println(e.getVertex() + " is in wcc " + componentId);
+                } else {
+                    System.err.println(e.getVertex() + " is no root");
+                }
             }
 
             public void connectedComponentFinished(ConnectedComponentTraversalEvent e) {

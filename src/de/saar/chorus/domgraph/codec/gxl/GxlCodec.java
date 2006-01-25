@@ -15,14 +15,12 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import de.saar.chorus.domgraph.codec.Codec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -31,6 +29,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 
@@ -46,7 +45,7 @@ public class GxlCodec implements Codec {
      * @throws IOException if an error occurred while reading from the stream.
      * @throws SAXException if the input wasn't well-formed XML.
      */
-    public void decode(Reader inputStream, DomGraph graph)
+    public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
             throws IOException, ParserException, MalformedDomgraphException {
         // set up XML parser
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -64,6 +63,8 @@ public class GxlCodec implements Codec {
         
         
         graph.clear();
+        labels.clear();
+        
         Element gxl = (Element) doc.getDocumentElement(); // First gxl element
 
         NodeList graph_list = gxl.getChildNodes();
@@ -102,8 +103,11 @@ public class GxlCodec implements Codec {
                         if( type.equals("hole") ) {
                             data = new NodeData(NodeType.UNLABELLED, id);
                         } else {
-                            data = new NodeData(NodeType.LABELLED, id, attrs.get("label"));
+                            data = new NodeData(NodeType.LABELLED, id);
+                            labels.addLabel(id, attrs.get("label"));
                         }
+
+                        graph.addNode(id, data);
 
                         /*
                         // add popup menu
@@ -117,7 +121,6 @@ public class GxlCodec implements Codec {
                         }
                         */
 
-                        graph.addNode(id, data);
                     }
                 }
                 
@@ -245,7 +248,7 @@ public class GxlCodec implements Codec {
      * @param os the output stream to which the document is written.
      * @param graph the dominance graph that is to be encoded.
      */
-    public void encode(DomGraph graph, OutputStream os) {
+    public void encode(DomGraph graph, NodeLabels labels, OutputStream os) {
         
     }
     
