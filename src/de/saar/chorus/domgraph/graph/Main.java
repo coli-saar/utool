@@ -16,6 +16,8 @@ import java.util.Set;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.gxl.GxlCodec;
+import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 
 public class Main {
@@ -23,7 +25,8 @@ public class Main {
         DomGraph g = new DomGraph();
         NodeLabels l = new NodeLabels();
         
-        GxlCodec codec = new GxlCodec();
+	//        GxlCodec codec = new GxlCodec();
+	InputCodec codec = new Chain();
         
         codec.decode(args[0], g, l);
         
