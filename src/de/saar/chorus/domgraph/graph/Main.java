@@ -7,17 +7,15 @@
 
 package de.saar.chorus.domgraph.graph;
 
-import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
-import de.saar.chorus.domgraph.codec.gxl.GxlCodec;
-import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.InputCodec;
+import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 
 public class Main {
@@ -30,19 +28,51 @@ public class Main {
         
         codec.decode(args[0], g, l);
         
-        ChartSolver solver = new ChartSolver(g);
+        Chart chart = new Chart();
+        ChartSolver solver = new ChartSolver(g, chart);
         
         long start = System.currentTimeMillis();
         solver.solve();
         long end = System.currentTimeMillis();
         
-        System.out.println("Chart:\n" + solver.getChart());
-        System.out.println("Chart size: " + solver.getChart().size());
+        System.out.println("Chart:\n" + chart);
+        System.out.println("Chart size: " + chart.size());
         System.out.println("Runtime: " + (end-start)  + "ms\n\n");
         
         
+        //displayAllSolvedForms(chart, g, l);
+        timeAllSolvedForms(chart, g, l);
+    }
+
+	/**
+	 * @param chart
+	 * @param g
+	 * @param l
+	 */
+	private static void timeAllSolvedForms(Chart chart, DomGraph g, NodeLabels l) {
+		long start = System.currentTimeMillis();
+		long count = 0;
+		SolvedFormIterator it = new SolvedFormIterator(chart);
+		
+		while( it.hasNext() ) {
+			it.next();
+			count++;
+		}
+		
+		long end = System.currentTimeMillis();
+		System.err.println("Enumerated " + (count-1) + " sfs in " + (end-start) + " ms");
+	}
+
+	/**
+	 * @param chart
+	 * @param l 
+	 * @param g 
+	 */
+	private static void displayAllSolvedForms(Chart chart, DomGraph g, NodeLabels l)
+	throws Exception
+	{
         System.out.println("solved forms:");
-        SolvedFormIterator it = new SolvedFormIterator(solver.getChart());
+        SolvedFormIterator it = new SolvedFormIterator(chart);
         int num = 1;
         
         OzTermOutputCodec outcodec = new OzTermOutputCodec();
@@ -59,5 +89,6 @@ public class Main {
                 break;
             }
         }
-    }
+		
+	}
 }
