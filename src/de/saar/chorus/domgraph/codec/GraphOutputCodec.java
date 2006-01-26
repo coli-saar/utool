@@ -15,13 +15,12 @@ import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 abstract public class GraphOutputCodec extends OutputCodec {
-    GraphOutputCodec() {
+    protected GraphOutputCodec() {
         type = Type.GRAPH;
     }
     
-        public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
+    public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
             Writer writer) throws IOException, MalformedDomgraphException {
-            throw new MalformedDomgraphException();
-
+        throw new MalformedDomgraphException();
     }
 }

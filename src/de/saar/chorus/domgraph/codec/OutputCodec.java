@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 
-import de.saar.chorus.domgraph.graph.CompactPair;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -50,11 +49,20 @@ public abstract class OutputCodec {
     abstract public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges, Writer writer)
     throws IOException, MalformedDomgraphException;
     
-    abstract public void print_header(Writer writer);
-    abstract public void print_footer(Writer writer);
-    abstract public void print_start_list(Writer writer);
-    abstract public void print_end_list(Writer writer);
-    abstract public void print_list_separator(Writer writer);
+    abstract public void print_header(Writer writer)
+    throws IOException;
+    
+    abstract public void print_footer(Writer writer)
+    throws IOException;
+    
+    abstract public void print_start_list(Writer writer)
+    throws IOException;
+    
+    abstract public void print_end_list(Writer writer)
+    throws IOException;
+    
+    abstract public void print_list_separator(Writer writer)
+    throws IOException;
     
     
     /** administrative data **/
@@ -65,7 +73,7 @@ public abstract class OutputCodec {
         return type;
     }
 
-    protected void setString(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
     

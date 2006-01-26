@@ -14,7 +14,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public abstract class PluggingOutputCodec extends OutputCodec {
-    public PluggingOutputCodec() {
+    protected PluggingOutputCodec() {
         type = Type.PLUGGING;
     }
 
