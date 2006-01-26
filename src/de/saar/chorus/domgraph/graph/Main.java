@@ -7,7 +7,6 @@
 
 package de.saar.chorus.domgraph.graph;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Set;
 
@@ -24,9 +23,20 @@ public class Main {
         NodeLabels l = new NodeLabels();
         
 	//        GxlCodec codec = new GxlCodec();
-	InputCodec codec = new Chain();
-        
+        InputCodec codec = new Chain();
         codec.decode(args[0], g, l);
+        
+        /*
+        Set<String> nodes = new HashSet<String>();
+        nodes.addAll(g.getAllNodes());
+        nodes.remove("x2");
+        
+        System.err.println(g.wccsOfSubgraph(nodes));
+        System.exit(0);
+        */
+        
+        
+        
         
         Chart chart = new Chart();
         ChartSolver solver = new ChartSolver(g, chart);
@@ -35,9 +45,9 @@ public class Main {
         solver.solve();
         long end = System.currentTimeMillis();
         
-        System.out.println("Chart:\n" + chart);
-        System.out.println("Chart size: " + chart.size());
-        System.out.println("Runtime: " + (end-start)  + "ms\n\n");
+        System.err.println("Chart:\n" + chart);
+        System.err.println("Chart size: " + chart.size());
+        System.err.println("Runtime: " + (end-start)  + "ms\n\n");
         
         
         //displayAllSolvedForms(chart, g, l);
