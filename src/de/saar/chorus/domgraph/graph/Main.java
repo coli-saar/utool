@@ -7,7 +7,10 @@
 
 package de.saar.chorus.domgraph.graph;
 
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.ChartSolver;
@@ -43,9 +46,15 @@ public class Main {
         
         while( it.hasNext() ) {
             Set<DomEdge> domedges = it.next();
-            System.out.print((num++) + ": ");
-            //outcodec.encode(g, domedges, l, new PrintWriter(System.out));
-            System.out.println();
+            
+            if( it.representsSolvedForm() ) {
+                System.err.print((num++) + ": ");
+                outcodec.encode(g, domedges, l, new OutputStreamWriter(System.err));
+                System.err.println();
+            } else {
+                System.err.println("spurious sf");
+                break;
+            }
         }
     }
 }
