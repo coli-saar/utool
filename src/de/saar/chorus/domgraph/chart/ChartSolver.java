@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.chart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,13 @@ public class ChartSolver {
     private boolean solve(DomGraph graph) {
         Set<String> fragset = graph.getAllRoots();
         Set<String> freeRoots;
+
+        Map<Integer,String> wccIndexToHole = new HashMap<Integer,String>();
+        Map<String,String> nodeToHole = new HashMap<String,String>();
+        
+        List<String> hiddenNodesWcc = new ArrayList<String>();
+        List<Edge> hiddenEdgesWcc = new ArrayList<Edge>();
+
         
         
         // If fragset is already in chart, nothings needs to be done.
@@ -61,8 +69,9 @@ public class ChartSolver {
             Split split = new Split(root);
             List<String> holes = graph.getChildren(root, EdgeType.TREE);
             List<Edge> hiddenEdges = graph.getOutEdges(root, EdgeType.TREE);
-            Map<Integer,String> wccIndexToHole = new HashMap<Integer,String>();
-            Map<String,String> nodeToHole = new HashMap<String,String>();
+            
+            wccIndexToHole.clear();
+            nodeToHole.clear();
             
             // remove root (and its outgoing tree edges) from the graph
             graph.hide(root);
@@ -90,15 +99,20 @@ public class ChartSolver {
             }
             
             for( Set<String> wcc : graph.wccs() ) {
-                DomGraph graphForWcc = new DomGraph(graph, wcc, null);
                 Set<String> rootsInWcc = graph.pickRootsFrom(wcc);
                 String wccDominator = nodeToHole.get(rootsInWcc.iterator().next()); 
                 
                 split.addWcc(wccDominator, rootsInWcc);
+                
+                hiddenEdgesWcc.clear();
+                hiddenNodesWcc.clear();
+                hideAllNodesExcept(graph, wcc, hiddenNodesWcc, hiddenEdgesWcc);
 
-                if( !solve(graphForWcc) ) {
+                if( !solve(graph) ) {
                     return false;
                 }
+                
+                restoreAll(graph, hiddenNodesWcc, hiddenEdgesWcc);
             }
             
             for( String hole : holes ) {
@@ -121,26 +135,34 @@ public class ChartSolver {
         return true;
     }
 
-    /*
-    private void restoreAll(Set<String> hidden) {
-        for( String node : hidden ) {
+    private void restoreAll(DomGraph graph, List<String> hiddenNodes, List<Edge> hiddenEdges) {
+    	for( int i = 0; i < hiddenNodes.size(); i++ ) {
+    		String node = hiddenNodes.get(i);
             graph.restore(node);
         }
+    	
+    	for( int i = 0; i < hiddenEdges.size(); i++ ) {
+    		Edge e = hiddenEdges.get(i);
+    		graph.restore(e);
+    	}
+    	
     }
 
-    private Set<String> hideAllNodesExcept(Set<String> nodes) {
-        Set<String> hidden = new HashSet<String>();
+    private void hideAllNodesExcept(DomGraph graph, Set<String> nodes, List<String> hiddenNodes, List<Edge> hiddenEdges) {
+        List<String> allnodes = new ArrayList<String>();
         
-        for( String node : graph.getAllNodes() ) {
+        allnodes.addAll(graph.getAllNodes());
+        
+        for( int i = 0; i < allnodes.size(); i++ ) {
+        	String node = allnodes.get(i);
             if( !nodes.contains(node) ) {
-                hidden.add(node);
+                hiddenNodes.add(node);
+                hiddenEdges.addAll(graph.getAdjacentEdges(node));
                 graph.hide(node);
             }
         }
-        
-        return hidden;
     }
-*/
+
     
     // compute the free roots of a graph
     private Set<String> getFreeRoots(DomGraph graph) {

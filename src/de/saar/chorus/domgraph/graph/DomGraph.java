@@ -120,6 +120,10 @@ public class DomGraph {
         return ret;
     }
     
+    public List<Edge> getAdjacentEdges(String node) {
+    	return (List<Edge>) graph.edgesOf(node);
+    }
+    
     public List<String> getChildren(String node, EdgeType type) {
         List<String> children = new ArrayList<String>();
         
