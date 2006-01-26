@@ -40,8 +40,8 @@ public class Main {
         System.out.println("Runtime: " + (end-start)  + "ms\n\n");
         
         
-        //displayAllSolvedForms(chart, g, l);
-        timeAllSolvedForms(chart, g, l);
+        displayAllSolvedForms(chart, g, l);
+        //timeAllSolvedForms(chart, g, l);
     }
 
 	/**
@@ -60,7 +60,7 @@ public class Main {
 		}
 		
 		long end = System.currentTimeMillis();
-		System.err.println("Enumerated " + (count-1) + " sfs in " + (end-start) + " ms");
+		System.err.println("Enumerated " + count + " sfs in " + (end-start) + " ms");
 	}
 
 	/**
@@ -80,14 +80,9 @@ public class Main {
         while( it.hasNext() ) {
             Set<DomEdge> domedges = it.next();
             
-            if( it.representsSolvedForm() ) {
-                System.err.print((num++) + ": ");
-                outcodec.encode(g, domedges, l, new OutputStreamWriter(System.err));
-                System.err.println();
-            } else {
-                System.err.println("spurious sf");
-                break;
-            }
+            System.err.print((num++) + ": ");
+            outcodec.encode(g, domedges, l, new OutputStreamWriter(System.err));
+            System.err.println();
         }
 		
 	}
