@@ -7,8 +7,13 @@
 
 package de.saar.chorus.domgraph.graph;
 
+import java.io.PrintWriter;
+import java.util.Set;
+
 import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.gxl.GxlCodec;
+import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -26,7 +31,21 @@ public class Main {
         long end = System.currentTimeMillis();
         
         System.out.println("Chart:\n" + solver.getChart());
-        System.out.println("Runtime: " + (end-start)  + "ms");
+        System.out.println("Chart size: " + solver.getChart().size());
+        System.out.println("Runtime: " + (end-start)  + "ms\n\n");
         
+        
+        System.out.println("solved forms:");
+        SolvedFormIterator it = new SolvedFormIterator(solver.getChart());
+        int num = 1;
+        
+        OzTermOutputCodec outcodec = new OzTermOutputCodec();
+        
+        while( it.hasNext() ) {
+            Set<DomEdge> domedges = it.next();
+            System.out.print((num++) + ": ");
+            //outcodec.encode(g, domedges, l, new PrintWriter(System.out));
+            System.out.println();
+        }
     }
 }

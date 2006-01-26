@@ -25,5 +25,7 @@ public class DomEdge {
         this.tgt = tgt;
     }
     
-    
+    public String toString() {
+        return "[" + src + " <* " + tgt + "]";
+    }
 }

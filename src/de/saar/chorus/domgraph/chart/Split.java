@@ -41,6 +41,11 @@ public class Split {
         return wccs.get(node);
     }
     
+    public Set<String> getAllDominators() {
+        return wccs.keySet();
+    }
+    
+    
     public Set<Set<String>> getAllSubgraphs() {
         Set<Set<String>> ret = new HashSet<Set<String>>();
         

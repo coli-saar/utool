@@ -7,29 +7,33 @@
 
 package de.saar.chorus.domgraph.chart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org._3pq.jgrapht.util.ModifiableInteger;
 
 public class Chart {
-    private Map<Set<String>, Set<Split>> chart;
+    private Map<Set<String>, List<Split>> chart;
     private Map<Set<String>, ModifiableInteger> refcount;
     private int size;
+    private List<Set<String>> completeFragset;
     
     public Chart() {
-        chart = new HashMap<Set<String>, Set<Split>>();
+        chart = new HashMap<Set<String>, List<Split>>();
         refcount = new HashMap<Set<String>, ModifiableInteger>();
+        completeFragset = new ArrayList<Set<String>>();
         size = 0;
     }
     
     public void addSplit(Set<String> fragset, Split split) {
-        Set<Split> splitset = chart.get(fragset);
+        List<Split> splitset = chart.get(fragset);
         
         if( splitset == null ) {
-            splitset = new HashSet<Split>();
+            splitset = new ArrayList<Split>();
             chart.put(fragset, splitset);
         }
         
@@ -48,7 +52,7 @@ public class Chart {
         size++;
     }
     
-    public Set<Split> getSplitsFor(Set<String> subgraph) {
+    public List<Split> getSplitsFor(Set<String> subgraph) {
         return chart.get(subgraph);
     }
     
@@ -71,5 +75,13 @@ public class Chart {
         }
         
         return ret.toString();
+    }
+
+    public List<Set<String>> getCompleteFragsets() {
+        return completeFragset;
+    }
+
+    public void addCompleteFragset(Set<String> completeFragset) {
+        this.completeFragset.add(completeFragset);
     }
 }

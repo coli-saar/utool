@@ -260,10 +260,25 @@ public class DomGraph {
         
         return ret;
     }
+    
+    private void removeAllDominanceEdges() {
+        List<Edge> allEdges = new ArrayList<Edge>();
+        allEdges.addAll(getAllEdges());
+        
+        for( int i = 0; i < allEdges.size(); i++ ) {
+            Edge e = allEdges.get(i);
+            if( getData(e).getType() == EdgeType.DOMINANCE ) {
+                graph.removeEdge(e);
+            }
+        }
+    }
 
     public void setDominanceEdges(Collection<DomEdge> domedges) {
-        // TODO IMPLEMENT ME
+        removeAllDominanceEdges();
         
+        for( DomEdge e : domedges ) {
+            addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE, "(domedge)"));
+        }
     }
     
     
