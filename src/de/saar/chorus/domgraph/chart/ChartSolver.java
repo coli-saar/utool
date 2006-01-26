@@ -30,6 +30,8 @@ public class ChartSolver {
     }
     
     public boolean solve() {
+        // TODO split unconnected graphs into their wccs first
+        chart.addCompleteFragset(completeGraph.getAllRoots());
         return solve(new DomGraph(completeGraph));
     }
     
