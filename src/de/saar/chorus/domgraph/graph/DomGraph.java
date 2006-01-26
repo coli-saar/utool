@@ -37,7 +37,11 @@ public class DomGraph {
     }
     
     public DomGraph(DomGraph g) {
-        graph = new DirectedSubgraph(g.graph, null, null);
+        this(g,null,null);
+    }
+    
+    public DomGraph(DomGraph g, Set<String> nodes, Set<Edge> edges) {
+        graph = new DirectedSubgraph(g.graph, nodes, edges);
         nodeData = g.nodeData;
         edgeData = g.edgeData;
         isSubgraph = true;
@@ -90,6 +94,17 @@ public class DomGraph {
         return ret;
     }
     
+    public List<String> getParents(String node, EdgeType type) {
+        List<String> parents = new ArrayList<String>();
+        
+        for( Edge e : getInEdges(node, type)) {
+            parents.add((String) e.getSource() );
+        }
+        
+        return parents;
+    }
+
+    
     public List<Edge> getOutEdges(String node, EdgeType type) {
         List<Edge> ret = new ArrayList<Edge>();
       
@@ -104,6 +119,18 @@ public class DomGraph {
         
         return ret;
     }
+    
+    public List<String> getChildren(String node, EdgeType type) {
+        List<String> children = new ArrayList<String>();
+        
+        for( Edge e : getOutEdges(node, type)) {
+            children.add((String) e.getTarget() );
+        }
+        
+        return children;
+    }
+    
+    
     
 
     public void hide(String node) {
@@ -160,24 +187,32 @@ public class DomGraph {
         return indeg(node,EdgeType.TREE) == 0;
     }
     
+    public Set<String> getAllRoots() {
+        Set<String> ret = new HashSet<String>();
+        
+        for( String node : getAllNodes() ) {
+            if( isRoot(node) ) {
+                ret.add(node);
+            }
+        }
+        
+        return ret;
+    }
+    
 
     
     /**
      * Compute the weakly connected components of the selected subgraph.
      * 
-     * @param components the elements of this collection will be the sets of roots in the different wccs
+     * @param components the elements of this collection will be the sets of nodes in the different wccs
      * @return the number of wccs
      */
-    public int wccs(final Collection<Set<String>> components) {
-        Set<String> nodes = getAllNodes();
-        Set<String> visited = new HashSet<String>();
+    public List<Set<String>> wccs() {
+        final List<Set<String>> components = new ArrayList<Set<String>>();
         DepthFirstIterator it = new DepthFirstIterator(new AsUndirectedGraph(graph), null);
         
-        components.clear();
-
         it.addTraversalListener(new TraversalListenerAdapter() {
             Set<String> thisComponent;
-            int componentId = 0;
 
             public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {
                 thisComponent = new HashSet<String>();
@@ -185,17 +220,11 @@ public class DomGraph {
             
             public void vertexTraversed(VertexTraversalEvent e) {
                 String node = (String) e.getVertex();
-                if( isRoot(node) ) {
-                    thisComponent.add(node);
-                    System.err.println(e.getVertex() + " is in wcc " + componentId);
-                } else {
-                    System.err.println(e.getVertex() + " is no root");
-                }
+                thisComponent.add(node);
             }
 
             public void connectedComponentFinished(ConnectedComponentTraversalEvent e) {
                 components.add(thisComponent);
-                componentId++;
             }
         });
 
@@ -204,12 +233,63 @@ public class DomGraph {
             it.next();
         }
         
-        return components.size();
+        return components;
+    }
+    
+    public Map<String,Integer> computeWccMap() {
+        List<Set<String>> wccs = wccs();
+        Map<String,Integer> wccMap = new HashMap<String,Integer>();
+        
+        for( int i = 0; i < wccs.size(); i++ ) {
+            Integer index = new Integer(i);
+            for( String node : wccs.get(i) ) {
+                wccMap.put(node,index);
+            }
+        }
+        
+        return wccMap;
+    }
+    
+    public Set<String> pickRootsFrom(Set<String> nodeset) {
+        Set<String> ret = new HashSet<String>();
+        
+        for( String node : nodeset ) {
+            if( isRoot(node))
+                ret.add(node);
+        }
+        
+        return ret;
     }
 
     public void setDominanceEdges(Collection<DomEdge> domedges) {
         // TODO IMPLEMENT ME
         
+    }
+    
+    
+    
+    
+    /***** graph classes ******/
+    
+    public boolean isSimpleSolvedForm() {
+        for( String node : getAllNodes() ) {
+            // TODO check cyclicity
+            
+            if( indeg(node) > 1 ) {
+                return false;
+            }
+            
+            if( outdeg(node, EdgeType.DOMINANCE) > 1 ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public boolean isNormal() {
+        // TODO implement me
+        return true;
     }
     
 }
