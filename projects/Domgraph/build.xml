@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+
+<project name="domgraph" default="domgraph">
+	<property name="build" location="../../build" />
+	<property name="source" location="../../src" />
+	<property name="packages" location="../../packages" />
+	<property name="doc.api" location="../../docs/api" />
+
+	<property name="jgrapht.jar" location="${packages}/jgrapht-0.6.0/jgrapht-0.6.0.jar" />
+
+	<property name="jgrapht.unpacked.classes" value="org/_3pq/jgrapht/**" />
+
+	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
+	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
+
+
+
+	<property name="build.classes" location="${build}/classes" />
+	<property name="build.lib" location="${build}/lib" />
+	<property name="build.src" location="${build}/src" />
+
+	<property name="coli" value="de/saar" />
+	<property name="chorus" value="de/saar/chorus" />
+
+
+
+	<property name="domgraph-dist.jar" value="${build.lib}/Domgraph-1.0.jar" />
+	<property name="domgraph.jar" value="${build.lib}/Domgraph.jar" />
+	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*" />
+
+	<property name="junit.jar" value="${packages}/junit.jar" />
+	<property name="reports.tests" location="testreports" />
+
+
+
+	<!-- Jars -->
+	<target name="domgraph" depends="init,jgrapht.unpacked,getopt.unpacked">
+		<javac srcdir="${source}"
+               destdir="${build.classes}"
+               debug="true"
+               includes="${chorus}/domgraph/*/*.java,
+							${coli}/getopt/*.java"
+               excludes="**/Test*.java"
+               source="1.5">
+
+			<classpath>
+				<pathelement path="${build.classes}" />
+			</classpath>
+		</javac>
+
+		<jar jarfile="${domgraph.jar}"
+             basedir="${build.classes}"
+             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes}">
+			<manifest>
+				<attribute name="Main-Class"
+                           value="de.saar.chorus.domgraph.graph.Main" />
+			</manifest>
+		</jar>
+
+	</target>
+
+
+
+	<target name="dist" depends="init,jgrapht.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
+
+
+		<javac srcdir="${source}"
+               destdir="${build.classes}"
+               debug="true"
+               includes="${chorus}/domgraph/*.java,
+							${chorus}/jgraph/*.java,
+							${chorus}/treelayout/*.java,
+							${chorus}/domgraph/gui/*.java,
+							${chorus}/domgraph/utool/*.java,
+							${coli}/getopt/*.java"
+               excludes="**/Test*.java"
+               source="1.5">
+
+			<classpath>
+				<pathelement path="${build.classes}" />
+			</classpath>
+		</javac>
+
+
+		<copy todir="tmp_Domgraph/src">
+			<fileset dir="${source}"
+					includes="${domgraph.jar.classes}"/>
+		</copy>
+
+
+		<copy todir="tmp_Domgraph/projects/Domgraph">
+			<fileset dir="../../projects/Domgraph/" includes="*.xml" />
+		</copy>
+
+
+		<jar jarfile="${domgraph-dist.jar}"
+             basedir="${build.classes}"
+             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
+			<manifest>
+				<attribute name="Main-Class"
+                           value="de.saar.chorus.domgraph.gui.Main" />
+			</manifest>
+
+			<fileset dir="tmp_Domgraph/"/>
+		</jar>
+
+		<delete dir="tmp_Domgraph/" />
+	</target>
+
+	<!-- JUnit -->
+	<!-- If the JUnit targets don't work, make sure that junit.jar is in
+	     the classpath, e.g.
+	     
+	        CLASSPATH=packages/junit.jar:$CLASSPATH ant leonardo-run-tests
+	-->
+
+
+
+	<!-- JAR Unpacking -->
+
+	<!-- Unpack the Jar file at the path "unpack.jar", unless the
+	       unpacked version is already up to date. Up-to-dateness is
+	       recorded with a timestamp. "unpack.jar.id" is a unique id for
+	       this Jar. -->
+	<target name="unpack" depends="check.unpack" unless="nobuild.unpack">
+		<unjar src="${unpack.jar}" dest="${build.classes}" />
+		<touch file="${build.classes}/timestamps-unpackjar/${unpack.jar.id}" />
+	</target>
+
+	<target name="check.unpack">
+		<uptodate property="nobuild.unpack"
+	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
+			<srcfiles dir="." includes="${unpack.jar}" />
+		</uptodate>
+
+
+	</target>
+
+	<target name="jgrapht.unpacked" depends="init" if="jgrapht.jar.present">
+		<antcall target="unpack" >
+			<param name="unpack.jar" value="${jgrapht.jar}" />
+			<param name="unpack.jar.id" value="jgrapht" />
+		</antcall>
+	</target>
+
+	<target name="getopt.unpacked" depends="init" if="getopt.jar.present">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${getopt.jar}" />
+			<param name="unpack.jar.id" value="getopt" />
+		</antcall>
+	</target>
+
+	<target name="itext.unpacked" depends="init" if="itext.jar.present">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${itext.jar}" />
+			<param name="unpack.jar.id" value="itext" />
+		</antcall>
+	</target>
+
+	<target name="utool-swig.unpacked" depends="init" if="itext.jar.present">
+		<antcall target="unpack">
+			<param name="unpack.jar" value="${utool-swig.jar}" />
+			<param name="unpack.jar.id" value="utool-swig" />
+		</antcall>
+	</target>
+
+
+	<!-- Javadoc -->
+
+	<target name="javadoc" depends="domgraph">
+		<!-- auto-generated by Eclipse, need to clean this up! -->
+		<javadoc 
+			access="package" 
+			author="false" 
+			classpath="${jgraph.jar}:${jgraphaddons.jar}:${build.classes}"
+			destdir="${doc.api}" 
+			nodeprecated="false" 
+			nodeprecatedlist="false" 
+			noindex="false" 
+			nonavbar="false" 
+			notree="false" 
+			sourcefiles="${source}/${chorus}/domgraph/*.java"
+			sourcepath="${source}" 
+			splitindex="true" 
+			use="true" 
+			version="true" />
+	</target>
+
+
+	<!-- Init -->
+
+	<target name="init">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build.classes}" />
+		<mkdir dir="${build.classes}/timestamps-unpackjar" />
+		<mkdir dir="${build.lib}" />
+		<mkdir dir="${build.src}" />
+		<mkdir dir="${reports.tests}" />
+		<mkdir dir="${doc.api}" />
+
+		<available file="${jgrapht.jar}" property="jgrapht.jar.present"/>
+		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+		<available file="${getopt.jar}" property="getopt.jar.present"/>
+		<available file="${itext.jar}" property="itext.jar.present"/>
+		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+		<available file="${unpack.jar}" property="unpack.jar.present"/>
+
+	</target>
+
+	<!-- Delete all compiled files -->
+	<target name="clean">
+		<delete>
+			<fileset dir="${build.classes}" includes="${domgraph.jar.classes}" />
+		</delete>
+		<delete dir="${build.lib}" />
+		<delete dir="${doc.api}" />
+	</target>
+
+	
+	
+	<target name="prepare">
+		<mkdir dir="${build.classes}" />
+		<copy todir="${build.classes}">
+			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
+		</copy>
+		<delete>
+			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
+		</delete>
+		<antcall target="clean"/>
+
+	</target>
+</project>
