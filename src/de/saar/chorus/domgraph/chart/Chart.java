@@ -65,12 +65,9 @@ public class Chart {
         StringBuilder ret = new StringBuilder();
         
         for( Set<String> fragset : chart.keySet() ) {
-            System.err.println("fragset: " + fragset);
-            System.err.println("get = " + chart.get(fragset));
             for( Split split : chart.get(fragset) ) {
                 ret.append(fragset.toString() + " -> " + split + "\n");
             }
-            System.err.println("ok");
         }
         
         return ret.toString();

@@ -20,9 +20,13 @@ public class Main {
         codec.decode(args[0], g, l);
         
         ChartSolver solver = new ChartSolver(g);
+        
+        long start = System.currentTimeMillis();
         solver.solve();
+        long end = System.currentTimeMillis();
         
         System.out.println("Chart:\n" + solver.getChart());
+        System.out.println("Runtime: " + (end-start)  + "ms");
         
     }
 }

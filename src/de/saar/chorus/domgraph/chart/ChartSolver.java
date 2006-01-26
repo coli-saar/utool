@@ -7,32 +7,36 @@
 
 package de.saar.chorus.domgraph.chart;
 
-import java.util.ConcurrentModificationException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org._3pq.jgrapht.Edge;
+
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
 public class ChartSolver {
-    private DomGraph graph;
+    private DomGraph completeGraph;
     private Chart chart;
     
     // ASSUMPTION graph is compact and weakly normal
     public ChartSolver(DomGraph graph) {
-        this.graph = new DomGraph(graph); // subgraph which we can modify
+        completeGraph = graph;
         chart = new Chart();
     }
     
     public boolean solve() {
-        return solve(graph.getAllRoots());
+        return solve(new DomGraph(completeGraph));
     }
     
-    private boolean solve(Set<String> fragset) {
+    private boolean solve(DomGraph graph) {
+        Set<String> fragset = graph.getAllRoots();
         Set<String> freeRoots;
+        
         
         // If fragset is already in chart, nothings needs to be done.
         if( chart.containsSplitFor(fragset) ) {
@@ -40,7 +44,7 @@ public class ChartSolver {
         }
         
         // If the fs has no free roots, then the original graph is unsolvable.
-        freeRoots = getFreeRoots();
+        freeRoots = getFreeRoots(graph);
         if( freeRoots.isEmpty() ) {
             return false;
         }
@@ -55,42 +59,45 @@ public class ChartSolver {
         for( String root : freeRoots ) {
             Split split = new Split(root);
             List<String> holes = graph.getChildren(root, EdgeType.TREE);
+            List<Edge> hiddenEdges = graph.getOutEdges(root, EdgeType.TREE);
             Map<Integer,String> wccIndexToHole = new HashMap<Integer,String>();
             Map<String,String> nodeToHole = new HashMap<String,String>();
             
+            // remove root (and its outgoing tree edges) from the graph
             graph.hide(root);
             
-            // assign nodes to wccs
+            // determine the hole (or root) to which each root in the graph
+            // is connected
             Map<String,Integer> wccMap = graph.computeWccMap();
             for( String hole : holes ) {
                 wccIndexToHole.put(wccMap.get(hole), hole);
             }
             
-            for( String node : graph.getAllNodes() ) {
-                if( wccIndexToHole.containsKey(wccMap.get(node))) {
-                    nodeToHole.put(node, wccIndexToHole.get(wccMap.get(node)));
+            for( String node : graph.getAllRoots() ) {
+                Integer wccOfNode = wccMap.get(node);
+                if( wccIndexToHole.containsKey(wccOfNode)) {
+                    nodeToHole.put(node, wccIndexToHole.get(wccOfNode));
                 } else {
                     nodeToHole.put(node, root);
                 }
             }
             
-            // remove holes and recurse
+            // now remove holes so the graph is split into the smaller wccs
             for( String hole : holes ) {
+                hiddenEdges.addAll(graph.getOutEdges(hole, null));
                 graph.hide(hole);
             }
             
             for( Set<String> wcc : graph.wccs() ) {
-                DomGraph backup = graph;
-                graph = new DomGraph(graph, wcc, null);
+                DomGraph graphForWcc = new DomGraph(graph, wcc, null);
                 Set<String> rootsInWcc = graph.pickRootsFrom(wcc);
+                String wccDominator = nodeToHole.get(rootsInWcc.iterator().next()); 
                 
-                split.addWcc(nodeToHole.get(wcc.iterator().next()), rootsInWcc);
+                split.addWcc(wccDominator, rootsInWcc);
 
-                if( !solve(rootsInWcc) ) {
+                if( !solve(graphForWcc) ) {
                     return false;
                 }
-                
-                graph = backup;
             }
             
             for( String hole : holes ) {
@@ -98,13 +105,22 @@ public class ChartSolver {
             }
             
             chart.addSplit(fragset, split);
+            
+            // put deleted nodes and holes back into the graph
             graph.restore(root);
+            for( String hole : holes ) {
+                graph.restore(hole);
+            }
+            for( Edge e : hiddenEdges ) {
+                graph.restore(e);
+            }
         }
         
         
         return true;
     }
 
+    /*
     private void restoreAll(Set<String> hidden) {
         for( String node : hidden ) {
             graph.restore(node);
@@ -123,13 +139,13 @@ public class ChartSolver {
         
         return hidden;
     }
-
-    // compute the free roots of the current graph
-    private Set<String> getFreeRoots() {
+*/
+    
+    // compute the free roots of a graph
+    private Set<String> getFreeRoots(DomGraph graph) {
         Set<String> ret = new HashSet<String>();
-        Set<String> allNodes = graph.getAllNodes();
         
-        for( String node : allNodes ) {
+        for( String node : graph.getAllNodes() ) {
             boolean isFree = true;
             
             if( graph.indeg(node) == 0 ) {
@@ -137,10 +153,12 @@ public class ChartSolver {
                 List<String> holes = graph.getChildren(node, EdgeType.TREE);
                 Set<Integer> seenWccs = new HashSet<Integer>();
 
+                // compute wccs of G - R(F)
                 DomGraph subsubgraph = new DomGraph(graph);
                 subsubgraph.hide(node);
                 Map<String,Integer> wccMap = subsubgraph.computeWccMap();
                 
+                // check whether all holes are in different wccs
                 for( String hole : holes ) {
                     if( seenWccs.contains(wccMap.get(hole))) {
                         isFree = false;
