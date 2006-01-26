@@ -29,7 +29,13 @@ public class Chain extends InputCodec {
     throws MalformedDomgraphException {
     	String upper_root, upper_lefthole, upper_righthole;
     	String lower;
-    	int length = Integer.parseInt(specification);
+    	int length;
+        
+        try {
+            length = Integer.parseInt(specification);
+        } catch(NumberFormatException e) {
+            throw new MalformedDomgraphException();
+        }
 
     	if( length < 1 ) {
     		throw new MalformedDomgraphException();
