@@ -40,8 +40,8 @@ public class Main {
         System.out.println("Runtime: " + (end-start)  + "ms\n\n");
         
         
-        displayAllSolvedForms(chart, g, l);
-        //timeAllSolvedForms(chart, g, l);
+        //displayAllSolvedForms(chart, g, l);
+        timeAllSolvedForms(chart, g, l);
     }
 
 	/**
