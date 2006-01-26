@@ -23,7 +23,6 @@ import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 import org._3pq.jgrapht.graph.DirectedSubgraph;
-import org._3pq.jgrapht.traverse.DepthFirstIterator;
 
 public class DomGraph {
     private DirectedGraph graph;
@@ -183,6 +182,12 @@ public class DomGraph {
         return getInEdges(node,type).size();
     }
     
+    public int indegOfSubgraph(String node, EdgeType type, Set<String> subgraph) {
+        List<String> parents = getParents(node, type);
+        parents.retainAll(subgraph);
+        return parents.size();
+    }
+    
     public int outdeg(String node, EdgeType type) {
         return getOutEdges(node,type).size();
     }
@@ -212,8 +217,15 @@ public class DomGraph {
      * @return the number of wccs
      */
     public List<Set<String>> wccs() {
+        return wccsOfSubgraph(getAllNodes());
+    }
+    
+    public List<Set<String>> wccsOfSubgraph(Set<String> nodes) {
+        //System.err.println("wccOfSub: " + nodes);
+        
         final List<Set<String>> components = new ArrayList<Set<String>>();
-        DepthFirstIterator it = new DepthFirstIterator(new AsUndirectedGraph(graph), null);
+        RestrictedDepthFirstIterator it = 
+            new RestrictedDepthFirstIterator(new AsUndirectedGraph(graph), null, nodes);
         
         it.addTraversalListener(new TraversalListenerAdapter() {
             Set<String> thisComponent;
@@ -238,10 +250,10 @@ public class DomGraph {
         }
         
         return components;
+        
     }
     
-    public Map<String,Integer> computeWccMap() {
-        List<Set<String>> wccs = wccs();
+    public Map<String,Integer> computeWccMap(List<Set<String>> wccs) {
         Map<String,Integer> wccMap = new HashMap<String,Integer>();
         
         for( int i = 0; i < wccs.size(); i++ ) {
@@ -311,5 +323,8 @@ public class DomGraph {
         return true;
     }
     
+    public DirectedGraph getLowlevelGraph() {
+        return graph;
+    }
 }
     
