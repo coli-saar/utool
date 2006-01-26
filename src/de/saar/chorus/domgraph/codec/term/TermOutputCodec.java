@@ -46,12 +46,9 @@ public class TermOutputCodec extends GraphOutputCodec {
         // build dom-edge map
         for( Edge e : graph.getAllEdges() ) {
             if( graph.getData(e).getType() == EdgeType.DOMINANCE ) {
-                System.err.println("domedge: " + e.getSource() + "->" + e.getTarget());
                 domEdges.put((String) e.getSource(), (String) e.getTarget());
             }
         }
-        
-        System.err.println("after computation: " + domEdges);
         
         // compute top nodes
         for( String node : graph.getAllNodes() ) {
@@ -60,13 +57,11 @@ public class TermOutputCodec extends GraphOutputCodec {
             }
         }
         
-        System.err.println("terms: " + terms + " (size=" + terms.size() + ")");
-        
         // output the whole term
         if( terms.size() == 1 ) {
-            System.err.println("write: " + terms.get(0));
-            System.err.println("writer = " + writer);
-            writer.write("hallo\n");
+            //System.err.println("write: " + terms.get(0));
+            //System.err.println("writer = " + writer);
+            //writer.write("hallo\n");
             writer.write(terms.get(0));
         } else {
             writer.write("top" + terms.size() + "(");
@@ -82,15 +77,13 @@ public class TermOutputCodec extends GraphOutputCodec {
             writer.write(")");
         }
 
+	writer.flush();
     }
 
     protected String computeTerm(String node, DomGraph graph, NodeLabels labels, Map<String, String> domEdges) {
         boolean first = true;
         
-        System.err.println("get data for " + node);
-        System.err.println(graph.getData(node).getType());
         if( graph.getData(node).getType() == NodeType.UNLABELLED ) {
-            System.err.println("domedges: " + domEdges);
             return computeTerm(domEdges.get(node), graph, labels, domEdges);
         } else {
             String label = labels.getLabel(node);

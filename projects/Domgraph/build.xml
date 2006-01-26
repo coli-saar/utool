@@ -38,7 +38,7 @@
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
-               includes="${chorus}/domgraph/*/*.java,
+               includes="${chorus}/domgraph/**/*.java,
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">
