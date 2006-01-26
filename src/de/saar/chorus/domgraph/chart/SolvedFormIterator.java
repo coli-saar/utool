@@ -17,6 +17,8 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 	int num_Fragsets;
 	private String nullNode;
 	
+	private Set<DomEdge> nextSolvedForm;
+	
 	public SolvedFormIterator(Chart ch) {
 		chart = ch;
 		agenda = new Agenda();
@@ -31,8 +33,23 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 		
 		//Null-Element on Stack
 		stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
+		
+		updateNextSolvedForm();
 	}
 	
+	private void updateNextSolvedForm() {
+		if( isFinished() ) {
+			nextSolvedForm = null;
+		} else {
+			findNextSolvedForm();
+			
+			if( representsSolvedForm() ) {
+				nextSolvedForm = extractDomEdges();
+			} else {
+				nextSolvedForm = null;
+			}
+		}
+	}
 	
 	public boolean representsSolvedForm(){
 		return (agenda.isEmpty() && stack.size() > 0 );
@@ -171,15 +188,21 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
     /**** convenience methods for implementing Iterator ****/
     
     public boolean hasNext() {
-        return !isFinished();
+    	return nextSolvedForm != null;
     }
 
 
     // TODO think about whether hasNext() guarantees that next() will
     // work -- otherwise, we need to precompute the next sf in hasNext()
     public Set<DomEdge> next() {
-        findNextSolvedForm();
-        return extractDomEdges();
+    	Set<DomEdge> ret = nextSolvedForm;
+    	
+    	if( ret != null ) {
+    		updateNextSolvedForm();
+    		return ret;
+    	} else {
+    		return null;
+    	}
     }
 
 
