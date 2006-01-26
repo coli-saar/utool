@@ -7,7 +7,6 @@
 
 package de.saar.chorus.domgraph.chart;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,9 +23,9 @@ public class ChartSolver {
     private Chart chart;
     
     // ASSUMPTION graph is compact and weakly normal
-    public ChartSolver(DomGraph graph) {
+    public ChartSolver(DomGraph graph, Chart chart) {
         completeGraph = graph;
-        chart = new Chart();
+        this.chart = chart;
     }
     
     public boolean solve() {
