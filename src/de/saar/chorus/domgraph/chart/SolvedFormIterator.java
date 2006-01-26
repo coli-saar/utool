@@ -34,7 +34,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 	}
 	
 	
-	boolean representsSolvedForm(){
+	public boolean representsSolvedForm(){
 		return (agenda.isEmpty() && stack.size() > 0 );
 	}
 	
@@ -65,7 +65,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 			if( isFinished() ) {
 				agenda.clear();
 			} else {
-				System.err.println("===== SOLVED FORM ===="); //Debug
+//				System.err.println("===== SOLVED FORM ===="); //Debug
 			}
 		} 
 	}
@@ -87,7 +87,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
             // singleton fragsets: add directly to ese's domedge list
             DomEdge newEdge = new DomEdge(dominator, fragSet.iterator().next());
             ese.addDomEdge(newEdge);
-            System.err.println("Singleton DomEdge : " + newEdge);
+            //System.err.println("Singleton DomEdge : " + newEdge);
         } else {
             // larger fragsets: add to agenda
             AgendaEntry newEntry = new AgendaEntry(dominator,fragSet);
@@ -105,7 +105,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 		// 1. Apply (Up) as long as possible
 		if ( agenda.isEmpty() ) {
 			while( top.isAtLastSplit() ) {
-				System.err.println("(Up)"); //debug
+				//System.err.println("(Up)"); //debug
 				stack.pop();
 				if (stack.isEmpty() )
 					return;
@@ -119,7 +119,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 		// than the agenda (i.e. simulation of Singleton).
 		if( agenda.isEmpty() ) {
 			// (Step)
-			System.err.println("(Step)");
+			//System.err.println("(Step)");
 			top.clearAccu();
 			top.nextSplit();
 			
@@ -128,18 +128,18 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
                     new DomEdge(top.getDominator(), top.getCurrentSplit().getRootFragment());
 				top.addDomEdge(newEdge);
 				
-				System.err.println("new DomEdge: " + newEdge);
+				//System.err.println("new DomEdge: " + newEdge);
 			}
 			
 			if(! top.getAgendaCopy().isEmpty() ) {
-				System.err.println("Retrieve agenda from stored stack entry."); //debug
+				//System.err.println("Retrieve agenda from stored stack entry."); //debug
 				agenda.addAll(top.getAgendaCopy());
 			}
 			
 			addSplitToAgendaAndAccu( top );
 		} else {
             // (Down)
-            System.err.println("(Down)");
+            //System.err.println("(Down)");
 
 			agTop = agenda.pop();
 			topNode = agTop.getDominator();
@@ -151,12 +151,12 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
                     new EnumerationStackEntry(topNode, sv, agenda);
 
 				if( topNode != null ) {
-					System.err.println(newTop.getCurrentSplit());
+					//System.err.println(newTop.getCurrentSplit());
                     DomEdge newEdge = 
                         new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
 					newTop.addDomEdge( newEdge );
 				
-					System.err.println("new DomEdge: " + newEdge);
+					//System.err.println("new DomEdge: " + newEdge);
 				}
 				
 				stack.push(newTop);
