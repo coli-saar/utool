@@ -9,6 +9,7 @@ package de.saar.chorus.domgraph.codec;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -20,7 +21,12 @@ public abstract class InputCodec {
     
     public void decode(String specification, DomGraph graph, NodeLabels labels)
     throws IOException, ParserException, MalformedDomgraphException {
-        decode(new FileReader(specification), graph, labels);
+        if( "-".equals(specification)) {
+            // from stdin
+            decode(new InputStreamReader(System.in), graph, labels);
+        } else {
+            decode(new FileReader(specification), graph, labels);
+        }
     }
 
     public String getName() {
@@ -36,7 +42,7 @@ public abstract class InputCodec {
     protected String name;
     protected String extension;
     
-    protected void setString(String name) {
+    protected void setName(String name) {
         this.name = name;
     }
     

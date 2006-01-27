@@ -61,10 +61,7 @@ class FreeRootsComputer {
         bccIndex = new TObjectIntHashMap();
         nextBccIndex = 0;
         
-        long start = System.currentTimeMillis();
         bccs(graph.getAllNodes().iterator().next());
-        long end = System.currentTimeMillis();
-        System.err.println("bcc computation: " + (end-start) + "ms");
     }
     
     
