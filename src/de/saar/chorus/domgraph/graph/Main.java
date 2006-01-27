@@ -45,7 +45,7 @@ public class Main {
         solver.solve();
         long end = System.currentTimeMillis();
         
-        System.err.println("Chart:\n" + chart);
+        //System.err.println("Chart:\n" + chart);
         System.err.println("Chart size: " + chart.size());
         System.err.println("Runtime: " + (end-start)  + "ms\n\n");
         
