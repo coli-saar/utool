@@ -7,12 +7,16 @@
 
 package de.saar.chorus.domgraph.chart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
+import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.event.EdgeTraversalEvent;
 import org._3pq.jgrapht.event.TraversalListenerAdapter;
@@ -27,12 +31,17 @@ public class ChartSolver {
     private DomGraph graph;
     private Chart chart;
     private SplitComputer splitc;
+    private FreeRootsComputer freerc;
+    
+    public long totalSplitTime = 0;
     
     // ASSUMPTION graph is compact and weakly normal
     public ChartSolver(DomGraph graph, Chart chart) {
         this.graph = graph;
         this.chart = chart;
+        
         splitc = new SplitComputer(graph);
+        freerc = new FreeRootsComputer(graph);
     }
     
     public boolean solve() {
@@ -52,14 +61,9 @@ public class ChartSolver {
     private boolean solve(Set<String> subgraph) {
         Set<String> freeRoots;
         int numRootsInSubgraph;
+        //List<Set<String>> wccsThisNode = new ArrayList<Set<String>>();
         
         //System.err.println("solve " + subgraph);
-        
-        // TODO these could be defined once and for all in the object
-        Map<String,Map<Edge,Set<String>>> splitmap = new HashMap<String,Map<Edge,Set<String>>>();
-        //List<String> hiddenNodesWcc = new ArrayList<String>();
-
-        
         
         // If fragset is already in chart, nothings needs to be done.
         if( chart.containsSplitFor(subgraph) ) {
@@ -67,7 +71,7 @@ public class ChartSolver {
         }
         
         // If the fs has no free roots, then the original graph is unsolvable.
-        freeRoots = getFreeRoots(subgraph);
+        freeRoots = freerc.getFreeRoots(subgraph);
         if( freeRoots.isEmpty() ) {
             return false;
         }
@@ -87,122 +91,175 @@ public class ChartSolver {
         
         // Otherwise, iterate over all possible free roots
         for( String root : freeRoots ) {
-            Split split = new Split(root);
+            // make new Split
+            Split split = splitc.computeSplit(root, subgraph);
             
-            splitmap.clear();
-            splitc.computeSplit(root, subgraph, splitmap);
-            for( String dominator : splitmap.keySet() ) {
-                for( Edge domedge : splitmap.get(dominator).keySet() ) {
-                    Set<String> wcc = splitmap.get(dominator).get(domedge);
-
-                    split.addWcc(dominator, wcc);
-                    if( !solve(wcc) ) {
-                        return false;
-                    }
+            // iterate over wccs
+            for( Set<String> wcc : split.getAllSubgraphs() ) {
+                if( !solve(wcc) ) {
+                    return false;
                 }
             }
             
+            // add split to chart
             chart.addSplit(subgraph, split);
         }
         
+        //System.err.println("/solve " + subgraph);
         return true;
-    }
-
-    /*
-    private void restoreAll(DomGraph graph, List<String> hiddenNodes, List<Edge> hiddenEdges) {
-    	for( int i = 0; i < hiddenNodes.size(); i++ ) {
-    		String node = hiddenNodes.get(i);
-            graph.restore(node);
-        }
-    	
-    	for( int i = 0; i < hiddenEdges.size(); i++ ) {
-    		Edge e = hiddenEdges.get(i);
-    		graph.restore(e);
-    	}
-    	
-    }
-
-    private void hideAllNodesExcept(DomGraph graph, Set<String> nodes, List<String> hiddenNodes, List<Edge> hiddenEdges) {
-        List<String> allnodes = new ArrayList<String>();
-        
-        allnodes.addAll(graph.getAllNodes());
-        
-        for( int i = 0; i < allnodes.size(); i++ ) {
-        	String node = allnodes.get(i);
-            if( !nodes.contains(node) ) {
-                hiddenNodes.add(node);
-                hiddenEdges.addAll(graph.getAdjacentEdges(node));
-                graph.hide(node);
-            }
-        }
-    }
-*/
-    
-    // compute the free roots of a subgraph
-    private Set<String> getFreeRoots(Set<String> subgraph) {
-        Set<String> ret = new HashSet<String>();
-        Set<Integer> seenWccs = new HashSet<Integer>();
-        Set<String> subsubgraph = new HashSet<String>();
-        
-        subsubgraph.addAll(subgraph);
-        
-        for( String node : subgraph ) {
-            boolean isFree = true;
-
-            if( graph.indegOfSubgraph(node, null, subgraph) == 0 ) {
-                // roots without incoming edges
-                
-                // INVARIANT tree children of a root are always in the same subgraph
-                List<String> holes = graph.getChildren(node, EdgeType.TREE);
-                
-                // compute wccs of G - R(F)
-                subsubgraph.remove(node);
-                Map<String,Integer> wccMap = 
-                    graph.computeWccMap(graph.wccsOfSubgraph(subsubgraph));
-                subsubgraph.add(node);
-                
-                seenWccs.clear();
-                
-                // check whether all holes are in different wccs
-                for( String hole : holes ) {
-                    if( seenWccs.contains(wccMap.get(hole))) {
-                        isFree = false;
-                    } else {
-                        seenWccs.add(wccMap.get(hole));
-                    }
-                }
-                
-                // TODO what about dom edges out of the root?
-                
-                if( isFree ) {
-                    ret.add(node);
-                }
-            }
-        }
-        
-        return ret;
     }
     
     public Chart getChart() {
         return chart;
     }
 
+    
+    
+    
+    private static class FreeRootsComputer {
+        private DomGraph graph;
+        private DirectedGraph lowlevel;
+        
+        private Map<Edge,Integer> bccIndex;
+        
+        // for bcc algorithm
+        private Set<String> visited;
+        private int count;
+        private Stack<Edge> stack;
+        private Set<Edge> stackAsSet;
+        private Map<String,Integer> dfsnum;
+        private Map<String,Integer> LOW;
+        private Map<String,String> parent;
+        private int nextBccIndex;
+        
+        // for getFreeRoots
+        private Set<Integer> seenEdgeIndices;
+        
+        
+        // ASSUMPTION subgraph is connected
+        public FreeRootsComputer(DomGraph graph) {
+            this.graph = graph;
+            lowlevel = graph.getLowlevelGraph();
+            
+            visited = new HashSet<String>();
+            count = 1;
+            stack = new Stack<Edge>();
+            stackAsSet = new HashSet<Edge>();
+            dfsnum = new HashMap<String,Integer>();
+            LOW = new HashMap<String,Integer>();
+            parent = new HashMap<String,String>();
+            
+            seenEdgeIndices = new HashSet<Integer>();
+            
+            bccIndex = new HashMap<Edge,Integer>();
+            nextBccIndex = 0;
+            
+            bccs(graph.getAllNodes().iterator().next());
+        }
+        
+        
+        public Set<String> getFreeRoots(Set<String> subgraph) {
+            Set<String> ret = new HashSet<String>();
+            
+            for( String node : subgraph ) {
+                if( graph.indegOfSubgraph(node, null, subgraph) == 0 ) {
+                    // roots without incoming edges
+                    
+                    seenEdgeIndices.clear();
+                    for( Edge treeEdge : graph.getOutEdges(node, EdgeType.TREE)) {
+                        Integer idx = bccIndex.get(treeEdge);
+                        if( seenEdgeIndices.contains(idx) ) {
+                            continue;
+                        } else {
+                            seenEdgeIndices.add(idx);
+                        }
+                    }
+                    
+                    ret.add(node);
+                }
+            }
+            
+            return ret;
+        }
+                    
 
 
+        // bcc algorithm from http://www.ececs.uc.edu/~gpurdy/lec24.html
+        private void bccs(String v) {
+            //System.err.println("bccs: " + v);
+            
+            // mark v "visited"
+            visited.add(v);
+            
+            // dfsnum[v] = Count
+            // ++Count
+            dfsnum.put(v, count);
+            LOW.put(v, count++);
+            
+            // for each vertex w in adjlist(v) do
+            for( Edge e : (List<Edge>) lowlevel.edgesOf(v) ) {
+                String w = (String) e.oppositeVertex(v);
+                
+                // if (v,w) is not on the STACK, push (v,w)
+                if( !stackAsSet.contains(e)) {
+                    stack.push(e);
+                    stackAsSet.add(e);
+                }
+                
+                // if w is "unvisited" then
+                if( !visited.contains(w)) {
+                    // set parent(w) = v
+                    parent.put(w, v);
+                    
+                    // BICONSEARCH(w)
+                    bccs(w);
+                    
+                    // if LOW[w] >= dfsnum[v] then a biconnected component
+                    //   has been found;
+                    if( LOW.get(w) >= dfsnum.get(v) ) {
+                        // pop the edges up to and including
+                        // (v,w); these are the component
+                        do {
+                            bccIndex.put(stack.peek(), nextBccIndex);
+                        } while( stack.pop() != e );
+                        
+                        nextBccIndex++;
+                    }
+                    
+                    // LOW[v] = min (LOW[v],LOw[w])
+                    LOW.put(v, Math.min(LOW.get(v), LOW.get(w)));
+                }
+                
+                // else if w is not parent[v] then
+                else if( parent.get(v) != w ) {
+                    //  LOW[v] = min(LOW[v], dfsnum[w])
+                    LOW.put(v, Math.min(LOW.get(v), dfsnum.get(w)));
+                }
+            }
+            
+            //System.err.println("/bcc: " + v);
+        }
+
+    }
+
+/*
+ * performance ideas:
+ * - pull management of splitmap entries out of the inner loop
+ * - Trove
+ */
     private static class SplitComputer extends TraversalListenerAdapter {
         // global information (once per object)
         private DomGraph graph;
         private AsUndirectedGraph lowlevelGraph;
+        // node in rootfrag -> edge in this node -> wcc
+        private Map<String,Map<Edge,Set<String>>> splitmap;
 
         // local information
-        private Set<String> subgraph;
         private Set<String> rootFragment;
         
         // node -> dom edge out of root frag by which this node is reached
         private Map<String,Edge> domEdgeForNodeWcc;
         
-        // node in rootfrag -> edge in this node -> wcc
-        private Map<String,Map<Edge,Set<String>>> splitmap;
         
 
         
@@ -211,6 +268,7 @@ public class ChartSolver {
             lowlevelGraph = new AsUndirectedGraph(graph.getLowlevelGraph());
             rootFragment = new HashSet<String>();
             domEdgeForNodeWcc = new HashMap<String,Edge>();
+            splitmap = new HashMap<String,Map<Edge,Set<String>>>();
         }
         
         public void edgeTraversed(EdgeTraversalEvent e) {
@@ -219,6 +277,12 @@ public class ChartSolver {
             String tgt = (String) edge.getTarget();
             
             //System.err.println("et: " + edge);
+            
+            // BUG -- this code is only correct for graphs in which
+            // the ends of the dom edges out of the root fragment are
+            // not otherwise connected; i.e. it assumes that different
+            // dom edges lead to different wccs. This is true for hnc
+            // graphs in particular, but in general it is wrong!!
             
             if( (graph.getData(edge).getType() == EdgeType.DOMINANCE)
                     && (rootFragment.contains(src)) ) {
@@ -230,6 +294,10 @@ public class ChartSolver {
                 } else if( domEdgeForNodeWcc.containsKey(tgt) ) {
                     // traverse edge upwards
                     domEdgeForNodeWcc.put(src, domEdgeForNodeWcc.get(tgt));
+                    
+                    // (perhaps we can recognise here that we are revisiting
+                    // a hole, and mark the edge to remember it leads into
+                    // the same wcc)
                 } else {
                     System.err.println("Can't inherit domedge: " + edge);
                 }
@@ -261,15 +329,12 @@ public class ChartSolver {
             }
         }
         
-        public void computeSplit(String root, Set<String> subgraph, Map<String,Map<Edge,Set<String>>> splitmap) {
+        public Split computeSplit(String root, Set<String> subgraph) {
             rootFragment.clear();
             rootFragment.add(root);
             rootFragment.addAll(graph.getChildren(root, EdgeType.TREE));
 
-            this.splitmap = splitmap;
-            this.subgraph = subgraph;
             domEdgeForNodeWcc.clear();
-            
             splitmap.clear();
             
             RestrictedDepthFirstIterator it = new RestrictedDepthFirstIterator(lowlevelGraph, root, subgraph);
@@ -280,7 +345,17 @@ public class ChartSolver {
                 it.next();
             }
             
-            //System.err.println("after dfs: splitmap = " + splitmap);
+            
+
+            Split ret = new Split(root);
+            
+            for( String dominator : splitmap.keySet() ) {
+                for( Edge key : splitmap.get(dominator).keySet() ) {
+                    ret.addWcc(dominator, splitmap.get(dominator).get(key));
+                }
+            }
+            
+            return ret;
         }
     }
 

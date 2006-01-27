@@ -50,6 +50,7 @@ public class Main {
         System.err.println("Runtime: " + (end-start)  + "ms\n\n");
         
         System.err.println("Spent time in wcc dfs: " + g.totalWccTime);
+        System.err.println("for splits: " + solver.totalSplitTime);
         
         
         //displayAllSolvedForms(chart, g, l);
