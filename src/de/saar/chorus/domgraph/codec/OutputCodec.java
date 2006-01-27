@@ -16,7 +16,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public abstract class OutputCodec {
-    static enum Type {
+    public static enum Type {
         GRAPH, PLUGGING
     }
     
@@ -34,6 +34,10 @@ public abstract class OutputCodec {
             break;
             
         case PLUGGING:
+            if( domedges == null ) {
+                throw new MalformedDomgraphException();
+            }
+            
             encode_plugging(graph, domedges, writer);
             break;
         }

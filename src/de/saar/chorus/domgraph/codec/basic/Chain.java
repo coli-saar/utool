@@ -20,6 +20,11 @@ import de.saar.chorus.domgraph.graph.NodeType;
 
 
 public class Chain extends InputCodec {
+    public Chain() {
+        setName("chain");
+        setExtension(null);
+    }
+    
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) {
 	throw new UnsupportedOperationException();
     }

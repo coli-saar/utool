@@ -35,6 +35,12 @@ import de.saar.chorus.domgraph.graph.NodeType;
 
 
 public class GxlCodec extends InputCodec {
+    public GxlCodec() {
+        setName("domcon-gxl");
+        setExtension(".dc.xml");
+    }
+    
+    
     /**
      * Reads a GXL description of a dominance graph from a file and writes it
      * into a JDomGraph object. Any previous contents of the JDomGraph object
