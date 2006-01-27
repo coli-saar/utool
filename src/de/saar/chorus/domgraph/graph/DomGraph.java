@@ -29,7 +29,6 @@ public class DomGraph {
     private Map<String,NodeData> nodeData;
     private Map<Edge,EdgeData> edgeData;
     private boolean isSubgraph;
-    public long totalWccTime;
     
     public DomGraph() {
         isSubgraph = false;
@@ -222,9 +221,6 @@ public class DomGraph {
     }
     
     public List<Set<String>> wccsOfSubgraph(Set<String> nodes) {
-        //System.err.println("wccOfSub: " + nodes);
-        long start = System.currentTimeMillis();
-        
         final List<Set<String>> components = new ArrayList<Set<String>>();
         RestrictedDepthFirstIterator it = 
             new RestrictedDepthFirstIterator(new AsUndirectedGraph(graph), null, nodes);
@@ -250,11 +246,8 @@ public class DomGraph {
         while( it.hasNext() ) {
             it.next();
         }
-        
-        long end = System.currentTimeMillis();
-        totalWccTime += end-start;
+
         return components;
-        
     }
     
     public Map<String,Integer> computeWccMap(List<Set<String>> wccs) {
