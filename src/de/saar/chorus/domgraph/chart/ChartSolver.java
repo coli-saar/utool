@@ -7,10 +7,11 @@
 
 package de.saar.chorus.domgraph.chart;
 
-import java.util.ArrayList;
+import gnu.trove.TIntHashSet;
+import gnu.trove.TObjectIntHashMap;
+
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +121,9 @@ public class ChartSolver {
         private DomGraph graph;
         private DirectedGraph lowlevel;
         
-        private Map<Edge,Integer> bccIndex;
+        private TObjectIntHashMap bccIndex;
+        
+        //private Map<Edge,Integer> bccIndex;
         
         // for bcc algorithm
         private Set<String> visited;
@@ -133,7 +136,8 @@ public class ChartSolver {
         private int nextBccIndex;
         
         // for getFreeRoots
-        private Set<Integer> seenEdgeIndices;
+        //private Set<Integer> seenEdgeIndices;
+        private TIntHashSet seenEdgeIndices;
         
         
         // ASSUMPTION subgraph is connected
@@ -149,12 +153,17 @@ public class ChartSolver {
             LOW = new HashMap<String,Integer>();
             parent = new HashMap<String,String>();
             
-            seenEdgeIndices = new HashSet<Integer>();
+            //seenEdgeIndices = new HashSet<Integer>();
+            seenEdgeIndices = new TIntHashSet();
             
-            bccIndex = new HashMap<Edge,Integer>();
+            //bccIndex = new HashMap<Edge,Integer>();
+            bccIndex = new TObjectIntHashMap();
             nextBccIndex = 0;
             
+            long start = System.currentTimeMillis();
             bccs(graph.getAllNodes().iterator().next());
+            long end = System.currentTimeMillis();
+            System.err.println("bcc computation: " + (end-start) + "ms");
         }
         
         
@@ -167,7 +176,7 @@ public class ChartSolver {
                     
                     seenEdgeIndices.clear();
                     for( Edge treeEdge : graph.getOutEdges(node, EdgeType.TREE)) {
-                        Integer idx = bccIndex.get(treeEdge);
+                        int idx = bccIndex.get(treeEdge);
                         if( seenEdgeIndices.contains(idx) ) {
                             continue;
                         } else {
@@ -250,7 +259,7 @@ public class ChartSolver {
     private static class SplitComputer extends TraversalListenerAdapter {
         // global information (once per object)
         private DomGraph graph;
-        private AsUndirectedGraph lowlevelGraph;
+        private DirectedGraph lowlevel;
         // node in rootfrag -> edge in this node -> wcc
         private Map<String,Map<Edge,Set<String>>> splitmap;
 
@@ -261,16 +270,139 @@ public class ChartSolver {
         private Map<String,Edge> domEdgeForNodeWcc;
         
         
+        // for dfs
+        Set<String> visited;
 
         
         public SplitComputer(DomGraph graph) {
             this.graph = graph;
-            lowlevelGraph = new AsUndirectedGraph(graph.getLowlevelGraph());
+            //lowlevelGraph = new AsUndirectedGraph(graph.getLowlevelGraph());
+            lowlevel = graph.getLowlevelGraph();
             rootFragment = new HashSet<String>();
             domEdgeForNodeWcc = new HashMap<String,Edge>();
             splitmap = new HashMap<String,Map<Edge,Set<String>>>();
+            
+            
+            visited = new HashSet<String>();
         }
         
+        
+        private void dfs(String node, Set<String> subgraph) {
+            if( !subgraph.contains(node) )
+                return;
+            
+            if( visited.contains(node) ) {
+                // NOP -- so far
+            } else {
+                visited.add(node);
+                //System.err.println("Visit: " + node);
+              
+                
+                
+                // If node is not in the root fragment, then determine
+                // its wcc set and assign it to it.
+                if( !rootFragment.contains(node) ) {
+                    assignNodeToWcc(node);
+                }
+                
+                // otherwise, iterate over all adjacent edges
+                for( Edge edge : (List<Edge>) lowlevel.edgesOf(node) ) {
+                    String neighbour = (String) edge.oppositeVertex(node);
+                    
+                    if( !visited.contains(neighbour)) {
+                        updateDomEdge(neighbour, node, edge);
+                    
+                        //System.err.println("Explore edge: " + edge);
+                        
+                        // recurse into children
+                        dfs(neighbour, subgraph);
+                    }
+                }
+            }
+        }
+        
+        private void updateDomEdge(String neighbour, String node, Edge edge) {
+            String src = (String) edge.getSource(); // not necessarily = node
+            String tgt = (String) edge.getTarget();
+            
+            // BUG -- this code is only correct for graphs in which
+            // the ends of the dom edges out of the root fragment are
+            // not otherwise connected; i.e. it assumes that different
+            // dom edges lead to different wccs. This is true for hnc
+            // graphs in particular, but in general it is wrong!!
+            if( (graph.getData(edge).getType() == EdgeType.DOMINANCE)
+                    && (src == node)
+                    && (rootFragment.contains(src)) ) {
+                // dom edge out of fragment => initialise dEFNW
+                domEdgeForNodeWcc.put(tgt,edge);
+            } else if( !rootFragment.contains(neighbour) ) {
+                // otherwise make neighbours inherit my dEFNW
+                domEdgeForNodeWcc.put(neighbour, domEdgeForNodeWcc.get(node));
+            } else {
+              //  System.err.println("Can't inherit domedge: " + edge);
+            }
+        }
+
+
+        private void assignNodeToWcc(String node) {
+            Edge dominatorEdge = domEdgeForNodeWcc.get(node);
+            String dominator = (String) dominatorEdge.getSource();
+            
+            Map<Edge,Set<String>> thisMap = splitmap.get(dominator);
+            if( thisMap == null ) {
+                thisMap = new HashMap<Edge,Set<String>>();
+                splitmap.put(dominator, thisMap);
+            }
+            
+            Set<String> thisWcc = thisMap.get(dominatorEdge);
+            if( thisWcc == null ) {
+                thisWcc = new HashSet<String>();
+                thisMap.put(dominatorEdge, thisWcc);
+            }
+            
+            thisWcc.add(node);
+        }
+
+
+        public Split computeSplit(String root, Set<String> subgraph) {
+            rootFragment.clear();
+            rootFragment.add(root);
+            rootFragment.addAll(graph.getChildren(root, EdgeType.TREE));
+
+            domEdgeForNodeWcc.clear();
+            splitmap.clear();
+            
+            visited.clear();
+            
+            //System.err.println("rootfrag = " + rootFragment);
+            dfs(root,subgraph);
+            
+            /*
+            
+            RestrictedDepthFirstIterator it = new RestrictedDepthFirstIterator(lowlevelGraph, root, subgraph);
+            it.addTraversalListener(this);
+            it.setReuseEvents(true);
+            
+            while( it.hasNext() ) {
+                it.next();
+            }
+            */
+            
+            
+
+            Split ret = new Split(root);
+            
+            for( String dominator : splitmap.keySet() ) {
+                for( Edge key : splitmap.get(dominator).keySet() ) {
+                    ret.addWcc(dominator, splitmap.get(dominator).get(key));
+                }
+            }
+            
+            return ret;
+        }
+        
+        
+        /*
         public void edgeTraversed(EdgeTraversalEvent e) {
             Edge edge = e.getEdge();
             String src = (String) edge.getSource();
@@ -357,6 +489,7 @@ public class ChartSolver {
             
             return ret;
         }
+        */
     }
 
     
