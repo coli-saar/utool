@@ -22,54 +22,32 @@ import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
-import org._3pq.jgrapht.graph.DirectedSubgraph;
-
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 public class DomGraph {
     private DirectedGraph graph;
     private Map<String,NodeData> nodeData;
     private Map<Edge,EdgeData> edgeData;
-    private boolean isSubgraph;
     
     public DomGraph() {
-        isSubgraph = false;
         clear();
     }
     
-    public DomGraph(DomGraph g) {
-        this(g,null,null);
-    }
-    
-    public DomGraph(DomGraph g, Set<String> nodes, Set<Edge> edges) {
-        graph = new DirectedSubgraph(g.graph, nodes, edges);
-        nodeData = g.nodeData;
-        edgeData = g.edgeData;
-        isSubgraph = true;
-    }
-    
-    
+
     
     public void clear() {
-        if( !isSubgraph ) {
-            graph = new DefaultDirectedGraph();
-            nodeData = new HashMap<String,NodeData>();
-            edgeData = new HashMap<Edge,EdgeData>();
-        }
+        graph = new DefaultDirectedGraph();
+        nodeData = new HashMap<String,NodeData>();
+        edgeData = new HashMap<Edge,EdgeData>();
     }
     
     public void addNode(String name, NodeData data) {
-        if( !isSubgraph ) {
-            graph.addVertex(name);
-            nodeData.put(name,data);
-        }
+        graph.addVertex(name);
+        nodeData.put(name,data);
     }
     
     public void addEdge(String src, String tgt, EdgeData data) {
-        if( !isSubgraph ) {
-            Edge e = graph.addEdge(src,tgt);
-            edgeData.put(e, data);
-        }
+        Edge e = graph.addEdge(src,tgt);
+        edgeData.put(e, data);
     }
     
     public Set<String> getAllNodes() {
@@ -139,29 +117,6 @@ public class DomGraph {
         }
         
         return children;
-    }
-    
-    
-    
-
-    public void hide(String node) {
-        if( isSubgraph )
-            graph.removeVertex(node);
-    }
-    
-    public void restore(String node) {
-        if( isSubgraph )
-            graph.addVertex(node);
-    }
-    
-    public void hide(Edge e) {
-        if( isSubgraph )
-            graph.removeEdge(e);
-    }
-    
-    public void restore(Edge e) {
-        if( isSubgraph )
-            graph.addEdge(e);
     }
     
     
@@ -275,16 +230,6 @@ public class DomGraph {
         return wccMap;
     }
     
-    public Set<String> pickRootsFrom(Set<String> nodeset) {
-        Set<String> ret = new HashSet<String>();
-        
-        for( String node : nodeset ) {
-            if( isRoot(node))
-                ret.add(node);
-        }
-        
-        return ret;
-    }
     
     private void removeAllDominanceEdges() {
         List<Edge> allEdges = new ArrayList<Edge>();
