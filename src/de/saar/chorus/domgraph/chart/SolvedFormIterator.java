@@ -36,7 +36,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
         roots = graph.getAllRoots();
         
 		
-		for( Set<String> fragset : chart.getCompleteFragsets() ) {
+		for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
             if( fragset.size() > 0 ) {
                 agenda.add(new AgendaEntry(nullNode, fragset));
             }

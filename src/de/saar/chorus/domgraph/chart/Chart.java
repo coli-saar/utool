@@ -20,12 +20,12 @@ public class Chart {
     private Map<Set<String>, List<Split>> chart;
     private Map<Set<String>, ModifiableInteger> refcount;
     private int size;
-    private List<Set<String>> completeFragset;
+    private List<Set<String>> toplevelSubgraphs;
     
     public Chart() {
         chart = new HashMap<Set<String>, List<Split>>();
         refcount = new HashMap<Set<String>, ModifiableInteger>();
-        completeFragset = new ArrayList<Set<String>>();
+        toplevelSubgraphs = new ArrayList<Set<String>>();
         size = 0;
     }
     
@@ -77,12 +77,12 @@ public class Chart {
         return ret.toString();
     }
 
-    public List<Set<String>> getCompleteFragsets() {
-        return completeFragset;
+    public List<Set<String>> getToplevelSubgraphs() {
+        return toplevelSubgraphs;
     }
 
-    public void addCompleteFragset(Set<String> completeFragset) {
-        this.completeFragset.add(completeFragset);
+    public void addToplevelSubgraph(Set<String> completeFragset) {
+        this.toplevelSubgraphs.add(completeFragset);
     }
     
     
@@ -90,7 +90,7 @@ public class Chart {
         BigInteger ret = BigInteger.ZERO;
         Map<Set<String>, BigInteger> numSolvedForms = new HashMap<Set<String>,BigInteger>();
         
-        for( Set<String> subgraph : getCompleteFragsets() ) {
+        for( Set<String> subgraph : getToplevelSubgraphs() ) {
             ret = ret.add(countSolvedFormsFor(subgraph, numSolvedForms));
         }
         
