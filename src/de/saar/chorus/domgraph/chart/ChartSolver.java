@@ -35,7 +35,7 @@ public class ChartSolver {
         List<Set<String>> wccs = graph.wccs();
 
         for( Set<String> wcc : wccs ) {
-            chart.addCompleteFragset(wcc);
+            chart.addToplevelSubgraph(wcc);
             if( !solve(wcc) ) {
                 return false;
             }
