@@ -8,6 +8,7 @@
 package de.saar.chorus.domgraph.chart;
 
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +46,7 @@ public class ChartSolver {
     
     
     private boolean solve(Set<String> subgraph) {
-        Set<String> freeRoots;
+        Collection<String> freeRoots;
         int numRootsInSubgraph;
         
         //System.err.println("solve: " + subgraph);

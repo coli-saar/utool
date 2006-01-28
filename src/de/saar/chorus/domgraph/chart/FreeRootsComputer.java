@@ -7,9 +7,7 @@
 
 package de.saar.chorus.domgraph.chart;
 
-import gnu.trove.TIntHashSet;
-import gnu.trove.TObjectIntHashMap;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +21,21 @@ import org._3pq.jgrapht.Edge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
+
+/*
+ * Efficiency notes:
+ * - Trove doesn't seem to help here:
+ *   * Changing Map<String,Integer> into TObjectIntHashMap has no effect;
+ *     this is because bccs are computed only once per graph.
+ *   * Changing bccIndex and seenEdgeIndices to the Trove classes has
+ *     no effect either, but I don't understand why.
+ */
+
 class FreeRootsComputer {
     private DomGraph graph;
     private DirectedGraph lowlevel;
     
-    private TObjectIntHashMap bccIndex;
+    private Map<Edge,Integer> bccIndex;
     
     // for bcc algorithm
     private Set<String> visited;
@@ -40,7 +48,7 @@ class FreeRootsComputer {
     private int nextBccIndex;
     
     // for getFreeRoots
-    private TIntHashSet seenEdgeIndices;
+    private Set<Integer> seenEdgeIndices;
     
     
     // ASSUMPTION subgraph is connected
@@ -56,17 +64,16 @@ class FreeRootsComputer {
         LOW = new HashMap<String,Integer>();
         parent = new HashMap<String,String>();
         
-        seenEdgeIndices = new TIntHashSet();
-        
-        bccIndex = new TObjectIntHashMap();
+        seenEdgeIndices = new HashSet<Integer>();
+        bccIndex = new HashMap<Edge,Integer>();
         nextBccIndex = 0;
         
-        bccs(graph.getAllNodes().iterator().next());
+        biconsearch(graph.getAllNodes().iterator().next());
     }
     
     
-    public Set<String> getFreeRoots(Set<String> subgraph) {
-        Set<String> ret = new HashSet<String>();
+    public List<String> getFreeRoots(Set<String> subgraph) {
+        List<String> ret = new ArrayList<String>();
         
         for( String node : subgraph ) {
             if( graph.indegOfSubgraph(node, null, subgraph) == 0 ) {
@@ -92,7 +99,7 @@ class FreeRootsComputer {
 
 
     // bcc algorithm from http://www.ececs.uc.edu/~gpurdy/lec24.html
-    private void bccs(String v) {
+    private void biconsearch(String v) {
         // mark v "visited"
         visited.add(v);
         
@@ -117,7 +124,7 @@ class FreeRootsComputer {
                 parent.put(w, v);
                 
                 // BICONSEARCH(w)
-                bccs(w);
+                biconsearch(w);
                 
                 // if LOW[w] >= dfsnum[v] then a biconnected component
                 //   has been found;
