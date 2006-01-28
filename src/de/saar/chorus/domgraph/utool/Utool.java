@@ -277,7 +277,7 @@ public class Utool {
                         long count = 0;
                         SolvedFormIterator it = new SolvedFormIterator(chart,graph);
                         while( it.hasNext() ) {
-                            Set<DomEdge> domedges = it.next();
+                            List<DomEdge> domedges = it.next();
                             count++;
                             
                             if( !noOutput ) {

@@ -10,7 +10,7 @@ import java.util.Stack;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
-public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
+public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     private DomGraph graph;
 	private Chart chart;
 	private Agenda agenda;
@@ -21,7 +21,7 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
     private Set<String> roots;
     private String rootForThisFragset;
 	
-	private Set<DomEdge> nextSolvedForm;
+	private List<DomEdge> nextSolvedForm;
 	
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
@@ -73,8 +73,8 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 	}
 	
 	
-	Set<DomEdge> extractDomEdges() {
-		Set<DomEdge> toReturn = new HashSet<DomEdge>();
+	List<DomEdge> extractDomEdges() {
+		List<DomEdge> toReturn = new ArrayList<DomEdge>();
 		
 		for( EnumerationStackEntry ese : stack) {
 			toReturn.addAll(ese.getEdgeAccu());
@@ -231,8 +231,8 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 
     // TODO think about whether hasNext() guarantees that next() will
     // work -- otherwise, we need to precompute the next sf in hasNext()
-    public Set<DomEdge> next() {
-    	Set<DomEdge> ret = nextSolvedForm;
+    public List<DomEdge> next() {
+    	List<DomEdge> ret = nextSolvedForm;
     	
     	if( ret != null ) {
     		updateNextSolvedForm();
