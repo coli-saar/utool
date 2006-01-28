@@ -53,7 +53,7 @@
              includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes}">
 			<manifest>
 				<attribute name="Main-Class"
-                           value="de.saar.chorus.domgraph.graph.Main" />
+                           value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
 		</jar>
 

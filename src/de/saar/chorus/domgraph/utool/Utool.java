@@ -304,7 +304,7 @@ public class Utool {
                                 System.err.print((int) Math.floor(count * 1000.0 / total_time));
                                 System.err.print(" sfs/sec; ");
                             }
-                            System.err.println(1000 * total_time / count + " ms/sf)");
+                            System.err.println(1000 * total_time / count + " microsecs/sf)");
                         }
                         
                         // TODO exit with success (1)
