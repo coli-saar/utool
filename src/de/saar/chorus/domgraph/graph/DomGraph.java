@@ -341,6 +341,80 @@ public class DomGraph {
         return true;
     }
     
+    public boolean isLeafLabelled() {
+        if( !isWeaklyNormal() ) {
+            return false;
+        }
+        
+        for( String node : getAllNodes() ) {
+            // unlabelled nodes must have outgoing dom edges
+            if( (getData(node).getType() == NodeType.UNLABELLED)
+                    && (outdeg(node, EdgeType.DOMINANCE) == 0) ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public boolean isHypernormallyConnected() {
+        Set<String> visited = new HashSet<String>();
+        
+        if( !isNormal() ) {
+            return false;
+        }
+        
+        hncDfs(getAllNodes().iterator().next(), visited);
+        return visited.equals(getAllNodes());
+    }
+    
+    
+    private void hncDfs(String node, Set<String> visited) {
+        boolean haveUsedOutgoingDomEdge = false;
+        
+        visited.add(node);
+        
+        for( Edge edge : getAdjacentEdges(node) ) {
+            String neighbour = (String) edge.oppositeVertex(node);
+            
+            if( (getData(edge).getType() == EdgeType.DOMINANCE)
+                    && edge.getSource().equals(node) ) {
+                if( haveUsedOutgoingDomEdge ) {
+                    continue;
+                } else {
+                    haveUsedOutgoingDomEdge = true;
+                }
+            }
+            
+            if( !visited.contains(neighbour)) {
+                hncDfs(neighbour, visited);
+            }
+        }
+    }
+
+
+
+    public boolean isSimpleSolvedForm() {
+        for( String node : getAllNodes() ) {
+            // TODO check cyclicity
+            
+            if( indeg(node) > 1 ) {
+                return false;
+            }
+            
+            if( outdeg(node, EdgeType.DOMINANCE) > 1 ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    
+    
+    
+    /**** compactification ****/
+    
     public DomGraph compactify() {
         DomGraph ret = new DomGraph();
         
@@ -372,22 +446,10 @@ public class DomGraph {
             }
         }
     }
-
-    public boolean isSimpleSolvedForm() {
-        for( String node : getAllNodes() ) {
-            // TODO check cyclicity
-            
-            if( indeg(node) > 1 ) {
-                return false;
-            }
-            
-            if( outdeg(node, EdgeType.DOMINANCE) > 1 ) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
+    
+    
+    
+    
     
     
     public DirectedGraph getLowlevelGraph() {
