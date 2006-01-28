@@ -38,7 +38,7 @@ public class Utool {
     private static final char OPTION_VERSION = (char) 1;
     private static final char OPTION_HELP_OPTIONS = (char) 2;
     private static final char OPTION_DUMP_CHART = (char) 3;
-    
+       
     private enum Operation {
         solve      
         ("Solve an underspecified description",
@@ -127,6 +127,19 @@ public class Utool {
             this.longDescription = longDescription;
         }
     }
+    
+    
+    // exit codes for "utool classify"
+    public static final int  CLASSIFY_WEAKLY_NORMAL = 1;
+    public static final int  CLASSIFY_NORMAL = 2;
+    public static final int  CLASSIFY_COMPACT = 4;
+    public static final int  CLASSIFY_COMPACTIFIABLE = 8;
+    public static final int  CLASSIFY_HN_CONNECTED = 16;
+    public static final int  CLASSIFY_LEAF_LABELLED = 32;
+
+
+    
+    
 
     /**
      * @param args
@@ -233,7 +246,7 @@ public class Utool {
         }
         
         
-        // parse the rest of the flags
+        // parse the global options
         outputname = getopt.getValue('o');
 
         if( getopt.hasOption('s')) {
@@ -444,10 +457,47 @@ public class Utool {
             
             
         case classify:
+            int programExitCode = 0;
             
-            // TODO implement this
+            if( graph.isWeaklyNormal() ) {
+                programExitCode |= CLASSIFY_WEAKLY_NORMAL;
+            }
+
+            if( graph.isNormal() ) {
+                programExitCode |= CLASSIFY_NORMAL;
+            }
             
-            break;
+            if( graph.isCompact() ) {
+                programExitCode |= CLASSIFY_COMPACT;
+            }
+            
+            if( graph.isCompactifiable() ) {
+                programExitCode |= CLASSIFY_COMPACTIFIABLE;
+            }
+            
+            if( graph.isHypernormallyConnected() ) {
+                if( displayStatistics ) {
+                    System.err.println("The graph is hypernormally connected.");
+                }
+                programExitCode |= CLASSIFY_HN_CONNECTED;
+            } else {
+                if( displayStatistics ) {
+                    System.err.println("The graph is not hypernormally connected.");
+                }
+            }
+            
+            if( graph.isLeafLabelled() ) {
+                if( displayStatistics ) {
+                    System.err.println("The graph is leaf-labelled.");
+                }
+                programExitCode |= CLASSIFY_LEAF_LABELLED;
+            } else {
+                if( displayStatistics ) {
+                    System.err.println("The graph is not leaf-labelled.");
+                }
+            }
+
+            System.exit(programExitCode);
             
         case help:
             
