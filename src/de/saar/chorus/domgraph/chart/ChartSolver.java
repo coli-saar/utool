@@ -11,15 +11,15 @@ package de.saar.chorus.domgraph.chart;
 import java.util.List;
 import java.util.Set;
 
-
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.EdgeType;
 
 public class ChartSolver {
     private DomGraph graph;
     private Chart chart;
     private SplitComputer splitc;
     private FreeRootsComputer freerc;
+    //private Map<Set<String>,String> fragmentMap;
+    private Set<String> roots;
     
     // ASSUMPTION graph is compact and weakly normal
     public ChartSolver(DomGraph graph, Chart chart) {
@@ -28,6 +28,7 @@ public class ChartSolver {
         
         splitc = new SplitComputer(graph);
         freerc = new FreeRootsComputer(graph);
+        roots = graph.getAllRoots();
     }
     
     public boolean solve() {
@@ -51,14 +52,12 @@ public class ChartSolver {
         
         // If fragset is already in chart, nothings needs to be done.
         if( chart.containsSplitFor(subgraph) ) {
-            //System.err.println("already in chart");
             return true;
         }
         
         // If the fs has no free roots, then the original graph is unsolvable.
         freeRoots = freerc.getFreeRoots(subgraph);
         if( freeRoots.isEmpty() ) {
-            //System.err.println("no free roots");
             return false;
         }
         
@@ -67,13 +66,12 @@ public class ChartSolver {
         // NB: Even in a compact graph, there may be fragments with >1 node!
         numRootsInSubgraph = 0;
         for( String node : subgraph ) {
-            if( graph.indegOfSubgraph(node, EdgeType.TREE, subgraph) == 0 ) {
+            if( roots.contains(node) ) {
                 numRootsInSubgraph++;
             }
         }
         
         if( numRootsInSubgraph == 1 ) {
-            //System.err.println("singleton");
             return true;
         }
         

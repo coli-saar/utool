@@ -462,5 +462,53 @@ public class DomGraph {
         
         return ret.toString();
     }
+    
+    
+    public Map<Set<String>, String> getFragments() {
+        Set<String> visited = new HashSet<String>();
+        Map<Set<String>,String> ret = new HashMap<Set<String>, String>();
+        
+        for( Set<String> wcc : wccs() ) {
+            computeFragmentTableDfs(wcc.iterator().next(), null, ret, visited);
+        }
+        
+        return ret;
+    }
+
+    private void computeFragmentTableDfs(String node, Set<String> currentFragment, Map<Set<String>, String> fragmentTable, Set<String> visited) {
+        visited.add(node);
+        
+        if( currentFragment == null ) {
+            currentFragment = new HashSet<String>();
+        }
+        
+        currentFragment.add(node);
+        
+        if( isRoot(node) ) {
+            fragmentTable.put(currentFragment, node);
+        }
+        
+        // visit the other nodes in my fragment
+        List<Edge> adjacentEdges = getAdjacentEdges(node);
+        for( Edge edge : adjacentEdges ) {
+            if( getData(edge).getType() == EdgeType.TREE ) {
+                String neighbour = (String) edge.oppositeVertex(node);
+                if( !visited.contains(neighbour) ) {
+                    computeFragmentTableDfs(neighbour, currentFragment, fragmentTable, visited);
+                }
+            }
+        }
+        
+        // visit nodes in other fragments
+        for( Edge edge : adjacentEdges ) {
+            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                String neighbour = (String) edge.oppositeVertex(node);
+                if( !visited.contains(neighbour) ) {
+                    computeFragmentTableDfs(neighbour, null, fragmentTable, visited);
+                }
+            }
+        }
+    }
+
 }
     
