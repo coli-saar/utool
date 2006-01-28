@@ -120,15 +120,6 @@ class SplitComputer {
 
     private void assignNodeToWcc(String node) {
         Edge dominatorEdge = domEdgeForNodeWcc.get(node);
-        
-        
-        if( dominatorEdge == null ) {
-            System.err.println("dominatoredge = null!");
-            System.err.println(node);
-            System.err.println(domEdgeForNodeWcc);
-        }
-        
-        Assert.assertNotNull("dominatorEdge", dominatorEdge);
         String dominator = (String) dominatorEdge.getSource();
         
         Map<Edge,Set<String>> thisMap = splitmap.get(dominator);
