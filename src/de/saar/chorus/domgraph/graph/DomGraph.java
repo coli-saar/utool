@@ -24,6 +24,8 @@ import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 import org._3pq.jgrapht.graph.DirectedSubgraph;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 public class DomGraph {
     private DirectedGraph graph;
     private Map<String,NodeData> nodeData;
@@ -119,6 +121,12 @@ public class DomGraph {
         return ret;
     }
     
+    public List<Edge> getAdjacentEdges(String node, EdgeType type) {
+        List<Edge> ret = getInEdges(node,type);
+        ret.addAll(getOutEdges(node,type));
+        return ret;
+    }
+    
     public List<Edge> getAdjacentEdges(String node) {
     	return (List<Edge>) graph.edgesOf(node);
     }
@@ -194,6 +202,10 @@ public class DomGraph {
     
     public boolean isRoot(String node) {
         return indeg(node,EdgeType.TREE) == 0;
+    }
+    
+    public boolean isLeaf(String node) {
+        return outdeg(node, EdgeType.TREE) == 0;
     }
     
     public Set<String> getAllRoots() {
@@ -299,6 +311,123 @@ public class DomGraph {
     
     /***** graph classes ******/
     
+    public boolean isWeaklyNormal() {
+        for( String node : getAllNodes() ) {
+            if( getData(node).getType() == NodeType.UNLABELLED ) {
+                // unlabelled nodes must be leaves
+                if( !isLeaf(node) ) {
+                    return false;
+                }
+            
+                // no empty fragments: all unlabelled nodes must have incoming tree edges
+                if( indeg(node, EdgeType.TREE) == 0 ) {
+                    return false;
+                }
+            }
+            
+            // no two incoming tree edges
+            if( indeg(node, EdgeType.TREE) > 1 ) {
+                return false;
+            }
+            
+            // TODO acyclic fragments
+        }
+        
+        for( Edge edge : getAllEdges() ) {
+            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                // dominance edges go into roots
+                if( !isRoot((String) edge.getTarget()) ) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    public boolean isNormal() {
+        if( !isWeaklyNormal() ) {
+            return false;
+        }
+        
+        for( Edge edge : getAllEdges() ) {
+            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                // dominance edges go out of holes
+                if( getData((String) edge.getSource()).getType() != NodeType.UNLABELLED ) {
+                    return false;
+                }
+            }
+        }
+            
+        return true;
+    }
+    
+    public boolean isCompact() {
+        if( !isWeaklyNormal() ) {
+            return false;
+        }
+        
+        for( String node : getAllNodes() ) {
+            // no labelled nodes with incoming tree edges
+            if( (getData(node).getType() == NodeType.LABELLED) && (indeg(node, EdgeType.TREE) > 0)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public boolean isCompactifiable() {
+        if( !isWeaklyNormal() ) {
+            return false;
+        }
+        
+        for( Edge edge : getAllEdges() ) {
+            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                // dominance edges go out of holes or roots
+                String src = (String) edge.getSource();
+                if( (getData(src).getType() != NodeType.UNLABELLED)
+                        && !isRoot(src) ) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    public DomGraph compactify() {
+        DomGraph ret = new DomGraph();
+        
+        // build fragments
+        for( String root : getAllRoots() ) {
+            ret.addNode(root, getData(root));
+            copyFragment(root, root, ret);
+        }
+        
+        // copy dominance edges
+        for( Edge edge : getAllEdges() ) {
+            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                ret.addEdge((String) edge.getSource(), (String) edge.getTarget(),
+                        getData(edge));
+            }
+        }
+        
+        return ret;
+    }
+    
+    private void copyFragment(String node, String root, DomGraph ret) {
+        if( getData(node).getType() == NodeType.UNLABELLED ) {
+            ret.addNode(node, getData(node));
+            ret.addEdge(root, node, new EdgeData(EdgeType.TREE, "(cpt dom edge)"));
+            //System.err.print("cpt edge from " + root + " to " + node);
+        } else {
+            for( String child : getChildren(node, EdgeType.TREE) ) {
+                copyFragment(child, root, ret);
+            }
+        }
+    }
+
     public boolean isSimpleSolvedForm() {
         for( String node : getAllNodes() ) {
             // TODO check cyclicity
@@ -315,13 +444,23 @@ public class DomGraph {
         return true;
     }
     
-    public boolean isNormal() {
-        // TODO implement me
-        return true;
-    }
     
     public DirectedGraph getLowlevelGraph() {
         return graph;
+    }
+    
+    
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        
+        for( String node : getAllNodes() ) {
+            ret.append("node: " + node + " (" + getData(node) + ")\n");
+            for( Edge edge : getOutEdges(node, null)) {
+                ret.append("    " + edge + " (" + getData(edge) + ")\n");
+            }
+        }
+        
+        return ret.toString();
     }
 }
     

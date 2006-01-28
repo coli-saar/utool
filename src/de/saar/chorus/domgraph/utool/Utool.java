@@ -171,9 +171,47 @@ public class Utool {
             System.err.println("The input graph has " + graph.getAllRoots().size() + " fragments.");
         }
         
-        // TODO check graph classes
         
-        // TODO compactification
+        // check statistics 
+        
+        boolean weaklyNormal = graph.isWeaklyNormal();
+        boolean normal = graph.isNormal();
+        boolean compact = graph.isCompact();
+        boolean compactifiable = graph.isCompactifiable();
+
+        DomGraph compactGraph = graph;
+        
+        if( displayStatistics ) {
+            if( normal ) {
+                System.err.println("The input graph is normal.");
+            } else {
+                System.err.print("The input graph is not normal");
+                if( weaklyNormal ) {
+                    System.err.println (", but it is weakly normal.");
+                } else {
+                    System.err.println(" (not even weakly normal).");
+                }
+            }
+            
+            if( compact ) {
+                System.err.println("The input graph is compact.");
+            } else {
+                System.err.print("The input graph is not compact, ");
+                if( compactifiable ) {
+                    System.err.println("but I will compactify it for you.");
+                } else {
+                    System.err.println("and it cannot be compactified.");
+                }
+            }
+        }
+
+        // compactify if necessary
+        //System.err.println("original graph:\n" + graph);
+        if( !compact && compactifiable ) {
+            compactGraph = graph.compactify();
+        }
+        //System.err.println("\n\ncompact graph:\n" + compactGraph);
+        
         
         
         // now do something, depending on the specified operation
@@ -191,7 +229,15 @@ public class Utool {
                 System.err.println();
             }
             
-            // TODO check for compactness and wn
+            if( !weaklyNormal ) {
+                System.err.println("Cannot solve graphs that are not weakly normal!");
+                System.exit(1);
+            }
+            
+            if( !compact && !compactifiable ) {
+                System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
+                System.exit(1);
+            }
 
             if( displayStatistics ) {
                 System.err.print("Solving graph ... ");
@@ -200,7 +246,7 @@ public class Utool {
             // compute chart
             long start_solver = System.currentTimeMillis();
             Chart chart = new Chart();
-            ChartSolver solver = new ChartSolver(graph, chart);
+            ChartSolver solver = new ChartSolver(compactGraph, chart);
             boolean solvable = solver.solve();
             long end_solver = System.currentTimeMillis();
             long time_solver = end_solver - start_solver;
@@ -229,7 +275,7 @@ public class Utool {
                         // extract solved forms
                         long start_extraction = System.currentTimeMillis();
                         long count = 0;
-                        SolvedFormIterator it = new SolvedFormIterator(chart);
+                        SolvedFormIterator it = new SolvedFormIterator(chart,graph);
                         while( it.hasNext() ) {
                             Set<DomEdge> domedges = it.next();
                             count++;

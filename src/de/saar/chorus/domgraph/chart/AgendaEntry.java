@@ -30,4 +30,7 @@ public class AgendaEntry { //implements Map.Entry<SWIGTYPE_p_Node, FragmentSet>{
 		return value;
 	}
 
+    public String toString() {
+        return "<Ag dom="+key+", fs=" + value + ">";
+    }
 }
