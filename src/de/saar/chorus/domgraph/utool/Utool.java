@@ -381,9 +381,7 @@ public class Utool {
             System.err.println(chart);
         }
         System.err.println("Time to build chart: " + time + " ms");
-        
-        // TODO print number of solved forms
-        
+        System.err.println("Number of solved forms: " + chart.countSolvedForms());
         System.err.println("");
     }
 
