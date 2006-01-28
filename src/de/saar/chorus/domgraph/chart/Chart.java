@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.chart;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,5 +83,41 @@ public class Chart {
 
     public void addCompleteFragset(Set<String> completeFragset) {
         this.completeFragset.add(completeFragset);
+    }
+    
+    
+    public BigInteger countSolvedForms() {
+        BigInteger ret = BigInteger.ZERO;
+        Map<Set<String>, BigInteger> numSolvedForms = new HashMap<Set<String>,BigInteger>();
+        
+        for( Set<String> subgraph : getCompleteFragsets() ) {
+            ret = ret.add(countSolvedFormsFor(subgraph, numSolvedForms));
+        }
+        
+        return ret;
+    }
+
+    private BigInteger countSolvedFormsFor(Set<String> subgraph, Map<Set<String>,BigInteger> numSolvedForms) {
+        BigInteger ret = BigInteger.ZERO;
+        
+        if( numSolvedForms.containsKey(subgraph) ) {
+            return numSolvedForms.get(subgraph);
+        } else if( !containsSplitFor(subgraph) ) {
+            // no split for subgraph => subgraph contains only one fragment
+            return BigInteger.ONE;
+        } else {
+            for( Split split : getSplitsFor(subgraph) ) {
+                BigInteger sfsThisSplit = BigInteger.ONE;
+                
+                for( Set<String> subsubgraph : split.getAllSubgraphs() ) {
+                    sfsThisSplit = sfsThisSplit.multiply(countSolvedFormsFor(subsubgraph, numSolvedForms));
+                }
+                
+                ret = ret.add(sfsThisSplit);
+            }
+            
+            numSolvedForms.put(subgraph, ret);
+            return ret;
+        }
     }
 }
