@@ -50,6 +50,6 @@ public class NodeData {
     }
     
     public String toString() {
-        return name;
+        return ((type==NodeType.LABELLED)?"[L:":"[U:") + name + "]";
     }
 }

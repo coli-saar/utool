@@ -47,19 +47,24 @@ public class ChartSolver {
         Set<String> freeRoots;
         int numRootsInSubgraph;
         
+        //System.err.println("solve: " + subgraph);
+        
         // If fragset is already in chart, nothings needs to be done.
         if( chart.containsSplitFor(subgraph) ) {
+            //System.err.println("already in chart");
             return true;
         }
         
         // If the fs has no free roots, then the original graph is unsolvable.
         freeRoots = freerc.getFreeRoots(subgraph);
         if( freeRoots.isEmpty() ) {
+            //System.err.println("no free roots");
             return false;
         }
         
         // If fs is singleton and its root is free, it is in solved form.
         // The fs will be entered into the chart as part of the parent's split.
+        // NB: Even in a compact graph, there may be fragments with >1 node!
         numRootsInSubgraph = 0;
         for( String node : subgraph ) {
             if( graph.indegOfSubgraph(node, EdgeType.TREE, subgraph) == 0 ) {
@@ -68,6 +73,7 @@ public class ChartSolver {
         }
         
         if( numRootsInSubgraph == 1 ) {
+            //System.err.println("singleton");
             return true;
         }
         
@@ -75,6 +81,9 @@ public class ChartSolver {
         for( String root : freeRoots ) {
             // make new Split
             Split split = splitc.computeSplit(root, subgraph);
+            
+            //System.err.println("split: " + split);
+            //System.err.println("subgraphs: " + split.getAllSubgraphs());
             
             // iterate over wccs
             for( Set<String> wcc : split.getAllSubgraphs() ) {

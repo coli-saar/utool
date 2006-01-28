@@ -139,4 +139,20 @@ public class EnumerationStackEntry {
 		this.agendaCopy = agendaCopy;
 	}
 	
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        
+        ret.append("<ESE dom=" + dominator + ", accu=" + edgeAccu);
+        ret.append(", agendacopy=" + agendaCopy + ", splits=");
+        for( Split split : splits ) {
+            if( split == currentSplit ) {
+                ret.append(split.toString().toUpperCase());
+            } else {
+                ret.append(split);
+            }
+            ret.append(",");
+        }
+        
+        return ret.toString();
+    }
 }

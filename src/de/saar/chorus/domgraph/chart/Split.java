@@ -7,8 +7,10 @@
 
 package de.saar.chorus.domgraph.chart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,8 +48,8 @@ public class Split {
     }
     
     
-    public Set<Set<String>> getAllSubgraphs() {
-        Set<Set<String>> ret = new HashSet<Set<String>>();
+    public List<Set<String>> getAllSubgraphs() {
+        List<Set<String>> ret = new ArrayList<Set<String>>();
         
         for( String node : wccs.keySet() ) {
             ret.addAll(wccs.get(node));

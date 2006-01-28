@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 
@@ -49,12 +51,18 @@ class SplitComputer {
     
     
     private void dfs(String node, Set<String> subgraph) {
-        if( !subgraph.contains(node) )
+        //System.err.println("dfs tries to visit " + node);
+        
+        if( !subgraph.contains(node) ) {
+            //System.err.println("not in subgraph!");
             return;
+        }
         
         if( visited.contains(node) ) {
-            // NOP -- so far
+            //System.err.println("already visited!");
+            ;
         } else {
+            //System.err.println("visiting");
             visited.add(node);
             
             // If node is not in the root fragment, then determine
@@ -83,19 +91,27 @@ class SplitComputer {
         String src = (String) edge.getSource(); // not necessarily = node
         String tgt = (String) edge.getTarget();
         
-        // BUG -- this code is only correct for graphs in which
-        // the ends of the dom edges out of the root fragment are
-        // not otherwise connected; i.e. it assumes that different
-        // dom edges lead to different wccs. This is true for hnc
-        // graphs in particular, but in general it is wrong!!
+        /*
+        System.err.println("ude: " + neighbour + " from " + node + " via " + edge);
+        System.err.println(graph.getData(edge).getType());
+        System.err.println(rootFragment.contains(src));
+        System.err.println(src == node);
+        //System.err.println("src = /" + src);
+         * */
+        
         if( (graph.getData(edge).getType() == EdgeType.DOMINANCE)
-                && (src == node)
+                && (src.equals(node))
                 && (rootFragment.contains(src)) ) {
             // dom edge out of fragment => initialise dEFNW
+            // NB: If two dom edges out of the same hole point into the
+            // same wcc, we will only ever use one of them, because the others'
+            // target node will have been visited when we consider them.
             domEdgeForNodeWcc.put(tgt,edge);
+            //System.err.println("put(" + tgt + "," + edge + ")");
         } else if( !rootFragment.contains(neighbour) ) {
             // otherwise make neighbours inherit my dEFNW
             domEdgeForNodeWcc.put(neighbour, domEdgeForNodeWcc.get(node));
+            //System.err.println("inherit(" + neighbour + "," + domEdgeForNodeWcc.get(node));
         } else {
           //  System.err.println("Can't inherit domedge: " + edge);
         }
@@ -104,6 +120,15 @@ class SplitComputer {
 
     private void assignNodeToWcc(String node) {
         Edge dominatorEdge = domEdgeForNodeWcc.get(node);
+        
+        
+        if( dominatorEdge == null ) {
+            System.err.println("dominatoredge = null!");
+            System.err.println(node);
+            System.err.println(domEdgeForNodeWcc);
+        }
+        
+        Assert.assertNotNull("dominatorEdge", dominatorEdge);
         String dominator = (String) dominatorEdge.getSource();
         
         Map<Edge,Set<String>> thisMap = splitmap.get(dominator);
@@ -127,7 +152,7 @@ class SplitComputer {
         rootFragment.clear();
         rootFragment.add(root);
         rootFragment.addAll(graph.getChildren(root, EdgeType.TREE));
-
+        
         // perform DFS
         domEdgeForNodeWcc.clear();
         splitmap.clear();
