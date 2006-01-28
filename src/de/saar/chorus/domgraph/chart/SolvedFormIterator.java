@@ -1,28 +1,25 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org._3pq.jgrapht.Edge;
-
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.EdgeType;
 
 public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
-	private DomGraph graph;
+    private DomGraph graph;
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
 	int num_Fragsets;
 	private String nullNode;
-    private Map<Set<String>, String> fragmentTable;
+    //private Map<Set<String>, String> fragmentTable;
+    private Set<String> roots;
+    private String rootForThisFragset;
 	
 	private Set<DomEdge> nextSolvedForm;
 	
@@ -35,7 +32,9 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 		nullNode = null; 
 		stack = new Stack<EnumerationStackEntry>();
         
-        computeFragmentTable();
+        //fragmentTable = graph.getFragments();
+        roots = graph.getAllRoots();
+        
 		
 		for( Set<String> fragset : chart.getCompleteFragsets() ) {
             if( fragset.size() > 0 ) {
@@ -49,49 +48,6 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 		updateNextSolvedForm();
 	}
 	
-	private void computeFragmentTable() {
-        Set<String> visited = new HashSet<String>();
-        fragmentTable = new HashMap<Set<String>, String>();
-        
-        for( Set<String> wcc : graph.wccs() ) {
-            computeFragmentTableDfs(wcc.iterator().next(), null, visited);
-        }
-    }
-
-    private void computeFragmentTableDfs(String node, Set<String> currentFragment, Set<String> visited) {
-        visited.add(node);
-        
-        if( currentFragment == null ) {
-            currentFragment = new HashSet<String>();
-        }
-        
-        currentFragment.add(node);
-        
-        if( graph.isRoot(node) ) {
-            fragmentTable.put(currentFragment, node);
-        }
-        
-        // visit the other nodes in my fragment
-        List<Edge> adjacentEdges = graph.getAdjacentEdges(node);
-        for( Edge edge : adjacentEdges ) {
-            if( graph.getData(edge).getType() == EdgeType.TREE ) {
-                String neighbour = (String) edge.oppositeVertex(node);
-                if( !visited.contains(neighbour) ) {
-                    computeFragmentTableDfs(neighbour, currentFragment, visited);
-                }
-            }
-        }
-        
-        // visit nodes in other fragments
-        for( Edge edge : adjacentEdges ) {
-            if( graph.getData(edge).getType() == EdgeType.DOMINANCE ) {
-                String neighbour = (String) edge.oppositeVertex(node);
-                if( !visited.contains(neighbour) ) {
-                    computeFragmentTableDfs(neighbour, null, visited);
-                }
-            }
-        }
-    }
 
     private void updateNextSolvedForm() {
 		if( isFinished() ) {
@@ -170,11 +126,22 @@ public class SolvedFormIterator implements Iterator<Set<DomEdge>> {
 
 
     private String getSingletonRoot(Set<String> fragSet) {
-        return fragmentTable.get(fragSet);
+        return rootForThisFragset;
+        //return fragSet.iterator().next();
+        //return fragmentTable.get(fragSet);
     }
 
     private boolean isSingleton(Set<String> fragSet) {
-        return fragmentTable.containsKey(fragSet);
+        int numRoots = 0;
+        
+        for( String node : fragSet ) {
+            if( roots.contains(node) ) {
+                numRoots++;
+                rootForThisFragset = node;
+            }
+        }
+        
+        return numRoots == 1;
     }
 
     void step() {
