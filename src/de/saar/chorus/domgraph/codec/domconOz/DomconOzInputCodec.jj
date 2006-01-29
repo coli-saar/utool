@@ -117,7 +117,7 @@ void Atom() :
      }
 
 
-  // Label -> ( Variable OZATOM [ ( Varlist ) ] )
+  // Atom -> LABEL ( Variable OZATOM [ ( Varlist ) ] )
  | <LABEL> "(" x=Variable() f=<OZATOM> [ "(" Varlist() ")"  ] ")"
     {
       // INVARIANT: varlist is empty each time we start recognising
