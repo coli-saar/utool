@@ -54,6 +54,10 @@ public class DomGraph {
         return graph.vertexSet();
     }
     
+    public boolean hasNode(String name) {
+        return nodeData.containsKey(name);
+    }
+    
     public Set<Edge> getAllEdges() {
         return graph.edgeSet();
     }

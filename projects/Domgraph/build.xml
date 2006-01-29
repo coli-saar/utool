@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 
 <project name="domgraph" default="domgraph">
+	
+	
 	<property name="build" location="../../build" />
 	<property name="source" location="../../src" />
 	<property name="packages" location="../../packages" />
 	<property name="doc.api" location="../../docs/api" />
+
+	<property name="javacchome" location="${packages}/javacc-4.0" />
 
 	<property name="jgrapht.jar" location="${packages}/jgrapht-0.6.0/jgrapht-0.6.0.jar" />
 
@@ -34,7 +38,7 @@
 
 
 	<!-- Jars -->
-	<target name="domgraph" depends="init,jgrapht.unpacked,getopt.unpacked">
+	<target name="domgraph" depends="init,domconOz.javacc,jgrapht.unpacked,getopt.unpacked">
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -114,6 +118,13 @@
 	        CLASSPATH=packages/junit.jar:$CLASSPATH ant leonardo-run-tests
 	-->
 
+	
+	<!-- JavaCC -->
+	<target name="domconOz.javacc">
+		<javacc 
+			javacchome="${javacchome}" 
+			target="${source}/${chorus}/domgraph/codec/domconOz/DomconOzInputCodec.jj" />
+	</target>
 
 
 	<!-- JAR Unpacking -->
