@@ -574,8 +574,8 @@ public class Utool {
 
     private static void registerAllCodecs(CodecManager codecManager) {
         try {
-            codecManager.registerCodec(DomconOzInputCodec.class);
             codecManager.registerCodec(Chain.class);
+            codecManager.registerCodec(DomconOzInputCodec.class);
             codecManager.registerCodec(GxlCodec.class);
         
             codecManager.registerCodec(OzTermOutputCodec.class);

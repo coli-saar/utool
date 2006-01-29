@@ -52,16 +52,6 @@ public class DomconOzInputCodec extends InputCodec {
     }
 
 
-
-    // graph construction methods
-
-    private String getNode(String nodename) {
-	if( !graph.hasNode(nodename) ) {
-	    graph.addNode(nodename, new NodeData(NodeType.UNLABELLED, nodename));
-	}
-	return nodename;
-    }
-
     private String stripquotes(String label) {
 	if( label.startsWith("\'") ) {
 	    // strip off first and last character
@@ -113,47 +103,53 @@ void Input() :
 
 void Atom() :
 {
-    Token x,y,f;
+  String x,y;
+  Token f;
 }
 {
-    <DOM> "(" x=<OZATOM> y=<OZATOM> ")"
+    <DOM> "(" x=Variable() y=Variable() ")"
      { 
-	 getNode(x.image);
-	 getNode(y.image);
-	 graph.addEdge(x.image, y.image, 
-		       new EdgeData(EdgeType.DOMINANCE, x.image + "-" + y.image));
-	 // System.err.println("dom: " + x.image + " < " + y.image); 
+	 graph.addEdge(x, y, 
+		       new EdgeData(EdgeType.DOMINANCE, x + "-" + y));
      }
 
- | <LABEL> "(" x=<OZATOM> f=<OZATOM> [ "(" Termlist() ")"  ] ")"
+ | <LABEL> "(" x=Variable() f=<OZATOM> [ "(" Varlist() ")"  ] ")"
     {
-	getNode(x.image);
-	graph.getData(x.image).setType(NodeType.LABELLED);
-	labels.addLabel(x.image, stripquotes(f.image));
+	graph.getData(x).setType(NodeType.LABELLED);
+	labels.addLabel(x, stripquotes(f.image));
 
 	for( String child : termlist ) {
-	    getNode(child);
-	    graph.addEdge(x.image, child,
-			  new EdgeData(EdgeType.TREE, x.image + "-" + child));
+	    graph.addEdge(x, child,
+			  new EdgeData(EdgeType.TREE, x + "-" + child));
 	}
 
 	termlist.clear();
-
-	/*
-	System.err.println("label: " + x.image + " with label " 
-			   + stripquotes(f.image)
-			   + " and termlist " + termlist); 
-	*/
     }
 }
 
-void Termlist() :
+void Varlist() :
+{
+  String t;
+}
+{
+    (t=Variable() {termlist.add(t);})+
+}
+
+
+
+String Variable() :
 {
   Token t;
 }
 {
-    (t=<OZATOM> {termlist.add(t.image);})+
+  t=<OZATOM>
+  {
+    String nodename = t.image;
+
+    if( !graph.hasNode(nodename) ) {
+      graph.addNode(nodename, new NodeData(NodeType.UNLABELLED, nodename));
+    }
+
+    return nodename;
+  }
 }
-
-
-
