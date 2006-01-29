@@ -53,8 +53,10 @@ public class CodecManager {
     
     public InputCodec getInputCodecForFilename(String filename) {
         for( InputCodec codec : inputCodecs ) {
-            if( filename.endsWith(codec.getExtension())) {
-                return codec;
+            if( codec.getExtension() != null ) {
+                if( filename.endsWith(codec.getExtension())) {
+                    return codec;
+                }
             }
         }
         
