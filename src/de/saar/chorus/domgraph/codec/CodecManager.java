@@ -36,6 +36,7 @@ public class CodecManager {
                 inputCodecs.add(codec);
             }
         } catch (Exception e) {
+            e.printStackTrace(System.err);
             throw new CodecRegistrationException();
         } 
     }

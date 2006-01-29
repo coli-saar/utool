@@ -52,4 +52,9 @@ public class NodeData {
     public String toString() {
         return ((type==NodeType.LABELLED)?"[L:":"[U:") + name + "]";
     }
+
+
+    public void setType(NodeType type) {
+        this.type = type;
+    }
 }

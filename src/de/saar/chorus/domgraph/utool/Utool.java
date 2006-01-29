@@ -19,6 +19,7 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.domconOz.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.gxl.GxlCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
@@ -264,6 +265,10 @@ public class Utool {
         
         // obtain graph
         try {
+            if( argument == null ) {
+                argument = "-"; // stdin
+            }
+            
             inputCodec.decode(argument, graph, labels);
         } catch(Exception e) {
             e.printStackTrace();
@@ -569,6 +574,7 @@ public class Utool {
 
     private static void registerAllCodecs(CodecManager codecManager) {
         try {
+            codecManager.registerCodec(DomconOzInputCodec.class);
             codecManager.registerCodec(Chain.class);
             codecManager.registerCodec(GxlCodec.class);
         
