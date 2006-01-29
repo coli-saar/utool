@@ -22,14 +22,14 @@ import de.saar.chorus.domgraph.codec.*;
 public class DomconOzInputCodec extends InputCodec {
     private DomGraph graph;
     private NodeLabels labels;
-  private List<String> termlist;
+  private List<String> varlist;
 
     public DomconOzInputCodec() {
 	this((Reader) null);
 
 	setName("domcon-oz");
 	setExtension(".clls");
-	termlist = new ArrayList<String>();
+	varlist = new ArrayList<String>();
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
@@ -40,7 +40,7 @@ public class DomconOzInputCodec extends InputCodec {
 
 	graph.clear();
 	labels.clear();
-	termlist.clear();
+	varlist.clear();
 
 	try {
 	    ReInit(inputStream);
@@ -95,9 +95,11 @@ TOKEN :
  * grammar
  */
 
+// start symbol: Input
 void Input() :
 {}
 {
+  // Input -> [ Atom+ ]
     "[" (Atom())+ "]"
 }
 
@@ -107,23 +109,29 @@ void Atom() :
   Token f;
 }
 {
+  // Atom -> DOM ( Variable Variable )
     <DOM> "(" x=Variable() y=Variable() ")"
      { 
 	 graph.addEdge(x, y, 
 		       new EdgeData(EdgeType.DOMINANCE, x + "-" + y));
      }
 
+
+  // Label -> ( Variable OZATOM [ ( Varlist ) ] )
  | <LABEL> "(" x=Variable() f=<OZATOM> [ "(" Varlist() ")"  ] ")"
     {
+      // INVARIANT: varlist is empty each time we start recognising
+      // a labelling atom. It is filled while parsing the Varlist.
+
 	graph.getData(x).setType(NodeType.LABELLED);
 	labels.addLabel(x, stripquotes(f.image));
 
-	for( String child : termlist ) {
+	for( String child : varlist ) {
 	    graph.addEdge(x, child,
 			  new EdgeData(EdgeType.TREE, x + "-" + child));
 	}
 
-	termlist.clear();
+	varlist.clear();
     }
 }
 
@@ -132,7 +140,8 @@ void Varlist() :
   String t;
 }
 {
-    (t=Variable() {termlist.add(t);})+
+  // Varlist -> Variable +
+    (t=Variable() {varlist.add(t);})+
 }
 
 
@@ -142,6 +151,7 @@ String Variable() :
   Token t;
 }
 {
+  // Variable -> OZATOM
   t=<OZATOM>
   {
     String nodename = t.image;
