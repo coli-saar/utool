@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 
