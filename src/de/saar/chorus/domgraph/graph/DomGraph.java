@@ -50,6 +50,14 @@ public class DomGraph {
         edgeData.put(e, data);
     }
     
+    public void remove(String node) {
+        graph.removeVertex(node);
+    }
+    
+    public void remove(Edge edge) {
+        graph.removeEdge(edge);
+    }
+    
     public Set<String> getAllNodes() {
         return graph.vertexSet();
     }
@@ -265,17 +273,20 @@ public class DomGraph {
             if( getData(node).getType() == NodeType.UNLABELLED ) {
                 // unlabelled nodes must be leaves
                 if( !isLeaf(node) ) {
+                    System.err.println(node + " is unlabelled but no leaf!");
                     return false;
                 }
             
                 // no empty fragments: all unlabelled nodes must have incoming tree edges
                 if( indeg(node, EdgeType.TREE) == 0 ) {
+                    System.err.println(node + " is unlabelled but has no in-tree-edges!");
                     return false;
                 }
             }
             
             // no two incoming tree edges
             if( indeg(node, EdgeType.TREE) > 1 ) {
+                System.err.println(node + " has two in-tree-edges!");
                 return false;
             }
             
@@ -286,6 +297,7 @@ public class DomGraph {
             if( getData(edge).getType() == EdgeType.DOMINANCE ) {
                 // dominance edges go into roots
                 if( !isRoot((String) edge.getTarget()) ) {
+                    System.err.println(edge + " is a dom-edge into a non-root!");
                     return false;
                 }
             }

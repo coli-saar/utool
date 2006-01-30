@@ -38,7 +38,7 @@
 
 
 	<!-- Jars -->
-	<target name="domgraph" depends="init,domconOz.javacc,jgrapht.unpacked,getopt.unpacked">
+	<target name="domgraph" depends="init,domconOz.javacc,holesemComsem.javacc,jgrapht.unpacked,getopt.unpacked">
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -124,6 +124,12 @@
 		<javacc 
 			javacchome="${javacchome}" 
 			target="${source}/${chorus}/domgraph/codec/domconOz/DomconOzInputCodec.jj" />
+	</target>
+
+	<target name="holesemComsem.javacc">
+		<javacc 
+			javacchome="${javacchome}" 
+			target="${source}/${chorus}/domgraph/codec/holesemComsem/HolesemComsemInputCodec.jj" />
 	</target>
 
 
