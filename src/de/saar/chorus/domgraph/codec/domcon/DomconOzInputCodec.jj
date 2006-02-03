@@ -9,7 +9,7 @@ options {
 
 PARSER_BEGIN(DomconOzInputCodec)
 
-package de.saar.chorus.domgraph.codec.domconOz;
+package de.saar.chorus.domgraph.codec.domcon;
 
 import java.io.*;
 import java.util.*;

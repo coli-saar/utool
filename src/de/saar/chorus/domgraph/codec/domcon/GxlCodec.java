@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.domgraph.codec.gxl;
+package de.saar.chorus.domgraph.codec.domcon;
 
 import java.io.IOException;
 import java.io.Reader;
