@@ -26,7 +26,6 @@ public class DomconGxlOutputCodec extends GraphOutputCodec {
         super();
         setName("domcon-gxl");
         setExtension(".dc.xml");
-        
     }
 
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
@@ -76,7 +75,8 @@ public class DomconGxlOutputCodec extends GraphOutputCodec {
             writer.write("\n");
         }
         
-        writer.write("   </graph>\n");        
+        writer.write("   </graph>\n");    
+        writer.flush();
     }
 
     public void print_header(Writer writer) throws IOException {
