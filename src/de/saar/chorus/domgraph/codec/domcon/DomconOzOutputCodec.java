@@ -59,7 +59,7 @@ public class DomconOzOutputCodec extends GraphOutputCodec {
             }
         }
         
-        writer.write("[" + CodecTools.join(atoms, " ") + "]");
+        writer.write("[" + CodecTools.join(atoms, " ") + "]\n");
         writer.flush();
     }
     

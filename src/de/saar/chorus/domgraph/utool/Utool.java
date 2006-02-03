@@ -245,7 +245,7 @@ public class Utool {
         }
         
         if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForFilename(inputCodec.getName());
+            outputCodec = codecManager.getOutputCodecForName(inputCodec.getName());
         }
         
         
