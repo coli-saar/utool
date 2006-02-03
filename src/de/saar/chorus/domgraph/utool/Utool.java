@@ -21,7 +21,7 @@ import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.GxlCodec;
-import de.saar.chorus.domgraph.codec.holesemComsem.HolesemComsemInputCodec;
+import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
