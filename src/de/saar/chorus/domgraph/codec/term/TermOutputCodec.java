@@ -39,7 +39,7 @@ public class TermOutputCodec extends GraphOutputCodec {
         
         // check whether graph is in simple solved form
         if( !graph.isSimpleSolvedForm() || !graph.isNormal() ) {
-            throw new MalformedDomgraphException();
+            throw new MalformedDomgraphException("Graph must be a simple normal solved form");
         }
 
         // build dom-edge map

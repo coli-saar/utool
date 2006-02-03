@@ -35,7 +35,7 @@ public abstract class OutputCodec {
             
         case PLUGGING:
             if( domedges == null ) {
-                throw new MalformedDomgraphException();
+                throw new MalformedDomgraphException("Can't output a null plugging");
             }
             
             encode_plugging(graph, domedges, writer);

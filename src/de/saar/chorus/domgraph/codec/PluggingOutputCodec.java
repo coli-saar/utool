@@ -20,6 +20,6 @@ public abstract class PluggingOutputCodec extends OutputCodec {
 
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
-        throw new MalformedDomgraphException();
+        throw new UnsupportedOperationException("Plugging output codec doesn't support output of graphs");
     }
 }
