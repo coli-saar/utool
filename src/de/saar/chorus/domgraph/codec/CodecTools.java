@@ -46,6 +46,14 @@ public class CodecTools {
         return must_atomify ? ("\'" + label + "'") : label;
     }
     
+    public static String varify(String label) {
+        if( !label.startsWith("_") && !Character.isUpperCase(label.charAt(0)) ) {
+            return "_" + label;
+        } else {
+            return label;
+        }
+    }
+    
     public static String encodeXmlEntities(String str) {
         return
             str.replaceAll("&", "&amp;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
