@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -92,7 +93,7 @@ public class TermOutputCodec extends GraphOutputCodec {
                     graph, labels, domEdges);
         } else {
             String label = labels.getLabel(node);
-            StringBuilder ret = new StringBuilder(atomify(label));
+            StringBuilder ret = new StringBuilder(CodecTools.atomify(label));
             
             if( graph.outdeg(node) > 0 ) {
                 ret.append("(");
@@ -110,24 +111,6 @@ public class TermOutputCodec extends GraphOutputCodec {
             
             return ret.toString();
         }
-    }
-
-    protected String atomify(String label) {
-        boolean must_atomify = false;
-        
-        for( int i = 0; i < label.length(); i++ ) {
-            if( !Character.isLetterOrDigit(label.charAt(i)) && (label.charAt(i) != '_') ) {
-                must_atomify = true;
-            }
-        }
-        
-        if( Character.isUpperCase(label.charAt(0)) ||
-                Character.isDigit(label.charAt(0)) ||
-                (label.charAt(0) == '_') ) {
-            must_atomify = true;
-        }
-        
-        return must_atomify ? ("\'" + label + "'") : label;
     }
 
 
