@@ -45,6 +45,12 @@ public class CodecTools {
         
         return must_atomify ? ("\'" + label + "'") : label;
     }
+    
+    public static String encodeXmlEntities(String str) {
+        return
+            str.replaceAll("&", "&amp;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
+                .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
 
 
 }
