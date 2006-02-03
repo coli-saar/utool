@@ -1,7 +1,6 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -11,7 +10,6 @@ import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class SolvedFormIterator implements Iterator<List<DomEdge>> {
-    private DomGraph graph;
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
@@ -27,7 +25,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     // know the roots of singleton fragsets to create the dom edge.
 	public SolvedFormIterator(Chart ch, DomGraph graph) {
 		chart = ch;
-        this.graph = graph;
 		agenda = new Agenda();
 		nullNode = null; 
 		stack = new Stack<EnumerationStackEntry>();
