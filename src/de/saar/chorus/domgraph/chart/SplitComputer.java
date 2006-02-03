@@ -21,8 +21,8 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 
 class SplitComputer {
     private DomGraph graph;
-    private DirectedGraph lowlevel;
 
+    private String theRoot;
     private Set<String> rootFragment;
     
     // node in rootfrag -> edge in this node -> wcc
@@ -33,12 +33,11 @@ class SplitComputer {
     
     
     // for dfs
-    Set<String> visited;
+    private Set<String> visited;
 
     
     public SplitComputer(DomGraph graph) {
         this.graph = graph;
-        lowlevel = graph.getLowlevelGraph();
         rootFragment = new HashSet<String>();
         domEdgeForNodeWcc = new HashMap<String,Edge>();
         splitmap = new HashMap<String,Map<Edge,Set<String>>>();
@@ -47,35 +46,57 @@ class SplitComputer {
         visited = new HashSet<String>();
     }
     
-    
-    private void dfs(String node, Set<String> subgraph) {
+    // ASSUMPTION: this method never visits a node in the root
+    // fragment coming from outside the root fragment
+    private void dfs(String node, Set<String> subgraph) throws RootNotFreeException {
         //System.err.println("dfs tries to visit " + node);
+        
+        // ASSUMPTION: this method is only called on unvisited nodes
+        assert !visited.contains(node) : "DFS visited node twice";
         
         if( !subgraph.contains(node) ) {
             //System.err.println("not in subgraph!");
             return;
         }
         
-        if( visited.contains(node) ) {
-            //System.err.println("already visited!");
-            ;
-        } else {
-            //System.err.println("visiting");
-            visited.add(node);
+        //System.err.println("visiting");
+        visited.add(node);
+        
+        // If node is not in the root fragment, then determine
+        // its wcc set and assign it to it.
+        if( !rootFragment.contains(node) ) {
+            assert domEdgeForNodeWcc.containsKey(node);
+            assignNodeToWcc(node);
+        }
+        
+        // otherwise, iterate over all adjacent edges, visiting
+        // tree edges first
+        List<Edge> edgeList = graph.getAdjacentEdges(node, EdgeType.TREE);
+        edgeList.addAll(graph.getAdjacentEdges(node, EdgeType.DOMINANCE));
+        
+        for( Edge edge : edgeList ) {
+            String neighbour = (String) edge.oppositeVertex(node);
             
-            // If node is not in the root fragment, then determine
-            // its wcc set and assign it to it.
-            if( !rootFragment.contains(node) ) {
-                assignNodeToWcc(node);
-            }
-            
-            // otherwise, iterate over all adjacent edges
-            for( Edge edge : (List<Edge>) lowlevel.edgesOf(node) ) {
-                String neighbour = (String) edge.oppositeVertex(node);
+            if( rootFragment.contains(neighbour) && !rootFragment.contains(node)) {
+                // edge into the root fragment from outside: we never traverse
+                // such an edge, but must check whether the neighbour is
+                // consistent with the wcc assignment
+
+                // ASSUMPTION: edge is a dom edge from neighbour to node
+                assert node.equals(edge.getTarget());
+                assert neighbour.equals(edge.getSource());
+                assert graph.getData(edge).getType() == EdgeType.DOMINANCE;
                 
+                if( !neighbour.equals(theRoot)
+                        && !neighbour.equals(domEdgeForNodeWcc.get(node).getSource()) ) {
+                    // dom edge goes into a hole that is not the one we came from
+                    throw new RootNotFreeException();
+                }
+            } else {
+                // any other edge -- let's explore it
                 if( !visited.contains(neighbour)) {
                     updateDomEdge(neighbour, node, edge);
-                
+                    
                     //System.err.println("Explore edge: " + edge);
                     
                     // recurse into children
@@ -136,11 +157,14 @@ class SplitComputer {
     }
 
 
-    public Split computeSplit(String root, Set<String> subgraph) {
+    public Split computeSplit(String root, Set<String> subgraph)
+    throws RootNotFreeException
+    {
         // initialise root fragment
         rootFragment.clear();
         rootFragment.add(root);
         rootFragment.addAll(graph.getChildren(root, EdgeType.TREE));
+        theRoot = root;
         
         // perform DFS
         domEdgeForNodeWcc.clear();
