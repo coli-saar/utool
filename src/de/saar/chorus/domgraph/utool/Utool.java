@@ -24,6 +24,8 @@ import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
+import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
+import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -584,6 +586,8 @@ public class Utool {
         
             codecManager.registerCodec(DomconOzOutputCodec.class);
             codecManager.registerCodec(DomconGxlOutputCodec.class);
+            codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
+            codecManager.registerCodec(LkbPluggingOutputCodec.class);
             codecManager.registerCodec(OzTermOutputCodec.class);
             codecManager.registerCodec(PrologTermOutputCodec.class);
         } catch(Exception e) {
