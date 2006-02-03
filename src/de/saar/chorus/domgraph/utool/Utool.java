@@ -8,6 +8,7 @@
 package de.saar.chorus.domgraph.utool;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
@@ -17,15 +18,14 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
-import de.saar.chorus.domgraph.codec.holesem.HolesemComsemOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
@@ -146,7 +146,7 @@ public class Utool {
     public static final int  CLASSIFY_LEAF_LABELLED = 32;
 
 
-    
+    private static CodecManager codecManager;
     
 
     /**
@@ -166,7 +166,7 @@ public class Utool {
         boolean dumpChart = false;
         
         // prepare codecs
-        CodecManager codecManager = new CodecManager();
+        codecManager = new CodecManager();
         registerAllCodecs(codecManager);
 
         // parse command line options
@@ -216,42 +216,18 @@ public class Utool {
         // at this point, we must have an operation
         if( op == null ) {
             displayHelp(null);
-            System.exit(0);
+            System.exit(ExitCodes.NO_SUCH_COMMAND);
         }
         
         
-        // determine input codec
-        if( getopt.hasOption('I')) {
-            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'));
-            if( inputCodec == null ) {
-                System.err.println("Unknown input codec: " + getopt.getValue('I'));
-                System.exit(1);
-            }
-        }
-        
-        if( inputCodec == null ) {
-            if( argument != null ) {
-                inputCodec = codecManager.getInputCodecForFilename(argument);
-            }
-        }
-        
+        // determine input and output codecs
+        inputCodec = determineInputCodec(getopt, argument);
+
         if( inputCodec == null ) {
             System.err.println("You must specify an input codec!");
         }
         
-        
-        // determine output codec
-        if( getopt.hasOption('O')) {
-            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'));
-        }
-        
-        if( outputCodec == null ) {
-            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'));
-        }
-        
-        if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForName(inputCodec.getName());
-        }
+        outputCodec = determineOutputCodec(getopt, inputCodec);
         
         
         // parse the global options
@@ -278,8 +254,9 @@ public class Utool {
             
             inputCodec.decode(argument, graph, labels);
         } catch(Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+            System.err.println("There was an error decoding the graph!");
+            e.printStackTrace(System.err);
+            System.exit(ExitCodes.ILLFORMED_GRAPH);
         }
         
         if( displayStatistics ) {
@@ -334,7 +311,7 @@ public class Utool {
         case solve:
             if( !noOutput && (outputCodec == null )) {
                 System.err.println("No output codec specified!");
-                System.exit(1);
+                System.exit(ExitCodes.NO_OUTPUT_CODEC_SPECIFIED);
             }
             
             // fall-through
@@ -346,12 +323,12 @@ public class Utool {
             
             if( !weaklyNormal ) {
                 System.err.println("Cannot solve graphs that are not weakly normal!");
-                System.exit(1);
+                System.exit(ExitCodes.ILLFORMED_GRAPH);
             }
             
             if( !compact && !compactifiable ) {
                 System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
-                System.exit(1);
+                System.exit(ExitCodes.ILLFORMED_GRAPH);
             }
 
             if( displayStatistics ) {
@@ -422,10 +399,14 @@ public class Utool {
                             System.err.println(1000 * total_time / count + " microsecs/sf)");
                         }
                         
-                        // TODO exit with success (1)
-                    } catch (Exception e) {
-                        e.printStackTrace();
                         System.exit(1);
+                    } catch (MalformedDomgraphException e) {
+                        System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
+                        System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+                    } catch (IOException e) {
+                        System.err.println("An error occurred while trying to print the results.");
+                        e.printStackTrace();
+                        System.exit(ExitCodes.IO_ERROR);
                     }
                 }
                 
@@ -435,7 +416,7 @@ public class Utool {
                     System.err.println("it is unsolvable!");
                 }
                 
-                // TODO exit with failure (0)
+                System.exit(0);
             }
             break;
             
@@ -443,12 +424,12 @@ public class Utool {
         case convert:
             if( !noOutput && (outputCodec == null )) {
                 System.err.println("No output codec specified!");
-                System.exit(1);
+                System.exit(ExitCodes.NO_OUTPUT_CODEC_SPECIFIED);
             }
             
             if( outputCodec.getType() != OutputCodec.Type.GRAPH ) {
                 System.err.println("Output codec must be graph codec!");
-                System.exit(1);
+                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
             }
 
             try {
@@ -459,10 +440,13 @@ public class Utool {
                 outputCodec.print_header(output);
                 outputCodec.encode(graph, null, labels, output);
                 outputCodec.print_footer(output);
-                
-            } catch(Exception e) {
+            } catch(MalformedDomgraphException e) {
+                System.err.println("This graph is not supported by the specified output codec.");
+                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+            } catch(IOException e) {
+                System.err.println("An error occurred while trying to print the results.");
                 e.printStackTrace();
-                System.exit(1);
+                System.exit(ExitCodes.IO_ERROR);
             }
             
             break;
@@ -523,6 +507,60 @@ public class Utool {
     
     
     
+
+
+
+    private static OutputCodec determineOutputCodec(ConvenientGetopt getopt, InputCodec inputCodec) {
+        OutputCodec outputCodec = null;
+
+        if( getopt.hasOption('O')) {
+            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'));
+            if( outputCodec == null ) {
+                System.err.println("Unknown output codec: " + getopt.getValue('O'));
+                System.exit(ExitCodes.NO_SUCH_OUTPUT_CODEC);
+            }
+        }
+        
+        if( outputCodec == null ) {
+            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'));
+        }
+        
+        if( (outputCodec == null) && (inputCodec != null) ) {
+            outputCodec = codecManager.getOutputCodecForName(inputCodec.getName());
+        }
+        
+        return outputCodec;
+    }
+
+
+
+
+
+
+
+    private static InputCodec determineInputCodec(ConvenientGetopt getopt, String argument) {
+        InputCodec inputCodec = null;
+        
+        if( getopt.hasOption('I')) {
+            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'));
+            if( inputCodec == null ) {
+                System.err.println("Unknown input codec: " + getopt.getValue('I'));
+                System.exit(ExitCodes.NO_SUCH_INPUT_CODEC);
+            }
+        }
+        
+        if( inputCodec == null ) {
+            if( argument != null ) {
+                inputCodec = codecManager.getInputCodecForFilename(argument);
+            }
+        }
+        
+        return inputCodec;
+    }
+
+
+
+
 
 
 
@@ -595,8 +633,9 @@ public class Utool {
             codecManager.registerCodec(OzTermOutputCodec.class);
             codecManager.registerCodec(PrologTermOutputCodec.class);
         } catch(Exception e) {
+            System.err.println("An error occurred trying to register a codec.");
             e.printStackTrace(System.err);
-            System.exit(1);
+            System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
     }
 
