@@ -1,0 +1,67 @@
+
+This directory contains some example input files for the domcon-oz codec.
+
+chain3.clls:
+	the pure chain of length 3
+
+test.clls:
+	a normal dominance constraint with 132 solved forms
+
+thatwould.clls:
+	The MRS output (translated into a normal dominance constraint)
+	that the English Resource Grammar (as of 2001) generates for
+	the sentence 
+	
+	   "But that would give us all day Tuesday to be there."
+
+	This constraint has 64.764 solved forms. (Expect the solver to
+	take a while to output all solutions to the constraint.)
+
+rondane-1.mrs.pl:
+	The MRS description of the Rondane Treebank (2005-02-15)
+	sentence #1: 
+
+          "The well-known and historic Aurlandsdalen Valley, was 
+           once one of the main routes between the eastern and western 
+           parts of Norway.
+
+        This MRS has 675 solved forms (i.e. scopings), but is pretty
+        hard for the standard LKB solver. Utool needs just a few
+        milliseconds to solve it.
+
+rondane-1409.mrs.pl:
+        The MRS description of the Rondane Treebank (2005-02-15)
+        sentence #1409:
+
+          "Dinner is typically three courses: a soup, a main dish 
+           and a light dessert."
+
+        This MRS has 48 solved forms (i.e. scopings), but is pretty
+        hard for the standard LKB solver. Utool needs just a few
+        milliseconds to solve it.
+       
+rondane-650.mrs.pl:
+	The MRS description of the Rondane Treebank (2005-02-15)
+	sentence #650: 
+
+          "Myrdal is the mountain terminus of the Flåm rail line (or
+	   Flåmsbana) which makes its way down the lovely Flåm Valley
+	   (Flåmsdalen) to its sea-level terminus at Flåm."
+
+	This is the MRS with the most solved forms in the Rondane
+	treebank; it has about 2.4 trillion solved forms. We estimate
+	that utool would need more than a year to enumerate all these
+	solved forms (run 'utool solve -s -n examples/rondane-650.mrs.pl'
+        on a Linux system to get a runtime estimation).
+
+holesemantics-14.hs.pl:
+	A Hole Semantics USR from the Hole Semantics testsuite
+	available as part of the software package at
+	http://www.cogsci.ed.ac.uk/~jbos/comsem. This is a
+	representation for the following sentence:
+
+	   "Every man in a restaurant knows a woman with a car."
+
+        The sentence has 14 readings. The solver described in the
+        Blackburn & Bos textbook takes about 14 seconds to enumerate
+        all pluggings. Utool needs about 10 milliseconds.
