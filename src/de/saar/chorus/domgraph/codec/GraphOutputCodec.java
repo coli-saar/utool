@@ -21,6 +21,6 @@ abstract public class GraphOutputCodec extends OutputCodec {
     
     public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
             Writer writer) throws IOException, MalformedDomgraphException {
-        throw new MalformedDomgraphException();
+        throw new UnsupportedOperationException("Graph output codec doesn't support output of pluggings");
     }
 }

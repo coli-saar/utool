@@ -39,11 +39,11 @@ public class Chain extends InputCodec {
         try {
             length = Integer.parseInt(specification);
         } catch(NumberFormatException e) {
-            throw new MalformedDomgraphException();
+            throw new MalformedDomgraphException(e);
         }
 
     	if( length < 1 ) {
-    		throw new MalformedDomgraphException();
+    		throw new MalformedDomgraphException("You must specify a numeric chain length of at least 1!");
     	}
     	
     	

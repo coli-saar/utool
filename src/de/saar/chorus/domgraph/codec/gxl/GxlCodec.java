@@ -65,7 +65,7 @@ public class GxlCodec extends InputCodec {
             // Parse the input file to get a Document object
             doc = db.parse(new InputSource(inputStream));
         } catch (Exception e) {
-            throw new ParserException();
+            throw new ParserException(e);
         }
         
         
