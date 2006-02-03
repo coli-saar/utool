@@ -34,8 +34,8 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 
-public class GxlCodec extends InputCodec {
-    public GxlCodec() {
+public class DomconGxlInputCodec extends InputCodec {
+    public DomconGxlInputCodec() {
         setName("domcon-gxl");
         setExtension(".dc.xml");
     }

@@ -19,9 +19,10 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
-import de.saar.chorus.domgraph.codec.domcon.GxlCodec;
+import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
@@ -578,10 +579,11 @@ public class Utool {
         try {
             codecManager.registerCodec(Chain.class);
             codecManager.registerCodec(DomconOzInputCodec.class);
-            codecManager.registerCodec(GxlCodec.class);
+            codecManager.registerCodec(DomconGxlInputCodec.class);
             codecManager.registerCodec(HolesemComsemInputCodec.class);
         
             codecManager.registerCodec(DomconOzOutputCodec.class);
+            codecManager.registerCodec(DomconGxlOutputCodec.class);
             codecManager.registerCodec(OzTermOutputCodec.class);
             codecManager.registerCodec(PrologTermOutputCodec.class);
         } catch(Exception e) {
