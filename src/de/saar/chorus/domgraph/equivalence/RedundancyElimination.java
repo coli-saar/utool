@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org._3pq.jgrapht.Edge;
+import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
@@ -48,9 +49,6 @@ public class RedundancyElimination {
     // more than one hole is connected by a hn path
     private static final Integer HNR_TWO_CONNECTIONS = new Integer(-3);
     
-    private static enum CameViaEdgeType {
-        UP_TREE, DOWN_TREE, UP_DOM, DOWN_DOM, NONE
-      };
 
     
     // This table maps a pair (u,v) of nodes in the compact graph to the index of the
@@ -67,6 +65,8 @@ public class RedundancyElimination {
     // the indices in the compact graph to the indices in the original graph.
     private Map<String,Map<Integer,Integer>> indicesCompactToOriginal;
     
+    private Map<String,Map<String,ModifiableInteger>> numHolesToOtherRoot;
+    
     private int currentHoleIdx;
     private int currentLeafIdx;
 
@@ -79,6 +79,18 @@ public class RedundancyElimination {
         
         hypernormalReachability = new HashMap<String,Map<String,Integer>>();
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();
+        
+        numHolesToOtherRoot = new HashMap<String,Map<String,ModifiableInteger>>();
+        for( String r1 : compact.getAllRoots() ) {
+            Map<String,ModifiableInteger> thisMap = new HashMap<String,ModifiableInteger>();
+            numHolesToOtherRoot.put(r1, thisMap);
+            
+            for( String r2 : compact.getAllRoots() ) {
+                if( !r1.equals(r2)) {
+                    thisMap.put(r2, new ModifiableInteger(0));
+                }
+            }
+        }
         
         computeIndexTable();
         computeHypernormalReachability();
@@ -204,6 +216,15 @@ public class RedundancyElimination {
                     int holeidx2 = 0;
                     
                     if( !root1.equals(root2)) {
+                        // count hole connections for possible dominators
+                        visited.clear();
+                        visited.add(root1);
+                        if( isHnReachable(hole1, root2, visited, false)) {
+                            ModifiableInteger x = numHolesToOtherRoot.get(root1).get(root2);
+                            x.setValue(x.getValue()+1);
+                        }
+                        
+                        
                         for( String hole2 : compact.getChildren(root2, EdgeType.TREE )) {
                             visited.clear();
                             visited.add(root1);
@@ -218,15 +239,28 @@ public class RedundancyElimination {
                                 System.err.println("hnc: " + root1 + "/" + holeidx1 + " -- " + root2 + "/" + holeidx2);
 
                                 if( old1 == HNR_NO_CONNECTION ) {
+                                    // Case 1: We have never seen a hn connection from
+                                    // root1 to root2. In this case, we have also never
+                                    // seen a connection from root2 to root1, as they
+                                    // are always recorded together. We simply add both
+                                    // hole indices to the table.
                                     hypernormalReachability.get(root1).put(root2, holeidx1);
                                     hypernormalReachability.get(root2).put(root1, holeidx2);
                                     System.err.println("  -- put");
                                 } else if( ((old1 >= 0) && (old1 != holeidx1))
                                         || ((old2 >= 0) && (old2 != holeidx2)) ) {
+                                    // Case 2: We have seen a hn connection before,
+                                    // and this new connection uses a different hole
+                                    // on one of the two sides. This means that
+                                    // one of the two fragments is not a possible
+                                    // dominator of the other, and hence we will never
+                                    // look at this pair in any direction when checking
+                                    // permutability.
                                     hypernormalReachability.get(root1).put(root2, HNR_TWO_CONNECTIONS);
                                     hypernormalReachability.get(root2).put(root1, HNR_TWO_CONNECTIONS);
                                     System.err.println("  -- two");
                                 } else {
+                                    // Case 3: We have seen the same connection before.
                                     System.err.println("  -- seen");
                                 }
                             }
@@ -283,6 +317,12 @@ public class RedundancyElimination {
             
             return false;
         }
+    }
+    
+    // root1 is p.d. of root2 iff it has exactly one hole that is connected
+    // to root2 by a hn path that doesn't use root1.
+    private boolean isPossibleDominator(String root1, String root2) {
+        return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
     }
     
     /*
@@ -371,12 +411,16 @@ public class RedundancyElimination {
      */
     
     private boolean isPermutableSplit(Split s, Set<String> subgraph) {
+        String splitRoot = s.getRootFragment();
+        
         for( String root : subgraph ) {
-            if( graph.isRoot(root)) {
-                if( !root.equals(s.getRootFragment())) {
-                    if( !isPermutable(root, s.getRootFragment()) ) {
+            if( graph.isRoot(root) &&  !root.equals(splitRoot) ) {
+                if( isPossibleDominator(root, splitRoot)) {
+                    if( !isPermutable(root, splitRoot) ) {
                         return false;
                     }
+                } else {
+                    System.err.println("skip " + root + " because it's not a p.d. of " + splitRoot);
                 }
             }
         }
