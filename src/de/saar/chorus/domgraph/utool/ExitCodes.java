@@ -19,4 +19,5 @@ public class ExitCodes {
     public static final int IO_ERROR = 136;
     public static final int OUTPUT_CODEC_NOT_APPLICABLE = 137;
     public static final int CODEC_REGISTRATION_ERROR = 138;
+    public static final int EQUIVALENCE_READING_ERROR = 139; 
 }
