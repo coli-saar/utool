@@ -1,0 +1,49 @@
+/*
+ * @(#)FragmentWithHole.java created 06.02.2006
+ * 
+ * Copyright (c) 2006 Alexander Koller
+ *  
+ */
+
+package de.saar.chorus.domgraph.equivalence;
+
+class FragmentWithHole {
+    private String rootlabel;
+    private int holeindex;
+    
+    public FragmentWithHole(String rootlabel, int holeindex) {
+        super();
+        // TODO Auto-generated constructor stub
+        this.holeindex = holeindex;
+        this.rootlabel = rootlabel;
+    }
+    
+    public FragmentWithHole() {
+        rootlabel = null;
+        holeindex = -1;
+    }
+
+    public int getHoleIndex() {
+        return holeindex;
+    }
+
+    public String getRootLabel() {
+        return rootlabel;
+    }
+    
+    public void setHoleIndex(int holeindex) {
+        this.holeindex = holeindex;
+    }
+
+    public void setRootLabel(String rootlabel) {
+        this.rootlabel = rootlabel;
+    }
+
+    // change this method with care (if at all), as the
+    // comparison operators in FragmentPair depend on it.
+    public String toString() {
+        return rootlabel + "/" + holeindex;
+    }
+    
+    
+}

@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.utool;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -30,6 +31,8 @@ import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
+import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -165,6 +168,13 @@ public class Utool {
         NodeLabels labels = new NodeLabels();
         boolean dumpChart = false;
         
+        // equivalence/redundancy elimination
+        boolean eliminateEquivalences = false;
+        EquationSystem eqs = null;
+        RedundancyElimination elim = null;
+        
+        
+        
         // prepare codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
@@ -245,6 +255,18 @@ public class Utool {
             dumpChart = true;
         }
         
+        if( getopt.hasOption('e') ) {
+            try {
+                eqs = new EquationSystem();
+                eqs.read(new FileReader(getopt.getValue('e')));
+                eliminateEquivalences = true;
+            } catch(Exception e) {
+                System.err.println("An error occurred while reading the equivalences file!");
+                e.printStackTrace(System.err);
+                System.exit(ExitCodes.EQUIVALENCE_READING_ERROR);
+            }
+        }
+        
         
         // obtain graph
         try {
@@ -294,6 +316,10 @@ public class Utool {
                 } else {
                     System.err.println("and it cannot be compactified.");
                 }
+            }
+            
+            if( eliminateEquivalences ) {
+                System.err.println("I will eliminate equivalences (" + eqs.size() + " equations).");
             }
         }
 
@@ -349,7 +375,15 @@ public class Utool {
                     printChartStatistics(chart, time_solver, dumpChart);
                 }
                 
-                // TODO redundancy elimination
+                if( eliminateEquivalences ) {
+                    elim = new RedundancyElimination(graph, labels, eqs);
+                    elim.eliminate(chart);
+                    
+                    if( displayStatistics ) {
+                        System.err.println("After redundancy elimination:");
+                        printChartStatistics(chart, -1, dumpChart);
+                    }
+                }
                 
                 // TODO runtime prediction
                 
@@ -565,11 +599,15 @@ public class Utool {
 
 
     private static void printChartStatistics(Chart chart, long time, boolean dumpChart) {
-        System.err.println("Edges in chart: " + chart.size());
+        System.err.println("Splits in chart: " + chart.size());
         if( dumpChart ) {
             System.err.println(chart);
         }
-        System.err.println("Time to build chart: " + time + " ms");
+        
+        if( time != -1 ) {
+            System.err.println("Time to build chart: " + time + " ms");
+        }
+        
         System.err.println("Number of solved forms: " + chart.countSolvedForms());
         System.err.println("");
     }
@@ -651,6 +689,8 @@ public class Utool {
                         "Specify the output codec", null);
         getopt.addOption('o', "output", ConvenientGetopt.REQUIRED_ARGUMENT,
                         "Specify an output file", "-");
+        getopt.addOption('e', "equivalences", ConvenientGetopt.REQUIRED_ARGUMENT,
+                        "Eliminate equivalence readings", null);
         getopt.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
                         "Display help information", null);
         getopt.addOption('s', "display-statistics", ConvenientGetopt.NO_ARGUMENT,

@@ -10,6 +10,7 @@ package de.saar.chorus.domgraph.chart;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,21 +38,88 @@ public class Chart {
             chart.put(fragset, splitset);
         }
         
+        // add split to the chart
         splitset.add(split);
         
-        
+        // update reference counts
         for( Set<String> subgraph : split.getAllSubgraphs() ) {
-            if( refcount.containsKey(subgraph)) {
-                ModifiableInteger x = refcount.get(subgraph);
-                x.setValue(x.intValue()+1);
-            } else {
-                refcount.put(subgraph, new ModifiableInteger(1));
-            }
+            incReferenceCount(subgraph);
         }
         
         size++;
     }
     
+    private void incReferenceCount(Set<String> subgraph) {
+        if( refcount.containsKey(subgraph)) {
+            ModifiableInteger x = refcount.get(subgraph);
+            x.setValue(x.intValue()+1);
+        } else {
+            refcount.put(subgraph, new ModifiableInteger(1));
+        }
+    }
+    
+    private void decReferenceCount(Set<String> subgraph) {
+        assert(refcount.containsKey(subgraph));
+        
+        ModifiableInteger x = refcount.get(subgraph);
+        x.setValue(x.intValue()-1);
+    }
+    
+    public void setSingleSplit(Set<String> fragset, Split split) {
+        Set<Set<String>> subgraphsAllSplits = new HashSet<Set<String>>();
+        List<Split> oldSplits = getSplitsFor(fragset);
+        
+        // update reference count effects of deleting the old splits
+        for( Split oldSplit : oldSplits ) {
+            List<Set<String>> subgraphs = oldSplit.getAllSubgraphs(); 
+            subgraphsAllSplits.addAll(subgraphs);
+            
+            for( Set<String> subgraph : subgraphs ) {
+                decReferenceCount(subgraph);
+            }
+        }
+        
+        // delete the old splits
+        size -= oldSplits.size();
+        oldSplits.clear();
+        
+        
+        // add the new split
+        addSplit(fragset, split);
+        
+        // remove subgraphs with zero reference count from the chart
+        deleteUnproductiveSubgraphs(subgraphsAllSplits);
+    }
+    
+    
+    
+    private void deleteUnproductiveSubgraphs(Set<Set<String>> subgraphs) {
+        for( Set<String> subgraph : subgraphs ) {
+            if( refcount.get(subgraph).getValue() == 0 ) {
+                deleteSubgraph(subgraph);
+            }
+        }
+    }
+
+    private void deleteSubgraph(Set<String> subgraph) {
+        List<Split> splits = getSplitsFor(subgraph);
+        
+        // update reference counts for referred sub-subgraphs and
+        // recursively delete those if they drop to zero
+        for( Split split : splits ) {
+            for( Set<String> subsubgraph : split.getAllSubgraphs() ) {
+                decReferenceCount(subsubgraph);
+                
+                if( refcount.get(subsubgraph).getValue() == 0 ) {
+                    deleteSubgraph(subsubgraph);
+                }
+            }
+        }
+        
+        size -= splits.size();
+        splits.clear(); // TODO - or perhaps delete the subgraph altogether?
+    }
+
     public List<Split> getSplitsFor(Set<String> subgraph) {
         return chart.get(subgraph);
     }
