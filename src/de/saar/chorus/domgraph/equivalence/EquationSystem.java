@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -23,7 +24,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class EquationSystem extends DefaultHandler {
-    private List<Equation> equations;
+    private Collection<Equation> equations;
     
     // for XML parsing
     private List<FragmentWithHole> currentEquivalenceGroup;
@@ -32,7 +33,7 @@ public class EquationSystem extends DefaultHandler {
     public EquationSystem() {
         super();
         
-        equations = new ArrayList<Equation>();
+        equations = new HashSet<Equation>();
         currentEquivalenceGroup = null;
         currentEquivalencePartner = null;
     }
