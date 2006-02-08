@@ -49,7 +49,7 @@ class MrsCodec {
     private void tell(String name, Type type)
     {
 	if (sig.containsKey(name)) {
-	    // XXX -- throw new MalformedInputException();
+	    // XXX -- throw new MalformedInputException() if sig(name) != type
 	} else {
 	    sig.put(name, type);
 	}
@@ -187,7 +187,7 @@ class MrsCodec {
 	    
 	    if (edges.size() > 0) {
 		Set<String> holes = graph.getOpenHoles(root);
-
+		
 		if (holes.size() == 1) {
 		    for (Edge edge : edges) {
 			for (String hole : holes) {

@@ -49,7 +49,7 @@ public class DomGraph {
 	Set<String> holes = new HashSet<String>();
 	
 	for (String node : fragment) {
-	    if (outdeg(node, EdgeType.TREE) == 0) {
+	    if (getData(node).getType() == NodeType.UNLABELLED) {
 		holes.add(node);
 	    }
 	}
@@ -58,18 +58,13 @@ public class DomGraph {
     }
 
     public Set<String> getOpenHoles(String node) {
-	return getOpenHoles(getFragment(node));
-    }
-
-    public Set<String> getOpenHoles(Set<String> fragment) {
 	Set<String> holes = new HashSet<String>();
 	
-	for (String node : fragment) {
-	    if (outdeg(node) == 0) {
-		holes.add(node);
+	for (String hole : getHoles(node)) {
+	    if (outdeg(hole) == 0) {
+		holes.add(hole);
 	    }
 	}
-	
 	return holes;
     }
 
