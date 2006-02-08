@@ -95,7 +95,10 @@ public class RedundancyElimination {
         computeIndexTable();
         computeHypernormalReachability();
         
-        System.err.println(hypernormalReachability);
+        /*
+        System.err.println("\nHypernormal reachability table:");
+        System.err.println(hypernormalReachability + "\n");
+        */
     }
     
     
@@ -118,17 +121,19 @@ public class RedundancyElimination {
         if( !visited.contains(subgraph)) {
             visited.add(subgraph);
             
-            if( splits != null ) { // i.e. not a singleton fragset 
-                for( Split split : splits ) {
-                    if( isPermutableSplit(split, subgraph)) {
-                        // i.e. the split with this index is permutable => eliminate all others
-                        thePermutableSplit = split;
-                        break;
+            if( splits != null ) { // i.e. not a singleton fragset
+                if( splits.size() > 1 ) { // i.e. there are splits that could be eliminated
+                    for( Split split : splits ) {
+                        if( isPermutableSplit(split, subgraph)) {
+                            // i.e. the split with this index is permutable => eliminate all others
+                            thePermutableSplit = split;
+                            break;
+                        }
                     }
-                }
-                
-                if( thePermutableSplit != null ) {
-                    c.setSingleSplit(subgraph, thePermutableSplit);
+                    
+                    if( thePermutableSplit != null ) {
+                        c.setSingleSplit(subgraph, thePermutableSplit);
+                    }
                 }
                 
                 // Whether we eliminated something from the complete subcompactGraph or not,
@@ -236,7 +241,7 @@ public class RedundancyElimination {
                                 Integer old1 = hypernormalReachability.get(root1).get(root2); 
                                 Integer old2 = hypernormalReachability.get(root2).get(root1);
 
-                                System.err.println("hnc: " + root1 + "/" + holeidx1 + " -- " + root2 + "/" + holeidx2);
+                                //System.err.println("hnc: " + root1 + "/" + holeidx1 + " -- " + root2 + "/" + holeidx2);
 
                                 if( old1 == HNR_NO_CONNECTION ) {
                                     // Case 1: We have never seen a hn connection from
@@ -246,7 +251,7 @@ public class RedundancyElimination {
                                     // hole indices to the table.
                                     hypernormalReachability.get(root1).put(root2, holeidx1);
                                     hypernormalReachability.get(root2).put(root1, holeidx2);
-                                    System.err.println("  -- put");
+                                    //System.err.println("  -- put");
                                 } else if( ((old1 >= 0) && (old1 != holeidx1))
                                         || ((old2 >= 0) && (old2 != holeidx2)) ) {
                                     // Case 2: We have seen a hn connection before,
@@ -258,10 +263,10 @@ public class RedundancyElimination {
                                     // permutability.
                                     hypernormalReachability.get(root1).put(root2, HNR_TWO_CONNECTIONS);
                                     hypernormalReachability.get(root2).put(root1, HNR_TWO_CONNECTIONS);
-                                    System.err.println("  -- two");
+                                    //System.err.println("  -- two");
                                 } else {
                                     // Case 3: We have seen the same connection before.
-                                    System.err.println("  -- seen");
+                                    //System.err.println("  -- seen");
                                 }
                             }
                             
@@ -274,43 +279,29 @@ public class RedundancyElimination {
             }
         }
         
-        System.err.println("hnr: " + hypernormalReachability);
-        
-        /*
-        
-        for( String src : compact.getAllRoots() ) {
-            holeIdx = 0;
-            
-            for( String hole : compact.getChildren(src, EdgeType.TREE )) {
-                visited.clear();
-                visited.add(src);
-                
-                hnReachDfs(hole, CameViaEdgeType.NONE, src, holeIdx++, visited);
-            }
-        }
-        */
     }
     
     // Is there a hn path from src to target that doesn't use nodes in visited?
-    private boolean isHnReachable(String src, String tgt, Set<String> visited, boolean previousEdgeWasUpDom) {
-        if( visited.contains(src) ) {
+    private boolean isHnReachable(String node, String goal, Set<String> visited, boolean previousEdgeWasUpDom) {
+        if( visited.contains(node) ) {
             return false;
-        } else if( src.equals(tgt) ) {
+        } else if( node.equals(goal) ) {
             return true;
         } else {
-            visited.add(src);
+            visited.add(node);
             
-            for( Edge edge : compact.getAdjacentEdges(src) ) {
-                String neighbour = (String) edge.oppositeVertex(src);
+            for( Edge edge : compact.getAdjacentEdges(node) ) {
+                String neighbour = (String) edge.oppositeVertex(node);
                 boolean isDomEdge = (compact.getData(edge).getType() == EdgeType.DOMINANCE);
-                boolean isOutEdge = src.equals(edge.getSource());
+                boolean isOutEdge = node.equals(edge.getSource());
                 
                 // skip outgoing dom edges if we came through an up dom edge
                 if( isDomEdge && isOutEdge && previousEdgeWasUpDom ) {
                     continue;
                 }
                 
-                if( isHnReachable(neighbour, tgt, visited, isDomEdge && isOutEdge) ) {
+                if( isHnReachable(neighbour, goal, visited, isDomEdge && !isOutEdge) ) {
+                    //System.err.println("hnr: " + node + " -> " + neighbour + " ->* " + goal);
                     return true;
                 }
             }
@@ -326,105 +317,30 @@ public class RedundancyElimination {
     }
     
     /*
-    private void hnReachDfs(String node, CameViaEdgeType previousEdgeType, 
-            String originalRoot, int holeIdx, Set<String> visited) {
-        if( !visited.contains(node) ) {
-            visited.add(node);
-            
-            // iterate over incoming edges
-            for( Edge e : compact.getInEdges(node, null) ) {
-                String src = (String) e.getSource();
-                int idx = -1, i = 0;
-                
-                // If the parent is a root, then record the hypernormal path between
-                // the starting node and this root
-                if( compact.isRoot(src) && !visited.contains(src) ) {
-                    assert compact.getData(e).getType() == EdgeType.TREE;
-                    assert node.equals(e.getTarget());
-                    
-                    for( String tgt : compact.getChildren(src, EdgeType.TREE)) {
-                        if( tgt.equals(node) ) {
-                            idx = i;
-                        }
-                        i++;
-                    }
-                    
-                    // idx is the index of the hole node below src in the compact graph
-                    
-                    System.err.println("hnc: " + originalRoot + "/" + holeIdx + " -- " + src + "/" + idx);
-                    
-                    // At this point, we have found a hn path from the edgeIdx-th hole
-                    // of originalRoot to the the idx-th hole of src which doesn't use
-                    // src.
-                    if( hypernormalReachability.get(src).get(originalRoot)
-                            == HNR_NO_CONNECTION ) {
-                        // If we haven't seen a hn path between src and originalRoot yet,
-                        // record it.
-                        System.err.println("  -- put");
-                        hypernormalReachability.get(originalRoot).put(src, holeIdx);
-                        hypernormalReachability.get(src).put(originalRoot, idx);
-                    } else if( (hypernormalReachability.get(originalRoot).get(src) != holeIdx)
-                            || (hypernormalReachability.get(src).get(originalRoot) != idx) ) {
-                        // Otherwise, record for both fragments that there is more than
-                        // one hn connection between the two. In this case, one of the
-                        // two fragments is entailed to dominate the other, so we don't
-                        // have to distinguish which fragment used two different holes
-                        // in the connections.
-                        System.err.println("  -- two");
-                        hypernormalReachability.get(originalRoot).put(src, HNR_TWO_CONNECTIONS);
-                        hypernormalReachability.get(src).put(originalRoot, HNR_TWO_CONNECTIONS);
-                    } else {
-                        // otherwise we have just seen a path again which we already found earlier
-                        System.err.println("  -- seen");
-                    }
-                }
-                
-                
-                // recursive dfs call
-                hnReachDfs(src,  
-                        (compact.getData(e).getType() == EdgeType.TREE) ?
-                                CameViaEdgeType.UP_TREE : CameViaEdgeType.UP_DOM,
-                         originalRoot, holeIdx, visited);
-            }
-
-            // Iterate over outgoing edges
-            for( Edge e : compact.getOutEdges(node, null)) {
-                String tgt = (String) e.getTarget();
-                
-                // never use two dom edges out of the same node twice
-                if( compact.getData(e).getType() == EdgeType.DOMINANCE ) {
-                    if( previousEdgeType != CameViaEdgeType.UP_DOM ) {
-                        hnReachDfs(tgt, CameViaEdgeType.DOWN_DOM,
-                                originalRoot, holeIdx, visited);
-                    }
-                } else {
-                    hnReachDfs(tgt, CameViaEdgeType.DOWN_TREE,
-                            originalRoot, holeIdx, visited);
-                }
-            }
-        }
-    }
-    */
-    
-    /*
      * permutability
      */
     
     private boolean isPermutableSplit(Split s, Set<String> subgraph) {
         String splitRoot = s.getRootFragment();
         
+        //System.err.println("\nCheck split " + s + " for permutability.");
+        
         for( String root : subgraph ) {
             if( graph.isRoot(root) &&  !root.equals(splitRoot) ) {
                 if( isPossibleDominator(root, splitRoot)) {
                     if( !isPermutable(root, splitRoot) ) {
+                        //System.err.println("  -- not permutable with " + root);
                         return false;
+                    } else {
+                        //System.err.println("  -- permutable with " + root);
                     }
                 } else {
-                    System.err.println("skip " + root + " because it's not a p.d. of " + splitRoot);
+                    //System.err.println("  -- other root " + root + " is not a p.d.");
                 }
             }
         }
         
+        //System.err.println("  -- split is permutable!");
         return true;
     }
 
@@ -434,17 +350,19 @@ public class RedundancyElimination {
             n2n1 = hypernormalReachability.get(root2).get(root1);
 
         if( (n1n2 < 0) || (n2n1 < 0) ) {
-            System.err.println("automatically permutable " + root1 + "/" + root2 + "/" + n1n2 + "/" + n2n1);
+            // This should not happen, because isPermutable should only be
+            // called for distinct nodes that are mutual possible dominators, 
+            // and those are always connected via unique holes.
+            assert false;
             return true;
         } else {
-            System.err.println("permutable lookup: " + root1 + "/" + n1n2);
-            System.err.println("permutable lookup2: " + root2 + "/" + n2n1);
-            System.err.println(indicesCompactToOriginal);
-            
             FragmentWithHole f1 = 
                 new FragmentWithHole(labels.getLabel(root1), indicesCompactToOriginal.get(root1).get(n1n2));
             FragmentWithHole f2 =
                 new FragmentWithHole(labels.getLabel(root2), indicesCompactToOriginal.get(root2).get(n2n1));
+            
+            //System.err.println("     --> check permutability of " + root1 + " (" + f1
+            //        + ") with " + root2 + " (" + f2 + ")");
             
             Equation eq = new Equation(f1,f2);
         

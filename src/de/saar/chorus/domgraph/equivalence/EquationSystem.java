@@ -96,6 +96,12 @@ public class EquationSystem extends DefaultHandler {
         }
     }
 
-    
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        for( Equation eq : equations ) {
+            buf.append("  " + eq + "\n");
+        }
+        return buf.toString();
+    }
     
 }

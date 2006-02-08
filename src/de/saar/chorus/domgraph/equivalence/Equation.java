@@ -37,18 +37,26 @@ class Equation {
         return q1 + "=" + q2;
     }
     
-    public boolean equals(Equation other) {
+    public boolean equals(Object _other) {
+        Equation other;
+        
+        try {
+            other = (Equation) _other;
+        } catch(ClassCastException e) {
+            return false;
+        }
+        
         return 
             ((q1 == null) && (other.q1 == null))
             || ((q2 == null) && (other.q2 == null))
             || (q1.getRootLabel().equals(other.q1.getRootLabel())
                     && q2.getRootLabel().equals(other.q2.getRootLabel())
-                    && (q1.getHoleIndex() == other.q2.getHoleIndex())
+                    && (q1.getHoleIndex() == other.q1.getHoleIndex())
                     && (q2.getHoleIndex() == other.q2.getHoleIndex()))
             || (q1.getRootLabel().equals(other.q2.getRootLabel())
                     && (q2.getRootLabel().equals(other.q1.getRootLabel()))
                     && (q1.getHoleIndex() == other.q2.getHoleIndex())
-                    && (q2.getHoleIndex() == other.q2.getHoleIndex()));
+                    && (q2.getHoleIndex() == other.q1.getHoleIndex()));
     }
     
     public int hashCode() {

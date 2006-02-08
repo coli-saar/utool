@@ -260,6 +260,7 @@ public class Utool {
                 eqs = new EquationSystem();
                 eqs.read(new FileReader(getopt.getValue('e')));
                 eliminateEquivalences = true;
+                //System.err.println("Equation system:\n" + eqs);
             } catch(Exception e) {
                 System.err.println("An error occurred while reading the equivalences file!");
                 e.printStackTrace(System.err);
