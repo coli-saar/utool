@@ -38,6 +38,19 @@ class FragmentWithHole {
     public void setRootLabel(String rootlabel) {
         this.rootlabel = rootlabel;
     }
+    
+    public boolean equals(Object o) {
+        try {
+            FragmentWithHole other = (FragmentWithHole) o;
+            return rootlabel.equals(other.rootlabel) && (holeindex == other.holeindex);
+        } catch(ClassCastException e) {
+            return false;
+        }
+    }
+    
+    public int hashCode() {
+        return toString().hashCode();
+    }
 
     // change this method with care (if at all), as the
     // comparison operators in FragmentPair depend on it.

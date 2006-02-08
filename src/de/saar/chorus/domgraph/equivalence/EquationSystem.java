@@ -25,6 +25,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class EquationSystem extends DefaultHandler {
     private Collection<Equation> equations;
+    private Collection<FragmentWithHole> wildcards;
     
     // for XML parsing
     private List<FragmentWithHole> currentEquivalenceGroup;
@@ -34,6 +35,8 @@ public class EquationSystem extends DefaultHandler {
         super();
         
         equations = new HashSet<Equation>();
+        wildcards = new HashSet<FragmentWithHole>();
+        
         currentEquivalenceGroup = null;
         currentEquivalencePartner = null;
     }
@@ -55,7 +58,9 @@ public class EquationSystem extends DefaultHandler {
     }
     
     public boolean contains(Equation eq) {
-        return equations.contains(eq);
+        return wildcards.contains(eq.getQ1())
+        || wildcards.contains(eq.getQ2())
+        || equations.contains(eq);
     }
     
     public int size() {
@@ -66,6 +71,7 @@ public class EquationSystem extends DefaultHandler {
     throws ParserConfigurationException, SAXException, IOException {
         SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
         saxParser.parse( new InputSource(reader), this );
+        System.err.println("wildcards: " + wildcards);
     }
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -85,6 +91,12 @@ public class EquationSystem extends DefaultHandler {
             } else if( currentEquivalenceGroup != null ) {
                 currentEquivalenceGroup.add(fh);
             }
+        } else if( qName.equals("permutesWithEverything")) {
+            FragmentWithHole frag = 
+                new FragmentWithHole(
+                        attributes.getValue("label"),
+                        Integer.parseInt(attributes.getValue("hole")));
+            wildcards.add(frag);
         }
     }
 
