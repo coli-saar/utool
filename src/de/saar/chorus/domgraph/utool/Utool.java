@@ -29,6 +29,7 @@ import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
+import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
@@ -190,6 +191,7 @@ public class Utool {
             op = resolveOperation(rest.get(0));
         }
         
+	// XXX - warum nicht iterieren? (stth)
         if( rest.size() > 1 ) {
             argument = rest.get(1);
         }
@@ -662,6 +664,7 @@ public class Utool {
             codecManager.registerCodec(DomconOzInputCodec.class);
             codecManager.registerCodec(DomconGxlInputCodec.class);
             codecManager.registerCodec(HolesemComsemInputCodec.class);
+            codecManager.registerCodec(MrsPrologInputCodec.class);
         
             codecManager.registerCodec(DomconOzOutputCodec.class);
             codecManager.registerCodec(DomconGxlOutputCodec.class);

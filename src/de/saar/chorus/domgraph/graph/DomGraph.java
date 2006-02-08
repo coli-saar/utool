@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.event.ConnectedComponentTraversalEvent;
@@ -33,6 +34,77 @@ public class DomGraph {
     }
     
 
+    public String getRoot(String node) {
+	for (String parent : getParents(node, EdgeType.TREE)) {
+	    return getRoot(parent);
+        }
+	return node;
+    }
+
+    public Set<String> getHoles(String node) {
+	return getHoles(getFragment(node));
+    }
+
+    public Set<String> getHoles(Set<String> fragment) {
+	Set<String> holes = new HashSet<String>();
+	
+	for (String node : fragment) {
+	    if (outdeg(node, EdgeType.TREE) == 0) {
+		holes.add(node);
+	    }
+	}
+	
+	return holes;
+    }
+
+    public Set<String> getOpenHoles(String node) {
+	return getOpenHoles(getFragment(node));
+    }
+
+    public Set<String> getOpenHoles(Set<String> fragment) {
+	Set<String> holes = new HashSet<String>();
+	
+	for (String node : fragment) {
+	    if (outdeg(node) == 0) {
+		holes.add(node);
+	    }
+	}
+	
+	return holes;
+    }
+
+    public Set<String> getFragment(String node) {
+	Set<String> nodes = new HashSet<String>();
+	getFragment(node, nodes);
+	return nodes;
+    }
+
+    public void getFragment(String node, Set<String> nodes) {
+	if (nodes.contains(node))
+	    return;
+
+	nodes.add(node);
+
+	// XXX -- reimplement with getAdjacentEdges
+	for (String parent : getParents(node, EdgeType.TREE)) {
+	    getFragment(parent, nodes);
+	}
+	for (String child : getChildren(node, EdgeType.TREE)) {
+	    getFragment(child, nodes);
+	}
+    }
+
+
+    // XXX -- adhoc implementierung, funktioniert nicht mit zykeln
+    public boolean reachable (String upper, String lower) {
+	if (upper.equals(lower))
+	    return true;
+
+	for (String node : getParents(lower, null)) {
+	    if (reachable(upper, node)) return true;
+	}
+	return false;
+    }
     
     public void clear() {
         graph = new DefaultDirectedGraph();
@@ -70,6 +142,7 @@ public class DomGraph {
         return graph.edgeSet();
     }
     
+    // type == null, dann alle eingehenden Kanten
     public List<Edge> getInEdges(String node, EdgeType type) {
         List<Edge> ret = new ArrayList<Edge>();
       
@@ -175,6 +248,20 @@ public class DomGraph {
         return outdeg(node, EdgeType.TREE) == 0;
     }
     
+    // stth
+    public Set<String> getAllRoots(Set<String> nodes) {
+        Set<String> roots = new HashSet<String>();
+        
+        for( String node : nodes ) {
+            if( isRoot(node) ) {
+                roots.add(node);
+            }
+        }
+        
+        return roots;
+
+    }
+    
     public Set<String> getAllRoots() {
         Set<String> ret = new HashSet<String>();
         
@@ -192,7 +279,8 @@ public class DomGraph {
     /**
      * Compute the weakly connected components of the selected subgraph.
      * 
-     * @param components the elements of this collection will be the sets of nodes in the different wccs
+     * @param components the elements of this collection will be the
+     * sets of nodes in the different wccs
      * @return the number of wccs
      */
     public List<Set<String>> wccs() {
