@@ -9,6 +9,13 @@ package de.saar.chorus.domgraph.codec;
 
 public class MalformedDomgraphException extends Exception {
 
+    private int exitcode = 0;
+
+    public MalformedDomgraphException(int exitcode) {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
     public MalformedDomgraphException() {
         super();
         // TODO Auto-generated constructor stub
@@ -28,5 +35,7 @@ public class MalformedDomgraphException extends Exception {
         super(cause);
         // TODO Auto-generated constructor stub
     }
+
+    public int getExitcode() { return exitcode; }
 
 }

@@ -1,0 +1,211 @@
+options
+{
+    LOOKAHEAD = 1;
+    CHOICE_AMBIGUITY_CHECK = 2;
+    OTHER_AMBIGUITY_CHECK = 1;
+    STATIC = false;
+    USER_TOKEN_MANAGER = false;
+    USER_CHAR_STREAM = false;
+}
+
+PARSER_BEGIN(MrsPrologInputCodec)
+
+package de.saar.chorus.domgraph.codec.mrs;
+
+import java.io.*;
+import java.util.*;
+
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.codec.*;
+import de.saar.chorus.domgraph.codec.mrs.*;
+
+public class MrsPrologInputCodec extends InputCodec
+{
+    private MrsCodec codec;
+   
+    public MrsPrologInputCodec()
+    {
+	this((Reader) null);
+
+	setName("mrs-prolog");
+	setExtension(".mrs.pl");
+    }
+    
+    public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
+	throws IOException, ParserException, MalformedDomgraphException
+    {
+	codec = new MrsCodec(graph, labels);
+
+	try {
+	    ReInit(inputStream);
+	    Input();
+	} catch(ParseException e) {
+	    // XXX - improve exception handling
+	    e.printStackTrace(System.err);
+	    throw new ParserException();
+	}
+    }
+}
+
+PARSER_END(MrsPrologInputCodec)
+
+//
+// Scanner
+//
+
+SKIP :
+{
+    " "
+  | "\t"
+  | "\n"
+  | "\r"
+  | <COMMENT: "%" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>  
+}
+
+TOKEN :
+{
+    <PSOA : 
+	"psoa">
+
+  | <REL :
+	"rel">
+
+  | <ATTRVAL :
+	"attrval"> 
+
+  | <HCONS :
+	"hcons">
+
+  | <QEQ :
+	"qeq" 
+      | "geq" >
+
+  | <HANDLE :
+	"h" (["0" - "9"])* >
+
+  | <VARIABLE : 
+	"x" (["0" - "9"])* >
+
+  | <OTHER : 
+	"e" (["0" - "9"])* 
+      | "u" (["0" - "9"])* 
+      | "i" (["0" - "9"])* >
+
+  | <SYMBOL :
+	"\'" (~ ["\'"])* "\'" >
+}
+
+//
+// GRAMMAR
+//
+
+void Input() : 
+{ String handle; }
+{
+    <PSOA> "(" handle = Handle() "," Other() "," RelList() "," QeqList() ")"
+	{
+	    codec.addBindingEdges();
+	    codec.setTopHandle(handle);
+	    codec.finish();
+	}
+}
+
+void RelList() : { }
+{
+    "[" ( Rel() ) ( "," Rel() )* "]"
+}
+
+void Rel() :
+{ String label; String handle; Map<String, String> attrs = new TreeMap<String,String>(); }
+{
+    <REL> "(" label = Symbol() "," handle = Handle() "," Attributes(attrs) ")"
+	{
+	    if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
+		codec.addQuantifier(handle, label, attrs);
+	    } else {
+		codec.addRelation(handle, label, attrs);
+	    }
+	}
+}
+
+void Attributes(Map<String,String> attrs) : { }
+{
+    "[" Attribute(attrs) ( "," Attribute(attrs) )* "]"
+}
+
+void Attribute(Map<String,String> attrs) :
+{ String attr; String value; }
+{
+    <ATTRVAL> "(" attr = Symbol() "," value = Value() ")"
+	{
+	    attrs.put(attr, value);
+	}
+}
+
+
+String Value() : 
+{ String v; }
+{
+    ( v = Handle() | v = Variable() | v = Other() | v = Symbol() )
+	{
+	    return v;
+	}
+}
+
+void QeqList() : { }
+{
+    <HCONS> "(" "[" ( Qeq() ) ( "," Qeq() )* "]" ")"
+}
+
+void Qeq() : 
+{ String h1; String h2; }
+{
+    <QEQ> "(" h1 = Handle() "," h2 = Handle() ")"
+	{
+	    codec.addDomEdge(h1, h2);
+	}
+}
+
+String Handle() :
+{ Token t; }
+{
+    t = <HANDLE>
+	{	
+	    codec.tellHandle(t.image);
+	    return t.image;
+	}
+}
+
+String Variable() :
+{ Token t; }
+{
+    t = <VARIABLE> 
+	{
+	    codec.tellVariable(t.image);
+	    return t.image;
+	}
+}
+
+String Other() :
+{ Token t; }
+{
+    t = <OTHER>
+	{
+	    return t.image;
+	}
+}
+
+String Symbol() :
+{ Token t; }
+{
+    t = <SYMBOL>
+	{
+	    // strip quotes if necessary
+	    if (t.image.startsWith("\'")) {
+		return t.image.substring(1, t.image.length()-1);
+	    } else {
+		return t.image;
+	    }
+	}
+}
