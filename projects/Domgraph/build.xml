@@ -53,7 +53,7 @@
 	</target>
 	
 	
-	<target name="compile-all" depends="init,domconOz.javacc,holesemComsem.javacc,jgrapht.unpacked,getopt.unpacked">
+	<target name="compile-all" depends="init,domconOz.javacc,holesemComsem.javacc,mrs.javacc,jgrapht.unpacked,getopt.unpacked">
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -139,6 +139,12 @@
 			javacchome="${javacchome}" 
 			target="${source}/${chorus}/domgraph/codec/holesem/HolesemComsemInputCodec.jj" />
 	</target>
+
+        <target name="mrs.javacc">
+                <javacc 
+                        javacchome="${javacchome}" 
+                        target="${source}/${chorus}/domgraph/codec/mrs/MrsPrologInputCodec.jj" />
+        </target>
 
 
 	<!-- JAR Unpacking -->
