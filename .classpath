@@ -15,6 +15,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry sourcepath="packages/jgrapht-0.6.0/src" kind="lib" path="packages/jgrapht-0.6.0/jgrapht-0.6.0.jar"/>
-	<classpathentry sourcepath="packages/trove-1.1b5/src" kind="lib" path="packages/trove-1.1b5/lib/trove.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
