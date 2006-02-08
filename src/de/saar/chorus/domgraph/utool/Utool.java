@@ -26,6 +26,7 @@ import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
+import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
@@ -278,10 +279,18 @@ public class Utool {
             }
             
             inputCodec.decode(argument, graph, labels);
-        } catch(Exception e) {
-            System.err.println("There was an error decoding the graph!");
-            e.printStackTrace(System.err);
-            System.exit(ExitCodes.ILLFORMED_GRAPH);
+        } catch(MalformedDomgraphException e ) {
+            System.err.println("A semantic error occurred while decoding the graph.");
+            System.err.println(e);
+            System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode());
+        } catch(ParserException e) {
+            System.err.println("A parsing error occurred while reading the input.");
+            System.err.println(e);
+            System.exit(ExitCodes.PARSER_ERROR);
+        } catch(IOException e) {
+            System.err.println("An I/O error occurred while reading the input.");
+            System.err.println(e);
+            System.exit(ExitCodes.IO_ERROR);
         }
         
         if( displayStatistics ) {
@@ -439,7 +448,8 @@ public class Utool {
                         System.exit(1);
                     } catch (MalformedDomgraphException e) {
                         System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
-                        System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+                        System.err.println(e);
+                        System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
                     } catch (IOException e) {
                         System.err.println("An error occurred while trying to print the results.");
                         e.printStackTrace();
@@ -479,7 +489,8 @@ public class Utool {
                 outputCodec.print_footer(output);
             } catch(MalformedDomgraphException e) {
                 System.err.println("This graph is not supported by the specified output codec.");
-                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+                System.err.println(e);
+                System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
             } catch(IOException e) {
                 System.err.println("An error occurred while trying to print the results.");
                 e.printStackTrace();

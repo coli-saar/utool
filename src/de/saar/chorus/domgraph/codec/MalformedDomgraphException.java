@@ -8,34 +8,51 @@
 package de.saar.chorus.domgraph.codec;
 
 public class MalformedDomgraphException extends Exception {
-
     private int exitcode = 0;
 
+    
+    
     public MalformedDomgraphException(int exitcode) {
         super();
-        // TODO Auto-generated constructor stub
+        this.exitcode = exitcode;
     }
 
+    public MalformedDomgraphException(String message, Throwable cause, int exitcode) {
+        super(message, cause);
+        this.exitcode = exitcode;
+    }
+
+    public MalformedDomgraphException(String message, int exitcode) {
+        super(message);
+        this.exitcode = exitcode;
+    }
+
+    public MalformedDomgraphException(Throwable cause, int exitcode) {
+        super(cause);
+        this.exitcode = exitcode;
+    }
+
+
+    
     public MalformedDomgraphException() {
-        super();
-        // TODO Auto-generated constructor stub
+        this(0);
     }
 
     public MalformedDomgraphException(String message, Throwable cause) {
-        super(message, cause);
-        // TODO Auto-generated constructor stub
+        this(message,cause,0);
     }
 
     public MalformedDomgraphException(String message) {
-        super(message);
-        // TODO Auto-generated constructor stub
+        this(message,0);
     }
 
     public MalformedDomgraphException(Throwable cause) {
-        super(cause);
-        // TODO Auto-generated constructor stub
+        this(cause,0);
     }
 
-    public int getExitcode() { return exitcode; }
-
+    
+    
+    public int getExitcode() { 
+        return exitcode; 
+    }
 }
