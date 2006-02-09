@@ -16,18 +16,18 @@ import java.util.Set;
 
 public class Split {
     private String rootFragment;
-    private Map<String,Set<Set<String>>> wccs;  // root/hole -> wccs
+    private Map<String,List<Set<String>>> wccs;  // root/hole -> wccs
     
     public Split(String rootFragment) {
         this.rootFragment = rootFragment;
-        wccs = new HashMap<String,Set<Set<String>>>();
+        wccs = new HashMap<String,List<Set<String>>>();
     }
     
     public void addWcc(String node, Set<String> wcc) {
-        Set<Set<String>> wccSet = wccs.get(node);
+        List<Set<String>> wccSet = wccs.get(node);
         
         if( wccSet == null ) {
-            wccSet = new HashSet<Set<String>>();
+            wccSet = new ArrayList<Set<String>>();
             wccs.put(node, wccSet);
         }
         
@@ -39,7 +39,7 @@ public class Split {
         return rootFragment;
     }
 
-    public Set<Set<String>> getWccs(String node) {
+    public List<Set<String>> getWccs(String node) {
         return wccs.get(node);
     }
     
