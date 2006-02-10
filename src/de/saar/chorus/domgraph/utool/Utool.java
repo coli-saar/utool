@@ -21,20 +21,20 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
-import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
+import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
-import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
-import de.saar.chorus.domgraph.equivalence.PermutabilityRedundancyElimination;
+import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -389,7 +389,8 @@ public class Utool {
                 }
                 
                 if( eliminateEquivalences ) {
-                    elim = new PermutabilityRedundancyElimination(graph, labels, eqs);
+                    //elim = new PermutabilityRedundancyElimination(graph, labels, eqs);
+                    elim = new IndividualRedundancyElimination(graph, labels, eqs);
                     elim.eliminate(chart);
                     
                     if( displayStatistics ) {
