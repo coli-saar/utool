@@ -7,48 +7,476 @@
 
 package de.saar.chorus.domgraph.utool;
 
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.List;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
-import de.saar.chorus.domgraph.codec.CodecManager;
-import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
-import de.saar.chorus.domgraph.codec.ParserException;
-import de.saar.chorus.domgraph.codec.basic.Chain;
-import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
-import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
-import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
-import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
-import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
-import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
-import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
-import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
-import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
+import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.getopt.ConvenientGetopt;
+import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+
+public class Utool {
+    public static void main(String[] args) {
+        CommandLineParser optionsParser = new CommandLineParser();
+        AbstractOptions options = null;
+
+        boolean weaklyNormal = false;
+        boolean normal = false;
+        boolean compact = false;
+        boolean compactifiable = false;
+        DomGraph compactGraph = null;
+        
+        // parse command-line options and load graph
+        try {
+            options = optionsParser.parse(args);
+        } catch(AbstractOptionsParsingException e) {
+            System.err.print(e.comprehensiveErrorMessage());
+            System.exit(e.getExitcode());
+        }
+        
+        
+        // check statistics and compactify graph
+        if( options.getOperation().requiresInput ) {
+            weaklyNormal = options.getGraph().isWeaklyNormal();
+            normal = options.getGraph().isNormal();
+            compact = options.getGraph().isCompact();
+            compactifiable = options.getGraph().isCompactifiable();
+            
+            if( options.hasOptionStatistics() ) {
+                if( normal ) {
+                    System.err.println("The input graph is normal.");
+                } else {
+                    System.err.print("The input graph is not normal");
+                    if( weaklyNormal ) {
+                        System.err.println (", but it is weakly normal.");
+                    } else {
+                        System.err.println(" (not even weakly normal).");
+                    }
+                }
+                
+                if( compact ) {
+                    System.err.println("The input graph is compact.");
+                } else {
+                    System.err.print("The input graph is not compact, ");
+                    if( compactifiable ) {
+                        System.err.println("but I will compactify it for you.");
+                    } else {
+                        System.err.println("and it cannot be compactified.");
+                    }
+                }
+                
+                if( options.hasOptionEliminateEquivalence() ) {
+                    System.err.println("I will eliminate equivalences (" + options.getEquations().size() + " equations).");
+                }
+            }
+            
+            // compactify if necessary
+            compactGraph = options.getGraph().compactify();
+        }            
+        
+        
+        // now do something, depending on the specified operation
+        switch(options.getOperation()) {
+        case solve:
+        case solvable:
+            if( options.hasOptionStatistics() ) {
+                System.err.println();
+            }
+            
+            if( !weaklyNormal ) {
+                System.err.println("Cannot solve graphs that are not weakly normal!");
+                System.exit(ExitCodes.ILLFORMED_GRAPH);
+            }
+            
+            if( !compact && !compactifiable ) {
+                System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
+                System.exit(ExitCodes.ILLFORMED_GRAPH);
+            }
+
+            if( options.hasOptionStatistics() ) {
+                System.err.print("Solving graph ... ");
+            }
+
+            // compute chart
+            long start_solver = System.currentTimeMillis();
+            Chart chart = new Chart();
+            
+            ChartSolver solver;
+            
+            if( options.hasOptionEliminateEquivalence() ) {
+                solver = new ChartSolver(compactGraph, chart, 
+                        new RedundancyEliminationSplitSource(
+                                new IndividualRedundancyElimination(compactGraph, 
+                                        options.getLabels(), options.getEquations()), compactGraph));
+            } else {
+                solver = new ChartSolver(compactGraph, chart); 
+            }
+            
+            
+            boolean solvable = solver.solve();
+            long end_solver = System.currentTimeMillis();
+            long time_solver = end_solver - start_solver;
+            
+            if( solvable ) {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("it is solvable.");
+                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart());
+                }
+                
+                // TODO runtime prediction (?)
+                
+                if( options.getOperation() == Operation.solve ) {
+                    try {
+                        if( !options.hasOptionNoOutput() ) {
+                            options.getOutputCodec().print_header(options.getOutput());
+                            options.getOutputCodec().print_start_list(options.getOutput());
+                        }
+                        
+                        // extract solved forms
+                        long start_extraction = System.currentTimeMillis();
+                        long count = 0;
+                        SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
+                        while( it.hasNext() ) {
+                            List<DomEdge> domedges = it.next();
+                            count++;
+                            
+                            if( !options.hasOptionNoOutput() ) {
+                                if( count > 1 ) {
+                                    options.getOutputCodec().print_list_separator(options.getOutput());
+                                }
+                                options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), options.getOutput());
+                            }
+                        }
+                        long end_extraction = System.currentTimeMillis();
+                        long time_extraction = end_extraction - start_extraction;
+                        
+                        if( !options.hasOptionNoOutput() ) {
+                            options.getOutputCodec().print_end_list(options.getOutput());
+                            options.getOutputCodec().print_footer(options.getOutput());
+                        }
+                        
+                        if( options.hasOptionStatistics() ) {
+                            System.err.println("Found " + count + " solved forms.");
+                            System.err.println("Time spent on extraction: " + time_extraction + " ms");
+                            long total_time = time_extraction + time_solver;
+                            System.err.print("Total runtime: " + total_time + " ms (");
+                            if( total_time > 0 ) {
+                                System.err.print((int) Math.floor(count * 1000.0 / total_time));
+                                System.err.print(" sfs/sec; ");
+                            }
+                            System.err.println(1000 * total_time / count + " microsecs/sf)");
+                        }
+                        
+                        System.exit(1);
+                    } catch (MalformedDomgraphException e) {
+                        System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
+                        System.err.println(e);
+                        System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
+                    } catch (IOException e) {
+                        System.err.println("An error occurred while trying to print the results.");
+                        e.printStackTrace();
+                        System.exit(ExitCodes.IO_ERROR);
+                    }
+                }
+                
+            } else {
+                // not solvable
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("it is unsolvable!");
+                }
+                
+                System.exit(0);
+            }
+            break;
+            
+        
+        case convert:
+            if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
+                System.err.println("Output codec must be graph codec!");
+                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+            }
+
+            try {
+                options.getOutputCodec().print_header(options.getOutput());
+                options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), options.getOutput());
+                options.getOutputCodec().print_footer(options.getOutput());
+            } catch(MalformedDomgraphException e) {
+                System.err.println("This graph is not supported by the specified output codec.");
+                System.err.println(e);
+                System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
+            } catch(IOException e) {
+                System.err.println("An I/O error occurred while trying to print the results.");
+                System.err.println(e);
+                System.exit(ExitCodes.IO_ERROR);
+            }
+            
+            break;
+            
+            
+        case classify:
+            int programExitCode = 0;
+            
+            if( weaklyNormal ) {
+                programExitCode |= ExitCodes.CLASSIFY_WEAKLY_NORMAL;
+            }
+
+            if( normal ) {
+                programExitCode |= ExitCodes.CLASSIFY_NORMAL;
+            }
+            
+            if( compact ) {
+                programExitCode |= ExitCodes.CLASSIFY_COMPACT;
+            }
+            
+            if( compactifiable ) {
+                programExitCode |= ExitCodes.CLASSIFY_COMPACTIFIABLE;
+            }
+            
+            if( options.getGraph().isHypernormallyConnected() ) {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("The graph is hypernormally connected.");
+                }
+                programExitCode |= ExitCodes.CLASSIFY_HN_CONNECTED;
+            } else {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("The graph is not hypernormally connected.");
+                }
+            }
+            
+            if( options.getGraph().isLeafLabelled() ) {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("The graph is leaf-labelled.");
+                }
+                programExitCode |= ExitCodes.CLASSIFY_LEAF_LABELLED;
+            } else {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("The graph is not leaf-labelled.");
+                }
+            }
+
+            System.exit(programExitCode);
+            
+        case help:
+            displayHelp(options.getHelpArgument());
+            System.exit(0);
+            
+        case _helpOptions:
+            displayHelpOptions();
+            System.exit(0);
+            
+        case _displayCodecs:
+            optionsParser.getCodecManager().displayAllCodecs(System.out);
+            System.exit(0);
+            
+        case _version:
+            displayVersion();
+            System.exit(0);
+
+        }
+    }
+    
+    
+    
+    
+
+
+
+    private static void printChartStatistics(Chart chart, long time, boolean dumpChart) {
+        System.err.println("Splits in chart: " + chart.size());
+        if( dumpChart ) {
+            System.err.println(chart);
+        }
+        
+        if( time != -1 ) {
+            System.err.println("Time to build chart: " + time + " ms");
+        }
+        
+        System.err.println("Number of solved forms: " + chart.countSolvedForms());
+        System.err.println("");
+    }
+
+
+
+
+    private static void displayHelp(Operation op) {
+        if( (op == null) || (op.longDescription == null) ) {
+            System.err.println("Usage: java -jar Utool.jar <subcommand> [options] [args]");
+            System.err.println("Type `utool help <subcommand>' for help on a specific subcommand.");
+            System.err.println("Type `utool --help-options' for a list of global options.");
+            System.err.println("Type `utool --display-codecs' for a list of supported codecs.\n");
+            
+            System.err.println("Available subcommands:");
+            for( Operation _op : Operation.values() ) {
+                if( _op.shortDescription != null ) {
+                    System.err.println(String.format("    %1$-12s %2$s.",
+                            _op, _op.shortDescription));
+                }
+            }
+
+            System.err.println("\nUtool/Java is the Swiss Army Knife of Underspecification (Java version).");
+            System.err.println("For more information, see http://www.coli.uni-sb.de/projects/chorus/utool/");
+        } else {
+            System.err.println("utool " + op + ": " + op.shortDescription + ".");
+            System.err.println(op.longDescription);
+        }
+    }
+
+    private static void displayVersion() {
+        System.err.println("Utool/Java (The Swiss Army Knife of Underspecification), version 0.9");
+        System.err.println("Created by the CHORUS project, SFB 378, Saarland University");
+        System.err.println();
+    }
+
+
+    private static void displayHelpOptions() {
+        System.err.println("utool global options are:");
+        System.err.println("  --help-options                    Displays this information about global options.");;
+        System.err.println("  --display-codecs, -d              Displays all input and output filters.");
+        System.err.println("  --display-statistics, -s          Displays runtime and other statistics.");
+        System.err.println("  --no-output, -n                   Do not display computed output.");
+        System.err.println("  --equivalences, -e <filename>     Eliminate equivalent readings.");
+        System.err.println("  --version                         Display version and copyright information.");
+    }
+
+}
+
 
 
 /*
- * TODO:
- *  - see code below
- *  - exit codes
- */
 
-public class Utool {
+
+
+
+// prepare codecs
+codecManager = new CodecManager();
+registerAllCodecs(codecManager);
+
+// parse command line options
+ConvenientGetopt getopt = makeConvenientGetopt();
+getopt.parse(args);
+
+// determine operation and filename
+List<String> rest = getopt.getRemaining();
+
+if( !rest.isEmpty() ) {
+    op = resolveOperation(rest.get(0));
+}
+
+// XXX - warum nicht iterieren? (stth)
+if( rest.size() > 1 ) {
+    argument = rest.get(1);
+}
+
+
+// handle special commands
+if( getopt.hasOption('d')) {
+    codecManager.displayAllCodecs(System.out);
+    System.exit(0);
+}
+
+if( getopt.hasOption('h') ) {
+    displayHelp(op);
+    System.exit(0);
+}
+
+if( op == Operation.help ) {
+    displayHelp(resolveOperation(argument));
+    System.exit(0);
+}
+
+if( getopt.hasOption(OPTION_HELP_OPTIONS)) {
+    displayHelpOptions();
+    System.exit(0);
+}
+
+if( getopt.hasOption(OPTION_VERSION)) {
+    displayVersion();
+    System.exit(0);
+}
+
+
+
+// at this point, we must have an operation
+if( op == null ) {
+    displayHelp(null);
+    System.exit(ExitCodes.NO_SUCH_COMMAND);
+}
+
+
+// determine input and output codecs
+inputCodec = determineInputCodec(getopt, argument);
+
+if( inputCodec == null ) {
+    System.err.println("You must specify an input codec!");
+}
+
+outputCodec = determineOutputCodec(getopt, inputCodec);
+
+
+// parse the global options
+outputname = getopt.getValue('o');
+
+if( getopt.hasOption('s')) {
+    displayStatistics = true;
+}
+
+if( getopt.hasOption('n')) {
+    noOutput = true;
+}
+
+if( getopt.hasOption(OPTION_DUMP_CHART)) {
+    dumpChart = true;
+}
+
+if( getopt.hasOption('e') ) {
+    try {
+        eqs = new EquationSystem();
+        eqs.read(new FileReader(getopt.getValue('e')));
+        eliminateEquivalences = true;
+        //System.err.println("Equation system:\n" + eqs);
+    } catch(Exception e) {
+        System.err.println("An error occurred while reading the equivalences file!");
+        e.printStackTrace(System.err);
+        System.exit(ExitCodes.EQUIVALENCE_READING_ERROR);
+    }
+}
+
+
+// obtain graph
+try {
+    if( argument == null ) {
+        argument = "-"; // stdin
+    }
+    
+    inputCodec.decodeFile(argument, graph, labels);
+} catch(MalformedDomgraphException e ) {
+    System.err.println("A semantic error occurred while decoding the graph.");
+    System.err.println(e);
+    System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode());
+} catch(ParserException e) {
+    System.err.println("A parsing error occurred while reading the input.");
+    System.err.println(e);
+    System.exit(ExitCodes.PARSER_ERROR);
+} catch(IOException e) {
+    System.err.println("An I/O error occurred while reading the input.");
+    System.err.println(e);
+    System.exit(ExitCodes.IO_ERROR);
+}
+
+if( displayStatistics ) {
+    System.err.println("The input graph has " + graph.getAllRoots().size() + " fragments.");
+}
+
+
+
+
+
     private static final char OPTION_VERSION = (char) 1;
     private static final char OPTION_HELP_OPTIONS = (char) 2;
     private static final char OPTION_DUMP_CHART = (char) 3;
@@ -142,26 +570,14 @@ public class Utool {
         }
     }
     
-    
-    // exit codes for "utool classify"
-    public static final int  CLASSIFY_WEAKLY_NORMAL = 1;
-    public static final int  CLASSIFY_NORMAL = 2;
-    public static final int  CLASSIFY_COMPACT = 4;
-    public static final int  CLASSIFY_COMPACTIFIABLE = 8;
-    public static final int  CLASSIFY_HN_CONNECTED = 16;
-    public static final int  CLASSIFY_LEAF_LABELLED = 32;
 
 
     private static CodecManager codecManager;
     
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
+
         InputCodec inputCodec = null;
         OutputCodec outputCodec = null;
-        Operation op = null;
         String argument = null;
         Writer output = new OutputStreamWriter(System.out);
         String outputname;
@@ -175,567 +591,15 @@ public class Utool {
         boolean eliminateEquivalences = false;
         EquationSystem eqs = null;
         RedundancyElimination elim = null;
-        
-        
-        
-        // prepare codecs
-        codecManager = new CodecManager();
-        registerAllCodecs(codecManager);
 
-        // parse command line options
-        ConvenientGetopt getopt = makeConvenientGetopt();
-        getopt.parse(args);
-       
-        // determine operation and filename
-        List<String> rest = getopt.getRemaining();
-        
-        if( !rest.isEmpty() ) {
-            op = resolveOperation(rest.get(0));
-        }
-        
-	// XXX - warum nicht iterieren? (stth)
-        if( rest.size() > 1 ) {
-            argument = rest.get(1);
-        }
-        
-        
-        // handle special commands
-        if( getopt.hasOption('d')) {
-            codecManager.displayAllCodecs(System.out);
-            System.exit(0);
-        }
-        
-        if( getopt.hasOption('h') ) {
-            displayHelp(op);
-            System.exit(0);
-        }
-        
-        if( op == Operation.help ) {
-            displayHelp(resolveOperation(argument));
-            System.exit(0);
-        }
-        
-        if( getopt.hasOption(OPTION_HELP_OPTIONS)) {
-            displayHelpOptions();
-            System.exit(0);
-        }
-
-        if( getopt.hasOption(OPTION_VERSION)) {
-            displayVersion();
-            System.exit(0);
-        }
-        
-        
-        
-        // at this point, we must have an operation
-        if( op == null ) {
-            displayHelp(null);
-            System.exit(ExitCodes.NO_SUCH_COMMAND);
-        }
-        
-        
-        // determine input and output codecs
-        inputCodec = determineInputCodec(getopt, argument);
-
-        if( inputCodec == null ) {
-            System.err.println("You must specify an input codec!");
-        }
-        
-        outputCodec = determineOutputCodec(getopt, inputCodec);
-        
-        
-        // parse the global options
-        outputname = getopt.getValue('o');
-
-        if( getopt.hasOption('s')) {
-            displayStatistics = true;
-        }
-        
-        if( getopt.hasOption('n')) {
-            noOutput = true;
-        }
-        
-        if( getopt.hasOption(OPTION_DUMP_CHART)) {
-            dumpChart = true;
-        }
-        
-        if( getopt.hasOption('e') ) {
-            try {
-                eqs = new EquationSystem();
-                eqs.read(new FileReader(getopt.getValue('e')));
-                eliminateEquivalences = true;
-                //System.err.println("Equation system:\n" + eqs);
-            } catch(Exception e) {
-                System.err.println("An error occurred while reading the equivalences file!");
-                e.printStackTrace(System.err);
-                System.exit(ExitCodes.EQUIVALENCE_READING_ERROR);
-            }
-        }
-        
-        
-        // obtain graph
-        try {
-            if( argument == null ) {
-                argument = "-"; // stdin
-            }
             
-            inputCodec.decode(argument, graph, labels);
-        } catch(MalformedDomgraphException e ) {
-            System.err.println("A semantic error occurred while decoding the graph.");
-            System.err.println(e);
-            System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode());
-        } catch(ParserException e) {
-            System.err.println("A parsing error occurred while reading the input.");
-            System.err.println(e);
-            System.exit(ExitCodes.PARSER_ERROR);
-        } catch(IOException e) {
-            System.err.println("An I/O error occurred while reading the input.");
-            System.err.println(e);
-            System.exit(ExitCodes.IO_ERROR);
-        }
-        
-        if( displayStatistics ) {
-            System.err.println("The input graph has " + graph.getAllRoots().size() + " fragments.");
-        }
-        
-        
-        // check statistics 
-        
-        boolean weaklyNormal = graph.isWeaklyNormal();
-        boolean normal = graph.isNormal();
-        boolean compact = graph.isCompact();
-        boolean compactifiable = graph.isCompactifiable();
-
-        DomGraph compactGraph = graph;
-        
-        if( displayStatistics ) {
-            if( normal ) {
-                System.err.println("The input graph is normal.");
-            } else {
-                System.err.print("The input graph is not normal");
-                if( weaklyNormal ) {
-                    System.err.println (", but it is weakly normal.");
-                } else {
-                    System.err.println(" (not even weakly normal).");
-                }
-            }
-            
-            if( compact ) {
-                System.err.println("The input graph is compact.");
-            } else {
-                System.err.print("The input graph is not compact, ");
-                if( compactifiable ) {
-                    System.err.println("but I will compactify it for you.");
-                } else {
-                    System.err.println("and it cannot be compactified.");
-                }
-            }
-            
-            if( eliminateEquivalences ) {
-                System.err.println("I will eliminate equivalences (" + eqs.size() + " equations).");
-            }
-        }
-
-        // compactify if necessary
-        //System.err.println("original graph:\n" + graph);
-        if( !compact && compactifiable ) {
-            compactGraph = graph.compactify();
-        }
-        //System.err.println("\n\ncompact graph:\n" + compactGraph);
-        
-        
-        
-        // now do something, depending on the specified operation
-        switch(op) {
-        case solve:
+            (solve)
             if( !noOutput && (outputCodec == null )) {
                 System.err.println("No output codec specified!");
                 System.exit(ExitCodes.NO_OUTPUT_CODEC_SPECIFIED);
             }
             
-            // fall-through
-            
-        case solvable:
-            if( displayStatistics ) {
-                System.err.println();
-            }
-            
-            if( !weaklyNormal ) {
-                System.err.println("Cannot solve graphs that are not weakly normal!");
-                System.exit(ExitCodes.ILLFORMED_GRAPH);
-            }
-            
-            if( !compact && !compactifiable ) {
-                System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
-                System.exit(ExitCodes.ILLFORMED_GRAPH);
-            }
-
-            if( displayStatistics ) {
-                System.err.print("Solving graph ... ");
-            }
-
-            // compute chart
-            long start_solver = System.currentTimeMillis();
-            Chart chart = new Chart();
-            ChartSolver solver = new ChartSolver(compactGraph, chart);
-            boolean solvable = solver.solve();
-            long end_solver = System.currentTimeMillis();
-            long time_solver = end_solver - start_solver;
-            
-            if( solvable ) {
-                if( displayStatistics ) {
-                    System.err.println("it is solvable.");
-                    printChartStatistics(chart, time_solver, dumpChart);
-                }
-                
-                if( eliminateEquivalences ) {
-                    //elim = new PermutabilityRedundancyElimination(graph, labels, eqs);
-                    elim = new IndividualRedundancyElimination(graph, labels, eqs);
-                    elim.eliminate(chart);
-                    
-                    if( displayStatistics ) {
-                        System.err.println("After redundancy elimination:");
-                        printChartStatistics(chart, -1, dumpChart);
-                    }
-                }
-                
-                // TODO runtime prediction
-                
-                if( op == Operation.solve ) {
-                    try {
-                        if( !noOutput ) {
-                            if (!"-".equals(outputname)) {
-                                output = new FileWriter(outputname);
-                            }
-                        
-                            outputCodec.print_header(output);
-                            outputCodec.print_start_list(output);
-                        }
-                        
-                        // extract solved forms
-                        long start_extraction = System.currentTimeMillis();
-                        long count = 0;
-                        SolvedFormIterator it = new SolvedFormIterator(chart,graph);
-                        while( it.hasNext() ) {
-                            List<DomEdge> domedges = it.next();
-                            count++;
-                            
-                            if( !noOutput ) {
-                                if( count > 1 ) {
-                                    outputCodec.print_list_separator(output);
-                                }
-                                outputCodec.encode(graph, domedges, labels, output);
-                            }
-                        }
-                        long end_extraction = System.currentTimeMillis();
-                        long time_extraction = end_extraction - start_extraction;
-                        
-                        if( !noOutput ) {
-                            outputCodec.print_end_list(output);
-                            outputCodec.print_footer(output);
-                        }
-                        
-                        if( displayStatistics ) {
-                            System.err.println("Found " + count + " solved forms.");
-                            System.err.println("Time spent on extraction: " + time_extraction + " ms");
-                            long total_time = time_extraction + time_solver;
-                            System.err.print("Total runtime: " + total_time + " ms (");
-                            if( total_time > 0 ) {
-                                System.err.print((int) Math.floor(count * 1000.0 / total_time));
-                                System.err.print(" sfs/sec; ");
-                            }
-                            System.err.println(1000 * total_time / count + " microsecs/sf)");
-                        }
-                        
-                        System.exit(1);
-                    } catch (MalformedDomgraphException e) {
-                        System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
-                        System.err.println(e);
-                        System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
-                    } catch (IOException e) {
-                        System.err.println("An error occurred while trying to print the results.");
-                        e.printStackTrace();
-                        System.exit(ExitCodes.IO_ERROR);
-                    }
-                }
-                
-            } else {
-                // not solvable
-                if( displayStatistics ) {
-                    System.err.println("it is unsolvable!");
-                }
-                
-                System.exit(0);
-            }
-            break;
-            
+                elim = new IndividualRedundancyElimination(graph, labels, eqs);
         
-        case convert:
-            if( !noOutput && (outputCodec == null )) {
-                System.err.println("No output codec specified!");
-                System.exit(ExitCodes.NO_OUTPUT_CODEC_SPECIFIED);
-            }
-            
-            if( outputCodec.getType() != OutputCodec.Type.GRAPH ) {
-                System.err.println("Output codec must be graph codec!");
-                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
-            }
 
-            try {
-                if (!"-".equals(outputname)) {
-                    output = new FileWriter(outputname);
-                }
-                
-                outputCodec.print_header(output);
-                outputCodec.encode(graph, null, labels, output);
-                outputCodec.print_footer(output);
-            } catch(MalformedDomgraphException e) {
-                System.err.println("This graph is not supported by the specified output codec.");
-                System.err.println(e);
-                System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
-            } catch(IOException e) {
-                System.err.println("An error occurred while trying to print the results.");
-                e.printStackTrace();
-                System.exit(ExitCodes.IO_ERROR);
-            }
-            
-            break;
-            
-            
-        case classify:
-            int programExitCode = 0;
-            
-            if( graph.isWeaklyNormal() ) {
-                programExitCode |= CLASSIFY_WEAKLY_NORMAL;
-            }
-
-            if( graph.isNormal() ) {
-                programExitCode |= CLASSIFY_NORMAL;
-            }
-            
-            if( graph.isCompact() ) {
-                programExitCode |= CLASSIFY_COMPACT;
-            }
-            
-            if( graph.isCompactifiable() ) {
-                programExitCode |= CLASSIFY_COMPACTIFIABLE;
-            }
-            
-            if( graph.isHypernormallyConnected() ) {
-                if( displayStatistics ) {
-                    System.err.println("The graph is hypernormally connected.");
-                }
-                programExitCode |= CLASSIFY_HN_CONNECTED;
-            } else {
-                if( displayStatistics ) {
-                    System.err.println("The graph is not hypernormally connected.");
-                }
-            }
-            
-            if( graph.isLeafLabelled() ) {
-                if( displayStatistics ) {
-                    System.err.println("The graph is leaf-labelled.");
-                }
-                programExitCode |= CLASSIFY_LEAF_LABELLED;
-            } else {
-                if( displayStatistics ) {
-                    System.err.println("The graph is not leaf-labelled.");
-                }
-            }
-
-            System.exit(programExitCode);
-            
-        case help:
-            
-            // This was handled above.
-            break;
-        }
-        
-        
-    }
-    
-    
-    
-    
-
-
-
-    private static OutputCodec determineOutputCodec(ConvenientGetopt getopt, InputCodec inputCodec) {
-        OutputCodec outputCodec = null;
-
-        if( getopt.hasOption('O')) {
-            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'));
-            if( outputCodec == null ) {
-                System.err.println("Unknown output codec: " + getopt.getValue('O'));
-                System.exit(ExitCodes.NO_SUCH_OUTPUT_CODEC);
-            }
-        }
-        
-        if( outputCodec == null ) {
-            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'));
-        }
-        
-        if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForName(inputCodec.getName());
-        }
-        
-        return outputCodec;
-    }
-
-
-
-
-
-
-
-    private static InputCodec determineInputCodec(ConvenientGetopt getopt, String argument) {
-        InputCodec inputCodec = null;
-        
-        if( getopt.hasOption('I')) {
-            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'));
-            if( inputCodec == null ) {
-                System.err.println("Unknown input codec: " + getopt.getValue('I'));
-                System.exit(ExitCodes.NO_SUCH_INPUT_CODEC);
-            }
-        }
-        
-        if( inputCodec == null ) {
-            if( argument != null ) {
-                inputCodec = codecManager.getInputCodecForFilename(argument);
-            }
-        }
-        
-        return inputCodec;
-    }
-
-
-
-
-
-
-
-    private static void printChartStatistics(Chart chart, long time, boolean dumpChart) {
-        System.err.println("Splits in chart: " + chart.size());
-        if( dumpChart ) {
-            System.err.println(chart);
-        }
-        
-        if( time != -1 ) {
-            System.err.println("Time to build chart: " + time + " ms");
-        }
-        
-        System.err.println("Number of solved forms: " + chart.countSolvedForms());
-        System.err.println("");
-    }
-
-
-
-
-    private static void displayHelp(Operation op) {
-        if( op == null ) {
-            System.err.println("Usage: java -jar Utool.jar <subcommand> [options] [args]");
-            System.err.println("Type `utool help <subcommand>' for help on a specific subcommand.");
-            System.err.println("Type `utool --help-options' for a list of global options.");
-            System.err.println("Type `utool --display-codecs' for a list of supported codecs.\n");
-            
-            System.err.println("Available subcommands:");
-            for( Operation _op : Operation.values() ) {
-                System.err.println(String.format("    %1$-12s %2$s.",
-                        _op, _op.shortDescription));
-            }
-
-            System.err.println("\nutool is the Swiss Army Knife of Underspecification.");
-            System.err.println("For additional information, see http://utool.sourceforge.net/");
-        } else {
-            System.err.println("utool " + op + ": " + op.shortDescription + ".");
-            System.err.println(op.longDescription);
-        }
-    }
-
-    private static void displayVersion() {
-        System.err.println("Utool/Java (The Swiss Army Knife of Underspecification), version 0.1");
-        System.err.println("Created by the CHORUS project, SFB 378, Saarland University");
-        System.err.println();
-    }
-
-
-
-    private static Operation resolveOperation(String opstring) {
-        for( Operation op : Operation.values() ) {
-            if( op.toString().equals(opstring)) {
-                return op;
-            }
-        }
-        
-        return null;
-    }
-
-
-    private static void registerAllCodecs(CodecManager codecManager) {
-        try {
-            codecManager.registerCodec(Chain.class);
-            codecManager.registerCodec(DomconOzInputCodec.class);
-            codecManager.registerCodec(DomconGxlInputCodec.class);
-            codecManager.registerCodec(HolesemComsemInputCodec.class);
-            codecManager.registerCodec(MrsPrologInputCodec.class);
-        
-            codecManager.registerCodec(DomconOzOutputCodec.class);
-            codecManager.registerCodec(DomconGxlOutputCodec.class);
-            // TBD // codecManager.registerCodec(DomconUdrawOutputCodec.class);
-            // TBD // codecManager.registerCodec(HolesemComsemOutputCodec.class);
-            codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
-            codecManager.registerCodec(LkbPluggingOutputCodec.class);
-            codecManager.registerCodec(OzTermOutputCodec.class);
-            codecManager.registerCodec(PrologTermOutputCodec.class);
-        } catch(Exception e) {
-            System.err.println("An error occurred trying to register a codec.");
-            e.printStackTrace(System.err);
-            System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
-        }
-    }
-
-
-
-
-    private static ConvenientGetopt makeConvenientGetopt() {
-        ConvenientGetopt getopt = new ConvenientGetopt("Utool/Java", null, null);
-        
-        getopt.addOption('I', "input-codec", ConvenientGetopt.REQUIRED_ARGUMENT,
-                        "Specify the input codec", null);
-        getopt.addOption('O', "output-codec", ConvenientGetopt.REQUIRED_ARGUMENT,
-                        "Specify the output codec", null);
-        getopt.addOption('o', "output", ConvenientGetopt.REQUIRED_ARGUMENT,
-                        "Specify an output file", "-");
-        getopt.addOption('e', "equivalences", ConvenientGetopt.REQUIRED_ARGUMENT,
-                        "Eliminate equivalence readings", null);
-        getopt.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
-                        "Display help information", null);
-        getopt.addOption('s', "display-statistics", ConvenientGetopt.NO_ARGUMENT,
-                        "Display runtime statistics", null);
-        getopt.addOption(OPTION_VERSION, "version", ConvenientGetopt.NO_ARGUMENT,
-                        "Display version information", null);
-        getopt.addOption('d', "display-codecs", ConvenientGetopt.NO_ARGUMENT,
-                        "Display installed codecs", null);
-        getopt.addOption('n', "no-output", ConvenientGetopt.NO_ARGUMENT,
-                        "Suppress the ordinary output", null);
-        getopt.addOption(OPTION_HELP_OPTIONS, "help-options", ConvenientGetopt.NO_ARGUMENT,
-                        "Display help on options", null);
-        getopt.addOption(OPTION_DUMP_CHART, "dump-chart", ConvenientGetopt.NO_ARGUMENT,
-                        "Display the chart after solving", null);
-        
-        return getopt;
-    }
-
-    
-
-    private static void displayHelpOptions() {
-        System.err.println("utool global options are:");
-        System.err.println("  --help-options                    Displays this information about global options.");;
-        System.err.println("  --display-codecs, -d              Displays all input and output filters.");
-        System.err.println("  --display-statistics, -s          Displays runtime and other statistics.");
-        System.err.println("  --no-output, -n                   Do not display computed output.");
-        System.err.println("  --equivalences, -e <filename>     Eliminate equivalent readings.");
-        System.err.println("  --version                         Display version and copyright information.");
-    }
-
-}
+*/
