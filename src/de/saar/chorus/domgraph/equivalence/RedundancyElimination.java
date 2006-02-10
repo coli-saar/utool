@@ -143,7 +143,7 @@ public abstract class RedundancyElimination {
     }
 
 
-    abstract protected List<Split> getIrredundantSplits(Set<String> subgraph, Chart c);
+    abstract public List<Split> getIrredundantSplits(Set<String> subgraph, Chart c);
 
 
     /*
