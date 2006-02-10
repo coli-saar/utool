@@ -8,7 +8,6 @@
 package de.saar.chorus.domgraph.chart;
 
 
-import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -19,32 +18,14 @@ public class ChartSolver {
     private DomGraph graph;
     private Chart chart;
     private Set<String> roots;
-    private Class splitIteratorClass;
+    private SplitSource splitSource;
     
     public ChartSolver(DomGraph graph, Chart chart) {
-        try {
-            init(graph, chart, CompleteSplitSource.class);
-        } catch(IllegalSplitSourceException e) {
-            // this should never happen
-            assert false;
-        }
+        this(graph, chart, new CompleteSplitSource(graph));
     }
 
-    public ChartSolver(DomGraph graph, Chart chart, Class splitIteratorClass) throws IllegalSplitSourceException {
-        init(graph, chart, splitIteratorClass);
-    }
-
-    private void init(DomGraph graph, Chart chart, Class splitIteratorClass) throws IllegalSplitSourceException {
-        try {
-            Set<String> subgraph = graph.getAllNodes();
-            Constructor constructor = splitIteratorClass.getConstructor(DomGraph.class, Set.class);
-            Iterator<Split> x = (Iterator<Split>) constructor.newInstance(graph, subgraph);
-        } catch(Exception e) {
-            throw new IllegalSplitSourceException("The class you specified does not implement Iterator<Split>");
-        }
-        
-        this.splitIteratorClass = splitIteratorClass;
-        
+    public ChartSolver(DomGraph graph, Chart chart, SplitSource splitSource) {
+        this.splitSource = splitSource;
         this.graph = graph;
         this.chart = chart;
         
@@ -54,6 +35,7 @@ public class ChartSolver {
         
         roots = graph.getAllRoots();
     }
+
 
     public boolean solve() {
         List<Set<String>> wccs = graph.wccs();
@@ -103,7 +85,7 @@ public class ChartSolver {
         }
 
         // get splits for this subgraph
-        splits = makeSplitIterator(subgraph);
+        splits = getSplitIterator(subgraph);
         //System.err.println(" - has " + splits.count() + " splits");
         
         // if there are none (i.e. there are no free roots),
@@ -131,14 +113,7 @@ public class ChartSolver {
         }
     }
 
-    protected Iterator<Split> makeSplitIterator(Set<String> subgraph) {
-        try {
-            Constructor constructor = splitIteratorClass.getConstructor(DomGraph.class, Set.class);
-            return (Iterator<Split>) constructor.newInstance(graph, subgraph);
-        } catch(Exception e) {
-            // this should never happen -- we checked it before!
-            assert false;
-            return null;
-        }
+    protected Iterator<Split> getSplitIterator(Set<String> subgraph) {
+        return splitSource.computeSplits(subgraph);
     }
 }
