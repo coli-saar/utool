@@ -273,7 +273,7 @@ public class ConvenientGetopt {
          
          System.err.println("\nOptions:");
          for( GetoptEntry entry : entriesInOrder ) {
-             StringBuilder line = new StringBuilder("   -" + entry.shortname);
+             StringBuffer line = new StringBuffer("   -" + entry.shortname);
              
              if( entry.longname != null ) {
                  line.append(", --" + entry.longname);
