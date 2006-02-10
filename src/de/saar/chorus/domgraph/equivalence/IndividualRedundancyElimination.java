@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.equivalence;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class IndividualRedundancyElimination extends RedundancyElimination {
     }
 
     public List<Split> getIrredundantSplits(Set<String> subgraph, Chart c) {
-        List<Split> splits = c.getSplitsFor(subgraph);
+        List<Split> splits = new ArrayList<Split>(c.getSplitsFor(subgraph));
         int i = 0;
         
         while( i < splits.size() ) {
