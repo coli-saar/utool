@@ -122,7 +122,7 @@ public abstract class RedundancyElimination {
             
             if( splits != null ) { // i.e. not a singleton fragset
                 if( splits.size() > 1 ) { // i.e. there are splits that could be eliminated
-                    List<Split> remainingSplits = getIrredundantSplits(subgraph, c);
+                    List<Split> remainingSplits = getIrredundantSplits(subgraph, splits);
                     
                     if( remainingSplits.size() < splits.size() ) {
                         c.setSplitsForSubgraph(subgraph, remainingSplits);
@@ -143,7 +143,7 @@ public abstract class RedundancyElimination {
     }
 
 
-    abstract public List<Split> getIrredundantSplits(Set<String> subgraph, Chart c);
+    abstract public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> allSplits);
 
 
     /*

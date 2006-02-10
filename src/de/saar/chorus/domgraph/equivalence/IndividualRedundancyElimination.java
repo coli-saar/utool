@@ -24,8 +24,8 @@ public class IndividualRedundancyElimination extends RedundancyElimination {
         super(graph, labels, eqs);
     }
 
-    public List<Split> getIrredundantSplits(Set<String> subgraph, Chart c) {
-        List<Split> splits = new ArrayList<Split>(c.getSplitsFor(subgraph));
+    public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> allSplits) {
+        List<Split> splits = new ArrayList<Split>(allSplits);
         int i = 0;
         
         while( i < splits.size() ) {

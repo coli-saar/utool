@@ -23,8 +23,7 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination {
     }
 
 
-    public List<Split> getIrredundantSplits(Set<String> subgraph, Chart c) {
-        List<Split> splits = c.getSplitsFor(subgraph);
+    public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> splits) {
         List<Split> ret = new ArrayList<Split>(1);
         
         for( Split split : splits ) {
