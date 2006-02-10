@@ -7,7 +7,7 @@
 
 package de.saar.chorus.domgraph.chart;
 
-class RootNotFreeException extends Exception {
+public class RootNotFreeException extends Exception {
 
     public RootNotFreeException() {
         super();
