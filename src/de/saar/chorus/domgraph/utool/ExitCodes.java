@@ -25,4 +25,13 @@ public class ExitCodes {
     public static final int CODEC_REGISTRATION_ERROR = 138;
     public static final int EQUIVALENCE_READING_ERROR = 139;
     public static final int PARSER_ERROR = 140;
+    
+    
+    // exit codes for "utool classify"
+    public static final int  CLASSIFY_WEAKLY_NORMAL = 1;
+    public static final int  CLASSIFY_NORMAL = 2;
+    public static final int  CLASSIFY_COMPACT = 4;
+    public static final int  CLASSIFY_COMPACTIFIABLE = 8;
+    public static final int  CLASSIFY_HN_CONNECTED = 16;
+    public static final int  CLASSIFY_LEAF_LABELLED = 32;
 }
