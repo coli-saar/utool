@@ -515,23 +515,27 @@ public class DomGraph {
     /**** compactification ****/
     
     public DomGraph compactify() {
-        DomGraph ret = new DomGraph();
-        
-        // build fragments
-        for( String root : getAllRoots() ) {
-            ret.addNode(root, getData(root));
-            copyFragment(root, root, ret);
-        }
-        
-        // copy dominance edges
-        for( Edge edge : getAllEdges() ) {
-            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
-                ret.addEdge((String) edge.getSource(), (String) edge.getTarget(),
-                        getData(edge));
+        if( isCompact() ) {
+            return this;
+        } else {
+            DomGraph ret = new DomGraph();
+            
+            // build fragments
+            for( String root : getAllRoots() ) {
+                ret.addNode(root, getData(root));
+                copyFragment(root, root, ret);
             }
+            
+            // copy dominance edges
+            for( Edge edge : getAllEdges() ) {
+                if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+                    ret.addEdge((String) edge.getSource(), (String) edge.getTarget(),
+                            getData(edge));
+                }
+            }
+            
+            return ret;
         }
-        
-        return ret;
     }
     
     private void copyFragment(String node, String root, DomGraph ret) {
