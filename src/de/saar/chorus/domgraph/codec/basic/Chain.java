@@ -30,14 +30,24 @@ public class Chain extends InputCodec {
     }
 
     
-    public void decode(String specification, DomGraph graph, NodeLabels labels)
+    public void decodeFile(String lengthAsString, DomGraph graph, NodeLabels labels)
+    throws MalformedDomgraphException {
+        makeChain(lengthAsString, graph, labels);
+    }
+
+    public void decodeString(String lengthAsString, DomGraph graph, NodeLabels labels)
+    throws MalformedDomgraphException {
+        makeChain(lengthAsString, graph, labels);
+    }
+
+    private void makeChain(String lengthAsString, DomGraph graph, NodeLabels labels)
     throws MalformedDomgraphException {
     	String upper_root, upper_lefthole, upper_righthole;
     	String lower;
     	int length;
         
         try {
-            length = Integer.parseInt(specification);
+            length = Integer.parseInt(lengthAsString);
         } catch(NumberFormatException e) {
             throw new MalformedDomgraphException(e);
         }
