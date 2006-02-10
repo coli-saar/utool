@@ -20,53 +20,38 @@ import org._3pq.jgrapht.Edge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
-public abstract class SplitSource implements Iterator<Split> {
+public abstract class SplitSource {
+    protected DomGraph graph;
+    /*
     protected List<String> potentialFreeRoots;
     protected List<Split> splits;
     protected Iterator<Split> splitIt;
+    */
     
-    public SplitSource(DomGraph graph, Set<String> subgraph) {
-        initPotentialFreeRoots(graph, subgraph);
-        computeSplits(graph,subgraph);
-        splitIt = splits.iterator();
+    public SplitSource(DomGraph graph) {
+        this.graph = graph;
     }
-
+    
     
     
     // IMPLEMENT THIS
-    abstract protected void computeSplits(DomGraph graph, Set<String> subgraph);
+    abstract protected Iterator<Split> computeSplits(Set<String> subgraph);
 
     
     
-    protected void initPotentialFreeRoots(DomGraph graph, Set<String> subgraph) {
+    protected List<String> computePotentialFreeRoots(Set<String> subgraph) {
         // initialise potentialFreeRoots with all nodes without
         // incoming dom-edges
-        potentialFreeRoots = new ArrayList<String>();
+        List<String> potentialFreeRoots = new ArrayList<String>();
         for( String node : subgraph ) {
             if( graph.indegOfSubgraph(node, null, subgraph) == 0 ) {
                 potentialFreeRoots.add(node);
             }
         }
+        
+        return potentialFreeRoots;
     }
 
-
-    /**** methods for accessing the split iterator ****/
-
-    public int count() {
-        return splits.size();
-    }
-
-    public boolean hasNext() {
-        return splitIt.hasNext();
-    }
-
-    public Split next() {
-        return splitIt.next();
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
 
     
     

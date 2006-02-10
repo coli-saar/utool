@@ -8,19 +8,22 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class CompleteSplitSource extends SplitSource {
-    public CompleteSplitSource(DomGraph graph, Set<String> subgraph) {
-        super(graph,subgraph);
+    public CompleteSplitSource(DomGraph graph) {
+        super(graph);
     }
     
-    protected void computeSplits(DomGraph graph, Set<String> subgraph) {
+    protected Iterator<Split> computeSplits(Set<String> subgraph) {
         SplitComputer sc = new SplitComputer(graph);
-        
-        splits = new ArrayList<Split>();
+        List<Split> splits = new ArrayList<Split>();
+        List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
+
         for( String root : potentialFreeRoots ) {
             try {
                 Split split = sc.computeSplit(root, subgraph);
@@ -29,6 +32,8 @@ public class CompleteSplitSource extends SplitSource {
                 // if the root was not free, do nothing
             }
         }
+        
+        return splits.iterator();
     }
 
 }
