@@ -31,11 +31,11 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *  - For every root, there are entries 0,1,... in indicesCompactToOriginal.
  */
 
-public class RedundancyElimination {
-    private DomGraph graph; // original graph
-    private DomGraph compact; // compact version of the graph
-    private NodeLabels labels;
-    private EquationSystem eqs;
+public abstract class RedundancyElimination {
+    protected DomGraph graph; // original graph
+    protected DomGraph compact; // compact version of the graph
+    protected NodeLabels labels;
+    protected EquationSystem eqs;
     
     /*
      * The meanings of the special values in the hypernormalReachability map:
@@ -116,24 +116,18 @@ public class RedundancyElimination {
     
     private void eliminate(Set<String> subgraph, Chart c, Set<Set<String>> visited) {
         List<Split> splits = c.getSplitsFor(subgraph);
-        Split thePermutableSplit = null;
 
         if( !visited.contains(subgraph)) {
             visited.add(subgraph);
             
             if( splits != null ) { // i.e. not a singleton fragset
                 if( splits.size() > 1 ) { // i.e. there are splits that could be eliminated
-                    for( Split split : splits ) {
-                        if( isPermutableSplit(split, subgraph)) {
-                            // i.e. the split with this index is permutable => eliminate all others
-                            thePermutableSplit = split;
-                            break;
-                        }
+                    List<Split> remainingSplits = getIrredundantSplits(subgraph, c);
+                    
+                    if( remainingSplits.size() < splits.size() ) {
+                        c.setSplitsForSubgraph(subgraph, remainingSplits);
                     }
                     
-                    if( thePermutableSplit != null ) {
-                        c.setSingleSplit(subgraph, thePermutableSplit);
-                    }
                 }
                 
                 // Whether we eliminated something from the complete subcompactGraph or not,
@@ -147,6 +141,9 @@ public class RedundancyElimination {
             }
         }
     }
+
+
+    abstract protected List<Split> getIrredundantSplits(Set<String> subgraph, Chart c);
 
 
     /*
@@ -312,40 +309,16 @@ public class RedundancyElimination {
     
     // root1 is p.d. of root2 iff it has exactly one hole that is connected
     // to root2 by a hn path that doesn't use root1.
-    private boolean isPossibleDominator(String root1, String root2) {
+    protected boolean isPossibleDominator(String root1, String root2) {
         return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
     }
+    
     
     /*
      * permutability
      */
     
-    private boolean isPermutableSplit(Split s, Set<String> subgraph) {
-        String splitRoot = s.getRootFragment();
-        
-        //System.err.println("\nCheck split " + s + " for permutability.");
-        
-        for( String root : subgraph ) {
-            if( graph.isRoot(root) &&  !root.equals(splitRoot) ) {
-                if( isPossibleDominator(root, splitRoot)) {
-                    if( !isPermutable(root, splitRoot) ) {
-                        //System.err.println("  -- not permutable with " + root);
-                        return false;
-                    } else {
-                        //System.err.println("  -- permutable with " + root);
-                    }
-                } else {
-                    //System.err.println("  -- other root " + root + " is not a p.d.");
-                }
-            }
-        }
-        
-        //System.err.println("  -- split is permutable!");
-        return true;
-    }
-
-
-    private boolean isPermutable(String root1, String root2) {
+    protected boolean isPermutable(String root1, String root2) {
         int n1n2 = hypernormalReachability.get(root1).get(root2),
             n2n1 = hypernormalReachability.get(root2).get(root1);
 

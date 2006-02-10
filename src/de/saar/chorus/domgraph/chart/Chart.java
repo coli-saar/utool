@@ -66,6 +66,13 @@ public class Chart {
     }
     
     public void setSingleSplit(Set<String> fragset, Split split) {
+        List<Split> splits = new ArrayList<Split>(1);
+        splits.add(split);
+        setSplitsForSubgraph(fragset, splits);
+    }
+    
+
+    public void setSplitsForSubgraph(Set<String> fragset, List<Split> splits) {
         Set<Set<String>> subgraphsAllSplits = new HashSet<Set<String>>();
         List<Split> oldSplits = getSplitsFor(fragset);
         
@@ -85,12 +92,14 @@ public class Chart {
         
         
         // add the new split
-        addSplit(fragset, split);
+        for( Split split : splits ) {
+            addSplit(fragset, split);
+        }
         
         // remove subgraphs with zero reference count from the chart
         deleteUnproductiveSubgraphs(subgraphsAllSplits);
     }
-    
+
     
     
     private void deleteUnproductiveSubgraphs(Set<Set<String>> subgraphs) {

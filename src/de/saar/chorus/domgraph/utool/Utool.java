@@ -34,6 +34,7 @@ import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
 import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
+import de.saar.chorus.domgraph.equivalence.PermutabilityRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -388,7 +389,7 @@ public class Utool {
                 }
                 
                 if( eliminateEquivalences ) {
-                    elim = new RedundancyElimination(graph, labels, eqs);
+                    elim = new PermutabilityRedundancyElimination(graph, labels, eqs);
                     elim.eliminate(chart);
                     
                     if( displayStatistics ) {
