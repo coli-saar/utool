@@ -58,17 +58,6 @@ public class CommandLineParser {
         InputCodec inputCodec = null;
         OutputCodec outputCodec = null;
         
-        
-        // some default values
-        ret.setInputCodec(null);
-        ret.setOutputCodec(null);
-        ret.setOperation(null);
-        ret.setOutput(new OutputStreamWriter(System.out));
-        ret.setOptionStatistics(false);
-        ret.setOptionNoOutput(false);
-        ret.setOptionEliminateEquivalence(false);
-        ret.setOptionDumpChart(false);
-        
         // prepare codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
@@ -158,7 +147,7 @@ public class CommandLineParser {
                         e, ExitCodes.IO_ERROR);
             } catch (ParserException e) {
                 throw new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
-                        e, ExitCodes.PARSER_ERROR);
+                        e, ExitCodes.PARSING_ERROR);
             } 
         }
         
