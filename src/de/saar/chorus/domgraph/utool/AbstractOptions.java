@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.utool;
 
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import de.saar.chorus.domgraph.codec.InputCodec;
@@ -140,6 +141,19 @@ public class AbstractOptions {
     private Writer output;
     
     private EquationSystem equations;
+    
+    
+    public AbstractOptions() {
+        // some default values
+        setInputCodec(null);
+        setOutputCodec(null);
+        setOperation(null);
+        setOutput(new OutputStreamWriter(System.out));
+        setOptionStatistics(false);
+        setOptionNoOutput(false);
+        setOptionEliminateEquivalence(false);
+        setOptionDumpChart(false);
+    }
     
     
     

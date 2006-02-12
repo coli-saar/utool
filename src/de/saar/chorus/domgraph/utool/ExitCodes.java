@@ -24,7 +24,8 @@ public class ExitCodes {
     public static final int OUTPUT_CODEC_NOT_APPLICABLE = 137;
     public static final int CODEC_REGISTRATION_ERROR = 138;
     public static final int EQUIVALENCE_READING_ERROR = 139;
-    public static final int PARSER_ERROR = 140;
+    public static final int PARSING_ERROR = 140;
+    public static final int PARSER_CONFIGURATION_ERROR = 141;
     
     
     // exit codes for "utool classify"
@@ -34,4 +35,5 @@ public class ExitCodes {
     public static final int  CLASSIFY_COMPACTIFIABLE = 8;
     public static final int  CLASSIFY_HN_CONNECTED = 16;
     public static final int  CLASSIFY_LEAF_LABELLED = 32;
+    
 }

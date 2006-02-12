@@ -119,4 +119,12 @@ public class CodecManager {
         }
     }
 
+    public List<InputCodec> getAllInputCodecs() {
+        return inputCodecs;
+    }
+
+    public List<OutputCodec> getAllOutputCodecs() {
+        return outputCodecs;
+    }
+
 }
