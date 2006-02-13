@@ -9,6 +9,30 @@ import java.util.Stack;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+/**
+ * An iterator over the different solved forms represented by
+ * a {@link Chart}. The chart is passed to the constructor of
+ * an object of this class. Then you can iterate over the solved
+ * forms of this chart using <code>hasNext()</code> and <code>next()</code>
+ * as usual.<p>
+ * 
+ * Each successful call to <code>next()</code> will return an object
+ * of class <code>List<{@link DomEdge}></code>, i.e. a list of
+ * dominance edge representations. This list can e.g. be passed
+ * to the <code>encode</code> method of {@link OutputCodec} or
+ * one of its subclasses.<p>
+ * 
+ * This class implements a transition system for states consisting
+ * of an agenda of subgraphs that must currently be resolved, and
+ * a stack of splits that still need to be processed. This algorithm
+ * is dramatically faster than a naive algorithm which simply computes
+ * the sets of solved forms of a graph by computing the Cartesian
+ * product of the sets of solved forms of its subgraphs, but quite
+ * a bit more complicated.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	private Chart chart;
 	private Agenda agenda;
@@ -60,17 +84,17 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 		}
 	}
 	
-	public boolean representsSolvedForm(){
+	private boolean representsSolvedForm(){
 		return (agenda.isEmpty() && stack.size() > 0 );
 	}
 	
 	
-	boolean isFinished(){	
+	private boolean isFinished(){	
 		return (agenda.isEmpty() && stack.isEmpty() );
 	}
 	
 	
-	List<DomEdge> extractDomEdges() {
+	private List<DomEdge> extractDomEdges() {
 		List<DomEdge> toReturn = new ArrayList<DomEdge>();
 		
 		for( EnumerationStackEntry ese : stack) {
@@ -81,7 +105,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	}
 	
 	
-	void findNextSolvedForm() {
+	private void findNextSolvedForm() {
 		if( !isFinished() ) {
 			do {
 				//System.err.println("step()");
@@ -124,7 +148,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     }
 
 
-    private String getSingletonRoot(Set<String> fragSet) {
+    private String getSingletonRoot(@SuppressWarnings("unused") Set<String> fragSet) {
         return rootForThisFragset;
         //return fragSet.iterator().next();
         //return fragmentTable.get(fragSet);
@@ -143,7 +167,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
         return numRoots == 1;
     }
 
-    void step() {
+    private void step() {
 		EnumerationStackEntry top = stack.peek();
 		AgendaEntry agTop;
 		Set<String> topFragset;
@@ -227,9 +251,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     	return nextSolvedForm != null;
     }
 
-
-    // TODO think about whether hasNext() guarantees that next() will
-    // work -- otherwise, we need to precompute the next sf in hasNext()
     public List<DomEdge> next() {
     	List<DomEdge> ret = nextSolvedForm;
     	

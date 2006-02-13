@@ -7,6 +7,14 @@
 
 package de.saar.chorus.domgraph.chart;
 
+/**
+ * This exception will be thrown by the <code>computeSplit</code> method
+ * of the class <code>SplitSource.SplitComputer</code> if the root
+ * that it gets as an argument is not free. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class RootNotFreeException extends Exception {
 
     public RootNotFreeException() {

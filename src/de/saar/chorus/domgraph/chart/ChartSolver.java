@@ -14,16 +14,59 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+
+
+/**
+ * A solver for weakly normal dominance graphs. This solver computes
+ * a {@link Chart} as described in Koller & Thater (2005), "The evolution
+ * of dominance constraint solvers", ACL-05 Workshop on Software. It
+ * can be seen as an implementation of the Bodirsky et al. 2005 graph
+ * solver.<p>
+ * 
+ * This solver requires that the input dominance graph is weakly normal
+ * and compact. It will successively compute the splits corresponding
+ * to the free fragments of the subgraphs of the dominance graph, and
+ * adds them to the chart.<p>
+ * 
+ * The solver relies on an object of a subclass of {@link SplitSource} 
+ * to provide the splits of a subgraph. By default, it uses
+ * an object of the class {@link CompleteSplitSource}, which computes
+ * all splits of this subgraph. Alternatively, you can provide
+ * a split source which only adds a certain subset of all splits
+ * to the chart.<p> 
+ * 
+ * Notice that the role of this class is only to fill the chart. The actual
+ * solved forms can later be extracted from the chart using a
+ * {@link SolvedFormIterator} object.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class ChartSolver {
     private DomGraph graph;
     private Chart chart;
     private Set<String> roots;
     private SplitSource splitSource;
     
+    /**
+     * A constructor which uses a {@link CompleteSplitSource} as
+     * the split source. 
+     * 
+     * @param graph
+     * @param chart
+     */
     public ChartSolver(DomGraph graph, Chart chart) {
         this(graph, chart, new CompleteSplitSource(graph));
     }
 
+    /**
+     * A constructor which allows you to specify a customised
+     * <code>SplitSource</code>. 
+     * 
+     * @param graph
+     * @param chart
+     * @param splitSource
+     */
     public ChartSolver(DomGraph graph, Chart chart, SplitSource splitSource) {
         this.splitSource = splitSource;
         this.graph = graph;
@@ -37,6 +80,12 @@ public class ChartSolver {
     }
 
 
+    /**
+     * Solves the graph. This fills the chart which was specified
+     * in the constructor call.  
+     * 
+     * @return true iff the graph is solvable
+     */
     public boolean solve() {
         List<Set<String>> wccs = graph.wccs();
       
@@ -81,7 +130,7 @@ public class ChartSolver {
         }
 
         // get splits for this subgraph
-        splits = getSplitIterator(subgraph);
+        splits = splitSource.computeSplits(subgraph);
         
         // if there are none (i.e. there are no free roots),
         // then the original graph is unsolvable
@@ -107,9 +156,5 @@ public class ChartSolver {
             
             return true;
         }
-    }
-
-    protected Iterator<Split> getSplitIterator(Set<String> subgraph) {
-        return splitSource.computeSplits(subgraph);
     }
 }

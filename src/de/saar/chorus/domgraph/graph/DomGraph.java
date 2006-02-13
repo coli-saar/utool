@@ -24,6 +24,28 @@ import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 
+/**
+ * A dominance graph. Dominance graphs are directed
+ * graphs. Nodes are either labelled or unlabelled; edges are either
+ * dominance or tree edges. We say that a node is a root if it has no
+ * incoming tree edges; a leaf if it has no outgoing tree edges; and
+ * a hole if it is unlabelled.<p>
+ * 
+ * Graph objects provide several basic methods for accessing nodes, edges,
+ * and node and edge data. In addition, they provide a number of methods
+ * for checking whether the graph belongs to one of the important graph classes,
+ * such as (weakly) normal and hypernormally connected graphs.<p> 
+ * 
+ * Several methods can take a subgraph of this graph as an argument.
+ * In this context, a subgraph is always a set of nodes.<p>
+ * 
+ * While nodes are marked as labelled or unlabelled here, the actual node
+ * labels are not stored here, but in objects of the class NodeLabels.
+ * 
+ * @author Alexander Koller
+ *
+ */
+
 public class DomGraph {
     private DirectedGraph graph;
     private Map<String,NodeData> nodeData;
@@ -33,114 +55,213 @@ public class DomGraph {
         clear();
     }
     
-
+    
+    /**
+     * Computes the root of the fragment of the given node.
+     * 
+     * @param node a node in the graph
+     * @return the root of this node's fragment.
+     */
     public String getRoot(String node) {
-	for (String parent : getParents(node, EdgeType.TREE)) {
-	    return getRoot(parent);
+        for (String parent : getParents(node, EdgeType.TREE)) {
+            return getRoot(parent);
         }
-	return node;
-    }
-
-    public Set<String> getHoles(String node) {
-	return getHoles(getFragment(node));
-    }
-
-    public Set<String> getHoles(Set<String> fragment) {
-	Set<String> holes = new HashSet<String>();
-	
-	for (String node : fragment) {
-	    if (getData(node).getType() == NodeType.UNLABELLED) {
-		holes.add(node);
-	    }
-	}
-	
-	return holes;
-    }
-
-    public Set<String> getOpenHoles(String node) {
-	Set<String> holes = new HashSet<String>();
-	
-	for (String hole : getHoles(node)) {
-	    if (outdeg(hole) == 0) {
-		holes.add(hole);
-	    }
-	}
-	return holes;
-    }
-
-    public Set<String> getFragment(String node) {
-	Set<String> nodes = new HashSet<String>();
-	getFragment(node, nodes);
-	return nodes;
-    }
-
-    public void getFragment(String node, Set<String> nodes) {
-	if (nodes.contains(node))
-	    return;
-
-	nodes.add(node);
-
-	// XXX -- reimplement with getAdjacentEdges
-	for (String parent : getParents(node, EdgeType.TREE)) {
-	    getFragment(parent, nodes);
-	}
-	for (String child : getChildren(node, EdgeType.TREE)) {
-	    getFragment(child, nodes);
-	}
-    }
-
-
-    // XXX -- adhoc implementierung, funktioniert nicht mit zykeln
-    public boolean reachable (String upper, String lower) {
-	if (upper.equals(lower))
-	    return true;
-
-	for (String node : getParents(lower, null)) {
-	    if (reachable(upper, node)) return true;
-	}
-	return false;
+        return node;
     }
     
+    /**
+     * Computes the holes below the given node.
+     * 
+     * @param node a node in the graph
+     * @return the holes of this node's fragment.
+     */
+    public List<String> getHoles(String node) {
+        return getHoles(getFragment(node));
+    }
+    
+    /**
+     * Computes the holes out of a given collection of nodes.
+     * 
+     * @param fragment a collection of nodes in this graph
+     * @return those nodes out of "fragment" which are holes.
+     */
+    public List<String> getHoles(Collection<String> fragment) {
+        List<String> holes = new ArrayList<String>();
+        
+        for (String node : fragment) {
+            if (getData(node).getType() == NodeType.UNLABELLED) {
+                holes.add(node);
+            }
+        }
+        
+        return holes;
+    }
+    
+    /**
+     * Computes the open holes below a given node. Open holes are
+     * holes without outgoing dominance edges.
+     * 
+     * @param node a node in this graph
+     * @return the list of open holes below "node"
+     */
+    public List<String> getOpenHoles(String node) {
+        List<String> holes = new ArrayList<String>();
+        
+        for (String hole : getHoles(node)) {
+            if (outdeg(hole) == 0) {
+                holes.add(hole);
+            }
+        }
+        return holes;
+    }
+    
+    /**
+     * Computes the fragment of a given node. A fragment is a
+     * maximal set of nodes that are connected via tree edges.
+     * 
+     * @param node a node of this graph
+     * @return the fragment of this node
+     */
+    public Set<String> getFragment(String node) {
+        Set<String> nodes = new HashSet<String>();
+        getFragmentDfs(node, nodes);
+        return nodes;
+    }
+    
+    /**
+     * Performs a depth-first search for exploring the fragment of
+     * "node". The visited nodes are collected in "nodes".
+     * 
+     * @param node a node in this graph
+     * @param nodes the nodes which were visited so far in this DFS.
+     */
+    private void getFragmentDfs(String node, Set<String> nodes) {
+        if (nodes.contains(node))
+            return;
+        
+        nodes.add(node);
+        
+        for( Edge edge : getAdjacentEdges(node, EdgeType.TREE)) {
+            getFragmentDfs((String) edge.oppositeVertex(node), nodes);
+        }
+    }
+    
+    
+    /**
+     * Checks whether there is a directed path from "upper" to
+     * "lower" in the graph.<p>
+     * 
+     * TODO: this is an ad hoc implementation which will not work
+     * for graphs with cycles.
+     * 
+     * @param upper a node in the graph
+     * @param lower a node in the graph
+     * @return true iff there is a directed path from upper to lower
+     */
+    public boolean reachable (String upper, String lower) {
+        if (upper.equals(lower))
+            return true;
+        
+        for (String node : getParents(lower, null)) {
+            if (reachable(upper, node)) return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Removes all nodes and edges from this graph.
+     */
     public void clear() {
         graph = new DefaultDirectedGraph();
         nodeData = new HashMap<String,NodeData>();
         edgeData = new HashMap<Edge,EdgeData>();
     }
     
+    /**
+     * Adds a node with the given node name and node data to
+     * the graph.
+     * 
+     * @param name the name of the new node
+     * @param data the data for the new node
+     */
     public void addNode(String name, NodeData data) {
         graph.addVertex(name);
         nodeData.put(name,data);
     }
     
+    /**
+     * Adds an edge from "src" to "tgt" with the given edge
+     * data to the graph.
+     * 
+     * @param src an existing node in the graph
+     * @param tgt an existing node in the graph
+     * @param data the data for the new edge
+     */
     public void addEdge(String src, String tgt, EdgeData data) {
         Edge e = graph.addEdge(src,tgt);
         edgeData.put(e, data);
     }
     
+    /**
+     * Removes a given node and all adjacent edges from the graph.
+     * 
+     * @param node a node in this graph
+     */
     public void remove(String node) {
         graph.removeVertex(node);
     }
     
+    /**
+     * Removes a given edge from the graph.
+     * 
+     * @param edge an edge in this graph
+     */
     public void remove(Edge edge) {
         graph.removeEdge(edge);
     }
     
+    /**
+     * Computes the set of all nodes in this graph.
+     * 
+     * @return the set of all nodes
+     */
+    @SuppressWarnings("unchecked")
     public Set<String> getAllNodes() {
         return graph.vertexSet();
     }
     
+    /**
+     * Checks whether the graph has a node with the given name.
+     * 
+     * @param name a node name
+     * @return true iff "name" is a node of this graph. 
+     */
     public boolean hasNode(String name) {
         return nodeData.containsKey(name);
     }
     
+    /**
+     * Computes the set of all edges in this graph.
+     * 
+     * @return the set of all edges
+     */
+    @SuppressWarnings("unchecked")
     public Set<Edge> getAllEdges() {
         return graph.edgeSet();
     }
     
-    // type == null, dann alle eingehenden Kanten
+    /**
+     * Computes the set of all incoming edges of a node with a given
+     * type. You can select edges of all types by passing null
+     * as the "type" argument. 
+     * 
+     * @param node a node in the graph
+     * @param type an edge type, or null for edges of all types
+     * @return the list of incoming edges of this type
+     */
     public List<Edge> getInEdges(String node, EdgeType type) {
         List<Edge> ret = new ArrayList<Edge>();
-      
+        
         for( Object _edge : graph.incomingEdgesOf(node) ) {
             Edge edge = (Edge) _edge;
             EdgeType myType = getData(edge).getType();
@@ -153,6 +274,15 @@ public class DomGraph {
         return ret;
     }
     
+    /**
+     * Computes the set of parents of a node via edges of
+     * a given type. You can select parents via edges of
+     * all types by passing null as the "type" argument.
+     * 
+     * @param node a node in the graph
+     * @param type an edge type, or null for edges of all types
+     * @return the list of parents via edges of this type
+     */
     public List<String> getParents(String node, EdgeType type) {
         List<String> parents = new ArrayList<String>();
         
@@ -162,11 +292,20 @@ public class DomGraph {
         
         return parents;
     }
-
     
+    
+    /**
+     * Computes the set of all outgoing edges of a node with a given
+     * type. You can select edges of all types by passing null
+     * as the "type" argument. 
+     * 
+     * @param node a node in the graph
+     * @param type an edge type, or null for edges of all types
+     * @return the list of outgoing edges of this type
+     */
     public List<Edge> getOutEdges(String node, EdgeType type) {
         List<Edge> ret = new ArrayList<Edge>();
-      
+        
         for( Object _edge : graph.outgoingEdgesOf(node) ) {
             Edge edge = (Edge) _edge;
             EdgeType myType = getData(edge).getType();
@@ -179,16 +318,43 @@ public class DomGraph {
         return ret;
     }
     
+    /**
+     * Computes the set of all adjacent edges of a node with a given
+     * type. You can select edges of all types by passing null
+     * as the "type" argument. 
+     * 
+     * @param node a node in the graph
+     * @param type an edge type, or null for edges of all types
+     * @return the list of adjacent edges of this type
+     */
     public List<Edge> getAdjacentEdges(String node, EdgeType type) {
         List<Edge> ret = getInEdges(node,type);
         ret.addAll(getOutEdges(node,type));
         return ret;
     }
     
+    /**
+     * Computes the set of all adjacent edges of a node. This
+     * is equivalent to getAdjacentEdges(node,null).
+     * 
+     * @param node a node in the graph
+     * @return the list of adjacent edges
+     */
+    @SuppressWarnings("unchecked")
     public List<Edge> getAdjacentEdges(String node) {
-    	return (List<Edge>) graph.edgesOf(node);
+        return (List<Edge>) graph.edgesOf(node);
     }
     
+    /**
+     * Computes the set of children of a node via edges of
+     * a given type. You can select children via edges of
+     * all types by passing null as the "type" argument.
+     * 
+     * @param node a node in this graph
+     * @param type an edge type, or null for edges of all types
+     * @return the list of children via edges of this type
+
+     */
     public List<String> getChildren(String node, EdgeType type) {
         List<String> children = new ArrayList<String>();
         
@@ -202,10 +368,22 @@ public class DomGraph {
     
     
     
+    /**
+     * Gets the data associated with the given node.
+     * 
+     * @param node
+     * @return
+     */
     public NodeData getData(String node) {
         return nodeData.get(node);
     }
     
+    /**
+     * Gets the data associated with the given edge.
+     * 
+     * @param edge
+     * @return
+     */
     public EdgeData getData(Edge edge) {
         return edgeData.get(edge);
     }
@@ -213,38 +391,100 @@ public class DomGraph {
     
     
     
+    /**
+     * Computes the number of incoming edges of a given node. This is
+     * equivalent to indeg(node,null).
+     * 
+     * @param node
+     * @return
+     */
     public int indeg(String node) {
         return graph.inDegreeOf(node);
     }
     
+    /**
+     * Computes the number of outgoing edges of a given node. This is
+     * equivalent to outdeg(node,null).
+     * 
+     * @param node
+     * @return
+     */
     public int outdeg(String node) {
         return graph.outDegreeOf(node);
     }
     
+    /**
+     * Computes the number of incoming edges of a given node
+     * with a given type. You can specify that you want to count
+     * edges of any type by passing null in the "type" argument.
+     * 
+     * @param node a node in the graph
+     * @param type the type of the in-edges you want to count, or null for edges of any type
+     * @return the number of in-edges of this type
+     */
     public int indeg(String node, EdgeType type) {
         return getInEdges(node,type).size();
     }
     
+    /**
+     * Computes the number of incoming edges of a given node,
+     * with a given edge type, and whose source nodes are in the
+     * given subgraph. 
+     * 
+     * @param node a node in the graph
+     * @param type an edge type, or null for edges of any type
+     * @param subgraph the subgraph (i.e. set of nodes) in which the parents must be
+     * @return the number of such in-edges
+     */
     public int indegOfSubgraph(String node, EdgeType type, Set<String> subgraph) {
         List<String> parents = getParents(node, type);
         parents.retainAll(subgraph);
         return parents.size();
     }
     
+    /**
+     * Computes the number of outgoing edges of a given node
+     * with a given type. You can specify that you want to count
+     * edges of any type by passing null in the "type" argument.
+     * 
+     * @param node a node in the graph
+     * @param type the type of the out-edges you want to count, or null for edges of any type
+     * @return the number of out-edges of this type
+     */
     public int outdeg(String node, EdgeType type) {
         return getOutEdges(node,type).size();
     }
     
+    /**
+     * Checks whether a node is a root. Roots are nodes with no
+     * incoming tree edges.
+     * 
+     * @param node a node
+     * @return true iff the node has no incoming tree edges
+     */
     public boolean isRoot(String node) {
         return indeg(node,EdgeType.TREE) == 0;
     }
     
+    /**
+     * Checks whether a node is a leaf. Leaves are nodes with no
+     * outgoing tree edges. In particular, all holes are leaves
+     * by definition (but not vice versa).
+     * 
+     * @param node a node in the graph
+     * @return true iff the node has no outgoing tree edges
+     */
     public boolean isLeaf(String node) {
         return outdeg(node, EdgeType.TREE) == 0;
     }
     
-    // stth
-    public Set<String> getAllRoots(Set<String> nodes) {
+    /**
+     * Collects all nodes in a given subgraph which are roots.
+     * 
+     * @param nodes a collection of nodes (defining a subgraph)
+     * @return the set of all nodes among "nodes" which are roots
+     */
+    public Set<String> getAllRoots(Collection<String> nodes) {
         Set<String> roots = new HashSet<String>();
         
         for( String node : nodes ) {
@@ -254,9 +494,15 @@ public class DomGraph {
         }
         
         return roots;
-
+        
     }
     
+    /**
+     * Collects all roots in the graph. This is equivalent to
+     * getAllRoots(getAllNodes()).
+     * 
+     * @return all roots in this graph
+     */
     public Set<String> getAllRoots() {
         Set<String> ret = new HashSet<String>();
         
@@ -269,27 +515,37 @@ public class DomGraph {
         return ret;
     }
     
-
+    
     
     /**
-     * Compute the weakly connected components of the selected subgraph.
+     * Computes the weakly connected components of the graph.
+     * A weakly connected component is a maximal subgraph which is connected
+     * via edges or inverse edges of any type. This is equivalent
+     * to wccs(getAllNodes()).
      * 
-     * @param components the elements of this collection will be the
-     * sets of nodes in the different wccs
-     * @return the number of wccs
+     * @return the list of wccs; each wcc is a set of nodes.
      */
     public List<Set<String>> wccs() {
-        return wccsOfSubgraph(getAllNodes());
+        return wccs(getAllNodes());
     }
     
-    public List<Set<String>> wccsOfSubgraph(Set<String> nodes) {
+    /**
+     * Computes the weakly connected components of a subgraph.
+     * A weakly connected component is a maximal subgraph which is connected
+     * via edges or inverse edges of any type. 
+     * 
+     * @return the list of wccs; each wcc is a set of nodes.
+     * @param nodes
+     * @return
+     */
+    public List<Set<String>> wccs(Set<String> nodes) {
         final List<Set<String>> components = new ArrayList<Set<String>>();
         RestrictedDepthFirstIterator it = 
             new RestrictedDepthFirstIterator(new AsUndirectedGraph(graph), null, nodes);
         
         it.addTraversalListener(new TraversalListenerAdapter() {
             Set<String> thisComponent;
-
+            
             public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {
                 thisComponent = new HashSet<String>();
             }
@@ -298,20 +554,28 @@ public class DomGraph {
                 String node = (String) e.getVertex();
                 thisComponent.add(node);
             }
-
+            
             public void connectedComponentFinished(ConnectedComponentTraversalEvent e) {
                 components.add(thisComponent);
             }
         });
-
+        
         // run DFS
         while( it.hasNext() ) {
             it.next();
         }
-
+        
         return components;
     }
     
+    /**
+     * Computes a mapping of nodes to wcc indices from a list of
+     * wccs. Such a mapping assigns to each node in any of the wccs
+     * the index between 0 and wccs.size()-1 which contains this node.
+     * 
+     * @param wccs a list of WCCs, as computed by the wccs methods.
+     * @return the mapping described above.
+     */
     public Map<String,Integer> computeWccMap(List<Set<String>> wccs) {
         Map<String,Integer> wccMap = new HashMap<String,Integer>();
         
@@ -326,6 +590,9 @@ public class DomGraph {
     }
     
     
+    /**
+     * Removes all dominance edges from the dominance graph.
+     */
     private void removeAllDominanceEdges() {
         List<Edge> allEdges = new ArrayList<Edge>();
         allEdges.addAll(getAllEdges());
@@ -337,7 +604,14 @@ public class DomGraph {
             }
         }
     }
-
+    
+    /**
+     * Sets the dominance edges of the graph to the given collection,
+     * possibly removing any existing dominance edges first.
+     * Dominance edges are specified as {@link DomEdge} objects.
+     * 
+     * @param domedges the new dominance edges.
+     */
     public void setDominanceEdges(Collection<DomEdge> domedges) {
         removeAllDominanceEdges();
         
@@ -351,6 +625,17 @@ public class DomGraph {
     
     /***** graph classes ******/
     
+    /**
+     * Checks whether this graph is weakly normal. A graph is weakly
+     * normal under the following conditions:
+     * <ul>
+     * <li> all holes are leaves;
+     * <li> fragments are trees (NB: acyclicity not yet implemented);
+     * <li> all dominance edges go into roots.
+     * </ul>
+     *  
+     * @return true iff the graph is weakly normal
+     */
     public boolean isWeaklyNormal() {
         for( String node : getAllNodes() ) {
             if( getData(node).getType() == NodeType.UNLABELLED ) {
@@ -359,19 +644,19 @@ public class DomGraph {
                     //System.err.println(node + " is unlabelled but no leaf!");
                     return false;
                 }
-            
+                
                 /*
-                // no empty fragments: all unlabelled nodes must have incoming tree edges
-                if( indeg(node, EdgeType.TREE) == 0 ) {
-                    System.err.println(node + " is unlabelled but has no in-tree-edges!");
-                    return false;
-                }
-                */
+                 // no empty fragments: all unlabelled nodes must have incoming tree edges
+                  if( indeg(node, EdgeType.TREE) == 0 ) {
+                  System.err.println(node + " is unlabelled but has no in-tree-edges!");
+                  return false;
+                  }
+                  */
             }
             
             // no two incoming tree edges
             if( indeg(node, EdgeType.TREE) > 1 ) {
-//                System.err.println(node + " has two in-tree-edges!");
+//              System.err.println(node + " has two in-tree-edges!");
                 return false;
             }
             
@@ -382,7 +667,7 @@ public class DomGraph {
             if( getData(edge).getType() == EdgeType.DOMINANCE ) {
                 // dominance edges go into roots
                 if( !isRoot((String) edge.getTarget()) ) {
-  //                  System.err.println(edge + " is a dom-edge into a non-root!");
+                    //                  System.err.println(edge + " is a dom-edge into a non-root!");
                     return false;
                 }
             }
@@ -391,6 +676,16 @@ public class DomGraph {
         return true;
     }
     
+    /**
+     * Checks whether this graph is normal. A graph is normal under the
+     * following conditions:
+     * <ul>
+     * <li> the graph is weakly normal;
+     * <li> dominance edges go from holes to roots.
+     * </ul>
+     * 
+     * @return true iff the graph is normal.
+     */
     public boolean isNormal() {
         if( !isWeaklyNormal() ) {
             return false;
@@ -404,10 +699,17 @@ public class DomGraph {
                 }
             }
         }
-            
+        
         return true;
     }
     
+    /**
+     * Checks whether this graph is compact. A graph is compact iff
+     * it is weakly normal and only holes have incoming tree edges,
+     * i.e. every node is either a root or a hole (or both).
+     * 
+     * @return true iff the graph is compact.
+     */
     public boolean isCompact() {
         if( !isWeaklyNormal() ) {
             return false;
@@ -423,6 +725,13 @@ public class DomGraph {
         return true;
     }
     
+    /**
+     * Checks whether this graph can be compactified. A graph can
+     * be compactified iff it is weakly normal, and all dominance
+     * edges go either out of holes or out of roots. 
+     * 
+     * @return true iff the graph can be compactified
+     */
     public boolean isCompactifiable() {
         if( !isWeaklyNormal() ) {
             return false;
@@ -442,6 +751,13 @@ public class DomGraph {
         return true;
     }
     
+    /**
+     * Checks whether the graph is leaf-labelled. A graph is leaf-labelled
+     * iff it is weakly normal and all nodes either have a label or an
+     * outgoing dominance edge. 
+     * 
+     * @return true iff the graph is leaf-labelled
+     */
     public boolean isLeafLabelled() {
         if( !isWeaklyNormal() ) {
             return false;
@@ -458,6 +774,16 @@ public class DomGraph {
         return true;
     }
     
+    /**
+     * Checks whether the graph is hypernormally connected. A graph
+     * is hypernormally connected iff it is normal and each pair of
+     * nodes is connected by a hypernormal path.<p> 
+     * 
+     * TODO: The current implementation of this method is only
+     * correct if the graph is solvable.
+     * 
+     * @return true iff the graph is hnc
+     */
     public boolean isHypernormallyConnected() {
         Set<String> visited = new HashSet<String>();
         
@@ -470,6 +796,14 @@ public class DomGraph {
     }
     
     
+    /**
+     * An auxiliary function for <code>isHypernormallyConnected</code>,
+     * which performs a DFS over the entire graph which only uses the
+     * first dom-edge out of each node.
+     * 
+     * @param node
+     * @param visited
+     */
     private void hncDfs(String node, Set<String> visited) {
         boolean haveUsedOutgoingDomEdge = false;
         
@@ -492,9 +826,16 @@ public class DomGraph {
             }
         }
     }
-
-
-
+    
+    
+    
+    /**
+     * Checks whether the graph is a simple solved form, i.e.
+     * if it is a tree and every node has at most one outgoing
+     * dominance edge.
+     * 
+     * @return true iff the graph is a simple solved form.
+     */
     public boolean isSimpleSolvedForm() {
         for( String node : getAllNodes() ) {
             // TODO check cyclicity
@@ -511,11 +852,53 @@ public class DomGraph {
         return true;
     }
     
+
+    /**
+     * Check whether the weakly normal graph is "well-formed" in the sense of 
+     * Bodirsky et al. 04. This means that every root of a dominance edge
+     * dominates a hole of its fragment.<p>
+     * 
+     * This method assumes that the graph is weakly normal and compact.
+     *  
+     * @return true iff the graph is well-formed.
+     */
+    public boolean isWellFormed() {
+        assert isWeaklyNormal();
+        assert isCompact();
+        
+        for( Edge edge : getAllEdges()) {
+            String src = (String) edge.getSource();
+            
+            // this check assumes that the graph is compact 
+            if( (getData(src).getType() == NodeType.LABELLED)
+                    && isLeaf(src) ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
     
     
     /**** compactification ****/
     
+    /**
+     * Computes a compact version of this graph. If the graph is
+     * already compact, the graph itself is returned. Otherwise,
+     * the compactified graph will consist of the roots and holes
+     * of the original graph; roots and holes of the same fragment
+     * are connected by new tree edges, and holes and roots of different
+     * fragments are connected by dominance edges.<p>
+     * 
+     * The compact graph and the original graph have corresponding
+     * solved forms.<p>
+     * 
+     * The result is only guaranteed to be compact if the graph
+     * is compactifiable according to the method <code>isCompactifiable</code>. 
+     * 
+     * @return a compact version of this graph.
+     */
     public DomGraph compactify() {
         if( isCompact() ) {
             return this;
@@ -540,6 +923,14 @@ public class DomGraph {
         }
     }
     
+    /**
+     * An auxiliary method in the compactification, which copies a fragment
+     * to the compact graph.
+     * 
+     * @param node
+     * @param root
+     * @param ret
+     */
     private void copyFragment(String node, String root, DomGraph ret) {
         if( getData(node).getType() == NodeType.UNLABELLED ) {
             if( !node.equals(root) ) { // i.e. not an empty fragment with root = hole
@@ -559,11 +950,9 @@ public class DomGraph {
     
     
     
-    public DirectedGraph getLowlevelGraph() {
-        return graph;
-    }
-    
-    
+    /* 
+     * Computes a string representation of this graph.
+     */
     public String toString() {
         StringBuilder ret = new StringBuilder();
         
@@ -577,79 +966,67 @@ public class DomGraph {
         return ret.toString();
     }
     
+
     
-    public Map<Set<String>, String> getFragments() {
-        Set<String> visited = new HashSet<String>();
-        Map<Set<String>,String> ret = new HashMap<Set<String>, String>();
-        
-        for( Set<String> wcc : wccs() ) {
-            computeFragmentTableDfs(wcc.iterator().next(), null, ret, visited);
-        }
-        
-        return ret;
-    }
-
-    private void computeFragmentTableDfs(String node, Set<String> currentFragment, Map<Set<String>, String> fragmentTable, Set<String> visited) {
-        visited.add(node);
-        
-        if( currentFragment == null ) {
-            currentFragment = new HashSet<String>();
-        }
-        
-        currentFragment.add(node);
-        
-        if( isRoot(node) ) {
-            fragmentTable.put(currentFragment, node);
-        }
-        
-        // visit the other nodes in my fragment
-        List<Edge> adjacentEdges = getAdjacentEdges(node);
-        for( Edge edge : adjacentEdges ) {
-            if( getData(edge).getType() == EdgeType.TREE ) {
-                String neighbour = (String) edge.oppositeVertex(node);
-                if( !visited.contains(neighbour) ) {
-                    computeFragmentTableDfs(neighbour, currentFragment, fragmentTable, visited);
-                }
-            }
-        }
-        
-        // visit nodes in other fragments
-        for( Edge edge : adjacentEdges ) {
-            if( getData(edge).getType() == EdgeType.DOMINANCE ) {
-                String neighbour = (String) edge.oppositeVertex(node);
-                if( !visited.contains(neighbour) ) {
-                    computeFragmentTableDfs(neighbour, null, fragmentTable, visited);
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Check whether the weakly normal graph is "well-formed" in the sense of 
-     * Bodirsky et al. 04. This means that every root of a dominance edge
-     * dominates a hole of its fragment.
-     * 
-     * This method assumes that the graph is weakly normal and compact.
-     *  
-     * @return true iff the graph is well-formed.
-     */
-    public boolean isWellFormed() {
-        assert isWeaklyNormal();
-        assert isCompact();
-        
-        for( Edge edge : getAllEdges()) {
-            String src = (String) edge.getSource();
-            
-            // this check assumes that the graph is compact 
-            if( (getData(src).getType() == NodeType.LABELLED)
-                    && isLeaf(src) ) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
     
 }
+
+
+
+
+
+/*
+public Map<Set<String>, String> getFragments() {
+    Set<String> visited = new HashSet<String>();
+    Map<Set<String>,String> ret = new HashMap<Set<String>, String>();
     
+    for( Set<String> wcc : wccs() ) {
+        computeFragmentTableDfs(wcc.iterator().next(), null, ret, visited);
+    }
+    
+    return ret;
+}
+
+private void computeFragmentTableDfs(String node, Set<String> currentFragment, Map<Set<String>, String> fragmentTable, Set<String> visited) {
+    visited.add(node);
+    
+    if( currentFragment == null ) {
+        currentFragment = new HashSet<String>();
+    }
+    
+    currentFragment.add(node);
+    
+    if( isRoot(node) ) {
+        fragmentTable.put(currentFragment, node);
+    }
+    
+    // visit the other nodes in my fragment
+    List<Edge> adjacentEdges = getAdjacentEdges(node);
+    for( Edge edge : adjacentEdges ) {
+        if( getData(edge).getType() == EdgeType.TREE ) {
+            String neighbour = (String) edge.oppositeVertex(node);
+            if( !visited.contains(neighbour) ) {
+                computeFragmentTableDfs(neighbour, currentFragment, fragmentTable, visited);
+            }
+        }
+    }
+    
+    // visit nodes in other fragments
+    for( Edge edge : adjacentEdges ) {
+        if( getData(edge).getType() == EdgeType.DOMINANCE ) {
+            String neighbour = (String) edge.oppositeVertex(node);
+            if( !visited.contains(neighbour) ) {
+                computeFragmentTableDfs(neighbour, null, fragmentTable, visited);
+            }
+        }
+    }
+}
+*/
+
+
+
+/*
+public DirectedGraph getLowlevelGraph() {
+    return graph;
+}
+*/

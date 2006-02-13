@@ -9,11 +9,8 @@ package de.saar.chorus.domgraph.graph;
 
 
 /**
- * The data that can be stored in the node of a dominance graph -- namely,
- * a name, a label, and a node type.
- * 
- * In addition, objects of this class can serve as popup targets, i.e.
- * they provide a menu item for a popup menu.
+ * The data associated with a node. At this point,
+ * this is simply the node type (labelled or unlabelled).
  *  
  * @author Alexander Koller
  *
@@ -21,13 +18,6 @@ package de.saar.chorus.domgraph.graph;
 public class NodeData {
     private NodeType type;
     
-    /**
-     * New node data for a labelled node (with label).
-     * 
-     * @param name
-     * @param label
-     * @param type
-     */
     public NodeData(NodeType type) {
         this.type = type;
     }
@@ -35,17 +25,27 @@ public class NodeData {
     
     
     /**
-     * @return Returns the type.
+     * Returns the node type.
+     * 
+     * @return the type
      */
     public NodeType getType() {
         return type;
     }
     
+    /**
+     * Returns a string representation of this node-data object.
+     */
     public String toString() {
         return ((type==NodeType.LABELLED)?"[L]":"[U]");
     }
 
 
+    /**
+     * Set the node type.
+     * 
+     * @param type the new type of the node
+     */
     public void setType(NodeType type) {
         this.type = type;
     }

@@ -14,6 +14,15 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+/**
+ * A split source which computes the complete list of 
+ * splits for a subgraph. A <code>ChartSolver</code> which uses
+ * an object of this class as its split source will compute
+ * the set of all solved forms of the dominance graph.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class CompleteSplitSource extends SplitSource {
     public CompleteSplitSource(DomGraph graph) {
         super(graph);

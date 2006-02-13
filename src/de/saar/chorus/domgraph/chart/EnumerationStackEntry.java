@@ -6,7 +6,7 @@ import java.util.List;
 
 import de.saar.chorus.domgraph.graph.DomEdge;
 
-public class EnumerationStackEntry {
+class EnumerationStackEntry {
 	private String dominator;
 	private List<DomEdge> edgeAccu;
 	private Split currentSplit;
