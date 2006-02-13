@@ -68,12 +68,12 @@ class MrsCodec {
     public void addEdge(String source, String target, EdgeType type)
     {
 	if (!graph.hasNode(source))
-	    graph.addNode(source, new NodeData(NodeType.UNLABELLED, null));
+	    graph.addNode(source, new NodeData(NodeType.UNLABELLED));
 
 	if (!graph.hasNode(target))
-	    graph.addNode(target, new NodeData(NodeType.UNLABELLED, null));
+	    graph.addNode(target, new NodeData(NodeType.UNLABELLED));
 
-	graph.addEdge(source, target, new EdgeData(type, null));
+	graph.addEdge(source, target, new EdgeData(type));
     }
     
     public void addBindingEdges()
@@ -92,7 +92,7 @@ class MrsCodec {
     void addQuantifier(String node, String label, Map<String,String> attrs)
     {
 	if (!graph.hasNode(node)) {
-	    graph.addNode(node, new NodeData(NodeType.LABELLED, node));
+	    graph.addNode(node, new NodeData(NodeType.LABELLED));
 	} else {
 	    // XXX -- throw an exception
 	}
@@ -122,7 +122,7 @@ class MrsCodec {
     void addRelation(String node, String label, Map<String,String> attrs)
     {
 	if (!graph.hasNode(node)) {
-	    graph.addNode(node, new NodeData(NodeType.LABELLED, node));
+	    graph.addNode(node, new NodeData(NodeType.LABELLED));
 	} else {
 	    graph.getData(node).setType(NodeType.LABELLED);
 	}

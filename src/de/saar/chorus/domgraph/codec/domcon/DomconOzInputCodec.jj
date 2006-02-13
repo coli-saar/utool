@@ -113,7 +113,7 @@ void Atom() :
     <DOM> "(" x=Variable() y=Variable() ")"
      { 
 	 graph.addEdge(x, y, 
-		       new EdgeData(EdgeType.DOMINANCE, x + "-" + y));
+		       new EdgeData(EdgeType.DOMINANCE));
      }
 
 
@@ -128,7 +128,7 @@ void Atom() :
 
 	for( String child : varlist ) {
 	    graph.addEdge(x, child,
-			  new EdgeData(EdgeType.TREE, x + "-" + child));
+			  new EdgeData(EdgeType.TREE));
 	}
 
 	varlist.clear();
@@ -157,7 +157,7 @@ String Variable() :
     String nodename = stripquotes(t.image);
 
     if( !graph.hasNode(nodename) ) {
-      graph.addNode(nodename, new NodeData(NodeType.UNLABELLED, nodename));
+      graph.addNode(nodename, new NodeData(NodeType.UNLABELLED));
     }
 
     return nodename;

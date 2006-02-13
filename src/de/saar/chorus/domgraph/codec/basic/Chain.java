@@ -60,7 +60,7 @@ public class Chain extends InputCodec {
     	graph.clear();
     	
     	lower = "y0";
-    	graph.addNode("y0", new NodeData(NodeType.LABELLED, "y0"));
+    	graph.addNode("y0", new NodeData(NodeType.LABELLED));
     	labels.addLabel("y0", "a0");
     	
     	for( int i = 1; i <= length; i++ ) {
@@ -69,25 +69,25 @@ public class Chain extends InputCodec {
     		upper_lefthole = "xl" + i;
     		upper_righthole = "xr" + i;
     		
-    		graph.addNode(upper_root, new NodeData(NodeType.LABELLED, upper_root));
+    		graph.addNode(upper_root, new NodeData(NodeType.LABELLED));
     		labels.addLabel(upper_root, "f" + i);
     		
-    		graph.addNode(upper_lefthole, new NodeData(NodeType.UNLABELLED, upper_lefthole));
-    		graph.addNode(upper_righthole, new NodeData(NodeType.UNLABELLED, upper_righthole));
+    		graph.addNode(upper_lefthole, new NodeData(NodeType.UNLABELLED));
+    		graph.addNode(upper_righthole, new NodeData(NodeType.UNLABELLED));
     		
-    		graph.addEdge(upper_root, upper_lefthole, new EdgeData(EdgeType.TREE, "x-xl-" + i));
-    		graph.addEdge(upper_root, upper_righthole, new EdgeData(EdgeType.TREE, "x-xr-" + i));
+    		graph.addEdge(upper_root, upper_lefthole, new EdgeData(EdgeType.TREE));
+    		graph.addEdge(upper_root, upper_righthole, new EdgeData(EdgeType.TREE));
     		
     		// dominance edge to previous lower fragment
-    		graph.addEdge(upper_lefthole, lower, new EdgeData(EdgeType.DOMINANCE, "dom"));
+    		graph.addEdge(upper_lefthole, lower, new EdgeData(EdgeType.DOMINANCE));
     		
     		// lower fragment
     		lower = "y" + i;
-    		graph.addNode(lower, new NodeData(NodeType.LABELLED, lower));
+    		graph.addNode(lower, new NodeData(NodeType.LABELLED));
         	labels.addLabel(lower, "a" + i);
     		
     		// dominance edge to new lower fragment
-        	graph.addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE, "dom"));
+        	graph.addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE));
     	}
     	
     }
