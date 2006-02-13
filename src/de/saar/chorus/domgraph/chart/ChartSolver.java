@@ -39,6 +39,10 @@ public class ChartSolver {
 
     public boolean solve() {
         List<Set<String>> wccs = graph.wccs();
+      
+        if( !graph.isWellFormed() ) {
+            return false;
+        }
 
         for( Set<String> wcc : wccs ) {
             chart.addToplevelSubgraph(wcc);
