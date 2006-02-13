@@ -10,23 +10,6 @@ package de.saar.chorus.domgraph.codec;
 import java.util.List;
 
 public class CodecTools {
-    public static String join(List<String> strings, String separator) {
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
-        
-        for( String s : strings ) {
-            if( first ) {
-                first = false;
-            } else {
-                sb.append(separator);
-            } 
-            
-            sb.append(s);
-        }
-        
-        return sb.toString();
-        
-    }
     
     public static String atomify(String label) {
         boolean must_atomify = false;
@@ -54,11 +37,6 @@ public class CodecTools {
         }
     }
     
-    public static String encodeXmlEntities(String str) {
-        return
-            str.replaceAll("&", "&amp;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
-                .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-    }
 
 
 }

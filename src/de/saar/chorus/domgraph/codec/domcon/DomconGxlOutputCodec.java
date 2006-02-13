@@ -12,6 +12,7 @@ import java.io.Writer;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -38,7 +39,7 @@ public class DomconGxlOutputCodec extends GraphOutputCodec {
         
         // iterate over all nodes
         for( String node : graph.getAllNodes() ) {
-            writer.write("      <node id=\"" + CodecTools.encodeXmlEntities(node) + "\">\n");
+            writer.write("      <node id=\"" + XmlEntities.encode(node) + "\">\n");
             if( graph.getData(node).getType() == NodeType.LABELLED ) {
                 if( graph.outdeg(node) > 0 ) {
                     writer.write("         <type xlink:href=\"root\" />\n");
@@ -47,7 +48,7 @@ public class DomconGxlOutputCodec extends GraphOutputCodec {
                 }
                 
                 writer.write("         <attr name=\"label\"><string>"
-                        + CodecTools.encodeXmlEntities(labels.getLabel(node))
+                        + XmlEntities.encode(labels.getLabel(node))
                         + "</string></attr>\n");
             } else {
                 writer.write("         <type xlink:href=\"hole\" />\n");
@@ -58,9 +59,9 @@ public class DomconGxlOutputCodec extends GraphOutputCodec {
             // iterate over edges out of this node
             for( Edge edge : graph.getOutEdges(node, null) ) {
                 writer.write("      <edge from=\""
-                        + CodecTools.encodeXmlEntities((String) edge.getSource())
+                        + XmlEntities.encode((String) edge.getSource())
                         + "\" to=\"" 
-                        + CodecTools.encodeXmlEntities((String) edge.getTarget())
+                        + XmlEntities.encode((String) edge.getTarget())
                         + "\" id=\"edge" + (count++) + "\">\n");
                 
                 if( graph.getData(edge).getType() == EdgeType.TREE ) {

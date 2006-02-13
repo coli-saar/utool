@@ -14,6 +14,7 @@ import java.util.List;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -43,7 +44,7 @@ public class DomconOzOutputCodec extends GraphOutputCodec {
                 
                 List<String> children = graph.getChildren(node, EdgeType.TREE);
                 if( !children.isEmpty() ) {
-                    sb.append("(" + CodecTools.join(children, " ") + ")");
+                    sb.append("(" + StringTools.join(children, " ") + ")");
                 }
                 
                 sb.append(")");
@@ -59,7 +60,7 @@ public class DomconOzOutputCodec extends GraphOutputCodec {
             }
         }
         
-        writer.write("[" + CodecTools.join(atoms, " ") + "]\n");
+        writer.write("[" + StringTools.join(atoms, " ") + "]\n");
         writer.flush();
     }
     

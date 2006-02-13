@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
@@ -35,7 +36,7 @@ public class DomconOzPluggingOutputCodec extends PluggingOutputCodec {
                     + " " + CodecTools.atomify(edge.getTgt()) + ")");
         }
         
-        writer.write("[" + CodecTools.join(edgeStrings, " ") + "]\n");
+        writer.write("[" + StringTools.join(edgeStrings, " ") + "]\n");
         writer.flush();
     }
 
