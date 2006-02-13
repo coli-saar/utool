@@ -28,4 +28,8 @@ public class NodeLabels {
     public String getLabel(String node) {
         return labels.get(node);
     }
+    
+    public String toString() {
+        return labels.toString();
+    }
 }

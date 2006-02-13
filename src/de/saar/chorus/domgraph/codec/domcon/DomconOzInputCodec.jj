@@ -46,7 +46,7 @@ public class DomconOzInputCodec extends InputCodec {
 	    ReInit(inputStream);
 	    Input();
 	} catch(ParseException e) {
-	    e.printStackTrace(System.err);
+//	    e.printStackTrace(System.err);
 	    throw new ParserException(e);
 	}
     }
@@ -154,7 +154,7 @@ String Variable() :
   // Variable -> OZATOM
   t=<OZATOM>
   {
-    String nodename = t.image;
+    String nodename = stripquotes(t.image);
 
     if( !graph.hasNode(nodename) ) {
       graph.addNode(nodename, new NodeData(NodeType.UNLABELLED, nodename));

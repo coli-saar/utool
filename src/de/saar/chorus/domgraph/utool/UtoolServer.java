@@ -8,13 +8,16 @@
 package de.saar.chorus.domgraph.utool;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.List;
 
+import de.saar.basic.XmlEncodingWriter;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -28,7 +31,15 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.getopt.ConvenientGetopt;
 
+
+/*
+ * TODO:
+ */
+
+
 public class UtoolServer {
+    private static boolean logging = false;
+    private static PrintWriter logTo = null;
 
     /**
      * @param args
@@ -49,25 +60,33 @@ public class UtoolServer {
         
         // parse cmd-line options
         getopt.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT, "The port on which the server will listen", "2802");
+        getopt.addOption('l', "logging", ConvenientGetopt.OPTIONAL_ARGUMENT, "Log to stderr or file (if given)", null);
         getopt.parse(args);
         
         port = Integer.parseInt(getopt.getValue('p'));
         
+        if( getopt.hasOption('l')) {
+            logging = true;
+            String val = getopt.getValue('l'); 
+            
+            if( val == null )  {
+                logTo = new PrintWriter(System.err, true);
+            } else {
+                logTo = new PrintWriter(new FileWriter(val), true);
+            }
+        }
+        
+        
         // open server socket
         ssock = new ServerSocket(port);
-        System.err.println("Listening on port " + port + "...");
+        log("Listening on port " + port + "...");
         
         
-        /*
-         * TODO:
-         *  - if other side disconnects the socket before it finishes writing,
-         *    readLine() will throw a SocketException
-         */
         while( true ) {
             // accept one connection
-            System.err.print("Waiting for connection ... ");
+            log("Waiting for connection ... ");
             Socket sock = ssock.accept();
-            System.err.println("accepted connection from " + sock);
+            log("accepted connection from " + sock);
             
             PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -75,9 +94,17 @@ public class UtoolServer {
             StringBuffer cmd = new StringBuffer();
             
             // read one command
-            while( (line = in.readLine()) != null ) {
-                System.err.println("read: " + line);
-                cmd.append(line);
+            try {
+                while( (line = in.readLine()) != null ) {
+                    log("read: " + line);
+                    cmd.append(line);
+                }
+            } catch(SocketException e) {
+                log("Client closed the socket prematurely, will ignore this request.");
+                in.close();
+                out.close();
+                sock.close();
+                continue;
             }
             
             // parse the command
@@ -153,6 +180,7 @@ public class UtoolServer {
                                 + "time-chart='" + time_solver + "' />");
                     } else {
                         StringWriter buf = new StringWriter();
+                        XmlEncodingWriter enc = new XmlEncodingWriter(buf);
                         long count = 0;
                         
                         // extract solved forms
@@ -164,10 +192,11 @@ public class UtoolServer {
                                 count++;
                                 
                                 if( !options.hasOptionNoOutput() ) {
-                                    buf.write("  <solution string='");
-                                    // TODO encode XML entities properly (esp. "'"!!)
-                                    options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), buf);
-                                    buf.write("' />\n");
+                                    buf.append("  <solution string='");
+                                    // TODO computing buf requires a lot of memory. is there a way
+                                    // to send the sfs immediately?
+                                    options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), enc);
+                                    buf.append("' />\n");
                                 }
                             }
                             long end_extraction = System.currentTimeMillis();
@@ -197,8 +226,9 @@ public class UtoolServer {
                 }
 
                 try {
+                    XmlEncodingWriter enc = new XmlEncodingWriter(out);
                     out.print("<result usr='");
-                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), out);
+                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), enc);
                     out.println("' />");
                 } catch(MalformedDomgraphException e) {
                     sendError(out, ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode(), "This graph is not supported by the specified output codec.");
@@ -279,6 +309,9 @@ public class UtoolServer {
             case _version:
                 out.println("<result version='" + versionString() + "' />");
                 break;
+                
+            case _helpOptions:
+                // other operations not supported by the server
             }
         
             
@@ -287,6 +320,12 @@ public class UtoolServer {
             sock.close();
             
         }  // while(true)
+    }
+    
+    private static void log(String x) {
+        if( logging ) {
+            logTo.println(x);
+        }
     }
 
 

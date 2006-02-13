@@ -7,7 +7,6 @@
 
 package de.saar.chorus.domgraph.utool;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -20,6 +19,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -40,7 +40,6 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
-import de.saar.getopt.ConvenientGetopt;
 
 public class XmlParser extends DefaultHandler {
     private CodecManager codecManager;
@@ -67,13 +66,17 @@ public class XmlParser extends DefaultHandler {
         } catch (ParserConfigurationException e) {
             throw new AbstractOptionsParsingException("An error occurred while initialising the XML parser!", e, ExitCodes.PARSER_CONFIGURATION_ERROR);
         } catch (SAXException e) {
-            if( (e.getCause() != null) && (e.getCause() instanceof AbstractOptionsParsingException) ) {
-                throw (AbstractOptionsParsingException) e.getCause();
+            if( (e.getException() != null) && (e.getException() instanceof AbstractOptionsParsingException) ) {
+                throw (AbstractOptionsParsingException) e.getException();
             } else {
                 throw new AbstractOptionsParsingException("An error occurred while parsing the input!", e, ExitCodes.PARSING_ERROR);
             }
         } catch (IOException e) {
             throw new AbstractOptionsParsingException("An error occurred while reading the input!", e, ExitCodes.IO_ERROR);
+        }
+        
+        if( options.getOperation().requiresInput && (options.getGraph() == null) ) {
+            throw new AbstractOptionsParsingException("You must specify an input graph!", ExitCodes.NO_INPUT);
         }
         
         return options;
@@ -137,7 +140,7 @@ public class XmlParser extends DefaultHandler {
             DomGraph graph = new DomGraph();
             NodeLabels labels = new NodeLabels();
             try {
-                codec.decodeString(attributes.getValue("string"), graph, labels);
+                codec.decodeString(XmlEntities.decode(attributes.getValue("string")), graph, labels);
             } catch(MalformedDomgraphException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A semantic error occurred while decoding the graph.", 
                         e, ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode()));
@@ -156,7 +159,7 @@ public class XmlParser extends DefaultHandler {
         } else if( qName.equals("eliminate")) {
             try {
                 EquationSystem eqs = new EquationSystem();
-                eqs.read(new StringReader(attributes.getValue("equations")));
+                eqs.read(new StringReader(XmlEntities.decode(attributes.getValue("equations"))));
                 options.setOptionEliminateEquivalence(true);
                 options.setEquations(eqs);
             } catch(Exception e) {
@@ -214,28 +217,6 @@ public class XmlParser extends DefaultHandler {
 
 
 
-
-
-    private  InputCodec determineInputCodec(ConvenientGetopt getopt, String argument)
-    throws AbstractOptionsParsingException {
-        InputCodec inputCodec = null;
-        
-        if( getopt.hasOption('I')) {
-            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'));
-            if( inputCodec == null ) {
-                throw new AbstractOptionsParsingException("Unknown input codec: " + getopt.getValue('I'),
-                        ExitCodes.NO_SUCH_INPUT_CODEC);
-            }
-        }
-        
-        if( inputCodec == null ) {
-            if( argument != null ) {
-                inputCodec = codecManager.getInputCodecForFilename(argument);
-            }
-        }
-        
-        return inputCodec;
-    }
 
 
     public CodecManager getCodecManager() {

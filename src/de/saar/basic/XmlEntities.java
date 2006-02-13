@@ -9,19 +9,27 @@ package de.saar.basic;
 
 public class XmlEntities {
     public static String encode(String s) {
-        return s.replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll("'", "&apos;")
-                .replaceAll("\"", "&quot;");
+        if( s == null ) {
+            return null;
+        } else {
+            return s.replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("'", "&apos;")
+            .replaceAll("\"", "&quot;");
+        }
     }
     
     public static String decode(String s) {
-        return s.replaceAll("&lt;", "<")
-                .replaceAll("&gt;", ">")
-                .replaceAll("&apos;", "'")
-                .replaceAll("&quot;", "\"")
-                .replaceAll("&amp;", "&");
+        if( s == null ) {
+            return null;
+        } else {
+            return s.replaceAll("&lt;", "<")
+            .replaceAll("&gt;", ">")
+            .replaceAll("&apos;", "'")
+            .replaceAll("&quot;", "\"")
+            .replaceAll("&amp;", "&");
+        }
     }
 }
 
