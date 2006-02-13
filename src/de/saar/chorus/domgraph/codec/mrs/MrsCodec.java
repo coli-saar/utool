@@ -158,12 +158,12 @@ class MrsCodec {
     void setTopHandle(String topnode)
     {
 	Set<String> top = graph.getFragment(topnode);
-	Set<String> holes = graph.getHoles(top);
+	List<String> holes = graph.getHoles(top);
 	Set<String> all = new HashSet<String>(graph.getAllNodes());
 
 	all.removeAll(top);
 
-	for (Set<String> wcc : graph.wccsOfSubgraph(all)) {
+	for (Set<String> wcc : graph.wccs(all)) {
 	    for (String node : wcc) {
 		for (String parent : graph.getParents(node, EdgeType.DOMINANCE)) {
 
@@ -186,7 +186,7 @@ class MrsCodec {
 	    List<Edge> edges = graph.getOutEdges(root, EdgeType.DOMINANCE);
 	    
 	    if (edges.size() > 0) {
-		Set<String> holes = graph.getOpenHoles(root);
+		Collection<String> holes = graph.getOpenHoles(root);
 		
 		if (holes.size() == 1) {
 		    for (Edge edge : edges) {

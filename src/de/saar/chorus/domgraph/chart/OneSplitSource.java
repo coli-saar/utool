@@ -14,6 +14,17 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+/**
+ * A split source which only computes the first split for each
+ * subgraph. A <code>ChartSolver</code> which uses a split source
+ * of this class will not compute the complete set of solved forms.
+ * However, it is still guaranteed to detect whether a graph is
+ * unsolvable, and will be considerably faster than a solver that
+ * uses a <code>CompleteSplitSource</code>. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class OneSplitSource extends SplitSource {
 
     public OneSplitSource(DomGraph graph) {

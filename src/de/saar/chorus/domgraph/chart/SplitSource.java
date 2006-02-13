@@ -20,6 +20,17 @@ import org._3pq.jgrapht.Edge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
+
+
+/**
+ * An abstract superclass for classes that compute splits. A {@link ChartSolver}
+ * relies on an object of a subclass of this class to provide the splits
+ * for a subgraph. You can provide your own subclass by implementing
+ * the <code>computeSplits</code> method of this class. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public abstract class SplitSource {
     protected DomGraph graph;
     /*
@@ -34,11 +45,28 @@ public abstract class SplitSource {
     
     
     
-    // IMPLEMENT THIS
+    /**
+     * Implement this abstract method when you write your own
+     * subclass of <code>SplitSource</code>. The method gets a subgraph
+     * as its argument, and has the task of computing an iterator
+     * over the splits of this subgraph.<p>
+     * 
+     * @param subgraph a subgraph 
+     * @return an iterator over some or all splits of this subgraph
+     */
     abstract protected Iterator<Split> computeSplits(Set<String> subgraph);
 
     
     
+    /**
+     * Computes the list of all nodes in the subgraphs which have no
+     * incoming edges. These nodes are candidates for being free roots;
+     * however, you still need to check that the holes are in different
+     * biconnected components. 
+     * 
+     * @param subgraph a subgraph
+     * @return the list of nodes without in-edges in the subgraph
+     */
     protected List<String> computePotentialFreeRoots(Set<String> subgraph) {
         // initialise potentialFreeRoots with all nodes without
         // incoming dom-edges
@@ -55,8 +83,12 @@ public abstract class SplitSource {
 
     
     
-    /**** the class that actually does the dirty work ****/
-    
+    /**
+     * A nested class for computing the split induced by a free root. 
+     * 
+     * @author Alexander Koller
+     *
+     */
     protected static class SplitComputer {
         private DomGraph graph;
 
@@ -195,6 +227,20 @@ public abstract class SplitSource {
         }
 
 
+        /**
+         * Compute the split induced by the free root of a subgraph.
+         * The method assumes that the given root is a node without
+         * incoming edges. It does _not_ assume that the root is actually
+         * free, but if it isn't, the method will throw a <code>RootNotFreeException</code>.<p>
+         * 
+         * The runtime of this method is O(m+n) for a subgraph with m edges
+         * and n nodes (it performs a single DFS through the graph).
+         * 
+         * @param root a node without incoming edges
+         * @param subgraph a subgraph 
+         * @return the split induced by this root
+         * @throws RootNotFreeException if the root is not free
+         */
         public Split computeSplit(String root, Set<String> subgraph)
         throws RootNotFreeException
         {

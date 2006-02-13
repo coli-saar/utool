@@ -12,16 +12,23 @@ import java.util.Set;
 import org._3pq.jgrapht.Graph;
 import org._3pq.jgrapht.traverse.DepthFirstIterator;
 
-public class RestrictedDepthFirstIterator extends DepthFirstIterator {
-    protected Set<String> wcc;
+/**
+ * This class implements a <code>JGraphT</code> depth-first-search
+ * iterator which never leaves the specified subgraph.
+ *  
+ * @author Alexander Koller
+ *
+ */
+class RestrictedDepthFirstIterator extends DepthFirstIterator {
+    protected Set<String> subgraph;
 
-    public RestrictedDepthFirstIterator(Graph g, Object startVertex, Set<String> wcc) {
+    public RestrictedDepthFirstIterator(Graph g, Object startVertex, Set<String> subgraph) {
         super(g, startVertex);
-        this.wcc = wcc;
+        this.subgraph = subgraph;
         
         // make sure that the dfs will never visit any nodes outside of wcc
         for( Object node : g.vertexSet() ) {
-            if( !wcc.contains(node) ) {
+            if( !subgraph.contains(node) ) {
                 putSeenData(node, null);
             }
         }
