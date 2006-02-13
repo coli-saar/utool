@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import de.saar.chorus.domgraph.codec.CodecTools;
+import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -38,7 +38,7 @@ public class LkbPluggingOutputCodec extends PluggingOutputCodec {
             edgeStrings.add("(" + v2 + " " + v1 + " " + v2 + ")");
         }
         
-        writer.write("( " + CodecTools.join(edgeStrings, " ") + ")\n");
+        writer.write("( " + StringTools.join(edgeStrings, " ") + ")\n");
         writer.flush();
     }
 
