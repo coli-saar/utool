@@ -623,6 +623,33 @@ public class DomGraph {
             }
         }
     }
+
+
+    /**
+     * Check whether the weakly normal graph is "well-formed" in the sense of 
+     * Bodirsky et al. 04. This means that every root of a dominance edge
+     * dominates a hole of its fragment.
+     * 
+     * This method assumes that the graph is weakly normal and compact.
+     *  
+     * @return true iff the graph is well-formed.
+     */
+    public boolean isWellFormed() {
+        assert isWeaklyNormal();
+        assert isCompact();
+        
+        for( Edge edge : getAllEdges()) {
+            String src = (String) edge.getSource();
+            
+            // this check assumes that the graph is compact 
+            if( (getData(src).getType() == NodeType.LABELLED)
+                    && isLeaf(src) ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
 }
     
