@@ -13,6 +13,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A class which replaces strings by other strings in every call
+ * to the write methods.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class ReplacingWriter extends FilterWriter {
     private List<String> lhs;
     private List<String> rhs;
@@ -23,6 +30,13 @@ public class ReplacingWriter extends FilterWriter {
         rhs = new ArrayList<String>();
     }
     
+    /**
+     * Adds a replacement rule. From now on, <code>L</code> will
+     * be replaced by <code>R</code> in every call to <code>write</code>.
+     * 
+     * @param L the left-hand side of a replacement rule
+     * @param R the right-hand side of a replacement rule
+     */
     public void addReplacementRule(String L, String R) {
         lhs.add(L);
         rhs.add(R);
