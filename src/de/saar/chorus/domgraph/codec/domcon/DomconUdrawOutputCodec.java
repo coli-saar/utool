@@ -9,67 +9,115 @@ package de.saar.chorus.domgraph.codec.domcon;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.NodeType;
 
 
 
-/*
- * TODO: Implement this class.
- * 
- * It is currently just a placeholder because I don't entirely
- * understand the old output codec.
- * 
- * see davinci-codec.cc in utool
- */
 
 public class DomconUdrawOutputCodec extends GraphOutputCodec {
     public DomconUdrawOutputCodec() {
-        super();
-        
         setName("domcon-udraw");
         setExtension(".dc.udg");
     }
 
-    @Override
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
+        encodeNodes(graph.getAllRoots(), graph, labels, writer);
+        writer.flush();
+    }
+
+    private void encodeNodes(Set<String> roots, DomGraph graph, NodeLabels labels, Writer writer) 
+    throws IOException {
+        boolean first = true;
+        Set<String> refp = new HashSet<String>();
         
-        throw new UnsupportedOperationException();
-
+        for( String root : roots ) {
+            if( !first ) {
+                writer.write(",");
+            } else {
+                first = false;
+            }
+            
+            encodeNode(root, graph, labels, refp, writer);
+        }
     }
 
-    @Override
+    private void encodeNode(String root, DomGraph graph, NodeLabels labels, Set<String> refp, Writer writer) 
+    throws IOException {
+        if( refp.contains(root)) {
+            writer.write("r(\"" + root + "\")");
+        } else {
+            refp.add(root);
+            writer.write("l(\"" + root + "\",");
+            
+            if( graph.getData(root).getType() == NodeType.LABELLED ) {
+                writer.write("n(\"\",[a(\"OBJECT\",\"" + root
+                        + ":" + labels.getLabel(root) + "\")],[");
+            } else {
+                writer.write("n(\"\",[a(\"OBJECT\",\"" + root + "\")],[");
+            }
+            
+            encodeEdges(graph.getOutEdges(root, null), graph, labels, refp, writer);
+            writer.write("]))");
+        }
+    }
+
+    private void encodeEdges(List<Edge> edges, DomGraph graph, NodeLabels labels, Set<String> refp, Writer writer) 
+    throws IOException {
+        boolean first = true;
+
+        for( Edge edge : edges) {
+            if( !first ) {
+                writer.write(",");
+            } else {
+                first = false;
+            }
+            
+            encodeEdge(edge, graph, labels, refp, writer);
+        }
+    }
+
+    private void encodeEdge(Edge edge, DomGraph graph, NodeLabels labels, Set<String> refp, Writer writer) 
+    throws IOException {
+        if( graph.getData(edge).getType() == EdgeType.TREE ) {
+            writer.append("e(\"\",[a(\"EDGEPATTERN\",\"solid\")],");
+        } else {
+            writer.write("e(\"\",[a(\"EDGEPATTERN\",\"dotted\")],");
+        }
+        
+        encodeNode((String) edge.getTarget(), graph, labels, refp, writer);
+        writer.write(")");
+    }
+
     public void print_header(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
+        writer.write("[");
+        writer.flush();
     }
 
-    @Override
     public void print_footer(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
+        writer.write("]");
+        writer.flush();
     }
 
-    @Override
     public void print_start_list(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
+        
     }
 
-    @Override
     public void print_end_list(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
+       
     }
 
-    @Override
     public void print_list_separator(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
     }
-
 }
