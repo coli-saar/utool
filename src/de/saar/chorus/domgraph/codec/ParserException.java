@@ -7,6 +7,13 @@
 
 package de.saar.chorus.domgraph.codec;
 
+
+/**
+ * An exception representing parsing errors of various types. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class ParserException extends Exception {
 
     public ParserException() {

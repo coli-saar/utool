@@ -7,6 +7,22 @@
 
 package de.saar.chorus.domgraph.codec;
 
+
+
+/**
+ * An exception representing semantic errors in codecs. Such exceptions
+ * are thrown if it turns out that a USR cannot be processed using a certain
+ * input or output codec.<p>
+ * 
+ * What's special about this exception class is that the codec can
+ * specify an exit code. This exit code will then be used as an exit
+ * code in the main program (Utool or Utool Server). Valid exit codes
+ * are the numbers 0 ... 31 (the rightmost five bits); every codec
+ * can assign these codes as it wishes.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class MalformedDomgraphException extends Exception {
     private int exitcode = 0;
 

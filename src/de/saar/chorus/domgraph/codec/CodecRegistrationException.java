@@ -7,6 +7,14 @@
 
 package de.saar.chorus.domgraph.codec;
 
+
+/**
+ * This exception represents an error that occurs while registering
+ * a codec. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class CodecRegistrationException extends Exception {
 
     public CodecRegistrationException() {

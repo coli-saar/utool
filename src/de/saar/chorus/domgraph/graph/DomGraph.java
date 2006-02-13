@@ -46,7 +46,7 @@ import org._3pq.jgrapht.graph.DefaultDirectedGraph;
  *
  */
 
-public class DomGraph {
+public class DomGraph implements Cloneable {
     private DirectedGraph graph;
     private Map<String,NodeData> nodeData;
     private Map<Edge,EdgeData> edgeData;
@@ -966,6 +966,22 @@ public class DomGraph {
         return ret.toString();
     }
     
+    
+    
+    @SuppressWarnings("unchecked")
+    public Object clone() {
+        try {
+            DomGraph c = (DomGraph) super.clone();
+        
+            c.graph = (DirectedGraph) ((DefaultDirectedGraph) graph).clone();
+            c.edgeData = (Map<Edge,EdgeData>) ((HashMap<Edge,EdgeData>) edgeData).clone();
+            c.nodeData = (Map<String,NodeData>) ((HashMap<String,NodeData>) nodeData).clone();
+        
+            return c;
+        } catch(CloneNotSupportedException e) {
+            return null;
+        }
+    }
 
     
     

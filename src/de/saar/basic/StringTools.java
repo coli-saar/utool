@@ -9,7 +9,23 @@ package de.saar.basic;
 
 import java.util.List;
 
+
+
+/**
+ * A collection of various utility functions for strings. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class StringTools {
+    /**
+     * Joins a list of strings into a larger string. This is similar
+     * to Perl's <code>join()</code> function. 
+     * 
+     * @param strings a list of strings
+     * @param separator a string that is inserted between any two members of the list
+     * @return the joined string
+     */
     public static String join(List<String> strings, String separator) {
         boolean first = true;
         StringBuffer sb = new StringBuffer();
