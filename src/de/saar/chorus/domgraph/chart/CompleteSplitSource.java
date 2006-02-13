@@ -23,13 +23,17 @@ public class CompleteSplitSource extends SplitSource {
         SplitComputer sc = new SplitComputer(graph);
         List<Split> splits = new ArrayList<Split>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
+        
+        //System.err.println("graph has " + potentialFreeRoots.size() + " free roots");
 
         for( String root : potentialFreeRoots ) {
+          //  System.err.println("potential root: " + root);
             try {
                 Split split = sc.computeSplit(root, subgraph);
                 splits.add(split);
             } catch (RootNotFreeException e) {
                 // if the root was not free, do nothing
+            //    System.err.println("   - not free");
             }
         }
         

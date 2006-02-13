@@ -33,7 +33,7 @@
 	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*" />
 	
 	<property name="utool.jar" value="${build.lib}/Utool.jar" />
-	<property name="utool.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*" />
+	<property name="utool.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
 	<property name="reports.tests" location="testreports" />
@@ -58,6 +58,7 @@
                destdir="${build.classes}"
                debug="true"
                includes="${chorus}/domgraph/**/*.java,
+							${coli}/basic/*.java,
 							${coli}/getopt/*.java"
                excludes="**/Test*.java"
                source="1.5">

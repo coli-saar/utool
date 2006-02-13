@@ -62,14 +62,6 @@ public class ChartSolver {
             return true;
         }
         
-        /*
-        // If the fs has no free roots, then the original graph is unsolvable.
-        freeRoots = freerc.getFreeRoots(subgraph);
-        if( freeRoots.isEmpty() ) {
-            return false;
-        }
-        */
-        
         // If fs is singleton and its root is free, it is in solved form.
         // The fs will be entered into the chart as part of the parent's split.
         // NB: Even in a compact graph, there may be fragments with >1 node!
@@ -86,11 +78,11 @@ public class ChartSolver {
 
         // get splits for this subgraph
         splits = getSplitIterator(subgraph);
-        //System.err.println(" - has " + splits.count() + " splits");
         
         // if there are none (i.e. there are no free roots),
         // then the original graph is unsolvable
         if( !splits.hasNext() ) {
+            //System.err.println(" - unsolvable (no splits)");
             return false;
         }
         
