@@ -85,12 +85,6 @@ public class TermOutputCodec extends GraphOutputCodec {
         
         if( graph.getData(node).getType() == NodeType.UNLABELLED ) {
             return computeTerm(domEdges.get(node), graph, labels, domEdges);
-        } else if( labels.getLabel(node) == null ) {
-            // The node is a fake root introduced by an input codec.
-            // In this case, it has exactly one child via a tree edge,
-            // and we just move on to the child without doing anything here.
-            return computeTerm(graph.getChildren(node,EdgeType.TREE).iterator().next(),
-                    graph, labels, domEdges);
         } else {
             String label = labels.getLabel(node);
             StringBuilder ret = new StringBuilder(CodecTools.atomify(label));

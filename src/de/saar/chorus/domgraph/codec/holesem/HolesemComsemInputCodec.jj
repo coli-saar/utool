@@ -84,10 +84,10 @@ public class HolesemComsemInputCodec extends InputCodec {
 	    ReInit(inputStream);
 	    Input();
 	} catch(ParseException e) {
-	    e.printStackTrace(System.err);
 	    throw new ParserException();
 	}
 
+/** I don't see why we need to ensure there is a top fragment. - ak 02/06
 	// put a label above the top hole if necessary
 	for( String node : graph.getAllNodes() ) {
 	  if( graph.indeg(node) == 0 ) {
@@ -117,6 +117,7 @@ public class HolesemComsemInputCodec extends InputCodec {
 	  // more than one top node => can't fix this with a fake root
 	  throw new MalformedDomgraphException();
 	}
+	**/
 
 
 	// move dom edges up to roots
@@ -147,6 +148,8 @@ public class HolesemComsemInputCodec extends InputCodec {
 	    }
 	  }
 	}
+	
+	CodecTools.graphLabelsConsistencyAssertion(graph, labels);
 
 	// at this point, the graph must be normal; otherwise, the
 	// encoding was not applicable in the first place.
@@ -291,6 +294,7 @@ void Term() :
 
   // Term -> pred1 ( Var , Atom , VarOrAtom )   (one-place labelling atom)
 | <PRED1> "(" x=Variable() "," f=PrologAtom() "," y=VariableOrAtom() ")" {
+    labels.addLabel(x, stripquotes(f));
     graph.addEdge(x, y, new EdgeData(EdgeType.TREE));
   }
 

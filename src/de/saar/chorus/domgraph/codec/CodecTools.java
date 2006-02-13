@@ -7,7 +7,10 @@
 
 package de.saar.chorus.domgraph.codec;
 
-import java.util.List;
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.NodeType;
+
 
 public class CodecTools {
     
@@ -37,6 +40,12 @@ public class CodecTools {
         }
     }
     
-
+    public static void graphLabelsConsistencyAssertion(DomGraph graph, NodeLabels labels) {
+        for( String node : graph.getAllNodes() ) {
+            if( graph.getData(node).getType() == NodeType.LABELLED ) {
+                assert (labels.getLabel(node) != null) : "no label for labelled node " + node;
+            }
+        }
+    }
 
 }

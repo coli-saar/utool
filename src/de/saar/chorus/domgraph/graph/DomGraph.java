@@ -356,20 +356,22 @@ public class DomGraph {
             if( getData(node).getType() == NodeType.UNLABELLED ) {
                 // unlabelled nodes must be leaves
                 if( !isLeaf(node) ) {
-                    System.err.println(node + " is unlabelled but no leaf!");
+                    //System.err.println(node + " is unlabelled but no leaf!");
                     return false;
                 }
             
+                /*
                 // no empty fragments: all unlabelled nodes must have incoming tree edges
                 if( indeg(node, EdgeType.TREE) == 0 ) {
                     System.err.println(node + " is unlabelled but has no in-tree-edges!");
                     return false;
                 }
+                */
             }
             
             // no two incoming tree edges
             if( indeg(node, EdgeType.TREE) > 1 ) {
-                System.err.println(node + " has two in-tree-edges!");
+//                System.err.println(node + " has two in-tree-edges!");
                 return false;
             }
             
@@ -380,7 +382,7 @@ public class DomGraph {
             if( getData(edge).getType() == EdgeType.DOMINANCE ) {
                 // dominance edges go into roots
                 if( !isRoot((String) edge.getTarget()) ) {
-                    System.err.println(edge + " is a dom-edge into a non-root!");
+  //                  System.err.println(edge + " is a dom-edge into a non-root!");
                     return false;
                 }
             }
@@ -540,8 +542,10 @@ public class DomGraph {
     
     private void copyFragment(String node, String root, DomGraph ret) {
         if( getData(node).getType() == NodeType.UNLABELLED ) {
-            ret.addNode(node, getData(node));
-            ret.addEdge(root, node, new EdgeData(EdgeType.TREE));
+            if( !node.equals(root) ) { // i.e. not an empty fragment with root = hole
+                ret.addNode(node, getData(node));
+                ret.addEdge(root, node, new EdgeData(EdgeType.TREE));
+            }
             //System.err.print("cpt edge from " + root + " to " + node);
         } else {
             for( String child : getChildren(node, EdgeType.TREE) ) {
