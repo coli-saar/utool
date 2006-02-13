@@ -108,9 +108,9 @@ public class DomconGxlInputCodec extends InputCodec {
                         NodeData data;
                         
                         if( type.equals("hole") ) {
-                            data = new NodeData(NodeType.UNLABELLED, id);
+                            data = new NodeData(NodeType.UNLABELLED);
                         } else {
-                            data = new NodeData(NodeType.LABELLED, id);
+                            data = new NodeData(NodeType.LABELLED);
                             labels.addLabel(id, attrs.get("label"));
                         }
 
@@ -144,9 +144,9 @@ public class DomconGxlInputCodec extends InputCodec {
                         EdgeData data;
                         
                         if( type.equals("solid")) {
-                            data = new EdgeData(EdgeType.TREE, id);
+                            data = new EdgeData(EdgeType.TREE);
                         } else {
-                            data = new EdgeData(EdgeType.DOMINANCE, id);
+                            data = new EdgeData(EdgeType.DOMINANCE);
                         }
                         
                         /*

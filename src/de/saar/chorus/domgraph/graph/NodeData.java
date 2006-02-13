@@ -19,7 +19,6 @@ package de.saar.chorus.domgraph.graph;
  *
  */
 public class NodeData {
-    private String name;
     private NodeType type;
     
     /**
@@ -29,18 +28,11 @@ public class NodeData {
      * @param label
      * @param type
      */
-    public NodeData(NodeType type, String name) {
-        this.name = name;
+    public NodeData(NodeType type) {
         this.type = type;
     }
     
     
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
     
     /**
      * @return Returns the type.
@@ -50,7 +42,7 @@ public class NodeData {
     }
     
     public String toString() {
-        return ((type==NodeType.LABELLED)?"[L:":"[U:") + name + "]";
+        return ((type==NodeType.LABELLED)?"[L]":"[U]");
     }
 
 

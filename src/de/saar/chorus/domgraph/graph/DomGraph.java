@@ -342,7 +342,7 @@ public class DomGraph {
         removeAllDominanceEdges();
         
         for( DomEdge e : domedges ) {
-            addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE, "(domedge)"));
+            addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
         }
     }
     
@@ -541,7 +541,7 @@ public class DomGraph {
     private void copyFragment(String node, String root, DomGraph ret) {
         if( getData(node).getType() == NodeType.UNLABELLED ) {
             ret.addNode(node, getData(node));
-            ret.addEdge(root, node, new EdgeData(EdgeType.TREE, "(cpt dom edge)"));
+            ret.addEdge(root, node, new EdgeData(EdgeType.TREE));
             //System.err.print("cpt edge from " + root + " to " + node);
         } else {
             for( String child : getChildren(node, EdgeType.TREE) ) {

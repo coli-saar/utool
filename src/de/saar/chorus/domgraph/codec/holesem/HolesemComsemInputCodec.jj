@@ -105,10 +105,10 @@ public class HolesemComsemInputCodec extends InputCodec {
 	  String topnode = topNodes.iterator().next();
 
 	  if( graph.getData(topnode).getType() == NodeType.UNLABELLED ) {
-	    graph.addNode("__hs_topnode__", new NodeData(NodeType.LABELLED, "__hs_topnode__"));
+	    graph.addNode("__hs_topnode__", new NodeData(NodeType.LABELLED));
 	    labels.addLabel("__hs_topnode__", null);
 	    graph.addEdge("__hs_topnode__", topnode,
-			  new EdgeData(EdgeType.TREE, "__hs_topnode_edge__"));
+			  new EdgeData(EdgeType.TREE));
 	  }
 
 	  break;
@@ -183,17 +183,17 @@ public class HolesemComsemInputCodec extends InputCodec {
 
   private String makeAnonymousNode(String label) {
     String nodename = "hs" + (nextGensymIndex++);
-    graph.addNode(nodename, new NodeData(NodeType.LABELLED, nodename));
+    graph.addNode(nodename, new NodeData(NodeType.LABELLED));
     labels.addLabel(nodename, label);
     return nodename;
   }
 
   private void addHole(String x) {
-    graph.addNode(x, new NodeData(NodeType.UNLABELLED, x));
+    graph.addNode(x, new NodeData(NodeType.UNLABELLED));
   }
 
   private void addLabel(String x) {
-    graph.addNode(x, new NodeData(NodeType.LABELLED, x));
+    graph.addNode(x, new NodeData(NodeType.LABELLED));
   }
 
   private String lookupOrAnonymous(String x) {
@@ -285,21 +285,21 @@ void Term() :
   // Term -> leq ( Var , Var )              (leq constraint)
 | <LEQ> "(" x=Variable() "," y=Variable() ")" {
     graph.addEdge(y, x,
-		  new EdgeData(EdgeType.DOMINANCE, "leq-" + x + "-" + y));
+		  new EdgeData(EdgeType.DOMINANCE));
   }
 
 
   // Term -> pred1 ( Var , Atom , VarOrAtom )   (one-place labelling atom)
 | <PRED1> "(" x=Variable() "," f=PrologAtom() "," y=VariableOrAtom() ")" {
-    graph.addEdge(x, y, new EdgeData(EdgeType.TREE, "pred1-" + x + "-" + y));
+    graph.addEdge(x, y, new EdgeData(EdgeType.TREE));
   }
 
 
   // Term -> pred2 ( Var , Atom , VarOrAtom, VarOrAtom )  (two-place labelling atom)
 | <PRED2> "(" x=Variable() "," f=PrologAtom() "," y=VariableOrAtom() "," z=VariableOrAtom() ")" {
     labels.addLabel(x, stripquotes(f));
-    graph.addEdge(x, y, new EdgeData(EdgeType.TREE, "pred1-" + x + "-" + y));
-    graph.addEdge(x, z, new EdgeData(EdgeType.TREE, "pred1-" + x + "-" + z));
+    graph.addEdge(x, y, new EdgeData(EdgeType.TREE));
+    graph.addEdge(x, z, new EdgeData(EdgeType.TREE));
   }
 
 
@@ -309,7 +309,7 @@ void Term() :
     
     for( String child : varlist ) {
       graph.addEdge(x, child,
-		    new EdgeData(EdgeType.TREE, x + "-" + child));
+		    new EdgeData(EdgeType.TREE));
     }
     
     varlist.clear();

@@ -10,24 +10,17 @@ package de.saar.chorus.domgraph.graph;
 public class EdgeData {
 
     private EdgeType type;
-    private String name;
         
 
     /**
      * @param type
      * @param name
      */
-    public EdgeData(EdgeType type, String name) {
+    public EdgeData(EdgeType type) {
         this.type = type;
-        this.name = name;
     }
-    
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return name;
-    }
+
+
     /**
      * @return Returns the type.
      */
@@ -36,10 +29,10 @@ public class EdgeData {
     }
     
     public String getDesc() {
-        return "(edge " + name + " type=" + type + ")";
+        return "(edge type=" + type + ")";
     }
     
     public String toString() {
-        return "[E:" + type + "/" + name + "]";
+        return "[E:" + type + "]";
     }
 }
