@@ -136,7 +136,9 @@ public abstract class OutputCodec {
     
     /**
      * Prints the beginning of a list in the concrete syntax
-     * which the USR uses (after the header).
+     * which the USR uses. This method is called after <code>print_header</code>,
+     * but before any of the USRs. It is only called if we print 
+     * more than one graph (e.g. in the solve command, but not the convert command).
      * 
      * @param writer the writer
      * @throws IOException if an I/O error occurred
@@ -146,7 +148,9 @@ public abstract class OutputCodec {
     
     /**
      * Prints the end of a list in the concrete syntax
-     * which the USR uses (before the footer).
+     * which the USR uses. This method is called before <code>print_footer</code>,
+     * but after any of the USRs. It is only called if we print 
+     * more than one graph (e.g. in the solve command, but not the convert command).
      * 
      * @param writer the writer
      * @throws IOException if an I/O error occurred
