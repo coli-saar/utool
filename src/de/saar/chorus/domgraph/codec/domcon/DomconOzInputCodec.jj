@@ -45,7 +45,7 @@ public class DomconOzInputCodec extends InputCodec {
 	try {
 	    ReInit(inputStream);
 	    Input();
-	} catch(ParseException e) {
+	} catch(Throwable e) {
 //	    e.printStackTrace(System.err);
 	    throw new ParserException(e);
 	}

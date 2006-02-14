@@ -40,7 +40,7 @@ public class MrsPrologInputCodec extends InputCodec
 	try {
 	    ReInit(inputStream);
 	    Input();
-	} catch(ParseException e) {
+	} catch(Throwable e) {
 	    // XXX - improve exception handling
 	    e.printStackTrace(System.err);
 	    throw new ParserException();

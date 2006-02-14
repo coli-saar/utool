@@ -71,7 +71,6 @@ public class EquationSystem extends DefaultHandler {
     throws ParserConfigurationException, SAXException, IOException {
         SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
         saxParser.parse( new InputSource(reader), this );
-        System.err.println("wildcards: " + wildcards);
     }
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
