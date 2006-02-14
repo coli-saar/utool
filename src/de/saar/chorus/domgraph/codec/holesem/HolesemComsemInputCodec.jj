@@ -83,7 +83,7 @@ public class HolesemComsemInputCodec extends InputCodec {
 	try {
 	    ReInit(inputStream);
 	    Input();
-	} catch(ParseException e) {
+	} catch(Throwable e) {
 	    throw new ParserException();
 	}
 

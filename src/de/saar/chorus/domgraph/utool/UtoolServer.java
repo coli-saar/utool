@@ -170,6 +170,7 @@ public class UtoolServer {
                 if( options.getOperation() == Operation.solvable ) {
                     // Operation = solvable
                     out.println("<result solvable='" + solvable + "' "
+                            + "count='" + chart.countSolvedForms() + "' "
                             + "chartsize='" + chart.size() + "' "
                             + "time='" + time_solver + "' />");
                 } else {
