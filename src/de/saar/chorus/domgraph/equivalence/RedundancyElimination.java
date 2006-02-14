@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -221,7 +220,7 @@ public abstract class RedundancyElimination {
                         // count hole connections for possible dominators
                         visited.clear();
                         visited.add(root1);
-                        if( isHnReachable(hole1, root2, visited, false)) {
+                        if( compact.isHypernormallyReachable(hole1, root2, visited)) {
                             ModifiableInteger x = numHolesToOtherRoot.get(root1).get(root2);
                             x.setValue(x.getValue()+1);
                         }
@@ -232,7 +231,7 @@ public abstract class RedundancyElimination {
                             visited.add(root1);
                             visited.add(root2);
                             
-                            if( isHnReachable(hole1, hole2, visited, false)) {
+                            if( compact.isHypernormallyReachable(hole1, hole2, visited)) {
                                 // found a hn path from hole1 to hole2 that doesn't
                                 // visit the roots
                                 Integer old1 = hypernormalReachability.get(root1).get(root2); 
@@ -278,34 +277,6 @@ public abstract class RedundancyElimination {
         
     }
     
-    // Is there a hn path from src to target that doesn't use nodes in visited?
-    private boolean isHnReachable(String node, String goal, Set<String> visited, boolean previousEdgeWasUpDom) {
-        if( visited.contains(node) ) {
-            return false;
-        } else if( node.equals(goal) ) {
-            return true;
-        } else {
-            visited.add(node);
-            
-            for( Edge edge : compact.getAdjacentEdges(node) ) {
-                String neighbour = (String) edge.oppositeVertex(node);
-                boolean isDomEdge = (compact.getData(edge).getType() == EdgeType.DOMINANCE);
-                boolean isOutEdge = node.equals(edge.getSource());
-                
-                // skip outgoing dom edges if we came through an up dom edge
-                if( isDomEdge && isOutEdge && previousEdgeWasUpDom ) {
-                    continue;
-                }
-                
-                if( isHnReachable(neighbour, goal, visited, isDomEdge && !isOutEdge) ) {
-                    //System.err.println("hnr: " + node + " -> " + neighbour + " ->* " + goal);
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-    }
     
     // root1 is p.d. of root2 iff it has exactly one hole that is connected
     // to root2 by a hn path that doesn't use root1.

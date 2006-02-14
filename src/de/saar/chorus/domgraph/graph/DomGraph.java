@@ -24,6 +24,8 @@ import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 
+import de.saar.chorus.domgraph.chart.OneSplitSource;
+
 /**
  * A dominance graph. Dominance graphs are directed
  * graphs. Nodes are either labelled or unlabelled; edges are either
@@ -777,14 +779,65 @@ public class DomGraph implements Cloneable {
     /**
      * Checks whether the graph is hypernormally connected. A graph
      * is hypernormally connected iff it is normal and each pair of
-     * nodes is connected by a hypernormal path.<p> 
+     * nodes is connected by a hypernormal path.<p>
      * 
-     * TODO: The current implementation of this method is only
-     * correct if the graph is solvable.
+     * This method checks whether the graph is solvable, and then
+     * calls <code>isHypernormallyConnectedFast</code> (if it is)
+     * or <code>isHypernormallyConnectedSlow</code> (if it isn't).
+     * Its overall runtime is O(n(n+m)), i.e. it is marginally
+     * slower in practice than <code>isHypernormallyConnectedFast</code>.
      * 
      * @return true iff the graph is hnc
      */
     public boolean isHypernormallyConnected() {
+        if( OneSplitSource.isGraphSolvable(this) ) {
+            return isHypernormallyConnectedFast();
+        } else {
+            return isHypernormallyConnectedSlow();
+        }
+    }
+    
+    /**
+     * Checks whether the graph is hypernormally connected. A graph
+     * is hypernormally connected iff it is normal and each pair of
+     * nodes is connected by a hypernormal path.<p>
+     *
+     * This method performs a depth-first search through the dominance
+     * graph for each pair of nodes, and thus runs in time O((m+n) n^2).
+     * This is ridiculously slow, although still efficient enough for many
+     * practical purposes. However, unlike <code>isHypernormallyConnectedFast</code>,
+     * this method is also correct for unsolvable dominance graphs.
+     * 
+     * @return true iff the graph is hnc
+     */
+    public boolean isHypernormallyConnectedSlow() {
+        for( String u : getAllNodes() ) {
+            for( String v : getAllNodes() ) {
+                if( !u.equals(v) ) {
+                    if( !isHypernormallyReachable(u,v) ) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Checks whether the graph is hypernormally connected. A graph
+     * is hypernormally connected iff it is normal and each pair of
+     * nodes is connected by a hypernormal path.<p>
+     * 
+     * This method performs a single depth-first search through the
+     * dominance graph, and thus runs in time O(m+n). However, <strong>it is
+     * only correct if the graph is solvable</strong>; if the graph is unsolvable,
+     * the method may claim that the graph is not hypernormally
+     * connect although it is.
+     * 
+     * @return true iff the graph is hnc
+     */
+    public boolean isHypernormallyConnectedFast() {
         Set<String> visited = new HashSet<String>();
         
         if( !isNormal() ) {
@@ -877,6 +930,74 @@ public class DomGraph implements Cloneable {
         }
         
         return true;
+    }
+    
+   
+    /**** hypernormal paths ****/
+    
+    
+    /**
+     * Checks whether there is a hypernormal path between two nodes.
+     * This method performs a modified depth-first search through the
+     * dominance graph, and thus takes time O(m+n).
+     * 
+     * @param source one node in this graph
+     * @param target another node in this graph
+     * @return true iff there is a hypernormal path connecting the two
+     */
+    public boolean isHypernormallyReachable(String source, String target) {
+        return isHnReachable(source, target, new HashSet<String>(), false);
+    }
+    
+    /**
+     * Checks whether there is a hypernormal path between source and
+     * target which doesn't visit any of the nodes in <code>avoidThese</code>.
+     * This method performs a modified depth-first search through the
+     * dominance graph, and thus takes time O(m+n).<p>
+     * 
+     * The method will modify the contents of <code>avoidThese</code>; if
+     * you don't want this, you should pass <code>new HashSet<String>(...)</code>
+     * as third argument. 
+     * 
+     * @param source one node in this graph
+     * @param target another node in this graph
+     * @param avoidThese nodes that must not be on a connecting hn path
+     * @return true iff there is a hn path connecting source and target which
+     * doesn't visit avoidThese.
+     */
+    public boolean isHypernormallyReachable(String source, String target, Set<String> avoidThese) {
+        return isHnReachable(source, target, avoidThese, false);
+    }
+
+    // Is there a hn path from src to target that doesn't use nodes in visited
+    // -- assuming that we came via an upwards dom edge iff the fourth argument
+    // is true?
+    private boolean isHnReachable(String node, String goal, Set<String> visited, boolean previousEdgeWasUpDom) {
+        if( visited.contains(node) ) {
+            return false;
+        } else if( node.equals(goal) ) {
+            return true;
+        } else {
+            visited.add(node);
+            
+            for( Edge edge : getAdjacentEdges(node) ) {
+                String neighbour = (String) edge.oppositeVertex(node);
+                boolean isDomEdge = (getData(edge).getType() == EdgeType.DOMINANCE);
+                boolean isOutEdge = node.equals(edge.getSource());
+                
+                // skip outgoing dom edges if we came through an up dom edge
+                if( isDomEdge && isOutEdge && previousEdgeWasUpDom ) {
+                    continue;
+                }
+                
+                if( isHnReachable(neighbour, goal, visited, isDomEdge && !isOutEdge) ) {
+                    //System.err.println("hnr: " + node + " -> " + neighbour + " ->* " + goal);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
     }
     
     
