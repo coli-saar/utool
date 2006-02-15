@@ -19,6 +19,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import sun.security.pkcs.ParsingException;
+
+import de.saar.basic.XmlDecodingException;
 import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
@@ -141,7 +144,9 @@ public class XmlParser extends DefaultHandler {
             DomGraph graph = new DomGraph();
             NodeLabels labels = new NodeLabels();
             try {
-                codec.decodeString(XmlEntities.decode(attributes.getValue("string")), graph, labels);
+                String usr = XmlEntities.decode(attributes.getValue("string"));
+                //System.err.println("----- [USR] -----\n" + usr + "\n---------------");
+                codec.decodeString(usr, graph, labels);
             } catch(MalformedDomgraphException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A semantic error occurred while decoding the graph.", 
                         e, ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode()));
@@ -151,6 +156,9 @@ public class XmlParser extends DefaultHandler {
             } catch (ParserException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
                         e, ExitCodes.PARSING_ERROR));
+            } catch (XmlDecodingException e) {
+                throw new SAXException(new AbstractOptionsParsingException("An XML entity could not be resolved.",
+                        new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR));
             }
             
             options.setGraph(graph);
