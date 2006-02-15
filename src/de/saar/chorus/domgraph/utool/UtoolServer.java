@@ -170,6 +170,7 @@ public class UtoolServer {
                 if( options.getOperation() == Operation.solvable ) {
                     // Operation = solvable
                     out.println("<result solvable='" + solvable + "' "
+			    + "fragments='" + options.getGraph().getAllRoots().size() + "' "
                             + "count='" + chart.countSolvedForms() + "' "
                             + "chartsize='" + chart.size() + "' "
                             + "time='" + time_solver + "' />");
@@ -177,6 +178,7 @@ public class UtoolServer {
                     // Operation = solve
                     if( !solvable ) {
                         out.println("<result solvable='false' count='0' "
+			    + "fragments='" + options.getGraph().getAllRoots().size() + "' "
                                 + "chartsize='" + chart.size() + "' "
                                 + "time-chart='" + time_solver + "' />");
                     } else {
@@ -204,6 +206,7 @@ public class UtoolServer {
                             long time_extraction = end_extraction - start_extraction;
                             
                             out.println("<result solvable='true' count='" + count + "' "
+			    + "fragments='" + options.getGraph().getAllRoots().size() + "' "
                                     + " chartsize='" + chart.size() + "' "
                                     + " time-chart='" + time_solver + "' "
                                     + " time-extraction='" + time_extraction + "' >");
