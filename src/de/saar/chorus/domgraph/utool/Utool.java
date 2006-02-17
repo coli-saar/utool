@@ -262,6 +262,15 @@ public class Utool {
 
             System.exit(programExitCode);
             
+        case server:
+            try {
+                UtoolServer.startServer(options);
+            } catch(IOException e) {
+                System.err.println("An I/O error occurred while running the server: " + e);
+                System.exit(ExitCodes.SERVER_IO_ERROR);
+            }
+            System.exit(0);
+            
         case help:
             displayHelp(options.getHelpArgument());
             System.exit(0);

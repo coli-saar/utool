@@ -8,7 +8,7 @@
 package de.saar.chorus.domgraph.utool;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,25 +29,19 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
-import de.saar.getopt.ConvenientGetopt;
 
 
-/*
- * TODO:
- */
-
-
-public class UtoolServer {
+class UtoolServer {
     private static boolean logging = false;
     private static PrintWriter logTo = null;
 
     /**
      * @param args
+     * @throws IOException 
      */
-    public static void main(String[] args) throws Exception {
+    public static void startServer(AbstractOptions cmdlineOptions) throws IOException { //throws Exception {
         ServerSocket ssock = null;
         int port;
-        ConvenientGetopt getopt = new ConvenientGetopt("Utool Server", "java -jar UtoolServer.jar", "");
         XmlParser parser = new XmlParser();
         AbstractOptions options;
         
@@ -59,22 +53,12 @@ public class UtoolServer {
 
         
         // parse cmd-line options
-        getopt.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT, "The port on which the server will listen", "2802");
-        getopt.addOption('l', "logging", ConvenientGetopt.OPTIONAL_ARGUMENT, "Log to stderr or file (if given)", null);
-        getopt.parse(args);
-        
-        port = Integer.parseInt(getopt.getValue('p'));
-        
-        if( getopt.hasOption('l')) {
-            logging = true;
-            String val = getopt.getValue('l'); 
-            
-            if( val == null )  {
-                logTo = new PrintWriter(System.err, true);
-            } else {
-                logTo = new PrintWriter(new FileWriter(val), true);
-            }
+        logging = cmdlineOptions.hasOptionLogging();
+        if( logging ) {
+            logTo = cmdlineOptions.getLogWriter();
         }
+        
+        port = cmdlineOptions.getPort();
         
         
         // open server socket
@@ -314,6 +298,7 @@ public class UtoolServer {
                 out.println("<result version='" + versionString() + "' />");
                 break;
                 
+            case server:
             case _helpOptions:
                 // other operations not supported by the server
             }
