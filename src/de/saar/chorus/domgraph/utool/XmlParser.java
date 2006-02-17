@@ -45,7 +45,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 
-public class XmlParser extends DefaultHandler {
+class XmlParser extends DefaultHandler {
     private CodecManager codecManager;
     private AbstractOptions options;
     
@@ -107,9 +107,7 @@ public class XmlParser extends DefaultHandler {
                 options.setOperation(op);
                 
                 if( op.requiresOutput ) {
-                    if( attributes.getValue("no-output") != null ) {
-                        options.setOptionNoOutput(attributes.getValue("no-output").toLowerCase().equals("true"));
-                    } else if( attributes.getValue("output-codec") != null ) {
+                    if( attributes.getValue("output-codec") != null ) {
                         OutputCodec codec = codecManager.getOutputCodecForName(attributes.getValue("output-codec"));
                         if( codec == null ) {
                             throw new SAXException(new AbstractOptionsParsingException("Unknown output codec: " + attributes.getValue("output-codec"), ExitCodes.NO_SUCH_OUTPUT_CODEC));
@@ -117,7 +115,7 @@ public class XmlParser extends DefaultHandler {
                             options.setOutputCodec(codec);
                         }
                     } else {
-                        throw new SAXException(new AbstractOptionsParsingException("You must specify an output codec for this operation!", ExitCodes.NO_OUTPUT_CODEC_SPECIFIED));
+                        options.setOptionNoOutput(true);
                     }
                 }
                 

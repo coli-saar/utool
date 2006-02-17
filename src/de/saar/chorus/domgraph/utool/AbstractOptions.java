@@ -8,6 +8,7 @@
 package de.saar.chorus.domgraph.utool;
 
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 
 import de.saar.chorus.domgraph.codec.InputCodec;
@@ -16,7 +17,7 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
-public class AbstractOptions {
+class AbstractOptions {
     public static enum Operation {
         // real operations
         solve      
@@ -91,7 +92,18 @@ public class AbstractOptions {
                 "for normal graphs (although utool will test for it anyway).\n\n" +
                 "Valid options:\n" +
         "  --input-codec, -I codecname     Specify the input codec.\n",
-        true, false),                
+        true, false),      
+        
+        server
+        ("Start Utool in server mode",
+                "Usage: utool server [options]\n\n" +
+                "This command starts utool as a server which accepts commands and sends\n" +
+                "the results via a socket.\n" +
+                "Valid options:\n" +
+                "  --port, -p port           Accept connections at this port (default: 2802)\n" +
+                "  --logging, -l [filename]  Write log messages to this file; if no filename\n" +
+                "                            is given, write to stderr.\n",
+                false, false),
         
         help       
         ("Display help on a command",
@@ -142,6 +154,10 @@ public class AbstractOptions {
     
     private EquationSystem equations;
     
+    private int port;
+    private PrintWriter logWriter;
+    private boolean optionLogging;
+    
     
     public AbstractOptions() {
         // some default values
@@ -153,6 +169,10 @@ public class AbstractOptions {
         setOptionNoOutput(false);
         setOptionEliminateEquivalence(false);
         setOptionDumpChart(false);
+        
+        port = 2802;
+        logWriter = null;
+        optionLogging = false;
     }
     
     
@@ -234,5 +254,41 @@ public class AbstractOptions {
     }
     public void setOptionDumpChart(boolean optionDumpChart) {
         this.optionDumpChart = optionDumpChart;
+    }
+
+
+
+    public PrintWriter getLogWriter() {
+        return logWriter;
+    }
+
+
+
+    public void setLogWriter(PrintWriter logWriter) {
+        this.logWriter = logWriter;
+    }
+
+
+
+    public int getPort() {
+        return port;
+    }
+
+
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+
+
+    public boolean hasOptionLogging() {
+        return optionLogging;
+    }
+
+
+
+    public void setOptionLogging(boolean optionLogging) {
+        this.optionLogging = optionLogging;
     }
 }

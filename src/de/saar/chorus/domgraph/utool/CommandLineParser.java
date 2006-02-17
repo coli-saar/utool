@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.List;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -36,7 +37,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.getopt.ConvenientGetopt;
 
-public class CommandLineParser {
+class CommandLineParser {
     private static final char OPTION_VERSION = (char) 1;
     private static final char OPTION_HELP_OPTIONS = (char) 2;
     private static final char OPTION_DUMP_CHART = (char) 3;
@@ -122,34 +123,36 @@ public class CommandLineParser {
         
 
         // obtain graph
-        inputCodec = determineInputCodec(getopt, argument);
-        if( inputCodec == null ) {
-            throw new AbstractOptionsParsingException("You must specify an input codec!",
-                    ExitCodes.NO_INPUT_CODEC_SPECIFIED);
-        } else {
-            DomGraph graph = new DomGraph();
-            NodeLabels labels = new NodeLabels();
-            
-            ret.setInputCodec(inputCodec);
-            
-            if( argument == null ) {
-                argument = "-"; // stdin
+        if( op.requiresInput ) {
+            inputCodec = determineInputCodec(getopt, argument);
+            if( inputCodec == null ) {
+                throw new AbstractOptionsParsingException("You must specify an input codec!",
+                        ExitCodes.NO_INPUT_CODEC_SPECIFIED);
+            } else {
+                DomGraph graph = new DomGraph();
+                NodeLabels labels = new NodeLabels();
+                
+                ret.setInputCodec(inputCodec);
+                
+                if( argument == null ) {
+                    argument = "-"; // stdin
+                }
+                
+                try {
+                    inputCodec.decodeFile(argument, graph, labels);
+                    ret.setGraph(graph);
+                    ret.setLabels(labels);
+                } catch(MalformedDomgraphException e) {
+                    throw new AbstractOptionsParsingException("A semantic error occurred while decoding the graph.", 
+                            e, ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode());
+                } catch (IOException e) {
+                    throw new AbstractOptionsParsingException("An I/O error occurred while reading the input.",
+                            e, ExitCodes.IO_ERROR);
+                } catch (ParserException e) {
+                    throw new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
+                            e, ExitCodes.PARSING_ERROR);
+                } 
             }
-            
-            try {
-                inputCodec.decodeFile(argument, graph, labels);
-                ret.setGraph(graph);
-                ret.setLabels(labels);
-            } catch(MalformedDomgraphException e) {
-                throw new AbstractOptionsParsingException("A semantic error occurred while decoding the graph.", 
-                        e, ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode());
-            } catch (IOException e) {
-                throw new AbstractOptionsParsingException("An I/O error occurred while reading the input.",
-                        e, ExitCodes.IO_ERROR);
-            } catch (ParserException e) {
-                throw new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
-                        e, ExitCodes.PARSING_ERROR);
-            } 
         }
         
         // output
@@ -185,7 +188,26 @@ public class CommandLineParser {
         if( getopt.hasOption(OPTION_DUMP_CHART)) {
             ret.setOptionDumpChart(true);
         }
-
+        
+        if( getopt.hasOption('l')) {
+            String val = getopt.getValue('l');
+            
+            ret.setOptionLogging(true);
+            
+            if( val == null )  {
+                ret.setLogWriter(new PrintWriter(System.err, true));
+            } else {
+                try {
+                    ret.setLogWriter(new PrintWriter(new FileWriter(val), true));
+                } catch (IOException e) {
+                    throw new AbstractOptionsParsingException("An I/O error occurred while opening the log file!", e, ExitCodes.IO_ERROR);
+                }
+            }
+        }
+        
+        if( getopt.hasOption('p')) {
+            ret.setPort(Integer.parseInt(getopt.getValue('p')));
+        }
         
         if( getopt.hasOption('e') ) {
             try {
@@ -227,6 +249,10 @@ public class CommandLineParser {
                         "Display installed codecs", null);
         getopt.addOption('n', "no-output", ConvenientGetopt.NO_ARGUMENT,
                         "Suppress the ordinary output", null);
+        getopt.addOption('l', "logging", ConvenientGetopt.OPTIONAL_ARGUMENT,
+                        "Write server log to file or stderr", null);
+        getopt.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
+                        "Accept connections at this port", "2802");
         getopt.addOption(OPTION_HELP_OPTIONS, "help-options", ConvenientGetopt.NO_ARGUMENT,
                         "Display help on options", null);
         getopt.addOption(OPTION_DUMP_CHART, "dump-chart", ConvenientGetopt.NO_ARGUMENT,

@@ -27,6 +27,7 @@ public class ExitCodes {
     public static final int PARSING_ERROR = 140;
     public static final int PARSER_CONFIGURATION_ERROR = 141;
     public static final int NO_INPUT = 142;
+    public static final int SERVER_IO_ERROR = 143;
     
     
     // exit codes for "utool classify"
