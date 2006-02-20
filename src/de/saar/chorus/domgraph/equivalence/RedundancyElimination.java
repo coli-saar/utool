@@ -30,6 +30,30 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *  - For every root, there are entries 0,1,... in indicesCompactToOriginal.
  */
 
+/**
+ * An abstract base class for the implementation of redundancy
+ * elimination algorithms. A redundancy elimination algorithm removes
+ * splits from a chart representation while maintaining the set
+ * of equivalence classes of the configurations.<p>
+ * 
+ * A redundancy elimination algorithm needs an 
+ * {@link de.saar.chorus.domgraph.equivalence.EquationSystem} object
+ * to specify the equation system with respect to which equivalence
+ * is defined. An object of this class (or a subclass) can be used
+ * in one of two ways:
+ * <ul>
+ * <li> by calling the {@link #eliminate(Chart) eliminate} method of
+ * this class, you can remove redundant splits from an existing chart;
+ * <li> by running a {@link de.saar.chorus.domgraph.chart.ChartSolver}
+ * with a {@link de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource}
+ * based on an object of this class, you can fill a chart directly
+ * with just the irredundant splits.
+ * </ul>
+ *  
+ * 
+ * @author Alexander Koller
+ *
+ */
 public abstract class RedundancyElimination {
     protected DomGraph graph; // original graph
     protected DomGraph compact; // compact version of the graph
@@ -105,6 +129,11 @@ public abstract class RedundancyElimination {
      * the main redundancy elimination algorithm
      */
     
+    /**
+     * Removes redundant splits from an existing chart.
+     * 
+     * @param c a chart
+     */
     public void eliminate(Chart c) {
         Set<Set<String>> visited = new HashSet<Set<String>>();
         
@@ -142,6 +171,13 @@ public abstract class RedundancyElimination {
     }
 
 
+    /**
+     * Computes the irredundant splits for a given subgraph.
+     *
+     * @param subgraph a subgraph
+     * @param allSplits the complete list of all splits for this subgraph
+     * @return a list of irredundant splits
+     */
     abstract public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> allSplits);
 
 

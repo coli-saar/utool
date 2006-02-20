@@ -19,6 +19,21 @@ import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+
+/**
+ * An output codec for pluggings in Lisp syntax. This output format
+ * is compatible with the <a href="http://wiki.delph-in.net/moin/LkbTop">LKB</a>
+ * grammar development system: You can use Utool/Java as a drop-in replacement
+ * for the MRS solver that is built into LKB if you use the mrs-prolog input
+ * codec and this output codec.<p>
+ * 
+ * An example output looks as follows:<br/>
+ * {@code ((x x y) (y x y) (u u v) (v u v))}
+ * 
+ * @author Alexander Koller
+ * @author Stefan Thater
+ *
+ */
 public class LkbPluggingOutputCodec extends PluggingOutputCodec {
     public LkbPluggingOutputCodec() {
         super();

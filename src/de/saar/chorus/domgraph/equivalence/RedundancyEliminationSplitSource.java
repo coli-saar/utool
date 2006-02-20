@@ -17,6 +17,14 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+/**
+ * An implementation of <code>SplitSource</code> for filling a chart
+ * with just the irredundant splits. Redundancy is defined by an object
+ * of a subclass of {@link de.saar.chorus.domgraph.equivalence.RedundancyElimination}.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class RedundancyEliminationSplitSource extends SplitSource {
     private RedundancyElimination elim;
     

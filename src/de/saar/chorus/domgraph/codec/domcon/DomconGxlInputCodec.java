@@ -34,6 +34,41 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 
+/**
+ * An input codec for weakly normal dominance graphs in GXL syntax.
+ * <a href="http://www.gupro.de/GXL/">GXL</a> is a standard format
+ * for representing graphs based on XML. Inputs of this codec specify
+ * the nodes of the dominance graph, plus edges of type "dominance"
+ * or "solid" connecting them.<p>
+ * 
+ * An example input looks as follows:<p>
+ * {@code <gxl xmlns:xlink="http://www.w3.org/1999/xlink">}<br/>
+ *   {@code <graph id="testgraph" edgeids="true" hypergraph="false" edgemode="directed">}<br/>
+ *     {@code <node id="x">}<br/>
+ *       {@code <type xlink:href="root" />}<br/>
+ *       {@code <attr name="label"><string>f</string></attr>}<br/>
+ *     {@code </node>}<br/>
+ *     {@code <node id="y">}<br/>
+ *       {@code <type xlink:href="hole" />}<br/>
+ *     {@code </node>}<br/>
+ *     {@code <node id="z">}<br/>
+ *       {@code <type xlink:href="leaf" />}<br/>
+ *       {@code <attr name="label"><string>a</string></attr>}<br/>
+ *     {@code </node>}<br/>
+ *     {@code <edge from="x" to="y" id="edge1">}<br/>
+ *       {@code <type xlink:href="solid" />}<br/>
+ *     {@code </edge>}<br/>
+ *     {@code <edge from="y" to="z" id="edge2">}<br/>
+ *       {@code <type xlink:href="dominance" />}<br/>
+ *     {@code </edge>}<br/>
+ *   {@code </graph>}<br/>
+ * {@code </gxl>}
+ * <p>
+ * 
+ *       
+ * @author Alexander Koller
+ *
+ */
 public class DomconGxlInputCodec extends InputCodec {
     public DomconGxlInputCodec() {
         setName("domcon-gxl");
@@ -72,7 +107,7 @@ public class DomconGxlInputCodec extends InputCodec {
         graph.clear();
         labels.clear();
         
-        Element gxl = (Element) doc.getDocumentElement(); // First gxl element
+        Element gxl = doc.getDocumentElement(); // First gxl element
 
         NodeList graph_list = gxl.getChildNodes();
         if (graph_list.getLength() == 0) {
@@ -134,10 +169,10 @@ public class DomconGxlInputCodec extends InputCodec {
                 // Loop over all edges
                 for (int i = 0; i < list.getLength(); i++) {
                     Node node = list.item(i);  // a "node" or "edge" element
-                    String id = getAttribute(node, "id");
+                    //String id = getAttribute(node, "id");
                     String edgeOrNode = node.getNodeName();
                     String type = getType(node);
-                    Map<String,String> attrs = getStringAttributes(node);
+                    //Map<String,String> attrs = getStringAttributes(node);
                         
                         
                     if( edgeOrNode.equals("edge")) {
