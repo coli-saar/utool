@@ -19,7 +19,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * Each successful call to <code>next()</code> will return an object
  * of class <code>List<{@link DomEdge}></code>, i.e. a list of
  * dominance edge representations. This list can e.g. be passed
- * to the <code>encode</code> method of {@link OutputCodec} or
+ * to the <code>encode</code> method of {@link de.saar.chorus.domgraph.codec.OutputCodec} or
  * one of its subclasses.<p>
  * 
  * This class implements a transition system for states consisting

@@ -19,6 +19,29 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 
+/**
+ * An input codec that generates pure chains. Pure chains
+ * are normal dominance graphs in which upper and lower fragments
+ * alternate in a zig-zag shape (see e.g. <a href="http://www.coli.uni-saarland.de/~koller/showpaper.php?id=thesis">
+ * Koller's Ph.D. thesis</a>, Chapter 6.4). They correspond to
+ * the predicate-argument structure of (possibly nested) NPs
+ * and (possibly transitive) verbs, and as such are a convenient
+ * type of graphs for benchmarks.<p>
+ * 
+ * The {@link Chain#decodeFile(String, DomGraph, NodeLabels) decodeFile} and 
+ * {@link Chain#decodeString(String, DomGraph, NodeLabels) decodeString} methods of this
+ * input codec are both implemented in such a way that they parse
+ * their string argument as a number, and then generate the pure
+ * chain of that length. This differs from the specification of
+ * an ordinary input codec, which interprets these methods as
+ * instructions to read an USR from a file or string. The 
+ * {@link Chain#decode(Reader, DomGraph, NodeLabels) decode}
+ * method for reading a USR from a reader is not supported by this
+ * codec.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class Chain extends InputCodec {
     public Chain() {
         setName("chain");
