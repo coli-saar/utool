@@ -23,6 +23,14 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+/**
+ * An output codec for weakly normal dominance constraints in Oz syntax.
+ * For further documentation of this format, see {@link de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec}.
+ * 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class DomconOzOutputCodec extends GraphOutputCodec {
     public DomconOzOutputCodec() {
         super();

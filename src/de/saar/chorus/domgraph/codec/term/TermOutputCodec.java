@@ -24,9 +24,36 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+/**
+ * A generic output codec for terms. This codec assumes that the
+ * graph that is to be output is 
+ * <ul>
+ * <li> normal;
+ * <li> leaf-labelled;
+ * <li> a simple solved form.
+ * </ul>
+ * 
+ * That is, the graph must be a forest, and a node has an outgoing dominance
+ * edge iff it is a hole (and <i>exactly</i> one dominance edge in this case).
+ * Such solved forms can be output as terms; this is what this codec does.<p>
+ * 
+ * This codec can be used to compute terms both in Oz and in Prolog syntax.
+ * The difference between these two concrete syntaxes is that Prolog inserts
+ * a comma between subterms, whereas Oz uses whitespace for the same purpose.
+ *  
+ *  
+ * @author Alexander Koller
+ *
+ */
 public class TermOutputCodec extends GraphOutputCodec {
     protected String separator;
     
+    /**
+     * Construct a new term output codec with the given subterm
+     * separator (e.g. "," for Prolog, " " for Oz).
+     *  
+     * @param separator the subterm separator
+     */
     public TermOutputCodec(String separator) {
         super();
         this.separator = separator;
@@ -39,8 +66,8 @@ public class TermOutputCodec extends GraphOutputCodec {
         boolean first = true;
         
         // check whether graph is in simple solved form
-        if( !graph.isSimpleSolvedForm() || !graph.isNormal() ) {
-            throw new MalformedDomgraphException("Graph must be a simple normal solved form");
+        if( !graph.isSimpleSolvedForm() || !graph.isLeafLabelled() || !graph.isNormal() ) {
+            throw new MalformedDomgraphException("Graph must be a leaf-labelled simple normal solved form");
         }
 
         // build dom-edge map

@@ -20,6 +20,17 @@ import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
+/**
+ * An output codec for pluggings in Oz syntax. This codec will print
+ * an Oz list containing a term <code>plug(x y)</code> for each
+ * dominance edge (x,y) in the solved form.<p>
+ * 
+ * An example output looks as follows:<br/>
+ * {@code [plug(x y) plug(u v)]}
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class DomconOzPluggingOutputCodec extends PluggingOutputCodec {
     public DomconOzPluggingOutputCodec() {
         super();

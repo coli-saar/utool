@@ -13,7 +13,6 @@ import java.io.Writer;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.basic.XmlEntities;
-import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -21,6 +20,13 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+/**
+ * An output codec for weakly normal dominance graphs in GXL syntax.
+ * For further documentation of this format, see {@link de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec}.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class DomconGxlOutputCodec extends GraphOutputCodec {
     
     public DomconGxlOutputCodec() {
