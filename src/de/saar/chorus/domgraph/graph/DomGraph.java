@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.event.ConnectedComponentTraversalEvent;
 import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
+import org._3pq.jgrapht.ext.JGraphModelAdapter;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 
@@ -1104,7 +1104,9 @@ public class DomGraph implements Cloneable {
         }
     }
 
-    
+    public JGraphModelAdapter getJGraphModelAdapter() {
+    	return new JGraphModelAdapter(graph);
+    }
     
 }
 
