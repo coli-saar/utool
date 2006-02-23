@@ -17,7 +17,7 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
-class AbstractOptions {
+public class AbstractOptions {
     public static enum Operation {
         // real operations
         solve      

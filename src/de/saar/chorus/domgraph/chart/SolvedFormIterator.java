@@ -315,7 +315,9 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
         throw new UnsupportedOperationException();
     }
     
-    
+    public Chart getChart() {
+    	return chart;
+    }
     
     
     /**** classes for the agenda and the enumeration stack ****/
@@ -369,6 +371,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
             edgeAccu.clear();
         }
         
+       
         /**
          * @return Returns the dominator.
          */

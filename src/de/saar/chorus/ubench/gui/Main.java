@@ -13,17 +13,35 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 
-import de.saar.chorus.libdomgraph.DomSolver;
+import de.saar.chorus.domgraph.codec.CodecManager;
+import de.saar.chorus.domgraph.codec.InputCodec;
+import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
+import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
+import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
+import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
+import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
+import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
+import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
+import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
+import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
+import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
+import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.ubench.DomGraphGXLCodec;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.utool.DomGraphConverter;
+import de.saar.chorus.ubench.utool.DomGraphTConverter;
 import de.saar.getopt.ConvenientGetopt;
 
 /**
@@ -92,6 +110,8 @@ public class Main  {
 	// the main listener for menus and buttons
 	private static CommandListener listener;
     
+	private static Map<DomGraph, NodeLabels> graphToLabels;
+	
 	// the menu bar 
 	private static JDomGraphMenu menuBar;
     
@@ -302,10 +322,11 @@ public class Main  {
 	 * @param showNow if set to true, the tab will be shown after creating
 	 * @return the tab or null if an error occured while setting up the tab
 	 */
-    public static JDomGraphTab addNewTab(JDomGraph graph, String label, boolean paintNow, boolean showNow) {
+    public static JDomGraphTab addNewTab(JDomGraph graph, String label, 
+    		DomGraph origin, boolean paintNow, boolean showNow) {
         
     	// the new tab
-    	JDomGraphTab tab = new JDomGraphTab(graph, label, paintNow, listener);
+    	JDomGraphTab tab = new JDomGraphTab(graph,  origin, label,paintNow, listener);
         if( tab.getGraph() != null ) {
             
         	// tab sucessfully created
@@ -330,10 +351,11 @@ public class Main  {
      * @param index indicating on which place of the tab the new tab shall be inserted
      * @return the new tab or null if anything fails
      */
-    public static JDomGraphTab addNewTab(JDomGraph graph, String label, boolean paintNow, boolean showNow, int index) {
+    public static JDomGraphTab addNewTab(JDomGraph graph, String label, 
+    		DomGraph origin, boolean paintNow, boolean showNow, int index) {
     	
     	// the new tab
-    	JDomGraphTab tab = new JDomGraphTab(graph, label, paintNow, listener);
+    	JDomGraphTab tab = new JDomGraphTab(graph, origin, label, paintNow, listener);
     	if( tab.getGraph() != null ) {
     		
     		// tab sucessfully created
@@ -364,11 +386,11 @@ public class Main  {
 	 * @param filename
 	 * @return
 	 */
-    public static JDomGraph genericLoadGraph(String filename) {
+    public static JDomGraph genericLoadGraph(String filename, DomGraph graph) {
         if( filename.endsWith(".xml") ) {
             return loadGraph(filename);
         } else {
-            return importGraph(filename);
+            return importGraph(filename, graph);
         }
     }
 	
@@ -402,8 +424,31 @@ public class Main  {
 	 * @param filename
 	 * @return
 	 */
-    public static JDomGraph importGraph(String filename) {
-        DomSolver solver = new DomSolver();
+    public static JDomGraph importGraph(String filename, DomGraph graph) {
+        
+        CodecManager codecManager = new CodecManager();
+        registerAllCodecs(codecManager);
+        InputCodec inputCodec = codecManager.getInputCodecForFilename(filename);
+        
+        NodeLabels nodeLabels = new NodeLabels();
+        try {
+            inputCodec.decodeFile(filename, graph, nodeLabels);
+        } catch(Exception e) {
+        	JOptionPane.showMessageDialog(window,
+                    "An error occurred while loading this graph\n(perhaps the file " +
+                    "doesn't exist,\nor the input codec couldn't be determined or was " +
+                    "unable to parse the graph).",
+                    "Error during import",
+                    JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+        
+        graphToLabels.put(graph,nodeLabels);
+        DomGraphTConverter conv = new DomGraphTConverter(graph, nodeLabels);
+        return conv.getJDomGraph();
+        
+     /*   
+    	DomSolver solver = new DomSolver();
         boolean ok = solver.loadGraph(filename);
         
         if( !ok ) {
@@ -417,11 +462,11 @@ public class Main  {
         } else {
             DomGraphConverter conv = new DomGraphConverter(solver, solver.getGraph());
             return conv.toJDomGraph();
-        }
+        }*/
     }    
     
     /**
-     * Starting leonardo, optionally with files to open
+     * Starting Ubench, optionally with files to open
      * on command line
      * 
      * @param args command line arfuments
@@ -439,8 +484,8 @@ public class Main  {
         
         // parse command-line arguments
         ConvenientGetopt getopt = 
-            new ConvenientGetopt("Leonardo",
-                "java -jar Leonardo.jar [options] [filename]",
+            new ConvenientGetopt("Ubench",
+                "java -jar Ubench.jar [options] [filename]",
             	"If Leonardo doesn't run in server mode, specify a filename on the command line"
                 + "\nto display the graph.");
         
@@ -454,6 +499,8 @@ public class Main  {
         // extract arguments
         boolean serverMode = getopt.hasOption('s');
         int port = Integer.parseInt(getopt.getValue('p'));
+        
+        graphToLabels = new HashMap<DomGraph, NodeLabels>();
         
         // set up the window
         window = makeWindow();
@@ -491,9 +538,12 @@ public class Main  {
         
         // load files that were specified on the command line
         for(String file : getopt.getRemaining()) {
-            JDomGraph graph = genericLoadGraph(file);
+        	DomGraph anotherGraph = new DomGraph();
+            JDomGraph graph = genericLoadGraph(file, anotherGraph);
             if( graph != null ) {
-                JDomGraphTab firstTab = addNewTab(graph, (new File(file)).getName(), true, false);
+       //     	DomGraphTConverter conv = new DomGraphTConverter(graph);
+                JDomGraphTab firstTab = addNewTab(graph, 
+                		(new File(file)).getName(),anotherGraph,true, false);
                 if( firstTab != null ) {
                     tabbedPane.copyShortcuts(firstTab);
                 }
@@ -547,7 +597,33 @@ public class Main  {
 		Main.listener = listener;
 	}
 	
-    
+	private static void registerAllCodecs(CodecManager codecManager) {
+        try {
+            codecManager.registerCodec(Chain.class);
+            codecManager.registerCodec(DomconOzInputCodec.class);
+            codecManager.registerCodec(DomconGxlInputCodec.class);
+            codecManager.registerCodec(HolesemComsemInputCodec.class);
+            codecManager.registerCodec(MrsPrologInputCodec.class);
+        
+            codecManager.registerCodec(DomconOzOutputCodec.class);
+            codecManager.registerCodec(DomconGxlOutputCodec.class);
+            
+            codecManager.registerCodec(DomconUdrawOutputCodec.class);
+            // TBD // codecManager.registerCodec(HolesemComsemOutputCodec.class);
+            codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
+            codecManager.registerCodec(LkbPluggingOutputCodec.class);
+            codecManager.registerCodec(OzTermOutputCodec.class);
+            codecManager.registerCodec(PrologTermOutputCodec.class);
+        } catch(Exception e) {
+            System.err.println("An error occurred trying to register a codec.");
+            e.printStackTrace(System.err);
+            System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
+        }
+    }
+	
+	public static NodeLabels getLabelsFor(DomGraph gr) {
+		return graphToLabels.get(gr);
+	}
 
 	
 }
