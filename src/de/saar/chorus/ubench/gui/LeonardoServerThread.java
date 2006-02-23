@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.Server;
 
@@ -46,9 +47,10 @@ public class LeonardoServerThread extends Thread {
                 if( mImport.matches() ) {
                     String filename = mImport.group(1);
                     DomGraph aDomGraph = new DomGraph();
-                    JDomGraph graph = Main.importGraph(filename, aDomGraph);
+                    NodeLabels labels = new NodeLabels();
+                    JDomGraph graph = Main.importGraph(filename, aDomGraph, labels);
                     if( graph != null ) {
-          //             Main.addNewTab(graph, filename, true, true);
+                       Main.addNewTab(graph, filename,aDomGraph, true, true, labels);
                     }
                 }
             }

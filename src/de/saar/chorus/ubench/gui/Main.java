@@ -323,10 +323,10 @@ public class Main  {
 	 * @return the tab or null if an error occured while setting up the tab
 	 */
     public static JDomGraphTab addNewTab(JDomGraph graph, String label, 
-    		DomGraph origin, boolean paintNow, boolean showNow) {
+    		DomGraph origin, boolean paintNow, boolean showNow, NodeLabels labels) {
         
     	// the new tab
-    	JDomGraphTab tab = new JDomGraphTab(graph,  origin, label,paintNow, listener);
+    	JDomGraphTab tab = new JDomGraphTab(graph,  origin, label,paintNow, listener, labels);
         if( tab.getGraph() != null ) {
             
         	// tab sucessfully created
@@ -352,10 +352,11 @@ public class Main  {
      * @return the new tab or null if anything fails
      */
     public static JDomGraphTab addNewTab(JDomGraph graph, String label, 
-    		DomGraph origin, boolean paintNow, boolean showNow, int index) {
+    		DomGraph origin, boolean paintNow, boolean showNow, int index,
+    		NodeLabels labels) {
     	
     	// the new tab
-    	JDomGraphTab tab = new JDomGraphTab(graph, origin, label, paintNow, listener);
+    	JDomGraphTab tab = new JDomGraphTab(graph, origin, label, paintNow, listener, labels);
     	if( tab.getGraph() != null ) {
     		
     		// tab sucessfully created
@@ -386,12 +387,10 @@ public class Main  {
 	 * @param filename
 	 * @return
 	 */
-    public static JDomGraph genericLoadGraph(String filename, DomGraph graph) {
-        if( filename.endsWith(".xml") ) {
-            return loadGraph(filename);
-        } else {
-            return importGraph(filename, graph);
-        }
+    public static JDomGraph genericLoadGraph(String filename, DomGraph graph, NodeLabels nl) {
+      
+            return importGraph(filename, graph, nl);
+        
     }
 	
     /**
@@ -424,7 +423,7 @@ public class Main  {
 	 * @param filename
 	 * @return
 	 */
-    public static JDomGraph importGraph(String filename, DomGraph graph) {
+    public static JDomGraph importGraph(String filename, DomGraph graph, NodeLabels nl) {
         
         CodecManager codecManager = new CodecManager();
         registerAllCodecs(codecManager);
@@ -432,7 +431,7 @@ public class Main  {
         
         NodeLabels nodeLabels = new NodeLabels();
         try {
-            inputCodec.decodeFile(filename, graph, nodeLabels);
+            inputCodec.decodeFile(filename, graph, nl);
         } catch(Exception e) {
         	JOptionPane.showMessageDialog(window,
                     "An error occurred while loading this graph\n(perhaps the file " +
@@ -443,8 +442,8 @@ public class Main  {
             return null;
         }
         
-        graphToLabels.put(graph,nodeLabels);
-        DomGraphTConverter conv = new DomGraphTConverter(graph, nodeLabels);
+        graphToLabels.put(graph,nl);
+        DomGraphTConverter conv = new DomGraphTConverter(graph, nl);
         return conv.getJDomGraph();
         
      /*   
@@ -539,11 +538,12 @@ public class Main  {
         // load files that were specified on the command line
         for(String file : getopt.getRemaining()) {
         	DomGraph anotherGraph = new DomGraph();
-            JDomGraph graph = genericLoadGraph(file, anotherGraph);
+        	NodeLabels labels = new NodeLabels();
+            JDomGraph graph = genericLoadGraph(file, anotherGraph, labels);
             if( graph != null ) {
        //     	DomGraphTConverter conv = new DomGraphTConverter(graph);
                 JDomGraphTab firstTab = addNewTab(graph, 
-                		(new File(file)).getName(),anotherGraph,true, false);
+                		(new File(file)).getName(),anotherGraph,true, false, labels);
                 if( firstTab != null ) {
                     tabbedPane.copyShortcuts(firstTab);
                 }
