@@ -849,9 +849,9 @@ public class JDomGraphTab extends JPanel {
     			
     		} 
     		
-    		if( ! Preferences.utoolPresent() ) {
+    		
     			solve.setEnabled(false);
-    		}
+    		
     	}
     }
 
