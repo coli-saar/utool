@@ -56,7 +56,7 @@
 	</target>
 	
 	
-	<target name="compile-all" depends="init,domconOz.javacc,holesemComsem.javacc,mrs.javacc,jgrapht.unpacked,getopt.unpacked">
+	<target name="compile-all" depends="init,domconOz.javacc,holesemComsem.javacc,mrs.javacc,glue.javacc,jgrapht.unpacked,getopt.unpacked">
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -148,6 +148,11 @@
                         target="${source}/${chorus}/domgraph/codec/mrs/MrsPrologInputCodec.jj" />
         </target>
 
+    <target name="glue.javacc">
+            <javacc 
+                    javacchome="${javacchome}" 
+                    target="${source}/${chorus}/domgraph/codec/glue/GlueInputCodec.jj" />
+    </target>
 
 	<!-- JAR Unpacking -->
 
