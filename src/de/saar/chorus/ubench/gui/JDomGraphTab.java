@@ -727,12 +727,9 @@ public class JDomGraphTab extends JPanel {
     		if( isSolvedYet ) {
     			numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
     		} else {
-    			if(Preferences.utoolPresent()) {
-    				numberOfForms.setText("This graph has an unknown number of solved forms.");    		
-    			} else {
-    				numberOfForms.setText("Cannot determine the number of solved forms because libdomgraph is unavailable.");
+    			numberOfForms.setText("This graph has an unknown number of solved forms.");    		
     			}
-    		}
+    		
     		
     		add(numberOfForms, BorderLayout.CENTER);
     		layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
@@ -795,7 +792,7 @@ public class JDomGraphTab extends JPanel {
     		comp.setForeground(Color.RED);
     		classifyLabels.add(comp);
     		
-    		if( Preferences.utoolPresent() ) {
+    		
     			
     			
     			if(domGraph.isNormal()) {
@@ -852,7 +849,7 @@ public class JDomGraphTab extends JPanel {
         		
         		add(classified, BorderLayout.EAST);
     			
-    		} 
+    		
     		
     		
     			//solve.setEnabled(false);
