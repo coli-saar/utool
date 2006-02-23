@@ -269,9 +269,13 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     }
 
     /**
+     * This returns a solved form represented by a List of <code>DomEdge</code>
+     * objects. The form is accessed via its index.
+     * Forms with indices exceeding the range of <code>int</code> have to be
+     * extracted manually by calling <code>next()</code> as often as necessary.
      * 
      * @param sf index of the solved form to extract
-     * @return 
+     * @return the solved form
      */
     public List<DomEdge> getSolvedForm(int sf) {
     	if (  chart.countSolvedForms().intValue() <= sf ) {
