@@ -1,5 +1,6 @@
 package de.saar.chorus.domgraph.chart;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +47,8 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	
 	private List<DomEdge> nextSolvedForm;
 	
+	private List< List<DomEdge> > solvedForms;
+	
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
 	public SolvedFormIterator(Chart ch, DomGraph graph) {
@@ -53,7 +56,8 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 		agenda = new Agenda();
 		nullNode = null; 
 		stack = new Stack<EnumerationStackEntry>();
-        
+        solvedForms = new ArrayList< List<DomEdge> >();
+		
         //fragmentTable = graph.getFragments();
         roots = graph.getAllRoots();
         
@@ -79,6 +83,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 			
 			if( representsSolvedForm() ) {
 				nextSolvedForm = extractDomEdges();
+				solvedForms.add(nextSolvedForm);
 			} else {
 				nextSolvedForm = null;
 			}
@@ -263,6 +268,48 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     	}
     }
 
+    /**
+     * 
+     * @param sf index of the solved form to extract
+     * @return 
+     */
+    public List<DomEdge> getSolvedForm(int sf) {
+    	if (  chart.countSolvedForms().intValue() <= sf ) {
+    		return null;
+    	} else {
+    		if( sf <= solvedForms.size() ) {
+    			return solvedForms.get(sf);
+    		} else {
+    			for( int i = solvedForms.size(); i <= sf; i++ ) {
+    				updateNextSolvedForm();
+    			}
+    		}
+    	}
+    	return solvedForms.get(sf);
+    }
+    
+    /**
+     * TODO perhaps this is redundand? The entries of an 
+     * ArrayList are only accessible by get(int) anyway. 
+     * 
+     * @param sf index of the solved form to extract
+     * @return
+     */
+    public List<DomEdge> getSolvedForm(BigInteger sf) {
+    	if (  chart.countSolvedForms().compareTo(sf) <= 0 ) {
+    		return null;
+    	} else {
+    		if( sf.intValue() <= solvedForms.size() ) {
+    			return solvedForms.get(sf.intValue());
+    		} else {
+    			for( long i = solvedForms.size(); i <= sf.longValue(); i++ ) {
+    				updateNextSolvedForm();
+    			}
+    		}
+    	}
+    	return solvedForms.get(sf.intValue());
+    }
+    
 
     public void remove() {
         throw new UnsupportedOperationException();
