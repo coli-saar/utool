@@ -1104,10 +1104,7 @@ public class DomGraph implements Cloneable {
         }
     }
 
-    public JGraphModelAdapter getJGraphModelAdapter() {
-    	return new JGraphModelAdapter(graph);
-    }
-    
+  
 }
 
 
