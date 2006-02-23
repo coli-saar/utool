@@ -17,11 +17,6 @@
 	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
 
-	<property name="utool-swig.jar" location="${packages}/DomgraphSwig.jar" />
-	<property name="utool-swig.unpacked.classes" value="de/saar/chorus/libdomgraph/*" />
-
-
-
 	<property name="build.classes" location="${build}/classes" />
 	<property name="build.lib" location="${build}/lib" />
 	<property name="build.src" location="${build}/src" />
@@ -29,11 +24,14 @@
 	<property name="coli" value="de/saar" />
 	<property name="chorus" value="de/saar/chorus" />
 
-
+	<property name="javacchome" location="${packages}/javacc-4.0" />
+	<property name="jgrapht.jar" location="${packages}/jgrapht-0.6.0/jgrapht-0.6.0.jar" />
+	<property name="jgrapht.unpacked.classes" value="org/_3pq/jgrapht/**" />
 
 	<property name="ubench-dist.jar" value="${build.lib}/Ubench-1.0.jar" />
 	<property name="ubench.jar" value="${build.lib}/Ubench.jar" />
-	<property name="ubench.jar.classes" value="${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/ubench/utool/*,${chorus}/jgraph/*,${coli}/getopt/*" />
+	<property name="ubench.jar.classes" value="${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/jgraph/*,
+		${coli}/getopt/*,${chorus}/domgraph/**/*,${coli}/basic/*" />
 
 	<property name="junit.jar" value="${packages}/junit.jar" />
 	<property name="reports.tests" location="testreports" />
@@ -41,7 +39,7 @@
 
 
 	<!-- Jars -->
-	<target name="ubench" depends="init,jgraph.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
+	<target name="ubench" depends="init,domconOz.javacc,holesemComsem.javacc,mrs.javacc,jgraph.unpacked,getopt.unpacked,itext.unpacked,jgrapht.unpacked">
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
@@ -49,9 +47,10 @@
 							${chorus}/jgraph/*.java,
 							${chorus}/treelayout/*.java,
 							${chorus}/ubench/gui/*.java,
-							${chorus}/ubench/utool/*.java,
+							${chorus}/domgraph/**/*.java,
+							${coli}/basic/*.java,
 							${coli}/getopt/*.java"
-               excludes="**/Test*.java"
+               excludes="**/Test*.java, ${chorus}/ubench/utool/*"
                source="1.5">
 
 			<classpath>
@@ -61,7 +60,9 @@
 
 		<jar jarfile="${ubench.jar}"
              basedir="${build.classes}"
-             includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
+             includes="${ubench.jar.classes},${jgraph.unpacked.classes},
+					   ${getopt.unpacked.classes},${itext.unpacked.classes},
+					   ${jgrapht.unpacked.classes}">
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.ubench.gui.Main" />
@@ -72,7 +73,7 @@
 
 
 
-	<target name="dist" depends="init,jgraph.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
+	<target name="dist" depends="init,domconOz.javacc,holesemComsem.javacc,mrs.javacc,jgraph.unpacked,getopt.unpacked,itext.unpacked,jgrapht.unpacked">
 
 
 		<javac srcdir="${source}"
@@ -82,9 +83,10 @@
 							${chorus}/jgraph/*.java,
 							${chorus}/treelayout/*.java,
 							${chorus}/ubench/gui/*.java,
-							${chorus}/ubench/utool/*.java,
+							${chorus}/domgraph/**/*.java,
+							${coli}/basic/*.java,
 							${coli}/getopt/*.java"
-               excludes="**/Test*.java"
+               excludes="**/Test*.java, ${chorus}/ubench/utool/*"
                source="1.5">
 
 			<classpath>
@@ -106,7 +108,8 @@
 
 		<jar jarfile="${ubench-dist.jar}"
              basedir="${build.classes}"
-             includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
+             includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},
+			${itext.unpacked.classes},${utool-swig.unpacked.classes},${jgrapht.unpacked.classes}">
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.ubench.gui.Main" />
@@ -118,6 +121,28 @@
 		<delete dir="tmp_Ubench/" />
 	</target>
 
+	
+	<!-- JavaCC -->
+		<target name="domconOz.javacc">
+			<javacc 
+				javacchome="${javacchome}" 
+				target="${source}/${chorus}/domgraph/codec/domcon/DomconOzInputCodec.jj" />
+		</target>
+
+		<target name="holesemComsem.javacc">
+			<javacc 
+				javacchome="${javacchome}" 
+				target="${source}/${chorus}/domgraph/codec/holesem/HolesemComsemInputCodec.jj" />
+		</target>
+
+	        <target name="mrs.javacc">
+	                <javacc 
+	                        javacchome="${javacchome}" 
+	                        target="${source}/${chorus}/domgraph/codec/mrs/MrsPrologInputCodec.jj" />
+	        </target>
+	
+	
+	
 	<!-- JUnit -->
 	<!-- If the JUnit targets don't work, make sure that junit.jar is in
 	     the classpath, e.g.
@@ -172,13 +197,13 @@
 		</antcall>
 	</target>
 
-	<target name="utool-swig.unpacked" depends="init" if="itext.jar.present">
-		<antcall target="unpack">
-			<param name="unpack.jar" value="${utool-swig.jar}" />
-			<param name="unpack.jar.id" value="utool-swig" />
-		</antcall>
-	</target>
-
+	<target name="jgrapht.unpacked" depends="init" if="jgrapht.jar.present">
+			<antcall target="unpack" >
+				<param name="unpack.jar" value="${jgrapht.jar}" />
+				<param name="unpack.jar.id" value="jgrapht" />
+			</antcall>
+		</target>
+	
 
 	<!-- Javadoc -->
 
@@ -218,6 +243,7 @@
 		<available file="${getopt.jar}" property="getopt.jar.present"/>
 		<available file="${itext.jar}" property="itext.jar.present"/>
 		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
+		<available file="${jgrapht.jar}" property="grapht.jar.present"/>
 		<available file="${unpack.jar}" property="unpack.jar.present"/>
 
 	</target>

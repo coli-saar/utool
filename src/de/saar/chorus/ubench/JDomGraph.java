@@ -11,7 +11,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,8 +31,6 @@ import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
-import de.saar.chorus.libdomgraph.DomGraph;
-import de.saar.chorus.libdomgraph.chart.DomEdge;
 
 /**
  * A Swing component that represents a dominance graph.

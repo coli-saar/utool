@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.utool;
+package de.saar.chorus.ubench;
 
 import org._3pq.jgrapht.Edge;
 import org.jgraph.graph.DefaultEdge;
@@ -7,10 +7,6 @@ import org.jgraph.graph.DefaultGraphCell;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.EdgeData;
-import de.saar.chorus.ubench.EdgeType;
-import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.NodeData;
 
 public class DomGraphTConverter {
 	
