@@ -14,12 +14,10 @@ public class DomGraphTConverter {
 	
 	DomGraph domGraph;
 	JDomGraph jDomGraph;
-	JGraphModelAdapter adapter;
 	
 	
 	public DomGraphTConverter(DomGraph graph) {
 		domGraph = graph;
-		adapter = domGraph.getJGraphModelAdapter();
 		jDomGraph = new JDomGraph();
 		
 		for(String node : domGraph.getAllNodes() ) {
