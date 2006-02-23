@@ -21,8 +21,7 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.libdomgraph.ConstraintClasses;
-import de.saar.chorus.libdomgraph.DomSolver;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.utool.JDomGraphConverter;
 
@@ -41,6 +40,9 @@ public class JDomGraphTab extends JPanel {
 	private JDomGraph graph = new JDomGraph();
 	
 	private DomGraph domGraph;
+	
+	//TODO move that, where it fits!!
+	private NodeLabels nodeLabels;
 	
 	// graph information concerning solving and identity
 	boolean solvable,  isSolvedForm, isSolvedYet; 
@@ -74,6 +76,8 @@ public class JDomGraphTab extends JPanel {
     
 	
 	
+	
+
 	/**
 	 * Constructor for setting up a tab with a solved form.
 	 * 
@@ -83,14 +87,14 @@ public class JDomGraphTab extends JPanel {
 	 */
 	public JDomGraphTab(JDomGraph solvedForm, String name, 
 			SolvedFormIterator solv, DomGraph origin, long form, long allForms, 
-			String gName, CommandListener lis) {
+			String gName, CommandListener lis, NodeLabels labels) {
 		
 		// initializing fields
 		listener = lis;
 		defaultName = name;
 		graph = solvedForm;
 		domGraph = origin;
-		
+		nodeLabels = labels;
 		solvedFormIterator = solv;
 		currentForm = form;
 		isSolvedYet = false;
@@ -130,7 +134,7 @@ public class JDomGraphTab extends JPanel {
 	 * @param paintNow if set to true, the graph is layoutet at once
 	 */
 	public JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
-			boolean paintNow, CommandListener lis) {
+			boolean paintNow, CommandListener lis, NodeLabels labels) {
 		
 		// initializing fields
 		defaultName = name;
@@ -138,6 +142,7 @@ public class JDomGraphTab extends JPanel {
 		graph = null;
 		listener = lis;
 		domGraph = origin;
+		nodeLabels = labels;
 		
 		Chart chart = new Chart();
 		ChartSolver solver = new ChartSolver(origin, chart);
@@ -850,7 +855,7 @@ public class JDomGraphTab extends JPanel {
     		} 
     		
     		
-    			solve.setEnabled(false);
+    			//solve.setEnabled(false);
     		
     	}
     }
@@ -894,6 +899,20 @@ public class JDomGraphTab extends JPanel {
 	public void setDomGraph(DomGraph domGraph) {
 		this.domGraph = domGraph;
 	}
-    
+	/**
+	 * @return Returns the nodeLabels.
+	 */
+	public NodeLabels getNodeLabels() {
+		return nodeLabels;
+	}
+
+
+	/**
+	 * @param nodeLabels The nodeLabels to set.
+	 */
+	public void setNodeLabels(NodeLabels nodeLabels) {
+		this.nodeLabels = nodeLabels;
+	}
+
     
 }
