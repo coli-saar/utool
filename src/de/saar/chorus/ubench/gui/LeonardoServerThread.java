@@ -10,6 +10,7 @@ package de.saar.chorus.ubench.gui;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.Server;
 
@@ -39,14 +40,15 @@ public class LeonardoServerThread extends Thread {
             Matcher mOpen = openPattern.matcher(messageStr);
             if( mOpen.matches() ) {
                 String filename = mOpen.group(1);
-                Main.addNewTab(Main.loadGraph(filename), filename, true, true);
+          //      Main.addNewTab(Main.loadGraph(filename), filename, true, true);
             } else {
                 Matcher mImport = importPattern.matcher(messageStr);
                 if( mImport.matches() ) {
                     String filename = mImport.group(1);
-                    JDomGraph graph = Main.importGraph(filename);
+                    DomGraph aDomGraph = new DomGraph();
+                    JDomGraph graph = Main.importGraph(filename, aDomGraph);
                     if( graph != null ) {
-                        Main.addNewTab(graph, filename, true, true);
+          //             Main.addNewTab(graph, filename, true, true);
                     }
                 }
             }

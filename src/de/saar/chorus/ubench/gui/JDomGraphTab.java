@@ -17,6 +17,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.libdomgraph.ConstraintClasses;
 import de.saar.chorus.libdomgraph.DomSolver;
 import de.saar.chorus.ubench.JDomGraph;
@@ -36,6 +40,8 @@ public class JDomGraphTab extends JPanel {
 	// the grapb is initialized empty
 	private JDomGraph graph = new JDomGraph();
 	
+	private DomGraph domGraph;
+	
 	// graph information concerning solving and identity
 	boolean solvable,  isSolvedForm, isSolvedYet; 
 	
@@ -48,8 +54,8 @@ public class JDomGraphTab extends JPanel {
 	// tabed pane)
 	private String defaultName, graphName;
 	
-	// solver of the graph
-	private DomSolver solver;
+	// solvedFormIterator of the graph
+	private SolvedFormIterator solvedFormIterator;
 	
 	// converter 
 	private JDomGraphConverter conv;
@@ -73,22 +79,24 @@ public class JDomGraphTab extends JPanel {
 	 * 
 	 * @param solvedForm the graph
 	 * @param name the name for the tab
-	 * @param solv the solver related to the graph
+	 * @param solv the solvedFormIterator related to the graph
 	 */
 	public JDomGraphTab(JDomGraph solvedForm, String name, 
-			DomSolver solv, long form, long allForms, 
+			SolvedFormIterator solv, DomGraph origin, long form, long allForms, 
 			String gName, CommandListener lis) {
 		
 		// initializing fields
 		listener = lis;
 		defaultName = name;
 		graph = solvedForm;
-		solver = solv;
+		domGraph = origin;
+		
+		solvedFormIterator = solv;
 		currentForm = form;
 		isSolvedYet = false;
 		isSolvedForm = true;
 		solvable = false;
-		solvedForms = solv.countSolvedForms();
+		solvedForms = solv.getChart().countSolvedForms().longValue();
         recentLayout = null;
 		graphName = gName;
 		
@@ -121,7 +129,7 @@ public class JDomGraphTab extends JPanel {
 	 * @param name the name for the tab
 	 * @param paintNow if set to true, the graph is layoutet at once
 	 */
-	public JDomGraphTab(JDomGraph theGraph, String name, 
+	public JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
 			boolean paintNow, CommandListener lis) {
 		
 		// initializing fields
@@ -129,14 +137,19 @@ public class JDomGraphTab extends JPanel {
 		graphName = name;
 		graph = null;
 		listener = lis;
+		domGraph = origin;
 		
-		// a new solver and a new converter initialized
+		Chart chart = new Chart();
+		ChartSolver solver = new ChartSolver(origin, chart);
+		
+		solvedFormIterator = new SolvedFormIterator(chart, origin);
+		// a new solvedFormIterator and a new converter initialized
 		// with the given graph
-		if(Preferences.utoolPresent()) {
-			solver = new DomSolver();
-			conv = new JDomGraphConverter(solver);
+	/*	if(Preferences.utoolPresent()) {
+			solvedFormIterator = new DomSolver();
+			conv = new JDomGraphConverter(solvedFormIterator);
 			conv.toDomGraph(theGraph);
-		}
+		}*/
 		
 		isSolvedYet = false;
 		isSolvedForm = false;
@@ -181,9 +194,12 @@ public class JDomGraphTab extends JPanel {
 	 */
 	public void solve() {
 		if( ! isSolvedYet ) {
-			solver.solve();
-			solvedForms = solver.countSolvedForms();
-			isSolvedYet = true;
+			Chart chart = new Chart();
+			ChartSolver solver = new ChartSolver(domGraph, chart);
+			if(solver.solve()) {
+				solvedForms = chart.countSolvedForms().longValue();
+				isSolvedYet = true;
+			}
 			statusBar = new DominanceGraphBar();
 			barCode = Main.getStatusBar().insertBar(statusBar);
 		}
@@ -317,11 +333,11 @@ public class JDomGraphTab extends JPanel {
 	}
 
 	/**
-	 * @return Returns the solver.
+	 * @return Returns the solvedFormIterator.
 	 */
-	public DomSolver getSolver() {
+	public SolvedFormIterator getSolvedFormIterator() {
 		
-		return solver;
+		return solvedFormIterator;
 	}
 
 	/**
@@ -339,10 +355,10 @@ public class JDomGraphTab extends JPanel {
 	}
 
 	/**
-	 * @param solver The solver to set.
+	 * @param solvedFormIterator The solvedFormIterator to set.
 	 */
-	public void setSolver(DomSolver solver) {
-		this.solver = solver;
+	public void setSolver(SolvedFormIterator solver) {
+		this.solvedFormIterator = solver;
 	}
 	
 	/**
@@ -603,14 +619,14 @@ public class JDomGraphTab extends JPanel {
     		};
     		comp.setForeground(Color.RED);
     		
-    		int graphValue = solver.classify();
     		
     		
-    		if(( ConstraintClasses.NORMAL & graphValue) == ConstraintClasses.NORMAL) {
+    		
+    		if(domGraph.isNormal()) {
     			norm.setText("N");
     			norm.setToolTipText("Normal");
     			
-    		} else if ((	ConstraintClasses.WEAKLY_NORMAL & graphValue) == ConstraintClasses.WEAKLY_NORMAL) {
+    		} else if (domGraph.isWeaklyNormal()) {
     			norm.setText("n");
     			norm.setToolTipText("Weakly Normal");
     		} else {
@@ -619,10 +635,10 @@ public class JDomGraphTab extends JPanel {
     		}
     		
     		
-    		if(( ConstraintClasses.COMPACT & graphValue) == ConstraintClasses.COMPACT) {
+    		if(domGraph.isCompact()) {
     			comp.setText("C");
     			comp.setToolTipText("Compact");
-    		} else if ((	ConstraintClasses.COMPACTIFIABLE & graphValue) == ConstraintClasses.COMPACTIFIABLE) {
+    		} else if (domGraph.isCompactifiable()) {
     			comp.setText("c");
     			comp.setToolTipText("compactifiable");
     		} else {
@@ -631,7 +647,7 @@ public class JDomGraphTab extends JPanel {
     		}
     		
     		
-    		if((ConstraintClasses.HN_CONNECTED & graphValue) == ConstraintClasses.HN_CONNECTED) {
+    		if(domGraph.isHypernormallyConnected()) {
     			hn.setText("H");
     			hn.setToolTipText("Hypernormally Connected");
     		} else {
@@ -639,7 +655,7 @@ public class JDomGraphTab extends JPanel {
     			hn.setToolTipText("Not Hypernormally Connected");
     		}
     		
-    		if((ConstraintClasses.LEAF_LABELLED & graphValue) == ConstraintClasses.LEAF_LABELLED) {
+    		if(domGraph.isLeafLabelled()) {
     			ll.setText("L");
     			ll.setToolTipText("Leaf-Labelled");
     		} else {
@@ -775,49 +791,48 @@ public class JDomGraphTab extends JPanel {
     		classifyLabels.add(comp);
     		
     		if( Preferences.utoolPresent() ) {
-    			int graphValue = solver.classify();
     			
     			
-    			if(( ConstraintClasses.NORMAL & graphValue) == ConstraintClasses.NORMAL) {
-    				norm.setText("N");
-    				norm.setToolTipText("Normal");
-    				
-    			} else if ((	ConstraintClasses.WEAKLY_NORMAL & graphValue) == ConstraintClasses.WEAKLY_NORMAL) {
-    				norm.setText("n");
-    				norm.setToolTipText("Weakly Normal");
-    			} else {
-    				norm.setText("-");
-    				norm.setToolTipText("Not Normal");
-    			}
-    			
-    			
-    			if(( ConstraintClasses.COMPACT & graphValue) == ConstraintClasses.COMPACT) {
-    				comp.setText("C");
-    				comp.setToolTipText("Compact");
-    			} else if ((	ConstraintClasses.COMPACTIFIABLE & graphValue) == ConstraintClasses.COMPACTIFIABLE) {
-    				comp.setText("c");
-    				comp.setToolTipText("compactifiable");
-    			} else {
-    				comp.setText("-");
-    				comp.setToolTipText("Not Compactifiable");
-    			}
-    			
-    			
-    			if((ConstraintClasses.HN_CONNECTED & graphValue) == ConstraintClasses.HN_CONNECTED) {
-    				hn.setText("H");
-    				hn.setToolTipText("Hypernormally Connected");
-    			} else {
-    				hn.setText("-");
-    				hn.setToolTipText("Not Hypernormally Connected");
-    			}
-    			
-    			if((ConstraintClasses.LEAF_LABELLED & graphValue) == ConstraintClasses.LEAF_LABELLED) {
-    				ll.setText("L");
-    				ll.setToolTipText("Leaf-Labelled");
-    			} else {
-    				ll.setText("-");
-    				ll.setToolTipText("Not Leaf-Labelled");
-    			}
+    			if(domGraph.isNormal()) {
+        			norm.setText("N");
+        			norm.setToolTipText("Normal");
+        			
+        		} else if (domGraph.isWeaklyNormal()) {
+        			norm.setText("n");
+        			norm.setToolTipText("Weakly Normal");
+        		} else {
+        			norm.setText("-");
+        			norm.setToolTipText("Not Normal");
+        		}
+        		
+        		
+        		if(domGraph.isCompact()) {
+        			comp.setText("C");
+        			comp.setToolTipText("Compact");
+        		} else if (domGraph.isCompactifiable()) {
+        			comp.setText("c");
+        			comp.setToolTipText("compactifiable");
+        		} else {
+        			comp.setText("-");
+        			comp.setToolTipText("Not Compactifiable");
+        		}
+        		
+        		
+        		if(domGraph.isHypernormallyConnected()) {
+        			hn.setText("H");
+        			hn.setToolTipText("Hypernormally Connected");
+        		} else {
+        			hn.setText("-");
+        			hn.setToolTipText("Not Hypernormally Connected");
+        		}
+        		
+        		if(domGraph.isLeafLabelled()) {
+        			ll.setText("L");
+        			ll.setToolTipText("Leaf-Labelled");
+        		} else {
+        			ll.setText("-");
+        			ll.setToolTipText("Not Leaf-Labelled");
+        		}
     			
     			classified.setAlignmentY(SwingConstants.HORIZONTAL);
         		classified.add(new JLabel("Classify: "));
@@ -855,6 +870,30 @@ public class JDomGraphTab extends JPanel {
     		super.finalize();
     	}
     }
+
+
+	/**
+	 * @param solvedFormIterator The solvedFormIterator to set.
+	 */
+	public void setSolvedFormIterator(SolvedFormIterator solvedFormIterator) {
+		this.solvedFormIterator = solvedFormIterator;
+	}
+
+
+	/**
+	 * @return Returns the domGraph.
+	 */
+	public DomGraph getDomGraph() {
+		return domGraph;
+	}
+
+
+	/**
+	 * @param domGraph The domGraph to set.
+	 */
+	public void setDomGraph(DomGraph domGraph) {
+		this.domGraph = domGraph;
+	}
     
     
 }

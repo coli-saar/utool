@@ -29,10 +29,14 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
-import de.saar.chorus.libdomgraph.DomGraph;
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.libdomgraph.DomSolver;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.utool.DomGraphConverter;
+import de.saar.chorus.ubench.utool.DomGraphTConverter;
 import de.saar.chorus.ubench.utool.JDomGraphConverter;
 
 /**
@@ -249,14 +253,17 @@ public class CommandListener implements ActionListener, ItemListener {
                     	
                     	// loading the graph and converting it to a 
                     	// JDomGraph
-                        JDomGraph graph = Main.genericLoadGraph(recentPath);
+                    	DomGraph theDomGraph = new DomGraph();
+                        JDomGraph graph = Main.genericLoadGraph(recentPath, theDomGraph);
                         
                         
                         if( graph != null ) {
                         	
+                        //	DomGraphTConverter conv = new DomGraphTConverter(graph);
+                        	
                         	// setting up a new graph tab.
                         	// the graph is painted and shown at once.
-                            Main.addNewTab(graph, recentFile, true, true);
+                            Main.addNewTab(graph, recentFile, theDomGraph, true, true);
                         }
                     }
                 }.start();
@@ -315,11 +322,14 @@ public class CommandListener implements ActionListener, ItemListener {
         	// duplicating the visible graph
             if(Main.getVisibleTab() != null) {
             	if(! Main.getVisibleTab().isSolvedForm ) {
-            		Main.addNewTab(Main.getVisibleTab().getCloneOfGraph(), Main.getVisibleTab().getDefaultName(), true, true);
+            		DomGraphTConverter conv = new DomGraphTConverter(Main.getVisibleTab().getCloneOfGraph());
+            		Main.addNewTab(Main.getVisibleTab().getCloneOfGraph(), Main.getVisibleTab().getDefaultName(), conv.getDomGraph(), true, true);
             	} else {
             		JDomGraphTab sFormCopy = new JDomGraphTab(Main.getVisibleTab().getCloneOfGraph(), 
             				Main.getVisibleTab().getGraphName() + " SF#" +Main.getVisibleTab().currentForm, 
-            				Main.getVisibleTab().getSolver(), Main.getVisibleTab().currentForm, 
+            				Main.getVisibleTab().getSolvedFormIterator(), 
+            				Main.getVisibleTab().getDomGraph(),
+            				Main.getVisibleTab().currentForm, 
             				Main.getVisibleTab().getSolvedForms(),
             				Main.getVisibleTab().getGraphName(),
             				Main.getListener() );
@@ -393,19 +403,26 @@ public class CommandListener implements ActionListener, ItemListener {
             // "solve" button in the status bar
             new Thread() {
                 public void run() {
-                    DomSolver solver = Main.getVisibleTab().getSolver();
+                    
                     
                     if(! Main.getVisibleTab().isSolvedYet) {
-                        solver.solve();
-                        Main.getVisibleTab().setSolvedForms(solver.countSolvedForms());
-                        
+                    	Chart chart = new Chart();
+                    	ChartSolver solv = new ChartSolver(Main.getVisibleTab().getDomGraph(), chart);
+                    	solv.solve();
+                    	Main.getVisibleTab().setSolvedFormIterator(new SolvedFormIterator(chart, Main.getVisibleTab().getDomGraph()));
+                        Main.getVisibleTab().setSolvedForms(chart.countSolvedForms().longValue());
+                        System.out.println(chart.countSolvedForms());
                     }
-                    DomGraph firstForm = solver.extractNextSolvedForm();
-                    DomGraphConverter conv = new DomGraphConverter(solver, firstForm);
-                    JDomGraph domSolvedForm = conv.toJDomGraph();
+                    SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
+                    DomGraph firstForm = (DomGraph) Main.getVisibleTab().getDomGraph().clone();
+                    System.out.println(solver.next());
+                    firstForm.setDominanceEdges(solver.next());
+                    DomGraphTConverter conv = new DomGraphTConverter(firstForm, Main.getLabelsFor(firstForm));
+                    JDomGraph domSolvedForm = conv.getJDomGraph();
                     
                     JDomGraphTab sFTab = new JDomGraphTab(domSolvedForm, Main.getVisibleTab().getDefaultName()  + "  SF #1", 
-                    		solver, 1, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
+                    		solver, firstForm,
+                    		1, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
                     		Main.getListener());
                     
                
@@ -694,18 +711,20 @@ public class CommandListener implements ActionListener, ItemListener {
     void showSolvedFormWithIndex(long no) {
         
     	// extracting the wanted solved form
-    	DomSolver solver = Main.getVisibleTab().getSolver();
-        DomGraph nextForm = solver.extractSolvedForm(no-1);
+    	SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
+        de.saar.chorus.domgraph.graph.DomGraph nextForm =   (de.saar.chorus.domgraph.graph.DomGraph) Main.getVisibleTab().getDomGraph().clone();
+        	nextForm.setDominanceEdges(solver.getSolvedForm((int) no-1));
         int toInsertHere = Main.getVisibleTabIndex();
         
         // converting the form to a JDomGraph
-        DomGraphConverter conv = new DomGraphConverter(solver, nextForm);
-        JDomGraph domSolvedForm = conv.toJDomGraph();
+        DomGraphTConverter conv = new DomGraphTConverter(nextForm, Main.getLabelsFor(nextForm));
+        JDomGraph domSolvedForm = conv.getJDomGraph();
         
         
         // setting up the new tab
         JDomGraphTab solvedFormTab = new JDomGraphTab(domSolvedForm, 
-        		Main.getVisibleTab().getGraphName()  + "  SF #" + no, solver, 
+        		Main.getVisibleTab().getGraphName()  + "  SF #" + no, solver,
+        		nextForm,
         		 no, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
         		Main.getListener());
         // closing the tab with the previous solved form and
