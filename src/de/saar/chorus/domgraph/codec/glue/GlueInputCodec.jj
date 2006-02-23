@@ -1,0 +1,164 @@
+options {
+  LOOKAHEAD = 2;
+  FORCE_LA_CHECK = true;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  JDK_VERSION = "1.5";
+}
+PARSER_BEGIN(GlueInputCodec)
+
+
+
+package de.saar.chorus.domgraph.codec.glue;
+
+import java.io.*;
+import java.util.*;
+
+import de.saar.chorus.domgraph.codec.*;
+import de.saar.chorus.domgraph.graph.*;
+
+
+
+/**
+ * An experimental input codec for LFG-style Glue Semantics 
+ * axiom sets. The purpose of this codec is for experimenting
+ * with different translations of Glue to dominance graphs in
+ * the context of Etienne's MSc thesis.<p>
+ *
+ * The concrete syntax of the input is ad-hoc and doesn't reflect
+ * the format of the formulas computed by the XLE. Glue formulas
+ * can be built up from variables (starting with uppercase letters),
+ * atoms (starting with lowercase letters), and the implication
+ * symbol <code>-o</code>. If the antecedent of an implication is not atomic
+ * (i.e. not an atom or a variable), then it must be surrounded by
+ * brackets. The consequent of an implication may <i>never</i> be
+ * in brackets. We will presumably switch to a different concrete
+ * syntax at some point, so there's no point in making the parser
+ * perfect right now.<p>
+ *
+ * An example input looks as follows:<p>
+ * <code>[(((X -o z) -o w) -o a) -o Y, (X -o a) -o b -o c, Y]</code><p>
+ *
+ * @author Alexander Koller
+ * @author Etienne Ailloud
+ *
+ */
+ 
+public class GlueInputCodec extends InputCodec {
+	private DomGraph graph;
+    private NodeLabels labels;
+	
+	private List<Formula> formulas;
+	
+	public GlueInputCodec() {
+	  this((Reader) null);
+	   
+	  setName("glue");
+	  setExtension(".glue");
+	  
+	  formulas = new ArrayList<Formula>();
+    }
+	  
+
+    public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
+	throws IOException, ParserException, MalformedDomgraphException {
+		this.graph = graph;
+		this.labels = labels;
+
+		graph.clear();
+		labels.clear();
+		formulas.clear();
+		
+		try {
+	    	ReInit(inputStream);
+		    list();
+		    
+		    
+		    /*
+		     * At this point, we have the LL formulas as members
+		     * of the "formulas" field. This is where they would now
+		     * have to be translated into the "graph" and "labels"
+		     * objects. 
+		     *
+		     * Etienne, feel free to implement any methods you want
+		     * in this class or to put them into new classes in this
+		     * package. Just be sure to not make them public.
+		     */
+		    
+		    
+		    System.out.println(formulas);
+		} catch(Throwable e) {
+		    throw new ParserException(e);
+		}
+	}
+}
+PARSER_END(GlueInputCodec)
+
+
+
+/*
+ * lexical scanner
+ */
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <PERCENT_COMMENT: "%" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>  
+}
+
+TOKEN :
+{
+   <IMP : "-o">
+ | <VAR : ["A"-"Z"] (["a"-"z", "A"-"Z", "_", "0"-"9"])*>
+ | <ATOM : ["a"-"z"] (["a"-"z", "A"-"Z", "_", "0"-"9"])*>
+}
+
+
+
+void list() :
+{ 
+	Formula f;
+}
+{
+	"[" (f=formula() { formulas.add(f); })
+		("," f=formula() { formulas.add(f); })* "]"
+}
+
+Formula formula() :
+{ 
+	Formula sub1, sub2;
+}
+{
+	"(" sub1=formula() ")" <IMP> sub2=formula() {
+		return new Formula(Formula.Type.IMPLICATION, sub1, sub2);
+	}
+
+	| sub1=VarOrAtom() <IMP> sub2=formula() {
+		return new Formula(Formula.Type.IMPLICATION, sub1, sub2);
+	}
+	
+	| sub1=VarOrAtom() {
+		return sub1;
+	}
+}
+
+
+Formula VarOrAtom() :
+{ 
+	Token t;
+}
+{
+	t=<VAR> {
+		return new Formula(Formula.Type.VARIABLE, t.image);
+	}
+	
+  | t=<ATOM> {
+  		return new Formula(Formula.Type.ATOM, t.image);
+  }
+}
+
