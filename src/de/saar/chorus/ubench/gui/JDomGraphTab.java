@@ -23,7 +23,6 @@ import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.utool.JDomGraphConverter;
 
 /**
  * A <code>JPanel</code> displaying a <code>JDomGraph</code>,
@@ -58,9 +57,7 @@ public class JDomGraphTab extends JPanel {
 	
 	// solvedFormIterator of the graph
 	private SolvedFormIterator solvedFormIterator;
-	
-	// converter 
-	private JDomGraphConverter conv;
+
 	
 	// layout preferences of the current graph
     private Preferences recentLayout;
@@ -309,19 +306,7 @@ public class JDomGraphTab extends JPanel {
 		
 	}
 
-	/**
-	 * @return Returns the conv.
-	 */
-	public JDomGraphConverter getConv() {
-		return conv;
-	}
-
-	/**
-	 * @param conv The conv to set.
-	 */
-	public void setConv(JDomGraphConverter conv) {
-		this.conv = conv;
-	}
+	
 
 	/**
 	 * @return true if the graph has been solved yet.

@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +33,8 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.libdomgraph.DomSolver;
+import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.utool.DomGraphTConverter;
-import de.saar.chorus.ubench.utool.JDomGraphConverter;
 
 /**
  * The main <code>ActionListener</code> and <code>ItemListener</code> 
@@ -67,7 +64,7 @@ public class CommandListener implements ActionListener, ItemListener {
     	// initializing fields
         eventSources = new HashMap<Object,String>();
         
-        ffInputCodecs = new ArrayList<FileFilter>();
+    /*    ffInputCodecs = new ArrayList<FileFilter>();
         ffOutputCodecs = new ArrayList<FileFilter>();
         
         
@@ -84,7 +81,7 @@ public class CommandListener implements ActionListener, ItemListener {
             for( int i = 0; i < s.num_output_codecs(); i++ ) {
                 ffOutputCodecs.add(new GenericFileFilter(s.output_codec_extension(i), "utool: " + s.output_codec_name(i)));
             }
-        } 
+        } */
     }
    
     /**
@@ -277,7 +274,7 @@ public class CommandListener implements ActionListener, ItemListener {
         	if( command.equals("saveUtool")) {
             JDomGraph graph = Main.getVisibleTab().getGraph();
             
-            if( graph != null) {
+            /*if( graph != null) {
                 JFileChooser fc = new JFileChooser();
                 
                 for( FileFilter ff : ffOutputCodecs ) {
@@ -305,8 +302,8 @@ public class CommandListener implements ActionListener, ItemListener {
                                "Error from output codec",
                                JOptionPane.ERROR_MESSAGE);
                    }
-                }
-            }
+                
+            }*/
             
             
             
@@ -438,11 +435,11 @@ public class CommandListener implements ActionListener, ItemListener {
             }.start();
             
         } else if( command.equals("utool-about")) {
-        	DomSolver solv = new DomSolver();
+        	//DomSolver solv = new DomSolver();
         	
         	JOptionPane.showMessageDialog(Main.getWindow(),
-        				"Libdomgraph version " + solv.getLibdomgraphVersion() + " loaded.",
-        				"About libdomgraph",
+        				"Utool version " + /*solv.getLibdomgraphVersion() +*/ " loaded.",
+        				"About utool",
         				JOptionPane.INFORMATION_MESSAGE);
         } else if (command.equals("about") ) {
         	JOptionPane.showMessageDialog(Main.getWindow(),

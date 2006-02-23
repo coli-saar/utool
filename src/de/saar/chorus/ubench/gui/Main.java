@@ -39,9 +39,9 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.ubench.DomGraphGXLCodec;
+import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.utool.DomGraphTConverter;
 import de.saar.getopt.ConvenientGetopt;
 
 /**
