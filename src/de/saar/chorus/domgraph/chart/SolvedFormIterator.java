@@ -1,6 +1,5 @@
 package de.saar.chorus.domgraph.chart;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,40 +38,56 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
-	int num_Fragsets;
 	private String nullNode;
     //private Map<Set<String>, String> fragmentTable;
     private Set<String> roots;
     private String rootForThisFragset;
 	
+    // the solved form which will be returned by the next call
+    // to next()
 	private List<DomEdge> nextSolvedForm;
 	
+    // a cached list of solved forms for get(int)
 	private List< List<DomEdge> > solvedForms;
+    // the iterator used for computing the solved forms
+    private SolvedFormIterator iteratorForGet;
+    
 	
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
 	public SolvedFormIterator(Chart ch, DomGraph graph) {
-		chart = ch;
-		agenda = new Agenda();
-		nullNode = null; 
-		stack = new Stack<EnumerationStackEntry>();
+        this(ch,graph,true);
+	}
+    
+    private SolvedFormIterator(Chart ch, DomGraph graph, boolean makeIteratorForGet) {
+        chart = ch;
+        agenda = new Agenda();
+        nullNode = null; 
+        stack = new Stack<EnumerationStackEntry>();
         solvedForms = new ArrayList< List<DomEdge> >();
-		
+        
+        if( makeIteratorForGet ) {
+            iteratorForGet = new SolvedFormIterator(ch, graph, false);
+        } else {
+            iteratorForGet = null;
+        }
+        
         //fragmentTable = graph.getFragments();
         roots = graph.getAllRoots();
         
-		
-		for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
+        
+        for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
             if( fragset.size() > 0 ) {
                 agenda.add(new AgendaEntry(nullNode, fragset));
             }
         }
-		
-		//Null-Element on Stack
-		stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
-		
-		updateNextSolvedForm();
-	}
+        
+        //Null-Element on Stack
+        stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
+        
+        updateNextSolvedForm();
+    }
+    
 	
 
     private void updateNextSolvedForm() {
@@ -83,7 +98,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 			
 			if( representsSolvedForm() ) {
 				nextSolvedForm = extractDomEdges();
-				solvedForms.add(nextSolvedForm);
 			} else {
 				nextSolvedForm = null;
 			}
@@ -278,18 +292,15 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
      * @return the solved form
      */
     public List<DomEdge> getSolvedForm(int sf) {
-    	if (  chart.countSolvedForms().intValue() <= sf ) {
-    		return null;
-    	} else {
-    		if( sf < solvedForms.size() ) {
-    			return solvedForms.get(sf);
-    		} else {
-    			for( int i = solvedForms.size(); i <= sf; i++ ) {
-    				updateNextSolvedForm();
-    			}
-    		}
-    	}
-    	return solvedForms.get(sf);
+        for( int i = solvedForms.size(); i <= sf; i++ ) {
+            if( !iteratorForGet.hasNext() ) {
+                return null;
+            } else {
+                solvedForms.add(iteratorForGet.next());
+            }
+        }
+        
+        return solvedForms.get(sf);
     }
     
    
