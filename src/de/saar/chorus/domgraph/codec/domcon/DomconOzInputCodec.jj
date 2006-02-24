@@ -5,6 +5,7 @@ options {
   STATIC = false;
   USER_TOKEN_MANAGER = false;
   USER_CHAR_STREAM = false;
+  UNICODE_INPUT = true;
 }
 
 PARSER_BEGIN(DomconOzInputCodec)
