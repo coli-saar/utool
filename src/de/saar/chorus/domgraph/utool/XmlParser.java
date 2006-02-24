@@ -109,7 +109,7 @@ class XmlParser extends DefaultHandler {
                 
                 if( op.requiresOutput ) {
                     if( attributes.getValue("output-codec") != null ) {
-                        OutputCodec codec = codecManager.getOutputCodecForName(attributes.getValue("output-codec"));
+                        OutputCodec codec = codecManager.getOutputCodecForName(attributes.getValue("output-codec"), null);
                         if( codec == null ) {
                             throw new SAXException(new AbstractOptionsParsingException("Unknown output codec: " + attributes.getValue("output-codec"), ExitCodes.NO_SUCH_OUTPUT_CODEC));
                         } else {
@@ -134,7 +134,7 @@ class XmlParser extends DefaultHandler {
             }
             
             // obtain input codec
-            InputCodec codec = codecManager.getInputCodecForName(attributes.getValue("codec"));
+            InputCodec codec = codecManager.getInputCodecForName(attributes.getValue("codec"), null);
             if( codec == null ) {
                 throw new SAXException(new AbstractOptionsParsingException("Unknown input codec: " + codec, ExitCodes.NO_SUCH_INPUT_CODEC));
             }

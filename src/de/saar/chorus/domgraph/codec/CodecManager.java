@@ -9,6 +9,7 @@ package de.saar.chorus.domgraph.codec;
 
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,13 +24,94 @@ import java.util.List;
  *
  */
 public class CodecManager {
-    private List<OutputCodec> outputCodecs;
+    /*
+     * private List<OutputCodec> outputCodecs;
     private List<InputCodec> inputCodecs;
+    */
+    
+    private List<Class> outputCodecClasses;
+    private List<Class> inputCodecClasses;
+    
     
     public CodecManager() {
-        outputCodecs = new ArrayList<OutputCodec>();
-        inputCodecs = new ArrayList<InputCodec>();
+        //outputCodecs = new ArrayList<OutputCodec>();
+        //inputCodecs = new ArrayList<InputCodec>();
+        outputCodecClasses = new ArrayList<Class>();
+        inputCodecClasses = new ArrayList<Class>();
     }
+    
+    public static String getCodecName(Class codecClass) {
+        try {
+            Method getName = codecClass.getMethod("getName");
+            return (String) getName.invoke(null);
+        } catch(Exception e) {
+            assert false; // we should never get here
+            return null;
+        }
+    }
+    
+    public static String getCodecExtension(Class codecClass) {
+        try {
+            Method getExtension = codecClass.getMethod("getExtension");
+            return (String) getExtension.invoke(null);
+        } catch(Exception e) {
+            assert false; // we should never get here
+            return null;
+        }
+    }
+    
+    private InputCodec constructInputCodec(Class codecClass, String options)  {
+        Object ret = null;
+        
+        try {
+            Constructor con = codecClass.getConstructor(String.class);
+            ret = con.newInstance(options);
+        } catch(Exception e) {
+            // couldn't call the Constructor(String).
+            try {
+                ret = codecClass.newInstance();
+            } catch(Exception f) {
+                System.err.println("iex2: " + f);
+                System.err.println(f.getCause());
+                // this should never happen because we checked for
+                // appropriate constructors when registering the codec
+            }
+        }
+        
+        try {
+            return (InputCodec) ret;
+        } catch(ClassCastException e) {
+            return null;
+        }
+    }
+    
+    private OutputCodec constructOutputCodec(Class codecClass, String options) {
+        Object ret = null;
+        
+        try {
+            Constructor con = codecClass.getConstructor(String.class);
+            ret = con.newInstance(options);
+        } catch(Exception e) {
+            // couldn't call the Constructor(String).
+            try {
+                Constructor con = codecClass.getConstructor();
+                ret = con.newInstance();
+            } catch(Exception f) {
+                System.err.println("ex2: " + f);
+                System.err.println(f.getCause());
+                // this should never happen because we checked for
+                // appropriate constructors when registering the codec
+           }
+        }
+        
+        try {
+            return (OutputCodec) ret;
+        } catch(ClassCastException e) {
+            return null;
+        }
+    }
+    
+    
     
     /**
      * Registers a codec. Pass a codec class (not object) as the argument.
@@ -41,8 +123,25 @@ public class CodecManager {
      * @throws CodecRegistrationException if the class is neither a subclass
      * of <code>InputCodec</code> nor of <code>OutputCodec</code>.
      */
-    public void registerCodec(Class codecClass) throws CodecRegistrationException 
-    {
+    public void registerCodec(Class codecClass) throws CodecRegistrationException {
+        if( OutputCodec.class.isAssignableFrom(codecClass) ) {
+            if( constructOutputCodec(codecClass, null) == null ) {
+                throw new CodecRegistrationException("Input codec " + codecClass + " has no appropriate constructor");
+            }
+            
+            outputCodecClasses.add(codecClass);
+        } else if( InputCodec.class.isAssignableFrom(codecClass)) {
+            if( constructInputCodec(codecClass, null) == null ) {
+                throw new CodecRegistrationException("Output codec " + codecClass + " has no appropriate constructor");
+            }
+
+            inputCodecClasses.add(codecClass);
+        } else  {
+            throw new CodecRegistrationException("Given codec " + codecClass + " is neither input nor output codec");
+        }
+        
+        
+/*         
         try {
             if( OutputCodec.class.isAssignableFrom(codecClass) ) {
                 Constructor constr;
@@ -57,7 +156,8 @@ public class CodecManager {
             }
         } catch (Exception e) {
             throw new CodecRegistrationException(e);
-        } 
+        }
+        */ 
     }
     
     /**
@@ -68,10 +168,10 @@ public class CodecManager {
      * @return an object of this codec class, or null if no codec
      * with this name was registered.
      */
-    public InputCodec getInputCodecForName(String codecname) {
-        for( InputCodec codec : inputCodecs ) {
-            if( codecname.equals(codec.getName())) {
-                return codec;
+    public InputCodec getInputCodecForName(String codecname, String options) {
+        for( Class codec : inputCodecClasses ) {
+            if( codecname.equals(getCodecName(codec)) ) {
+                return constructInputCodec(codec, options);
             }
         }
         
@@ -86,11 +186,13 @@ public class CodecManager {
      * @return an object of this codec class, or null if no codec
      * is associated with this filename extension
      */
-    public InputCodec getInputCodecForFilename(String filename) {
-        for( InputCodec codec : inputCodecs ) {
-            if( codec.getExtension() != null ) {
-                if( filename.endsWith(codec.getExtension())) {
-                    return codec;
+    public InputCodec getInputCodecForFilename(String filename, String options) {
+        for( Class codec : inputCodecClasses ) {
+            String ext = getCodecExtension(codec);
+            
+            if( ext != null ) {
+                if( filename.endsWith(ext) ) {
+                    return constructInputCodec(codec, options);
                 }
             }
         }
@@ -106,10 +208,10 @@ public class CodecManager {
      * @return an object of this codec class, or null if no codec
      * with this name was registered.
      */
-    public OutputCodec getOutputCodecForName(String codecname) {
-        for( OutputCodec codec : outputCodecs ) {
-            if( codecname.equals(codec.getName())) {
-                return codec;
+    public OutputCodec getOutputCodecForName(String codecname, String options) {
+        for( Class codec : outputCodecClasses ) {
+            if( codecname.equals(getCodecName(codec)) ) {
+                return constructOutputCodec(codec, options);
             }
         }
         
@@ -124,10 +226,14 @@ public class CodecManager {
      * @return an object of this codec class, or null if no codec
      * is associated with this filename extension
      */
-    public OutputCodec getOutputCodecForFilename(String filename) {
-        for( OutputCodec codec : outputCodecs ) {
-            if( filename.endsWith(codec.getExtension())) {
-                return codec;
+    public OutputCodec getOutputCodecForFilename(String filename, String options) {
+        for( Class codec : outputCodecClasses) {
+            String ext = getCodecExtension(codec);
+            
+            if( ext != null ) {
+                if( filename.endsWith(ext) ) {
+                    return constructOutputCodec(codec, options);
+                }
             }
         }
         
@@ -144,12 +250,12 @@ public class CodecManager {
         int max_strlen = 0;
         String formatString, formatStringNoExt;
         
-        for( InputCodec codec : inputCodecs ) {
-            max_strlen = Math.max(max_strlen, codec.getName().length());
+        for( Class codec : inputCodecClasses ) {
+            max_strlen = Math.max(max_strlen, getCodecName(codec).length());
         }
 
-        for( OutputCodec codec : outputCodecs ) {
-            max_strlen = Math.max(max_strlen, codec.getName().length());
+        for( Class codec : outputCodecClasses ) {
+            max_strlen = Math.max(max_strlen, getCodecName(codec).length());
         }
         
         formatString = "    %1$-" + max_strlen + "s             (%2$s)";
@@ -158,22 +264,27 @@ public class CodecManager {
 
         
         out.println("Installed input codecs:");
-        for( InputCodec codec : inputCodecs ) {
-            if( codec.getExtension() == null ) {
-                out.println(String.format(formatStringNoExt, codec.getName()));
-            } else {
-                out.println(String.format(formatString, codec.getName(), codec.getExtension()));
-            }
+        for( Class codec : inputCodecClasses ) {
+            displayOneCodec(codec, formatString, formatStringNoExt, out);
         }
         
         out.println("\nInstalled output codecs:");
-        for( OutputCodec codec : outputCodecs ) {
-            if( codec.getExtension() == null ) {
-                out.println(String.format(formatStringNoExt, codec.getName()));
-            } else {
-                out.println(String.format(formatString, codec.getName(), codec.getExtension()));
-            }
+        for( Class codec : outputCodecClasses ) {
+            displayOneCodec(codec, formatString, formatStringNoExt, out);
         }
+    }
+
+    private void displayOneCodec(Class codec, String formatString, String formatStringNoExt, PrintStream out) {
+        String name = getCodecName(codec);
+        String ext = getCodecExtension(codec);
+        
+        if( ext == null ) {
+            out.println(String.format(formatStringNoExt, name));
+        } else {
+            out.println(String.format(formatString, name, ext));
+        }
+    
+        
     }
 
     /**
@@ -181,8 +292,8 @@ public class CodecManager {
      * 
      * @return the input codecs
      */
-    public List<InputCodec> getAllInputCodecs() {
-        return inputCodecs;
+    public List<Class> getAllInputCodecs() {
+        return inputCodecClasses;
     }
 
     /**
@@ -190,8 +301,8 @@ public class CodecManager {
      * 
      * @return the output codecs
      */
-    public List<OutputCodec> getAllOutputCodecs() {
-        return outputCodecs;
+    public List<Class> getAllOutputCodecs() {
+        return outputCodecClasses;
     }
 
 }

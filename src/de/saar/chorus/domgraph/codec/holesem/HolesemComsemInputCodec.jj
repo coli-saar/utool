@@ -74,11 +74,17 @@ public class HolesemComsemInputCodec extends InputCodec {
   private List<String> varlist;
   private int nextGensymIndex;
 
+	public static String getName() {
+		return "holesem-comsem";
+	}
+	
+	public static String getExtension() {
+		return ".hs.pl";
+	}
+	
     public HolesemComsemInputCodec() {
 	this((Reader) null);
 
-	setName("holesem-comsem");
-	setExtension(".hs.pl");
 	varlist = new ArrayList<String>();
     }
     

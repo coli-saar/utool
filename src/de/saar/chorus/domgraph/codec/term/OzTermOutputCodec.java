@@ -19,9 +19,15 @@ package de.saar.chorus.domgraph.codec.term;
  *
  */
 public class OzTermOutputCodec extends TermOutputCodec {
+    public static String getName() {
+        return "term-oz";
+    }
+    
+    public static String getExtension() {
+        return ".t.oz";
+    }
+
     public OzTermOutputCodec() {
         super(" ");
-        setName("term-oz");
-        setExtension(".t.oz");
     }
 }

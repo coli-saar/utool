@@ -26,10 +26,14 @@ import de.saar.chorus.domgraph.graph.NodeType;
 
 
 public class DomconUdrawOutputCodec extends GraphOutputCodec {
-    public DomconUdrawOutputCodec() {
-        setName("domcon-udraw");
-        setExtension(".dc.udg");
+    public static String getName() {
+        return "domcon-udraw";
     }
+    
+    public static String getExtension() {
+        return ".dc.udg";
+    }
+
 
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {

@@ -35,10 +35,12 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  *
  */
 public class LkbPluggingOutputCodec extends PluggingOutputCodec {
-    public LkbPluggingOutputCodec() {
-        super();
-        setName("plugging-lkb");
-        setExtension(".lkbplug.lisp");
+    public static String getName() {
+        return "plugging-lkb";
+    }
+    
+    public static String getExtension() {
+        return ".lkbplug.lisp";
     }
 
     public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,

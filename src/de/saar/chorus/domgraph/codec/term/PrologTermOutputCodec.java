@@ -19,10 +19,16 @@ package de.saar.chorus.domgraph.codec.term;
  *
  */
 public class PrologTermOutputCodec extends TermOutputCodec {
+    public static String getName() {
+        return "term-prolog";
+    }
+    
+    public static String getExtension() {
+        return ".t.pl";
+    }
+
     public PrologTermOutputCodec() {
         super(",");
-        setName("term-prolog");
-        setExtension(".t.pl");
     }
     
 }

@@ -25,11 +25,14 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  */
 
 public class HolesemComsemOutputCodec extends GraphOutputCodec {
-    public HolesemComsemOutputCodec() {
-        super();
-        setName("holesem-comsem");
-        setExtension(".hs.pl");
+    public static String getName() {
+        return "holesem-comsem";
     }
+    
+    public static String getExtension() {
+        return ".hs.pl";
+    }
+
     
     
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)

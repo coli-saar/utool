@@ -32,11 +32,14 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  *
  */
 public class DomconOzPluggingOutputCodec extends PluggingOutputCodec {
-    public DomconOzPluggingOutputCodec() {
-        super();
-        setName("plugging-oz");
-        setExtension(".plug.oz");
+    public static String getName() {
+        return "plugging-oz";
     }
+    
+    public static String getExtension() {
+        return ".plug.oz";
+    }
+
 
     public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
             Writer writer) throws IOException, MalformedDomgraphException {
