@@ -170,44 +170,15 @@ public abstract class OutputCodec {
     
     
     /** administrative data **/
-    protected Type type;
-    protected String name, extension;
+    protected static Type type;
     
     /**
      * Gets the type of the output codec.
      * 
      * @return the type
      */
-    public Type getType() {
+    public static Type getType() {
         return type;
     }
-
-    protected void setName(String name) {
-        this.name = name;
-    }
-    
-    protected void setExtension(String extension) {
-        this.extension = extension;
-    }
-    
-
-    /**
-     * Gets the name of this codec.
-     * 
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
-    
-    /**
-     * Gets the file extension associated with this codec.
-     * 
-     * @return the extension
-     */
-    public String getExtension() {
-        return extension;
-    }
-    
 
 }

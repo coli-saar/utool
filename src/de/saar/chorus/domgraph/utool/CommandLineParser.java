@@ -318,7 +318,7 @@ public class CommandLineParser {
         OutputCodec outputCodec = null;
 
         if( getopt.hasOption('O')) {
-            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'));
+            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'), null);
             if( outputCodec == null ) {
                 throw new AbstractOptionsParsingException("Unknown output codec: " + getopt.getValue('O'),
                         ExitCodes.NO_SUCH_OUTPUT_CODEC);
@@ -326,11 +326,11 @@ public class CommandLineParser {
         }
         
         if( outputCodec == null ) {
-            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'));
+            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'), null);
         }
         
         if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForName(inputCodec.getName());
+            outputCodec = codecManager.getOutputCodecForName(CodecManager.getCodecName(inputCodec.getClass()), null);
         }
         
         return outputCodec;
@@ -347,7 +347,7 @@ public class CommandLineParser {
         InputCodec inputCodec = null;
         
         if( getopt.hasOption('I')) {
-            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'));
+            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'), null);
             if( inputCodec == null ) {
                 throw new AbstractOptionsParsingException("Unknown input codec: " + getopt.getValue('I'),
                         ExitCodes.NO_SUCH_INPUT_CODEC);
@@ -356,7 +356,7 @@ public class CommandLineParser {
         
         if( inputCodec == null ) {
             if( argument != null ) {
-                inputCodec = codecManager.getInputCodecForFilename(argument);
+                inputCodec = codecManager.getInputCodecForFilename(argument, null);
             }
         }
         

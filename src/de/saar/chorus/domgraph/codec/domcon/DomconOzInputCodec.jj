@@ -45,12 +45,17 @@ public class DomconOzInputCodec extends InputCodec {
     private DomGraph graph;
     private NodeLabels labels;
   private List<String> varlist;
+  
+  public static String getName() {
+  	return "domcon-oz";
+  }
+  
+  public static String getExtension() {
+  	return ".clls";
+  }
 
     public DomconOzInputCodec() {
 	this((Reader) null);
-
-	setName("domcon-oz");
-	setExtension(".clls");
 	varlist = new ArrayList<String>();
     }
     

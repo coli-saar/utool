@@ -21,6 +21,7 @@ import de.saar.basic.XmlEncodingWriter;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
@@ -271,24 +272,12 @@ class UtoolServer {
             case _displayCodecs:
                 out.println("<result>");
                 
-                for( InputCodec codec : parser.getCodecManager().getAllInputCodecs()) {
-                    out.print("  <codec name='" + codec.getName() + "' ");
-                    
-                    if( codec.getExtension() != null ) {
-                        out.print("extension='" + codec.getExtension() + "' ");
-                    }
-                    
-                    out.println("type='input' />");
+                for( Class codec : parser.getCodecManager().getAllInputCodecs()) {
+                    displayOneCodec(codec, out, "input");
                 }
                 
-                for( OutputCodec codec : parser.getCodecManager().getAllOutputCodecs()) {
-                    out.print("  <codec name='" + codec.getName() + "' ");
-                    
-                    if( codec.getExtension() != null ) {
-                        out.print("extension='" + codec.getExtension() + "' ");
-                    }
-                    
-                    out.println("type='output' />");
+                for( Class codec : parser.getCodecManager().getAllOutputCodecs()) {
+                    displayOneCodec(codec, out, "output");
                 }
                 
                 out.println("</result>");
@@ -311,6 +300,19 @@ class UtoolServer {
         }  // while(true)
     }
     
+    private static void displayOneCodec(Class codec, PrintWriter out, String type) {
+        String name = CodecManager.getCodecName(codec);
+        String ext = CodecManager.getCodecExtension(codec);
+        
+        out.print("  <codec name='" + name + "' ");
+        
+        if( ext != null ) {
+            out.print("extension='" + ext + "' ");
+        }
+        
+        out.println("type='" + type + "' />");
+    }
+
     private static void log(String x) {
         if( logging ) {
             logTo.println(x);

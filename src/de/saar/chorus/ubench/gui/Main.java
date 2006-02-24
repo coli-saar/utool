@@ -427,7 +427,7 @@ public class Main  {
         
         CodecManager codecManager = new CodecManager();
         registerAllCodecs(codecManager);
-        InputCodec inputCodec = codecManager.getInputCodecForFilename(filename);
+        InputCodec inputCodec = codecManager.getInputCodecForFilename(filename, null);
         
         NodeLabels nodeLabels = new NodeLabels();
         try {

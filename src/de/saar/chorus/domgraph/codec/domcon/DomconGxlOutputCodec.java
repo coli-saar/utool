@@ -28,12 +28,14 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *
  */
 public class DomconGxlOutputCodec extends GraphOutputCodec {
-    
-    public DomconGxlOutputCodec() {
-        super();
-        setName("domcon-gxl");
-        setExtension(".dc.xml");
+    public static String getName() {
+        return "domcon-gxl";
     }
+    
+    public static String getExtension() {
+        return ".dc.xml";
+    }
+
 
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {

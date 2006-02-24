@@ -88,35 +88,4 @@ public abstract class InputCodec {
         decode(new StringReader(usr), graph, labels);
     }
 
-    /**
-     * Returns the name of the input codec.
-     * 
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
-    
-    /**
-     * Returns the file extension associated with this input codec.
-     * 
-     * @return the file extension
-     */
-    public String getExtension() {
-        return extension;
-    }
-    
-    
-    
-    protected String name;
-    protected String extension;
-    
-    protected void setName(String name) {
-        this.name = name;
-    }
-    
-    protected void setExtension(String extension) {
-        this.extension = extension;
-    }
-    
 }

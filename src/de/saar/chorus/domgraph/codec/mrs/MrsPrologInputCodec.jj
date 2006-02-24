@@ -23,13 +23,18 @@ import de.saar.chorus.domgraph.codec.mrs.*;
 public class MrsPrologInputCodec extends InputCodec
 {
     private MrsCodec codec;
+    
+    public static String getName() {
+		return "mrs-prolog";
+	}
+	
+	public static String getExtension() {
+		return ".mrs.pl";
+	}
    
     public MrsPrologInputCodec()
     {
 	this((Reader) null);
-
-	setName("mrs-prolog");
-	setExtension(".mrs.pl");
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)

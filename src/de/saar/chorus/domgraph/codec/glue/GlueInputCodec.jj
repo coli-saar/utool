@@ -53,11 +53,17 @@ public class GlueInputCodec extends InputCodec {
 	
 	private List<Formula> formulas;
 	
+	public static String getName() {
+		return "glue";
+	}
+	
+	public static String getExtension() {
+		return ".glue";
+	}
+	
+	
 	public GlueInputCodec() {
 	  this((Reader) null);
-	   
-	  setName("glue");
-	  setExtension(".glue");
 	  
 	  formulas = new ArrayList<Formula>();
     }

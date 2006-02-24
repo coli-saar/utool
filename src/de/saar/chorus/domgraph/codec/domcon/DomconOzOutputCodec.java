@@ -32,11 +32,14 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *
  */
 public class DomconOzOutputCodec extends GraphOutputCodec {
-    public DomconOzOutputCodec() {
-        super();
-        setName("domcon-oz");
-        setExtension(".clls");
+    public static String getName() {
+        return "domcon-oz";
     }
+    
+    public static String getExtension() {
+        return ".clls";
+    }
+    
     
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
