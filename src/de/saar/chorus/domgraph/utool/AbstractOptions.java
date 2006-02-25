@@ -158,6 +158,9 @@ public class AbstractOptions {
     private PrintWriter logWriter;
     private boolean optionLogging;
     
+    private String inputCodecOptions;
+    private String outputCodecOptions;
+    
     
     public AbstractOptions() {
         // some default values
@@ -173,6 +176,9 @@ public class AbstractOptions {
         port = 2802;
         logWriter = null;
         optionLogging = false;
+        
+        inputCodecOptions = null;
+        outputCodecOptions = null;
     }
     
     
@@ -290,5 +296,29 @@ public class AbstractOptions {
 
     public void setOptionLogging(boolean optionLogging) {
         this.optionLogging = optionLogging;
+    }
+
+
+
+    public String getInputCodecOptions() {
+        return inputCodecOptions;
+    }
+
+
+
+    public void setInputCodecOptions(String inputCodecOptions) {
+        this.inputCodecOptions = inputCodecOptions;
+    }
+
+
+
+    public String getOutputCodecOptions() {
+        return outputCodecOptions;
+    }
+
+
+
+    public void setOutputCodecOptions(String outputCodecOptions) {
+        this.outputCodecOptions = outputCodecOptions;
     }
 }

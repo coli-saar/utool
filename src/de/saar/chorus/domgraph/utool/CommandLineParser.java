@@ -42,6 +42,8 @@ public class CommandLineParser {
     private static final char OPTION_VERSION = (char) 1;
     private static final char OPTION_HELP_OPTIONS = (char) 2;
     private static final char OPTION_DUMP_CHART = (char) 3;
+    private static final char OPTION_INPUT_CODEC_OPTIONS = (char) 4;
+    private static final char OPTION_OUTPUT_CODEC_OPTIONS = (char) 5;
 
     private CodecManager codecManager;
     
@@ -61,10 +63,6 @@ public class CommandLineParser {
         InputCodec inputCodec = null;
         OutputCodec outputCodec = null;
         
-        // prepare codecs
-        codecManager = new CodecManager();
-        registerAllCodecs(codecManager);
-
         // parse command line options
         ConvenientGetopt getopt = makeConvenientGetopt();
         getopt.parse(args);
@@ -125,7 +123,15 @@ public class CommandLineParser {
 
         // obtain graph
         if( op.requiresInput ) {
-            inputCodec = determineInputCodec(getopt, argument);
+            String inputCodecOptions = null;
+            
+            if( getopt.hasOption(OPTION_INPUT_CODEC_OPTIONS)) {
+                inputCodecOptions = getopt.getValue(OPTION_INPUT_CODEC_OPTIONS);
+                ret.setInputCodecOptions(inputCodecOptions);
+            }
+
+            inputCodec = determineInputCodec(getopt, argument, inputCodecOptions);
+            
             if( inputCodec == null ) {
                 throw new AbstractOptionsParsingException("You must specify an input codec!",
                         ExitCodes.NO_INPUT_CODEC_SPECIFIED);
@@ -161,13 +167,22 @@ public class CommandLineParser {
             ret.setOptionNoOutput(true);
         } else {
             if( op.requiresOutput ) {
-                outputCodec = determineOutputCodec(getopt, inputCodec);
+                String outputCodecOptions = null;
+                
+                if( getopt.hasOption(OPTION_OUTPUT_CODEC_OPTIONS)) {
+                    outputCodecOptions = getopt.getValue(OPTION_OUTPUT_CODEC_OPTIONS);
+                    ret.setOutputCodecOptions(outputCodecOptions);
+                }
+
+                outputCodec = determineOutputCodec(getopt, inputCodec, outputCodecOptions);
                 
                 if( outputCodec == null ) {
                     throw new AbstractOptionsParsingException("You must specify an output codec for this operation!", ExitCodes.NO_OUTPUT_CODEC_SPECIFIED);
                 }
                 
                 ret.setOutputCodec(outputCodec);
+                
+                
                 if( getopt.hasOption('o')) {
                     try {
                         ret.setOutput(new FileWriter(getopt.getValue('o')));
@@ -236,6 +251,10 @@ public class CommandLineParser {
                         "Specify the input codec", null);
         getopt.addOption('O', "output-codec", ConvenientGetopt.REQUIRED_ARGUMENT,
                         "Specify the output codec", null);
+        getopt.addOption(OPTION_INPUT_CODEC_OPTIONS, "input-codec-options", ConvenientGetopt.REQUIRED_ARGUMENT,
+                        "Specify options for the input codec", null);
+        getopt.addOption(OPTION_OUTPUT_CODEC_OPTIONS, "output-codec-options", ConvenientGetopt.REQUIRED_ARGUMENT,
+                "Specify options for the output codec", null);
         getopt.addOption('o', "output", ConvenientGetopt.REQUIRED_ARGUMENT,
                         "Specify an output file", "-");
         getopt.addOption('e', "equivalences", ConvenientGetopt.REQUIRED_ARGUMENT,
@@ -313,12 +332,12 @@ public class CommandLineParser {
 
 
 
-    private  OutputCodec determineOutputCodec(ConvenientGetopt getopt, InputCodec inputCodec) 
+    private  OutputCodec determineOutputCodec(ConvenientGetopt getopt, InputCodec inputCodec, String options) 
     throws AbstractOptionsParsingException {
         OutputCodec outputCodec = null;
 
         if( getopt.hasOption('O')) {
-            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'), null);
+            outputCodec = codecManager.getOutputCodecForName(getopt.getValue('O'), options);
             if( outputCodec == null ) {
                 throw new AbstractOptionsParsingException("Unknown output codec: " + getopt.getValue('O'),
                         ExitCodes.NO_SUCH_OUTPUT_CODEC);
@@ -326,11 +345,11 @@ public class CommandLineParser {
         }
         
         if( outputCodec == null ) {
-            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'), null);
+            outputCodec = codecManager.getOutputCodecForFilename(getopt.getValue('o'), options);
         }
         
         if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForName(CodecManager.getCodecName(inputCodec.getClass()), null);
+            outputCodec = codecManager.getOutputCodecForName(CodecManager.getCodecName(inputCodec.getClass()), options);
         }
         
         return outputCodec;
@@ -342,12 +361,12 @@ public class CommandLineParser {
 
 
 
-    private  InputCodec determineInputCodec(ConvenientGetopt getopt, String argument)
+    private  InputCodec determineInputCodec(ConvenientGetopt getopt, String argument, String options)
     throws AbstractOptionsParsingException {
         InputCodec inputCodec = null;
         
         if( getopt.hasOption('I')) {
-            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'), null);
+            inputCodec = codecManager.getInputCodecForName(getopt.getValue('I'), options);
             if( inputCodec == null ) {
                 throw new AbstractOptionsParsingException("Unknown input codec: " + getopt.getValue('I'),
                         ExitCodes.NO_SUCH_INPUT_CODEC);
@@ -356,7 +375,7 @@ public class CommandLineParser {
         
         if( inputCodec == null ) {
             if( argument != null ) {
-                inputCodec = codecManager.getInputCodecForFilename(argument, null);
+                inputCodec = codecManager.getInputCodecForFilename(argument, options);
             }
         }
         
