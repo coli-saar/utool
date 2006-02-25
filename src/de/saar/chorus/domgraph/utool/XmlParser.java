@@ -109,11 +109,16 @@ class XmlParser extends DefaultHandler {
                 
                 if( op.requiresOutput ) {
                     if( attributes.getValue("output-codec") != null ) {
-                        OutputCodec codec = codecManager.getOutputCodecForName(attributes.getValue("output-codec"), null);
+                        String outputCodecOptions = mydecode(attributes.getValue("output-codec-options"));
+                        OutputCodec codec = codecManager.getOutputCodecForName(attributes.getValue("output-codec"), outputCodecOptions);
+                        
                         if( codec == null ) {
                             throw new SAXException(new AbstractOptionsParsingException("Unknown output codec: " + attributes.getValue("output-codec"), ExitCodes.NO_SUCH_OUTPUT_CODEC));
                         } else {
                             options.setOutputCodec(codec);
+                            if( outputCodecOptions != null ) {
+                                options.setOutputCodecOptions(outputCodecOptions);
+                            }
                         }
                     } else {
                         options.setOptionNoOutput(true);
@@ -134,16 +139,22 @@ class XmlParser extends DefaultHandler {
             }
             
             // obtain input codec
-            InputCodec codec = codecManager.getInputCodecForName(attributes.getValue("codec"), null);
+            String inputCodecOptions = mydecode(attributes.getValue("codec-options"));
+            InputCodec codec = codecManager.getInputCodecForName(attributes.getValue("codec"), inputCodecOptions);
+            
             if( codec == null ) {
                 throw new SAXException(new AbstractOptionsParsingException("Unknown input codec: " + codec, ExitCodes.NO_SUCH_INPUT_CODEC));
+            }
+            
+            if( inputCodecOptions != null ) {
+                options.setInputCodecOptions(inputCodecOptions);
             }
             
             // obtain input graph
             DomGraph graph = new DomGraph();
             NodeLabels labels = new NodeLabels();
             try {
-                String usr = XmlEntities.decode(attributes.getValue("string"));
+                String usr = mydecode(attributes.getValue("string"));
                 //System.err.println("----- [USR] -----\n" + usr + "\n---------------");
                 codec.decodeString(usr, graph, labels);
             } catch(MalformedDomgraphException e) {
@@ -155,9 +166,6 @@ class XmlParser extends DefaultHandler {
             } catch (ParserException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
                         e, ExitCodes.PARSING_ERROR));
-            } catch (XmlDecodingException e) {
-                throw new SAXException(new AbstractOptionsParsingException("An XML entity could not be resolved.",
-                        new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR));
             }
             
             options.setGraph(graph);
@@ -173,6 +181,15 @@ class XmlParser extends DefaultHandler {
             } catch(Exception e) {
                 throw new SAXException(new AbstractOptionsParsingException("An error occurred while reading the equivalences file!", e, ExitCodes.EQUIVALENCE_READING_ERROR));
             }
+        }
+    }
+    
+    private String mydecode(String x) throws SAXException {
+        try {
+            return XmlEntities.decode(x);
+        } catch (XmlDecodingException e) {
+            throw new SAXException(new AbstractOptionsParsingException("An XML entity could not be resolved.",
+                    new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR));
         }
     }
 

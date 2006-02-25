@@ -51,7 +51,6 @@ public class Chain extends InputCodec {
         return null;
     }
     
-    
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) {
 	throw new UnsupportedOperationException();
     }
