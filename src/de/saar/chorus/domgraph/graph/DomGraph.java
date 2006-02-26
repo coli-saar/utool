@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,6 @@ import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.event.ConnectedComponentTraversalEvent;
 import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
-import org._3pq.jgrapht.ext.JGraphModelAdapter;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 
@@ -519,6 +519,69 @@ public class DomGraph implements Cloneable {
     
     
     
+    
+    /******************* some elementary graph algorithms *******************/
+
+    /**
+     * Determines whether a subgraph has a directed cycle. You can specify
+     * the subgraph whose nodes can be used for the cycle (or pass 
+     * <code>null</code> for the complete graph) and the edge type which
+     * can be used for the cycle (or pass <code>null</code> for edges
+     * of any type). The subgraph need not be (strongly) connected; the
+     * method will restart the DFS at unvisited nodes of the
+     * <code>subgraph</code> while any exist.
+     * 
+     * @param subgraph the nodes which the DFS may visit, or null for the whole graph
+     * @param type the edge types which the DFS may use, or null for any type
+     * @return true iff a cycle was found given these constraints
+     */
+    public boolean hasCycle(Set<String> subgraph, EdgeType type) {
+        Set<String> visited = new HashSet<String>();
+        Set<String> visitedThisScc = new HashSet<String>();
+        Iterator<String> nodeIt;
+        
+        if( subgraph == null ) {
+            subgraph = getAllNodes();
+        }
+        
+        nodeIt = subgraph.iterator();
+        
+        while( (visited.size() < subgraph.size()) && nodeIt.hasNext() ) { 
+            String node = nodeIt.next();
+             
+            visitedThisScc.clear();
+            if( hasCycle(node, subgraph, type, visitedThisScc, visited)) {
+                return true;
+            }
+        }
+
+        return false;        
+    }
+    
+    private boolean hasCycle(String node, Set<String> subgraph, EdgeType type, 
+            Set<String> visitedThisScc, Set<String> visited) {
+        if( visited.contains(node)) {
+            if( visitedThisScc.contains(node)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            visited.add(node);
+            visitedThisScc.add(node);
+            
+            for( Edge edge : getOutEdges(node, type)) {
+                if( hasCycle((String) edge.getTarget(), subgraph, type, visitedThisScc, visited) ) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+    
+    
+    
     /**
      * Computes the weakly connected components of the graph.
      * A weakly connected component is a maximal subgraph which is connected
@@ -662,7 +725,10 @@ public class DomGraph implements Cloneable {
                 return false;
             }
             
-            // TODO acyclic fragments
+            // no cycles via tree edges
+            if( hasCycle(null, EdgeType.TREE)) {
+                return false;
+            }
         }
         
         for( Edge edge : getAllEdges() ) {
@@ -891,12 +957,17 @@ public class DomGraph implements Cloneable {
      */
     public boolean isSimpleSolvedForm() {
         for( String node : getAllNodes() ) {
-            // TODO check cyclicity
+            // no cycles
+            if( hasCycle(null, null)) {
+                return false;
+            }
             
+            // no node with indeg > 1
             if( indeg(node) > 1 ) {
                 return false;
             }
             
+            // no node with more than one outgoing dominance edge
             if( outdeg(node, EdgeType.DOMINANCE) > 1 ) {
                 return false;
             }
