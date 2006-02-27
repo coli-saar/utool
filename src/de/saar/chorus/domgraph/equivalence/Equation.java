@@ -12,7 +12,7 @@ class Equation {
 
     public Equation(FragmentWithHole q1, FragmentWithHole q2) {
         super();
-        // TODO Auto-generated constructor stub
+
         this.q1 = q1;
         this.q2 = q2;
     }

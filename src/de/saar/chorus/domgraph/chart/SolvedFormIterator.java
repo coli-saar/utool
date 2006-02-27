@@ -474,33 +474,25 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     
 
     private static class AgendaEntry { 
-        String key;
-        Set<String> value;
+        String dominator;
+        Set<String> fragmentSet;
         
         AgendaEntry(String source, Set<String> target) {
-            key = source;
-            value = target;
+            dominator = source;
+            fragmentSet = target;
         }
         
         
-        /* (non-Javadoc)
-         * @see java.util.Map.Entry#getKey()
-         */
         public String getDominator() {
-            // TODO Auto-generated method stub
-            return key;
+            return dominator;
         }
 
-        /* (non-Javadoc)
-         * @see java.util.Map.Entry#getValue()
-         */
         public Set<String> getFragmentSet() {
-            // TODO Auto-generated method stub
-            return value;
+            return fragmentSet;
         }
 
         public String toString() {
-            return "<Ag dom="+key+", fs=" + value + ">";
+            return "<Ag dom="+dominator+", fs=" + fragmentSet + ">";
         }
     }
 
