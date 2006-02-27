@@ -181,8 +181,6 @@ class UtoolServer {
                                 
                                 if( !options.hasOptionNoOutput() ) {
                                     buf.append("  <solution string='");
-                                    // TODO computing buf requires a lot of memory. is there a way
-                                    // to send the sfs immediately?
                                     options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), enc);
                                     buf.append("' />\n");
                                 }

@@ -244,7 +244,7 @@ public abstract class RedundancyElimination {
         }
         
         // do the real dfs
-        // TODO: get this from n^3 to .5 n^3 with root list indices
+        // EFFICIENCY NOTE: get this from n^3 to .5 n^3 with root list indices
         for( String root1 : compact.getAllRoots() ) {
             int holeidx1 = 0;
             

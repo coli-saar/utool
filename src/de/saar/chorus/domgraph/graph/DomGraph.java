@@ -153,21 +153,30 @@ public class DomGraph implements Cloneable {
      * Checks whether there is a directed path from "upper" to
      * "lower" in the graph.<p>
      * 
-     * TODO: this is an ad hoc implementation which will not work
-     * for graphs with cycles.
-     * 
      * @param upper a node in the graph
      * @param lower a node in the graph
      * @return true iff there is a directed path from upper to lower
      */
     public boolean reachable (String upper, String lower) {
-        if (upper.equals(lower))
+        return reachable(upper, lower, new HashSet<String>());
+    }
+    
+    private boolean reachable(String upper, String lower, Set<String> visited) {
+        if( visited.contains(upper)) {
+            return false;
+        } else if (upper.equals(lower)) {
             return true;
-        
-        for (String node : getParents(lower, null)) {
-            if (reachable(upper, node)) return true;
+        } else {
+            visited.add(upper);
+            
+            for( String node : getChildren(upper, null)) {
+                if (reachable(node, lower))  {
+                    return true;
+                }
+            }
+            
+            return false;
         }
-        return false;
     }
     
     /**

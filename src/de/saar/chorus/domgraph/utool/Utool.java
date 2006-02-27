@@ -129,7 +129,7 @@ public class Utool {
                     printChartStatistics(chart, time_solver, options.hasOptionDumpChart());
                 }
                 
-                // TODO runtime prediction (?)
+                // TODO runtime prediction (see ticket #11)
                 
                 if( options.getOperation() == Operation.solve ) {
                     try {

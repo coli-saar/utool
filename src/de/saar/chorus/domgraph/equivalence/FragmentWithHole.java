@@ -13,7 +13,7 @@ class FragmentWithHole {
     
     public FragmentWithHole(String rootlabel, int holeindex) {
         super();
-        // TODO Auto-generated constructor stub
+
         this.holeindex = holeindex;
         this.rootlabel = rootlabel;
     }
