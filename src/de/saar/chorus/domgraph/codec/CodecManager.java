@@ -7,11 +7,18 @@
 
 package de.saar.chorus.domgraph.codec;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 
 /**
@@ -38,6 +45,85 @@ public class CodecManager {
         //inputCodecs = new ArrayList<InputCodec>();
         outputCodecClasses = new ArrayList<Class>();
         inputCodecClasses = new ArrayList<Class>();
+    }
+    
+    public void registerAllVisibleCodecs() {
+        List<String> classnames = new ArrayList<String>();
+        Package[] pcks = Package.getPackages();
+        
+        for (int i = 0; i < pcks.length; i++) {
+            // normalise package name
+            String name = pcks[i].getName();
+            if (!name.startsWith("/")) {
+                name = "/" + name;
+            }
+            name = name.replace('.','/');
+            
+            // Get a File object for the package
+            URL url = CodecManager.class.getResource(name);
+            
+            if( url != null ) {
+                // TODO replace %... entities in a more general way
+                String urlname = url.getFile().replaceAll("%20", " ");
+                File directory = new File(urlname);
+                
+                if (directory.exists()) {
+                    // URL describes an existing package directory
+                    String[] files = directory.list();
+                    
+                    for (int j = 0; j < files.length; j++) {
+                        if (files[j].endsWith(".class")) {
+                            classnames.add(pcks[i].getName() + "." + files[j].substring(0,files[j].length()-6).replaceAll("/", "."));
+                        }
+                    }
+                } else {
+                    // URL describes an entry in a JAR file
+                    try {
+                        JarURLConnection conn = (JarURLConnection) url.openConnection();
+                        String starts = conn.getEntryName();
+                        JarFile jfile = conn.getJarFile();
+                        Enumeration e = jfile.entries();
+                        
+                        while (e.hasMoreElements()) {
+                            ZipEntry entry = (ZipEntry) e.nextElement();
+                            String entryname = entry.getName();
+                            
+                            if (entryname.startsWith(starts)
+                                    && (entryname.lastIndexOf('/')<=starts.length())
+                                    && entryname.endsWith(".class")) {
+                                classnames.add(entryname.substring(0,entryname.length()-6).replaceAll("/", "."));
+                            }
+                        }
+                    } catch(IOException e) {
+                        // i.e. had problems reading from the JAR file
+                        // -- just ignore this
+                        System.err.println(e);
+                    }
+                }
+            }   
+        }
+        
+        // go through class names and register the codec classes
+        for( String classname : classnames ) {
+            try {
+                Class c = Class.forName(classname);
+                
+                //System.err.println("\nclass: " + c);
+                if( InputCodec.class.isAssignableFrom(c) || OutputCodec.class.isAssignableFrom(c)) {
+                  //  System.err.println("try to register " + c);
+                    registerCodec(c);
+                   // System.err.println("  - success!");
+                }
+            } catch(ClassNotFoundException e) {
+                // i.e. couldn't reconstruct a valid class name from
+                // the .class filename -- just ignore it
+            } catch (CodecRegistrationException e) {
+                // i.e. the class was not a valid codec class after all
+                // (in particular because it was abstract) -- just ignore it
+                //System.err.println("  - but caught CRE");
+            }
+        }
+        
     }
     
     public static String getCodecName(Class codecClass) {
@@ -71,10 +157,6 @@ public class CodecManager {
             try {
                 ret = codecClass.newInstance();
             } catch(Exception f) {
-                System.err.println("iex2: " + f);
-                System.err.println(f.getCause());
-                // this should never happen because we checked for
-                // appropriate constructors when registering the codec
             }
         }
         
@@ -97,10 +179,6 @@ public class CodecManager {
                 Constructor con = codecClass.getConstructor();
                 ret = con.newInstance();
             } catch(Exception f) {
-                System.err.println("ex2: " + f);
-                System.err.println(f.getCause());
-                // this should never happen because we checked for
-                // appropriate constructors when registering the codec
            }
         }
         

@@ -50,6 +50,7 @@ public class CommandLineParser {
     
     public CommandLineParser() {
         codecManager = new CodecManager();
+        //codecManager.registerAllVisibleCodecs();
         registerAllCodecs(codecManager);
     }
 
