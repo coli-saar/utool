@@ -24,13 +24,15 @@ public class MrsPrologInputCodec extends InputCodec
 {
     private MrsCodec codec;
     
-    public static String getName() {
-		return "mrs-prolog";
-	}
+    public static String getName()
+    {
+	return "mrs-prolog";
+    }
 	
-	public static String getExtension() {
-		return ".mrs.pl";
-	}
+    public static String getExtension()
+    {
+	return ".mrs.pl";
+    }
    
     public MrsPrologInputCodec()
     {
@@ -46,9 +48,7 @@ public class MrsPrologInputCodec extends InputCodec
 	    ReInit(inputStream);
 	    Input();
 	} catch(Throwable e) {
-	    // XXX - improve exception handling
-	    e.printStackTrace(System.err);
-	    throw new ParserException();
+	    throw new ParserException(e);
 	}
     }
 }
@@ -105,24 +105,33 @@ TOKEN :
 // GRAMMAR
 //
 
-void Input() : 
-{ String handle; }
+void Input()
+    throws MalformedDomgraphException: 
+{
+    String handle;
+}
 {
     <PSOA> "(" handle = Handle() "," Other() "," RelList() "," QeqList() ")"
 	{
-	    codec.addBindingEdges();
-	    codec.setTopHandle(handle);
-	    codec.finish();
+	    codec.setTopHandleAndFinish(handle);
 	}
 }
 
-void RelList() : { }
+void RelList()
+    throws MalformedDomgraphException:
+{
+}
 {
     "[" ( Rel() ) ( "," Rel() )* "]"
 }
 
-void Rel() :
-{ String label; String handle; Map<String, String> attrs = new TreeMap<String,String>(); }
+void Rel()
+    throws MalformedDomgraphException:
+{
+    String label;
+    String handle;
+    Map<String, String> attrs = new TreeMap<String,String>();
+}
 {
     <REL> "(" label = Symbol() "," handle = Handle() "," Attributes(attrs) ")"
 	{
@@ -134,13 +143,20 @@ void Rel() :
 	}
 }
 
-void Attributes(Map<String,String> attrs) : { }
+void Attributes(Map<String,String> attrs)
+    throws MalformedDomgraphException:
+{
+}
 {
     "[" Attribute(attrs) ( "," Attribute(attrs) )* "]"
 }
 
-void Attribute(Map<String,String> attrs) :
-{ String attr; String value; }
+void Attribute(Map<String,String> attrs)
+    throws MalformedDomgraphException:
+{
+    String attr;
+    String value;
+}
 {
     <ATTRVAL> "(" attr = Symbol() "," value = Value() ")"
 	{
@@ -148,9 +164,11 @@ void Attribute(Map<String,String> attrs) :
 	}
 }
 
-
-String Value() : 
-{ String v; }
+String Value()
+    throws MalformedDomgraphException:
+{
+    String v;
+}
 {
     ( v = Handle() | v = Variable() | v = Other() | v = Symbol() )
 	{
@@ -158,13 +176,20 @@ String Value() :
 	}
 }
 
-void QeqList() : { }
+void QeqList()
+    throws MalformedDomgraphException:
+{
+}
 {
     <HCONS> "(" "[" ( Qeq() ) ( "," Qeq() )* "]" ")"
 }
 
-void Qeq() : 
-{ String h1; String h2; }
+void Qeq()
+    throws MalformedDomgraphException: 
+{
+    String h1;
+    String h2;
+}
 {
     <QEQ> "(" h1 = Handle() "," h2 = Handle() ")"
 	{
@@ -172,8 +197,11 @@ void Qeq() :
 	}
 }
 
-String Handle() :
-{ Token t; }
+String Handle()
+    throws MalformedDomgraphException:
+{
+    Token t;
+}
 {
     t = <HANDLE>
 	{	
@@ -182,8 +210,11 @@ String Handle() :
 	}
 }
 
-String Variable() :
-{ Token t; }
+String Variable()
+    throws MalformedDomgraphException:
+{
+    Token t;
+}
 {
     t = <VARIABLE> 
 	{
@@ -192,8 +223,10 @@ String Variable() :
 	}
 }
 
-String Other() :
-{ Token t; }
+String Other():
+{
+    Token t;
+}
 {
     t = <OTHER>
 	{
@@ -201,8 +234,10 @@ String Other() :
 	}
 }
 
-String Symbol() :
-{ Token t; }
+String Symbol():
+{
+    Token t;
+}
 {
     t = <SYMBOL>
 	{
