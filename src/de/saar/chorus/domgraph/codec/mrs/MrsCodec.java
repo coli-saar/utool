@@ -1,8 +1,23 @@
+
 package de.saar.chorus.domgraph.codec.mrs;
 
-import java.util.*;
-import org._3pq.jgrapht.*;
-import de.saar.chorus.domgraph.graph.*;
+import java.util.Set;
+import java.util.Map;
+import java.util.Collection;
+import java.util.TreeSet;
+import java.util.TreeMap;
+
+import org._3pq.jgrapht.Edge;
+
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
+import de.saar.chorus.domgraph.graph.EdgeData;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.NodeType;
+import de.saar.chorus.domgraph.graph.NodeData;
+
 
 class MrsCodec {
 
@@ -37,22 +52,23 @@ class MrsCodec {
     }
 
     public void tellVariable(String name)
+	throws MalformedDomgraphException
     {
 	tell(name, Type.VARIABLE);
     }
 
     public void tellHandle(String name)
+	throws MalformedDomgraphException
     {
 	tell(name, Type.HANDLE);
     }
 
     private void tell(String name, Type type)
+	throws MalformedDomgraphException
     {
-	if (sig.containsKey(name)) {
-	    // XXX -- throw new MalformedInputException() if sig(name) != type
-	} else {
-	    sig.put(name, type);
-	}
+	if (sig.containsKey(name) && sig.get(name) != type)
+	    throw new MalformedDomgraphException("tell");
+	sig.put(name, type);
     }
 
     public void addDomEdge(String source, String target)
@@ -75,7 +91,30 @@ class MrsCodec {
 
 	graph.addEdge(source, target, new EdgeData(type));
     }
-    
+
+    public void addNode(String node)
+    {
+	if (!graph.hasNode(node))
+	    graph.addNode(node, new NodeData(NodeType.UNLABELLED));	
+    }
+
+    public void addNode(String node, String label)
+    {
+	if (graph.hasNode(node)) {
+	    NodeData data = graph.getData(node);
+
+	    if (data.getType() == NodeType.LABELLED) {
+		labels.addLabel(node, labels.getLabel(node) + "&" + label);
+	    } else {
+		data.setType(NodeType.LABELLED);
+		labels.addLabel(node, label);
+	    }
+	} else {
+	    graph.addNode(node, new NodeData(NodeType.LABELLED));	
+	    labels.addLabel(node, label);
+	}
+    }
+
     public void addBindingEdges()
     {
 	for (Map.Entry<String,Set<String>> entry : bound.entrySet()) {
@@ -90,50 +129,27 @@ class MrsCodec {
     }
     
     void addQuantifier(String node, String label, Map<String,String> attrs)
+	throws MalformedDomgraphException
     {
-	if (!graph.hasNode(node)) {
-	    graph.addNode(node, new NodeData(NodeType.LABELLED));
-	} else {
-	    // XXX -- throw an exception
-	}
-
-	String otherLabel = labels.getLabel(node);
-
-	if (otherLabel == null) {
-	    labels.addLabel(node, label);
-	} else {
-	    labels.addLabel(node, otherLabel + " & " + label);
-	}
-
+	addNode(node, label);
+	
 	addTreeEdge(node, attrs.remove("RSTR"));
 	addTreeEdge(node, attrs.remove("BODY"));
 
 	String var = attrs.remove("ARG0");
 
-	if (binder.containsKey(var)) {
-	    // XXX -- raise an exception
-	} else {
-	    binder.put(var, node);
-	}
-
-	// XXX -- check that attrs is now empty 
+	if (binder.containsKey(var))
+	    throw new MalformedDomgraphException("addQuantifier");
+	
+	binder.put(var, node);
+	
+	if (attrs.size() > 0) 
+	    throw new MalformedDomgraphException("addQuantifier");
     }
 
     void addRelation(String node, String label, Map<String,String> attrs)
     {
-	if (!graph.hasNode(node)) {
-	    graph.addNode(node, new NodeData(NodeType.LABELLED));
-	} else {
-	    graph.getData(node).setType(NodeType.LABELLED);
-	}
-
-	String otherLabel = labels.getLabel(node);
-
-	if (otherLabel == null) {
-	    labels.addLabel(node, label);
-	} else {
-	    labels.addLabel(node, otherLabel + " & " + label);
-	}
+	addNode(node, label);
 
 	for (Map.Entry<String,String> entry : attrs.entrySet()) {
 	    String attr = entry.getKey();
@@ -158,8 +174,8 @@ class MrsCodec {
     void setTopHandle(String topnode)
     {
 	Set<String> top = graph.getFragment(topnode);
-	List<String> holes = graph.getHoles(top);
-	Set<String> all = new HashSet<String>(graph.getAllNodes());
+	Collection<String> holes = graph.getHoles(top);
+	Set<String> all = new TreeSet<String>(graph.getAllNodes());
 
 	all.removeAll(top);
 
@@ -183,7 +199,7 @@ class MrsCodec {
     void normalise()
     {
 	for (String root : graph.getAllRoots()) {
-	    List<Edge> edges = graph.getOutEdges(root, EdgeType.DOMINANCE);
+	    Collection<Edge> edges = graph.getOutEdges(root, EdgeType.DOMINANCE);
 	    
 	    if (edges.size() > 0) {
 		Collection<String> holes = graph.getOpenHoles(root);
@@ -203,8 +219,24 @@ class MrsCodec {
 	}
     }
 
-    void finish()
+    void setTopHandleAndFinish(String handle)
+	throws MalformedDomgraphException
     {
-	normalise();
+	this.addBindingEdges();
+	this.setTopHandle(handle);
+
+	this.normalise();
+
+	int errorCode = 0;
+	
+	if (! graph.isNormal())
+	    errorCode |= 1; // XXX
+	if (! graph.isLeafLabelled())
+	    errorCode |= 2; // XXX
+	if (! graph.isHypernormallyConnected())
+	    errorCode |= 4; // XXX
+
+	if (errorCode != 0)
+	    throw new MalformedDomgraphException(errorCode);
     }
 }
