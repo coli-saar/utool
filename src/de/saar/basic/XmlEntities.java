@@ -66,41 +66,45 @@ public class XmlEntities {
      * character entity.
      */
     public static String decode(String s) throws XmlDecodingException {
-        Matcher m = entityPattern.matcher(s);
-        StringBuffer sb = null;
+	if( s == null ) {
+	    return null;
+	} else {
+	    Matcher m = entityPattern.matcher(s);
+	    StringBuffer sb = null;
+	    
+	    while(m.find()) {
+		if(sb == null) {
+		    sb = new StringBuffer();
+		}
+		
+		if(m.group(1) != null) { 
+		    // numeric entity
+		    int i = Integer.parseInt(m.group(1));
+		    
+		    m.appendReplacement(sb,
+					Character.toString((char) i));
+		    
+		    
+		} else { 
+		    // named entity
+		    String entityStr = m.group(2);
+		    String entityVal = entityDefs.get(entityStr);
+		    
+		    if(entityVal != null) {
+			m.appendReplacement(sb,entityVal);
+		    } else {
+			throw new XmlDecodingException("Unkown entity: "+entityStr);
+		    }
+		}
+	    }
         
-        while(m.find()) {
-            if(sb == null) {
-                sb = new StringBuffer();
-            }
-            
-            if(m.group(1) != null) { 
-                // numeric entity
-                int i = Integer.parseInt(m.group(1));
-                
-                m.appendReplacement(sb,
-                        Character.toString((char) i));
-                
-                
-            } else { 
-                // named entity
-                String entityStr = m.group(2);
-                String entityVal = entityDefs.get(entityStr);
-                
-                if(entityVal != null) {
-                    m.appendReplacement(sb,entityVal);
-                } else {
-                    throw new XmlDecodingException("Unkown entity: "+entityStr);
-                }
-            }
-        }
-        
-        if(sb != null) {
-            m.appendTail(sb);
-            return sb.toString();
-        } else {
-            return s;
-        }
+	    if(sb != null) {
+		m.appendTail(sb);
+		return sb.toString();
+	    } else {
+		return s;
+	    }
+	}
     }
 }
 
