@@ -76,6 +76,33 @@ class Formula {
         
         return null;
     }
+
+    public boolean equals(Object obj) {
+        if( obj instanceof Formula ) {
+            Formula f = (Formula) obj;
+            
+            if( type != f.type ) {
+                return false;
+            } else {
+                switch(type) {
+                case ATOM:
+                case VARIABLE:
+                    return symbol.equals(f.symbol);
+                    
+                case IMPLICATION:
+                    return subformulas.get(0).equals(f.subformulas.get(0))
+                    && subformulas.get(1).equals(f.subformulas.get(1));
+                    
+                default:
+                    // unreachable
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+        
+    }
     
     
     
