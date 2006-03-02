@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import javax.swing.filechooser.FileView;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
@@ -50,7 +52,7 @@ public class CommandListener implements ActionListener, ItemListener {
     private File lastPath = null;
     private String recentPath = "", recentFile="";
     
-    private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
+    //private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
     private List<FileFilter> ffInputCodecs;
     private List<FileFilter> ffOutputCodecs;
     
@@ -60,28 +62,31 @@ public class CommandListener implements ActionListener, ItemListener {
      * Creates a new Instance of <code>CommandListener</code>.
      */
     public CommandListener() {
+        CodecManager codecman = Main.getCodecManager();
     	
     	// initializing fields
         eventSources = new HashMap<Object,String>();
         
-    /*    ffInputCodecs = new ArrayList<FileFilter>();
+        ffInputCodecs = new ArrayList<FileFilter>();
         ffOutputCodecs = new ArrayList<FileFilter>();
-        
-        
-        // deteting utool and configure the filters for file 
-        // choosers
-        if(Preferences.utoolPresent()) {
-            DomSolver s = new DomSolver();
-            for( int i = 0; i < s.num_input_codecs(); i++ ) {
-                if( s.is_file_input_codec(i)) {
-                    ffInputCodecs.add(new GenericFileFilter(s.input_codec_extension(i), "utool: " + s.input_codec_name(i)));
-                }
-            }
+    
+        for( Class codec : codecman.getAllInputCodecs() ) {
+            String name = CodecManager.getCodecName(codec);
+            String extension = CodecManager.getCodecExtension(codec);
             
-            for( int i = 0; i < s.num_output_codecs(); i++ ) {
-                ffOutputCodecs.add(new GenericFileFilter(s.output_codec_extension(i), "utool: " + s.output_codec_name(i)));
+            if( (name != null) && (extension != null)) {
+                ffInputCodecs.add(new GenericFileFilter(extension, name));
             }
-        } */
+        }
+        
+        for( Class codec : codecman.getAllOutputCodecs() ) {
+            String name = CodecManager.getCodecName(codec);
+            String extension = CodecManager.getCodecExtension(codec);
+            
+            if( (name != null) && (extension != null)) {
+                ffOutputCodecs.add(new GenericFileFilter(CodecManager.getCodecExtension(codec), CodecManager.getCodecName(codec)));
+            }
+        }
     }
    
     /**
@@ -222,7 +227,7 @@ public class CommandListener implements ActionListener, ItemListener {
         	if( command.equals("loadGXL") ) {
             JFileChooser fc = new JFileChooser();
             
-            fc.addChoosableFileFilter(ffInNativeGxl);
+        //    fc.addChoosableFileFilter(ffInNativeGxl);
             for( FileFilter ff : ffInputCodecs )
                 fc.addChoosableFileFilter(ff);
             
