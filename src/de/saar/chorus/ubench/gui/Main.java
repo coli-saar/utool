@@ -115,6 +115,9 @@ public class Main  {
 	// the menu bar 
 	private static JDomGraphMenu menuBar;
     
+    // the codec manager
+    private static CodecManager codecManager;
+    
     /**
      * Aligning the slider with the currently shown graph.
      * (if there is one).
@@ -424,9 +427,6 @@ public class Main  {
 	 * @return
 	 */
     public static JDomGraph importGraph(String filename, DomGraph graph, NodeLabels nl) {
-        
-        CodecManager codecManager = new CodecManager();
-        registerAllCodecs(codecManager);
         InputCodec inputCodec = codecManager.getInputCodecForFilename(filename, null);
         
         NodeLabels nodeLabels = new NodeLabels();
@@ -479,6 +479,12 @@ public class Main  {
             System.err.println("Error while loading libdomgraph library: " + e.getMessage());
             Preferences.setUtoolPresent(false);
         }
+        
+        
+        // register codecs
+        codecManager = new CodecManager();
+        registerAllCodecs(codecManager);
+
         
         
         // parse command-line arguments
@@ -624,6 +630,10 @@ public class Main  {
 	public static NodeLabels getLabelsFor(DomGraph gr) {
 		return graphToLabels.get(gr);
 	}
+
+    public static CodecManager getCodecManager() {
+        return codecManager;
+    }
 
 	
 }
