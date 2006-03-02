@@ -919,7 +919,7 @@ public class DomGraph implements Cloneable {
             return false;
         }
         
-        hncDfs(getAllNodes().iterator().next(), visited);
+        hncDfs(getAllNodes().iterator().next(), visited, false);
         return visited.equals(getAllNodes());
     }
     
@@ -932,17 +932,18 @@ public class DomGraph implements Cloneable {
      * @param node
      * @param visited
      */
-    private void hncDfs(String node, Set<String> visited) {
+    private void hncDfs(String node, Set<String> visited, boolean cameViaDomEdge) {
         boolean haveUsedOutgoingDomEdge = false;
         
         visited.add(node);
         
         for( Edge edge : getAdjacentEdges(node) ) {
             String neighbour = (String) edge.oppositeVertex(node);
+            EdgeType edgetype = getData(edge).getType();
             
-            if( (getData(edge).getType() == EdgeType.DOMINANCE)
+            if( (edgetype == EdgeType.DOMINANCE)
                     && edge.getSource().equals(node) ) {
-                if( haveUsedOutgoingDomEdge ) {
+                if( cameViaDomEdge || haveUsedOutgoingDomEdge ) {
                     continue;
                 } else {
                     haveUsedOutgoingDomEdge = true;
@@ -950,7 +951,7 @@ public class DomGraph implements Cloneable {
             }
             
             if( !visited.contains(neighbour)) {
-                hncDfs(neighbour, visited);
+                hncDfs(neighbour, visited, edgetype == EdgeType.DOMINANCE);
             }
         }
     }
