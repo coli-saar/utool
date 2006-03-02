@@ -155,7 +155,7 @@ class MrsCodec {
 	    String attr = entry.getKey();
 	    String value = entry.getValue();
 
-	    if (sig.containsKey(value)) {
+	    if (!ignore(attr) && sig.containsKey(value)) {
 		switch (sig.get(value)) {
 		case VARIABLE:
 		    Set<String> nodes = bound.get(value);
@@ -238,5 +238,10 @@ class MrsCodec {
 
 	if (errorCode != 0)
 	    throw new MalformedDomgraphException(errorCode);
+    }
+
+    boolean ignore(String attr)
+    {
+	return attr.equals("TPC") || attr.equals("PSV");
     }
 }
