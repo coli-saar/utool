@@ -26,30 +26,30 @@ public class MrsPrologInputCodec extends InputCodec
     
     public static String getName()
     {
-	return "mrs-prolog";
+		return "mrs-prolog";
     }
 	
     public static String getExtension()
     {
-	return ".mrs.pl";
+		return ".mrs.pl";
     }
    
     public MrsPrologInputCodec()
     {
-	this((Reader) null);
+		this((Reader) null);
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
-	throws IOException, ParserException, MalformedDomgraphException
+		throws IOException, ParserException, MalformedDomgraphException
     {
-	codec = new MrsCodec(graph, labels);
+		codec = new MrsCodec(graph, labels);
 
-	try {
-	    ReInit(inputStream);
-	    Input();
-	} catch(Throwable e) {
-	    throw new ParserException(e);
-	}
+		try {
+		    ReInit(inputStream);
+		    Input();
+		} catch(Throwable e) {
+		    throw new ParserException(e);
+		}
     }
 }
 
@@ -71,42 +71,41 @@ SKIP :
 TOKEN :
 {
     <PSOA : 
-	"psoa">
+		"psoa">
 
   | <REL :
-	"rel">
+		"rel">
 
   | <ATTRVAL :
-	"attrval"> 
+		"attrval"> 
 
   | <HCONS :
-	"hcons">
+		"hcons">
 
   | <QEQ :
-	"qeq" 
+		"qeq" 
       | "geq" >
 
   | <HANDLE :
-	"h" (["0" - "9"])* >
+		"h" (["0" - "9"])* >
 
   | <VARIABLE : 
-	"x" (["0" - "9"])* >
+		"x" (["0" - "9"])* >
 
   | <OTHER : 
-	"e" (["0" - "9"])* 
+		"e" (["0" - "9"])* 
       | "u" (["0" - "9"])* 
       | "i" (["0" - "9"])* >
 
   | <SYMBOL :
-	"\'" (~ ["\'"])* "\'" >
+		"\'" (~ ["\'"])* "\'" >
 }
 
 //
 // GRAMMAR
 //
 
-void Input()
-    throws MalformedDomgraphException: 
+void Input() throws MalformedDomgraphException: 
 {
     String handle;
 }
@@ -117,16 +116,14 @@ void Input()
 	}
 }
 
-void RelList()
-    throws MalformedDomgraphException:
+void RelList() throws MalformedDomgraphException:
 {
 }
 {
     "[" ( Rel() ) ( "," Rel() )* "]"
 }
 
-void Rel()
-    throws MalformedDomgraphException:
+void Rel() throws MalformedDomgraphException:
 {
     String label;
     String handle;
@@ -136,23 +133,21 @@ void Rel()
     <REL> "(" label = Symbol() "," handle = Handle() "," Attributes(attrs) ")"
 	{
 	    if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
-		codec.addQuantifier(handle, label, attrs);
+			codec.addQuantifier(handle, label, attrs);
 	    } else {
-		codec.addRelation(handle, label, attrs);
+			codec.addRelation(handle, label, attrs);
 	    }
 	}
 }
 
-void Attributes(Map<String,String> attrs)
-    throws MalformedDomgraphException:
+void Attributes(Map<String,String> attrs) throws MalformedDomgraphException:
 {
 }
 {
     "[" Attribute(attrs) ( "," Attribute(attrs) )* "]"
 }
 
-void Attribute(Map<String,String> attrs)
-    throws MalformedDomgraphException:
+void Attribute(Map<String,String> attrs) throws MalformedDomgraphException:
 {
     String attr;
     String value;
@@ -164,8 +159,7 @@ void Attribute(Map<String,String> attrs)
 	}
 }
 
-String Value()
-    throws MalformedDomgraphException:
+String Value() throws MalformedDomgraphException:
 {
     String v;
 }
@@ -176,16 +170,14 @@ String Value()
 	}
 }
 
-void QeqList()
-    throws MalformedDomgraphException:
+void QeqList() throws MalformedDomgraphException:
 {
 }
 {
     <HCONS> "(" "[" ( Qeq() ) ( "," Qeq() )* "]" ")"
 }
 
-void Qeq()
-    throws MalformedDomgraphException: 
+void Qeq() throws MalformedDomgraphException: 
 {
     String h1;
     String h2;
@@ -197,8 +189,7 @@ void Qeq()
 	}
 }
 
-String Handle()
-    throws MalformedDomgraphException:
+String Handle() throws MalformedDomgraphException:
 {
     Token t;
 }
@@ -210,8 +201,7 @@ String Handle()
 	}
 }
 
-String Variable()
-    throws MalformedDomgraphException:
+String Variable() throws MalformedDomgraphException:
 {
     Token t;
 }
@@ -243,9 +233,9 @@ String Symbol():
 	{
 	    // strip quotes if necessary
 	    if (t.image.startsWith("\'")) {
-		return t.image.substring(1, t.image.length()-1);
+			return t.image.substring(1, t.image.length()-1);
 	    } else {
-		return t.image;
+			return t.image;
 	    }
 	}
 }
