@@ -21,6 +21,17 @@ import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 
+/**
+ * The Utool main program for accessing the Domgraph functionality
+ * from the command-line. Utool ("Underspecification Tool") is the
+ * Swiss Army Knife of Underspecification (Java version).<p>
+ * 
+ * The operation of this class is described in more detail in the
+ * end-user documentation of Utool.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class Utool {
     public static void main(String[] args) {
         CommandLineParser optionsParser = new CommandLineParser();
