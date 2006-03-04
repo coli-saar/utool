@@ -22,7 +22,6 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
-import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
@@ -31,6 +30,20 @@ import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 
+
+/**
+ * The Utool main program for accessing the Domgraph functionality
+ * in server mode. Utool ("Underspecification Tool") is the
+ * Swiss Army Knife of Underspecification (Java version). This
+ * version will accept commands in XML format from a socket. It
+ * is started by calling the command-line version with command "server".<p>
+ * 
+ * The operation of this class is described in more detail in the
+ * end-user documentation of Utool.
+ * 
+ * @author Alexander Koller
+ *
+ */
 
 class UtoolServer {
     private static boolean logging = false;
