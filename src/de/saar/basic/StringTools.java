@@ -7,7 +7,7 @@
 
 package de.saar.basic;
 
-import java.util.List;
+import java.util.Collection;
 
 
 
@@ -26,7 +26,7 @@ public class StringTools {
      * @param separator a string that is inserted between any two members of the list
      * @return the joined string
      */
-    public static String join(List<String> strings, String separator) {
+    public static String join(Collection<String> strings, String separator) {
         boolean first = true;
         StringBuffer sb = new StringBuffer();
         
