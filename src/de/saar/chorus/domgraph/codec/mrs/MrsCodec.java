@@ -170,16 +170,14 @@ class MrsCodec {
 	{
 		Set<String> top = graph.getFragment(topnode);
 		Collection<String> holes = graph.getHoles(top);
-		Set<String> all = new TreeSet<String>(graph.getAllNodes());
+		Set<String> withoutTop = new TreeSet<String>(graph.getAllNodes());
 		
-		all.removeAll(top);
+		withoutTop.removeAll(top);
 		
-		for (Set<String> wcc : graph.wccs(all)) {
+		for (Set<String> wcc : graph.wccs(withoutTop)) {
 			for (String node : wcc) {
-				for (String parent : graph.getParents(node, EdgeType.DOMINANCE)) {
-					
+				for (String parent : graph.getParents(node, EdgeType.DOMINANCE)) {						
 					if (holes.contains(parent)) {
-						
 						for (String root : graph.getAllRoots(wcc)) {
 							if (graph.indeg(root, EdgeType.DOMINANCE) == 0) {
 								addDomEdge(parent, root);
@@ -187,6 +185,11 @@ class MrsCodec {
 						}
 					}
 				}
+			}
+		}
+		for (String root : withoutTop) {
+			if (graph.indeg(root) == 0) {
+				addDomEdge(topnode, root);
 			}
 		}
 	}
@@ -205,10 +208,10 @@ class MrsCodec {
 							addDomEdge(hole, (String) edge.getTarget());
 						}
 					}
-				} 
-				
-				for (Edge edge : edges) {
-					graph.remove(edge);
+								
+					for (Edge edge : edges) {
+						graph.remove(edge);
+					}
 				}
 			}
 		}
@@ -216,23 +219,28 @@ class MrsCodec {
 	
 	void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
+		StringBuffer errorText = new StringBuffer();
+			
 		this.addBindingEdges();
 		this.setTopHandle(handle);
 		this.normalise();
 		
 		int errorCode = 0;
 		
-		if (! graph.isNormal())
+		if (! graph.isNormal()) {
 			errorCode |= ErrorCodes.NOT_NORMAL;
-
-		if (! graph.isLeafLabelled())
+			errorText.append("The graph is not normal.\n");
+		}
+		if (! graph.isLeafLabelled()) {
 			errorCode |= ErrorCodes.NOT_LEAF_LABELLED;
-		
-		if (! graph.isHypernormallyConnected())
+			errorText.append("The graph is not leaf-labelled.\n");
+		}
+		if (! graph.isHypernormallyConnected()) {
 			errorCode |= ErrorCodes.NOT_HYPERNORMALLY_CONNECTED;
-		
+			errorText.append("The graph is not hypernormally connected.\n");
+		}
 		if (errorCode != 0)
-			throw new MalformedDomgraphException(errorCode);
+			throw new MalformedDomgraphException(errorText.toString(), errorCode);
 	}
 	
 	boolean ignore(String attr)

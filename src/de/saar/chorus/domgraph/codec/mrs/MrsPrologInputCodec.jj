@@ -47,6 +47,8 @@ public class MrsPrologInputCodec extends InputCodec
 		try {
 		    ReInit(inputStream);
 		    Input();
+		} catch(MalformedDomgraphException e) {
+			throw e;
 		} catch(Throwable e) {
 		    throw new ParserException(e);
 		}
