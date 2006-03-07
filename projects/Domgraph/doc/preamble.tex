@@ -1,0 +1,82 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{color}
+%\usepackage{graphics}
+
+\usepackage{pstricks,pst-node,pst-tree}
+
+
+%\usepackage{times}
+%\usepackage{mathptmx}
+
+
+
+\usepackage{amsmath,amsthm,amssymb,amscd,amsfonts}
+\usepackage{mychicago,covington,url,umlaut,latexsym}
+%\usepackage{graphicx}
+
+
+%\usepackage{picin/picins}
+
+
+
+%% \usepackage{pst-tree,pst-node}
+%% \usepackage{amsmath,amsthm,amssymb,amscd,amsfonts}
+%% \usepackage{mychicago,covington,url,umlaut,latexsym}
+%\usepackage{graphicx} %[dvips]
+%% %\usepackage{epsfig}
+%% %\usepackage{german}
+
+
+
+
+
+
+
+
+\input local-macros
+\usepackage{tree-macros}
+
+
+
+\newcommand\ie{\textit{i.e.}\xspace}
+\newcommand\eg{\textit{e.g.}\xspace}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{kor}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{verm}{Conjecture}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{bem}{Remark}
+
+
+\sloppy 
+\pagestyle{headings}
+
+% Laengen aus Joachims Dissertation
+\setlength{\evensidemargin}{.75cm}      % linker und rechter Rand
+\setlength{\oddsidemargin}{.75cm}               
+\setlength{\marginparwidth}{1.5cm}
+\setlength{\marginparsep}{0.8cm}
+
+\setlength{\topmargin}{0cm}             % oberer Rand
+\setlength{\textwidth}{14.8cm}
+\setlength{\textheight}{21cm}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.5ex}
+
+\setcounter{tocdepth}{1}             % hoechstens Sections im TOC
+
+\hyphenation{Fach-be-reich}
+
+\title{Utool/Java: The Swiss Army Knife of Underspecification \\ Version 1.0 \\ Technical Documentation}
+\author{Alexander Koller}
+\date{\today}
+
+
+\newcommand{\utool}{utool}

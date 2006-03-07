@@ -1,0 +1,383 @@
+\section{Using Utool}  \label{sec:operations}
+
+In the current release, Utool supports four commands: ``solve'',
+``solvable'', ``classify'', and ``convert''. Each of these commands
+can be used from the command-line or in the Utool Server. In addition,
+Utool supports some auxiliary pseudo-commands for displaying help and
+for starting the Utool Server.
+
+In this section, we describe these commands in some detail.
+
+
+\subsection{Command-line interface}
+When Utool is run from the command-line, it executes the single
+command you specify on the command line and then exits. For instance,
+the following call executes one ``solvable'' command and outputs some
+information about it:
+
+\begin{verbatim}
+$ java -jar Utool.jar solvable -s chain-3.clls
+The input graph is normal.
+The input graph is compact.
+
+Solving graph ... it is solvable.
+Splits in chart: 10
+Time to build chart: 30 ms
+Number of solved forms: 5
+\end{verbatim}
+% $
+
+You can get help on how to use the different commands by running Utool
+with the ``help'' command.
+
+
+\subsection{Server mode}
+
+Alternatively, you can run Utool in server mode. In this mode, it will
+not execute any commands at first. Instead, it will accept network
+connections on a specific socket. Each time it is sent a command on
+this socket, it will execute this command, send the results back over
+the socket, and then close the socket. This means that the same Utool
+process keeps running and can execute many commands during its
+lifetime. You start Utool in server mode as follows:
+
+\begin{verbatim}
+$ java -jar Utool.jar server
+\end{verbatim}
+%$
+
+The server doesn't output anything on the console on which you started
+it -- unless you specified the \verb?--logging? command-line option
+and no name for the logfile, in which case it will write some
+information to standard error. 
+
+By default, the server will listen for socket connections on port
+2802. If you like, you can change this port to whatever you like by
+using the \verb?--port? command-line option. You communicate with it
+by sending it XML queries and accepting the XML results. These queries
+are always of the following form:
+
+\begin{verbatim}
+<utool cmd="..." (more options)>
+  (arguments of the command)
+</utool>
+\end{verbatim}
+
+If the command is executed successfully, the server will respond with
+a message of the following form:
+
+\begin{verbatim}
+<result .... />
+\end{verbatim}
+
+The particular attributes of this element depend on the command, and
+are described below. If an error occurred, the response will be a
+message of the following form instead:
+
+\begin{verbatim}
+<error code="..." explanation="..." />
+\end{verbatim}
+
+Here the ``code'' attribute will be a numeric error code, and the
+``explanation'' attribute will be a plain-text explanation of the
+error that occurred.
+
+If you just use Utool for a single call or experimentation, the
+command-line mode will typically be easier to use. However, if you
+need to process many Utool commands from a programme, it can be
+dramatically more efficient to keep a single Utool Server process
+running and send the commands to the server. This is because running a
+Java process incurs an overhead for starting up the virtual machine
+and loading the libraries. In addition, the just-in-time compilation
+really starts to pay off only after a little while (say, after solving
+two or three graphs), i.e.\ you will only ever achieve an efficiency
+comparable to the C++ implementation in the server mode.
+
+
+\subsection{Passing USRs}
+
+All four commands require the user to specify an USR that should be
+processed.
+
+In command-line mode, you pass the filename from which the USR should
+be read as a command-line argument. In the example above, this was
+\verb?chain-3.clls?.
+
+In server mode, you can't pass a filename because the server may run
+on a different machine than the client and may not have access to its
+filesystem. Instead, you pass the USR directly as an attribute of
+\verb?usr? element that is embedded into the \verb?utool? element,
+like so:
+
+\begin{verbatim}
+<utool command="solvable">
+  <usr codec="domcon-oz" string="label(x f(y)) ..." />
+</utool>
+\end{verbatim}
+
+Notice that the attribute values must be valid XML attribute
+strings. This means that you must replace special characters by
+their respective character entities.
+
+
+
+
+\subsection{The operations supported by Utool}
+
+We will now go through the four main commands and describe what each
+command does and what options it takes.
+
+
+\subsubsection{Solvable}
+
+This command converts the input USR into a dominance graph and checks
+whether this graph is solvable, i.e.\ has any
+solutions. Linguistically, this corresponds to checking whether the
+sentence has any readings (ideally, it should!).
+
+Solvability is determined by computing a dominance chart as described
+in \cite{KolTha05b}. This is typically much more efficient than
+actually \emph{solving} the graph, i.e.\ enumerating its solved forms,
+because the chart is exponentially smaller than the set of all solved
+forms. This command only makes a yes/no decision about solvability and
+thus doesn't have to enumerate all the solved forms. If you want them,
+see the ``solve'' command below.
+
+
+\paragraph{Result.}
+In command-line mode, the Utool process will terminate with an exit
+code of 1 if the graph was solvable. It will terminate with an exit
+code of 0 if it wasn't. Exit codes of 128 or more indicate errors.
+
+In server mode, Utool will send a reply of the following form:
+\begin{verbatim}
+<result solvable='true' fragments='7' count='5' chartsize='10' time='30' />
+\end{verbatim}
+
+The \verb?solvable? attribute contains the string \verb?true? if the
+graph was solvable, and \verb?false? otherwise. The other attributes
+contain statistical information: the number of fragments of the graph,
+the number of solved forms, the number of splits in the chart, and the
+time in milliseconds it took to compute the chart.
+
+
+\paragraph{Options.}
+The \verb?solvable? command can take the following options:
+\begin{description}
+\item[input-codec:] You can specify an input codec for this
+command. By default, the command-line version will try to guess the
+appropriate input codec from the filename extension. If this is not
+possible (or in server mode), you must specify the input codec by name
+explicitly.
+
+In command-line mode, specify the input codec with the option
+\verb?--input-codec <codecname>? or \verb?-I <codecname>?. In server
+mode, specify it as the \verb?codec? attribute of the \verb?usr?
+element.
+\item[display-statistics:] You can make Utool display more detailed
+statistics when you call it on the command-line by passing the
+\verb?--display-statistics? or \verb?-s? option. All such statistics
+information will be written to standard error.
+\end{description}
+
+
+
+\subsubsection{Solve}
+
+This command converts the input USR into a dominance graph, computes
+the solved forms of this graph, and outputs them using the given
+output codec. It computes a dominance chart, and if the graph was
+solvable, proceeds to enumerate all solved forms.
+
+
+\paragraph{Result.}
+In command-line mode, Utool will output all solved forms. By default,
+it will write them to standard output, but there is a command-line
+option for redirecting them into a file. The Utool process will
+terminate with exit code 0 if everything went well, and with an exit
+code of 128 or above if an error occurred.
+
+In server mode, Utool will send a reply of the following form:
+\begin{verbatim}
+<result solvable='true' fragments='7' count='5' chartsize='10'
+        time-chart='30' time-extraction='100'>
+  <solution string='....' />
+  <solution string='....' />
+</result>
+\end{verbatim}
+
+The attributes of the \verb?result? element are as for the
+\verb?solvable? command, except that the runtime is now reported
+separately for computing the chart and for enumerating (extracting)
+the solved forms. The solutions are returned in attributes of
+\verb?solution? elements below the \verb?result? element. Notice that
+you may need to resolve XML character entities that were used in the
+attribute value strings.
+
+\paragraph{Options.}
+The \verb?solve? command can take the following options:
+\begin{description}
+\item[input-codec:] see the \verb?solvable? command
+\item[output-codec:] You must specify which output codec should be
+used to encode the solved forms. The command-line tool will try to
+guess the output codec from the output filename if you specify one. If
+this doesn't work, it will try to use the output codec with the same
+name as the input codec, if it exists. If this doesn't work either (or
+if you want to override the default, or if you use the server mode),
+you must specify the output codec explicitly by name with this option.
+
+In command-line mode, specify the output codec with the option
+\verb?--output-codec <codecname>? or \verb?-O <codecname>?. In server
+mode, specify it by passing the codec name as the \verb?output-codec?
+attribute of the main \verb?utool? element.
+
+\item[output:] By default, the command-line tool will write the
+encoded solved forms to standard error. You can override this by
+specifying an output file with the option \verb?--output <filename>?
+or \verb?-o <filename>?. This option is not applicable in server
+mode because it doesn't write into files anyway.
+
+\item[no-output:] You can instruct Utool not to output the actual
+solved forms by specifying the ``no-output'' option. Utool will still
+\emph{compute} all solved forms in this case, it will simply not
+\emph{output} them. This can be useful for runtime
+measurements. Specify the option \verb?--no-output? or \verb?-n? on
+the command line. In server mode, you get this effect if you simply
+don't specify any output codec in the \verb?utool? element.
+
+\item[display-statistics:] see the \verb?solvable? command
+\end{description}
+
+
+
+
+
+\subsubsection{Convert}
+
+This command reads a USR and outputs it again. The point about this
+operation is that the input and output codecs may be different. This
+means that you can use it to convert USRs from one underspecification
+formalism to another (to the extent that this is supported by theory).
+
+\paragraph{Result.}
+In command-line mode, Utool will output the USR using the specified
+output codec. By default, it will write it to standard output, but you
+can again redirect the output to a file. As before, exit code 0
+signifies successful completion, whereas exit codes of 128 and above
+are error codes.
+
+In server mode, Utool will send a reply of the following form:
+\begin{verbatim}
+<result usr='....' />
+\end{verbatim}
+
+The string in the \verb?usr? attribute is the converted USR. Remember
+that you may need to resolve XML character entities that were used in
+the attribute value strings.
+
+\paragraph{Options.}
+The \verb?convert? command can take the following options:
+\begin{description}
+\item[input-codec:] see \verb?solvable? 
+\item[output-codec:] see \verb?solve? 
+\item[output:] see \verb?solve?
+\item[no-output:] see \verb?solve?
+\item[display-statistics:] see \verb?solvable?
+\end{description}
+
+
+
+\subsubsection{Classify}
+
+Finally, you can use Utool to check whether a dominance graph belongs
+to certain particularly well-behaved classes. It currently
+distinguishes the following classes:
+
+\begin{itemize}
+\item \emph{weakly normal}: A dominance graph is weakly normal
+\cite{bodirsky-weakly-normal-constraints} if the tree edges form a
+forest and all dominance edges go into roots.
+\item \emph{normal}: A weakly normal dominance graph is normal
+\cite{Althaus-J.Algo.} if all dominance edges also start in
+(unlabelled) holes.
+\item \emph{compact}: A weakly normal dominance graph is compact if
+all fragments have depth zero or one, i.e.\ no node has both incoming
+and outgoing tree edges.
+\item \emph{compactifiable:} Many weakly normal graphs that are not
+compact can nevertheless be made compact by removing internal nodes
+and labelled leaves of fragments, and adding tree edges from the roots
+to the holes. In particular, all normal graphs are compactifiable. If
+a graph is compactifiable, it is guaranteed that there is a one-to-one
+correspondence between the solved forms of the compactified graph and
+the solved forms of the original graph.
+\item \emph{hypernormally connected:} A normal graph is hypernormally
+connected \cite{KolNieTha03,Koller04} if any pair of nodes is
+connected by a simple hypernormal path, where a hypernormal path is an
+undirected path that uses no two dominance edges that are adjacent to
+the same hole. This graph class is a bit abstract, but immensely
+useful because these graphs (a) have a lot of nice structural
+properties, and (b) we believe that all graphs that are currently used
+in underspecification are or should be hypernormally connected
+\cite{FucKolNieTha04}. Because of (a), the translations of MRS and
+Hole Semantics into dominance graphs only work for USRs that translate
+into hypernormally connected graphs.
+\item \emph{leaf-labelled:} A weakly normal graph is leaf-labelled
+\cite{KolNieTha03} if every (unlabelled) hole has an outgoing
+dominance edge. If a graph is both hypernormally connected and
+leaf-labelled, each of its solved forms has a configuration.
+\end{itemize}
+
+
+\paragraph{Result.}
+The classes to which a graph belongs are encoded as the bit-wise OR of
+the following values:
+
+\begin{center}
+\begin{tabular}{l|l}
+class & bit value \\ \hline
+weakly normal & 1 \\
+normal & 2 \\
+compact & 4 \\
+compactifiable & 8 \\
+hypernormally connected & 16 \\
+leaf-labelled & 32
+\end{tabular}
+\end{center}
+
+The command-line tool will return this value as its exit code, or 128
+or above if an error occurred.
+
+The Utool Server will return a message of the following form:
+\begin{verbatim}
+<result code='63' weaklynormal='true' normal='true'
+        compact='true' compactifiable='true'
+        hypernormallyconnected='true' leaflabelled='true' />
+\end{verbatim}
+
+Here \verb?code? is the exit code described above, and the other
+attributes are either \verb?true? or \verb?false?.
+
+
+\paragraph{Options.}
+The \verb?classify? command can take the following options:
+\begin{description}
+\item[input-codec:] see \verb?solvable? 
+\item[display-statistics:] see \verb?solvable?
+\end{description}
+
+
+
+\subsection{Command-line options}
+
+\begin{itemize}
+\item an overview of all command-line options
+\item for each option, describe to which commands it applies 
+\end{itemize}
+
+
+
+
+%%% Local Variables: 
+%%% mode: latex%%% TeX-master: "0"
+%%% TeX-command-default: "LaTeX"
+%%% End: 
