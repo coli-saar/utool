@@ -61,7 +61,7 @@ public class DomGraphTConverter {
 			}
 			
 			cloneData.addMenuItem(node, node);
-			jDomGraph.addNode(cloneData);
+			jDomGraph.addNode(node, cloneData);
 		}
 		
 		

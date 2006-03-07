@@ -9,6 +9,5 @@ package de.saar.chorus.jgraph;
 
 public interface INodeData<NodeType> {
     public NodeType getType();
-    public String getName();
     public String getToolTipText();
 }

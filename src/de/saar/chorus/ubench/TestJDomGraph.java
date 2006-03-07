@@ -182,7 +182,7 @@ public class TestJDomGraph extends TestCase {
 	    graph.addSampleData();
 	    
 	    NodeData data = new NodeData(NodeType.labelled, "z", "ff", graph);
-	    DefaultGraphCell newNode = graph.addNode(data);
+	    DefaultGraphCell newNode = graph.addNode("z", data);
 	    
 	    AttributeMap attrs = newNode.getAttributes();
 	    

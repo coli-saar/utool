@@ -231,9 +231,9 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 */
 	public void addSampleData() {
 		// nodes
-		DefaultGraphCell nodeX = addNode(new NodeData(NodeType.labelled, "X", "f", this));
-		DefaultGraphCell nodeX1 = addNode(new NodeData(NodeType.unlabelled, "X1", this));
-		DefaultGraphCell nodeY = addNode(new NodeData(NodeType.labelled, "Y", "b", this));
+		DefaultGraphCell nodeX = addNode("X", new NodeData(NodeType.labelled, "X", "f", this));
+		DefaultGraphCell nodeX1 = addNode("X1", new NodeData(NodeType.unlabelled, "X1", this));
+		DefaultGraphCell nodeY = addNode("Y", new NodeData(NodeType.labelled, "Y", "b", this));
 		
 		// edges
 		addEdge(new EdgeData(EdgeType.solid, "x-x1", this), nodeX, nodeX1);
@@ -621,7 +621,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 				cloneData = new NodeData(NodeType.unlabelled, cellData.getName(), clone); 
 			}
 			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
-			clone.addNode(cloneData);
+			clone.addNode(cellData.getName(), cloneData);
 		}
 		
 		// copy the edges by creating new (equivalent)

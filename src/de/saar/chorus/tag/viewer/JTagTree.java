@@ -61,7 +61,7 @@ public class JTagTree extends ImprovedJGraph<NodeType,NodeData,Object,EdgeData> 
         }
         
         data = new NodeData(type, name);
-        ret = addNode(data);
+        ret = addNode(name, data);
         
         if( type == NodeType.internal ) {
             for( Node child : node.getChildren() ) {
