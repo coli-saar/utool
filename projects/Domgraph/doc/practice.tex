@@ -1,0 +1,22 @@
+
+\section{Utool in Practice} \label{sec:practice}
+
+\begin{itemize}
+\item some benchmark results
+\item practical tips:
+\begin{itemize}
+\item \verb?java -server?
+\item Notice that the server expects that you have encoded special
+characters in the USR as XML character entities -- that is, that you
+have replaced the \" character by \verb?&quot;?, etc. You should also
+be aware that according to the XML specification, whitespace within an attribute is ignored. If the concrete syntax of an input codec requires that there are newlines (e.g.\ to terminate a comment line in the domcon-oz codec), you must encode this newline character as the character entity \verb?&#xA;?.
+
+\end{itemize}
+\end{itemize}
+
+
+
+%%% Local Variables: 
+%%% mode: latex%%% TeX-master: "0"
+%%% TeX-command-default: "LaTeX"
+%%% End: 

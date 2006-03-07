@@ -1,0 +1,1148 @@
+\newcommand{\jndist}{{\sf dist}}
+\newcommand{\sthole}{{\sf hole}}
+
+
+%\renewcommand{\text}[1]{\mbox{#1}}
+
+\newcommand{\varof}[1]{\ensuremath{{\sf Vars}(#1)}}
+\newcommand{\varall}{\ensuremath{{\sf Vars}}}
+\newcommand{\treeset}[1]{\ensuremath{{\cal #1}}}
+
+
+
+%\newcommand{\ROOT}[1]
+%   {\strut\hspace{.5cm}\pstree[levelsep=0cm,linestyle=none]
+%            {\Tc*[linestyle=none,fillcolor=white]{0pt}}
+%            {#1}}
+
+%\definecolor{grey}{rgb}{.5,.5,.5} % -> braucht color.sty (ak)
+\newcommand{\grey}[1]{{\textcolor{grey}{#1}}}
+
+
+\newcommand{\Grey}[1]{\psframebox[linecolor=white,linewidth=0pt,fillstyle=solid,fillcolor=lightgray]{#1}}
+\newcommand{\LightGrey}[1]{\psframebox[linecolor=white,linewidth=0pt,fillstyle=solid,fillcolor=yellow]{#1}}
+
+\newcommand{\corr}{c}
+\newcommand{\MARY}{\Word{Mary}}
+\newcommand{\JOHN}{\Word{John}}
+\newcommand{\BILL}{\Word{Bill}}
+\newcommand{\MAX}{\Word{Max}}
+\newcommand{\formulais}{\ensuremath{=_{def}}}
+\newcommand{\Equiv}[2]{\af{equiv}(#1,\ #2)}
+\newcommand{\Impl}[2]{\af{imply}(#1,\ #2)}
+
+%\newcommand{\down}{\Fo{down}}
+\newcommand{\ddisj}{\Fo{disj}}
+
+
+\newcommand{\Fo}[1]{{\sf #1}}
+
+\newcommand{\lab}[1]{\Fo{label}(#1)}
+\newcommand{\eq}[1]{\Fo{eq}(#1)}
+\newcommand{\up}[1]{\Fo{up}(#1)}
+\newcommand{\down}[1]{\Fo{down}(#1)}
+\newcommand{\side}[1]{\Fo{side}(#1)}
+\newcommand{\equp}[1]{\Fo{equp}(#1)}
+\newcommand{\eqdown}[1]{\Fo{eqdown}(#1)}
+\newcommand{\downi}[2]{\Fo{down}_{#2}(#1)}
+\newcommand{\parent}[1]{\Fo{parent}(#1)}
+\newcommand{\daughters}[1]{\Fo{daughters}(#1)}
+\newcommand{\labs}[1]{\Fo{labels}(#1)}
+\newcommand{\daughtersL}[2]{\Fo{daughters}_{#2}(#1)}
+\newcommand{\parentsL}[2]{\Fo{parent}_{#2}(#1)}
+
+
+
+
+
+\newcommand{\subj}{\Fo{subject}}
+\newcommand{\npacc}{\Fo{object}}
+
+\newcommand{\Roles}{\Fo{Roles}}
+\newcommand{\roles}{\Fo{roles}}
+\newcommand{\ddet}{\Fo{det}}
+\newcommand{\Comps}{\Fo{Comps}}
+\newcommand{\adj}{\Fo{adj}}
+\newcommand{\dagr}{\Fo{agr}}
+\newcommand{\agrs}{\Fo{agrs}}
+\newcommand{\cat}{\Fo{cat}}
+\newcommand{\cats}{\Fo{cats}}
+\newcommand{\String}{\Fo{String}}
+\newcommand{\dstring}{\Fo{string}}
+\newcommand{\mothers}{\Fo{mothers}}
+\newcommand{\mother}{\Fo{mother}}
+%\newcommand{\Lex}{\Fo{Lex}}
+\newcommand{\args}{\Fo{args}}
+\newcommand{\yield}{\Fo{yield}}
+
+\newcommand{\masc}{\Fo{masc}}
+\newcommand{\fem}{\Fo{fem}}
+\newcommand{\sing}{\Fo{sg}}
+\newcommand{\sg}{\Fo{sg}}
+\newcommand{\pl}{\Fo{pl}}
+\newcommand{\gen}{\Fo{gen}}
+\newcommand{\dat}{\Fo{dat}}
+\newcommand{\nom}{\Fo{nom}}
+\newcommand{\acc}{\Fo{acc}}
+\newcommand{\vfin}{\Fo{vfin}}
+\newcommand{\relpro}{\Fo{relpro}}
+\newcommand{\lexn}{\Fo{n}}
+
+\newcommand{\ww}{w}
+\newcommand{\Equal}{\af{Eq}}
+\newcommand{\NotEqual}{\af{NotEq}}
+\newcommand{\StrictelyDominate}{\af{StrDom}}
+\newcommand{\NotStrictelyDominate}{\af{NotStrDom}}
+\newcommand{\Disj}{\af{Disj}}
+\newcommand{\NotDisj}{\af{NotDisj}}
+
+\newcommand{\tEqual}[2]{\Trans{#1\gleich #2}}
+\newcommand{\tNotEqual}[2]{\Trans{#1{\not=}#2}}
+\newcommand{\tStrictelyDominate}[2]{\Trans{#1\trdom#2}}
+\newcommand{\tNotStrictelyDominate}[2]{\Trans{\neg#1\trdom#2}}
+\newcommand{\tDisj}[2]{\Trans{#1\disj #2}}
+\newcommand{\tNotDisj}[2]{\Trans{\neg#1\disj #2}}
+
+
+\newcommand{\SearchTree}[2]
+  {\pstree[colsep=1pt,levelsep=1.5cm,linestyle=solid]{\SearchNode{#1}}{#2}}
+\newcommand{\SearchNode}[1]{\Toval[framesep=0pt]{\begin{array}{c}#1\end{array}}}
+\newcommand{\dvee}{\af{or}}
+\newcommand{\rlmodels}
+            {\mathrel{\hbox{$\models\kern-.47\MathCm|$}}} % "Aquivalenz 
+\newcommand{\DD}{{:}}
+\newcommand{\Seq}{\af{seq}}
+\newcommand{\Convex}[1]{\af{convex}(#1)}
+\newcommand{\Rec}[1]{[#1]}
+\newcommand{\List}[1]{\langle #1 \rangle}
+\newcommand{\Truth}[1]{\af{truth}{(#1)}}
+\newcommand{\Card}[1]{|#1|} %{\af{card}(#1)}
+
+\newcommand{\WO}[1]{\af{#1}}
+\newcommand{\every}{\forall}
+\newcommand{\eref}[1]{(\ref{#1})}
+\newcommand{\CLLS}{\CLS}
+\newcommand{\CLS}{CLLS}
+\newcommand{\DomFin}{DOMFIN}
+
+\newcommand{\PApp}{@}
+\newcommand{\tobedone}[1]{{{\sl #1 }} \margin{to be done} } 
+
+
+
+\newenvironment{Environment}{}{}
+
+ 
+
+\newcommand{\FormelPicture}[3]
+   {\GeneralFormelPicture
+         {#1}
+         {\begin{center}
+          $         
+         \begin{array}{l}
+            #2
+         \end{array}
+           $
+         \end{center}}
+         {\hspace{1cm}}
+         {1cm}
+         {#3}}
+
+\newcommand{\Formel}[3]{
+       \begin{minipage}{5cm}
+            #1
+     \end{minipage}
+     \begin{minipage}{#2}
+            #3
+     \end{minipage}}
+
+\newcommand{\GeneralFormelPicture}[5]
+   {\GeneralPicture{#1}
+                   {\Formel{#2}{#4}{#3}}
+                   {#5}} 
+
+\newcommand{\GeneralPicture}[3]
+   {
+    \begin{Environment}
+      \begin{minipage}{1cm}
+        \Exa{#1}
+      \end{minipage}
+          #2
+     \begin{minipage}{6cm}
+         \input picture#3
+     \end{minipage}
+     \\
+    \end{Environment}
+   }
+
+\newcommand{\AAA}{{\cal{A}}}
+\newcommand{\Exa}[1]{\mbox{(}#1\mbox{)}}
+\newcounter{CounterExa}
+\newcommand{\LAM}[1]{\Word{lam}_{#1}}
+
+% entfernt wg. cmdfilter - ak, 17.11.99
+%\newenvironment{Example}
+%               {\begin{list}{\Exa{\arabic{CounterExa}}}
+%                            {\usecounter{CounterExa}
+%                             \labelwidth.7cm\leftmargin.85cm\labelsep.25cm}
+%               }
+%               {\end{list}}
+
+\newcommand{\EExample}[2]
+    {\begin{Example} 
+        \item[\Exa{#1}] {#2}
+       \end{Example}}
+
+\newcommand{\MathExample}[2]
+    {\EExample{#1}{$ #2 $}}
+
+\newcommand{\GQuote}{''}
+\newcommand{\US}{ \_ }
+\newcommand{\llstr}{$\lambda_\link$-Structure}
+
+% Wort ``lambda structure'', gross und klein geschrieben
+\newcommand{\lstr}{lambda structure}
+\newcommand{\Lstr}{Lambda structure}
+\newcommand{\lastr}{$\lambda$-structure}
+\newcommand{\Lastr}{$\lambda$-structure}
+
+\newcommand{\arbeitspacket}[1]{\paragraph{\bf Arbeitspaket #1}}
+
+%\newcommand{\Example}[2]{\begin{equation} \qquad\quad \mbox{{#1}}  \label{#2}\end{equation}}
+
+\newcommand{\WS}[1]{\af{#1}}
+\newcommand{\say}{\WS{say}}
+\newcommand{\bill}{\WS{bill}}
+\newcommand{\Max}{\WS{max}}
+\newcommand{\want}{\WS{want}}
+\newcommand{\beer}{\WS{beer}}
+\newcommand{\john}{\WS{john}}
+\newcommand{\joe}{\WS{joe}}
+\newcommand{\al}{\WS{al}}
+\newcommand{\like}{\WS{like}}
+\newcommand{\greet}{\WS{greet}}
+\newcommand{\Read}{\WS{read}}
+\newcommand{\Every}{\WS{every}}
+\newcommand{\mf}{\WS{mother\_of}}
+
+\newcommand{\BAT}{BAT II a}
+\newcommand{\BATG}{201.600}
+\newcommand{\BATGH}{46.800}
+\newcommand{\SHKM}{38.400}
+\newcommand{\BSM}{240.000}
+
+%\newcommand{\dom}{{\ll}}
+\def\DLC{{\cal DLC}}
+
+\newcommand{\para}[1]{\paragraph{{\bf #1.}}}
+\newcommand{\rela}[1]{\rel_{#1}}
+\newcommand{\A}{{\cal{A}}}
+\newcommand{\Pref}[2]{{\cal{P}}(#1,#2)}
+\newcommand{\APPLY}{{\mbox{@}}}
+\newcommand{\false}{\af{false}}
+
+\newcommand{\highl}[1]{\mbox{(\rm #1)}}
+\newcommand{\rn}[1]{\mbox{(#1)}}
+\newcommand{\equival}[2]{#1\equiv#2}
+\newcommand{\bind}[2]{#1\mapsto#2}
+\newcommand{\curule}[3]{#1\;\longrightarrow\;#2\;\; |\;\; #3}
+\newcommand{\becomes}{\longrightarrow}
+\newcommand{\pow}{\wp}
+\newcommand{\eqn}{\Gamma}
+\newcommand{\bnd}{\rho}
+\newcommand{\size}{\mbox{\it size}}
+
+\newcommand{\Conf}[2]{#1\DDDD #2}
+\newcommand{\Ru}[2]{#1\ \rightarrow\  #2}
+\newcommand{\RuSu}[1]{&\mbox{where } #1}
+\newcommand{\Su}[2]{#1\mapsto #2}
+\newcommand{\Se}{,\ }
+\newcommand{\true}{\af{true}}
+\newcommand{\Id}{\alam{x}{x}}
+
+\newcommand{\rel}{{\rightarrow}}
+%\newcommand{\onestep}[4]{{#1} \rel {#2} \mbox{{ \bf with }}{#3} \rel {#4}}
+
+
+%%
+%%  Epsf-figure
+%%
+%%\def\epsffigure#1#2#3#4{
+%\begin{figure}
+%%  \begin{center}
+%%    \leavevmode
+%%    \def\epsfsize##1##2{#3##1}
+%%    \epsfbox{#2}
+%%   \vspace*{0cm}\
+%    \begin{minipage}{.8\textwidth}
+%      \caption{#4}\label{#2}
+%    \end{minipage}
+%%  \end{center}
+%\end{figure}
+%%}
+
+%%
+%%  Epsf-figure
+%%
+\def\epsffigure#1#2#3#4{
+%\begin{figure}
+  \begin{center}
+    \leavevmode
+    \def\epsfsize##1##2{#3##1}
+    \epsfbox{#2}
+    \vspace*{0cm}\
+%    \begin{minipage}{.8\textwidth}
+%      \caption{#4}\label{#2}
+%    \end{minipage}
+  \end{center}
+%\end{figure}
+}
+
+
+\newcommand{\Word}[1]{\af{#1}}
+\newcommand{\SP}{\hspace{-1.2em}}
+\newcommand{\John}{\Word{Peter}}
+\newcommand{\JohnS}{\Word{p}}
+\newcommand{\loves}{\Word{likes}}
+\newcommand{\lovesS}{\Word{l}}
+\newcommand{\Anne}{\Word{Chardonnay}}
+\newcommand{\AnneS}{\Word{cx[}}
+%\newcommand{\Mary}{\Word{Riesling}}
+\newcommand{\MaryS}{\Word{r}}
+\newcommand{\too}{\Word{too}}
+
+\newenvironment{proofOf}[1]{\noindent{\bf Proof of #1. }}           %Proof
+           {\hfill$\Box$\par\addvspace{\bigskipamount}} 
+\newcommand{\Type}{\af{type}}
+\newcommand{\Ar}{{\rightarrow}}
+\newcommand{\alam}[2]{\lambda#1.#2}
+\newcommand{\appl}[2]{#1 \hspace{.35ex} #2}
+\newcommand{\mif}{\mbox{ if }}
+\newcommand{\mwhere}{\mbox{ where }}
+\newcommand{\mand}{\mbox{ and }}
+\newcommand{\mor}{\mbox{ or }}
+\newcommand{\mthen}{\mbox{ then }}
+\newcommand{\mexists}{\mbox{ exists }}
+\newcommand{\mthennot}{\mbox{ then not }}
+\newcommand{\msuchthat}{\mbox{ such that }}
+\newcommand{\Arity}{\af{arity}}
+\newcommand{\arity}{\af{arity}}
+\newcommand{\etoRel}[1]{{=}_{#1}}
+\newcommand{\Trees}{\af{Trees}}
+\newcommand{\tree}{\af{tree}}
+%\newcommand{\Rule}[2]{\mbox{$\frac{\;\mbox{$#1$}\;}{\;\mbox{$#2$}\;}$ } }
+% -> auskommentiert wg. Konflikt mit jlac.sty (ak)
+\def\MyDP{\mathpunct:\hspace{.1ex}}
+\def\TA#1#2{#1\MyDP#2}
+
+% for equality upto constraints
+\newcommand{\IsTree}{\af{f}\_\af{tree}}
+\def\Conc#1#2#3{\mbox{$#1#3#2$}}
+\def\BigDoubleOBracket{{\Conc{[} {[} {\hspace{-1.5mm}}}}
+\def\BigDoubleCBracket{{\Conc{]} {]} {\hspace{-1.5mm}}}}
+\def\Inter#1{{\BigDoubleOBracket}#1{\BigDoubleCBracket}}
+\newcommand{\Spiff}{\Sp{\Sp{\mbox{iff}}}}
+\newcommand{\wss}{{\subseteq}}
+\newcommand{\pro}[2]{{#1}_{\mbox{$\mid\! {#2}$}}}
+\newcommand{\feat}[3]{#1 [{#2}]{#3}}
+%\newcommand{\arity}[2]{#1\{#2\}}
+\newcommand{\FA}[2]{\forall #1\ #2}
+\newcommand{\ms}{{\in}}
+\newcommand{\Co}[2]{#1#2}
+% \newcommand{\mod}[2]{{#1}_{\mbox{[}\mbox{$#2$}\mbox{]}}}
+%\newcommand{\mod}[2]{{#1}_{\mbox{$\mid$}\mbox{$#2$}}}
+%\newcommand{\mod}[2]{{#1}\langle {#2} \rangle}
+%\renewcommand{\mod}[2]{{#1}\slash {#2}}
+\newcommand{\eto}[4]{{#1}\slash {#2}{\mathrel \etoRel{} } {#3}\slash {#4}} 
+\newcommand{\etothree}[6]{{#1}\slash {#2}{\mathrel \etoRel{} }
+{#3}\slash {#4}
+                                      {\mathrel \etoRel{} } {#5}\slash
+{#6}}
+\newcommand{\eton}[4]{{#1}\slash {#2}{\mathrel \etoRel{}}
+                       \dots{\mathrel \etoRel{}} {#3}\slash {#4}} 
+\newcommand{\partof}{{\ll}}
+
+
+%% newer than ines
+
+\newcommand{\hcon}{\Sp{\con}} 
+
+%% \newlength{\textwidthminus}
+%% \setlength{\textwidthminus}{\textwidth}
+%% \addtolength{\textwidthminus}{-2cm}
+%% \newcommand{\Property}[2]{\begin{center} 
+%%                ${#1}\quad
+%%               \left\{\parbox{\textwidthminus}{{#2}} \right.$
+%%                 \end{center}}
+\newcommand{\repl}[2]{[#1/#2]}     
+\newcommand{\Operator}{\Omega}
+\newcommand{\Oper}[1]{\Operator(#1)}
+\def\phi{\varphi}
+\newcommand{\af}[1]{\mbox{\sf #1}}
+\newcommand{\conc}[1]{{\circ_{#1}}}
+\newcommand{\PredicateBasis}[3]{{\af{#1}}_{#2}^{#3}}
+\newcommand{\Predicate}[4]{\PredicateBasis{#1}{#2}{#3}({#4})}
+\newcommand{\PhiPredicate}[2]{\Predicate{#1}{\phi}{}{#2}}
+\newcommand{\DetPhi}[2]{\Predicate{det}{#1}{}{#2}}
+\newcommand{\Det}[1]{\PhiPredicate{det}{#1}}
+\newcommand{\LowerPhi}[2]{\Predicate{low}{#1}{}{#2}}
+\newcommand{\Lower}[1]{\LowerPhi{\phi}{#1}}
+\newcommand{\UpperPhi}[2]{\Predicate{upp}{#1}{}{#2}}
+\newcommand{\Upper}[1]{\UpperPhi{\phi}{#1}}
+\newcommand{\criticalPhi}[2]{\Predicate{critical}{#1}{}{#2}}
+\newcommand{\critical}[1]{\criticalPhi{\phi}{#1}}
+\newcommand{\PropGenGen}[2]{\PredicateBasis{P}{#1}{#2}}
+\newcommand{\PropGen}[1]{\PropGenGen{#1}{}}
+\newcommand{\Prop}{\PropGen{1}}
+\newcommand{\PropInv}{\PropGen{2}}
+\newcommand{\PropSol}{\PropGen{3}}
+\newcommand{\PropPinkElefant}{\PropGen{5}}
+\newcommand{\PropLower}[1]{\PropGenGen{4}{#1}}
+        
+\newcommand{\Least}[1]{\PredicateBasis{Min}{}{\gamma}}
+\newcommand{\Malpha}{\PredicateBasis{Max}{}{}}
+
+\newcommand{\InfixPredicate}[3]{\ \PredicateBasis{#1}{#2}{#3}\ }
+                                %\newcommand{\downPhi}[2]{\InfixPredicate{low}{#1}{#2}}
+%\newcommand{\down}[1]{\downPhi{\phi}{#1}}
+%\newcommand{\pathPhi}[2]{\stackrel{#1}\leadsto_{#2}}
+%\newcommand{\pathPhi}[2]{\PredicateBasis{\leadsto}{#1}{#2}}
+%\newcommand{\path}[1]{\pathPhi{\phi}{#1}}
+\newcommand{\invpathPhi}[2]{\pathPhi{\Invert{#1}}{#2}}
+\newcommand{\invpath}[1]{\pathPhi{\Invert{\phi}}{#1}}
+\newcommand{\Invert}[1]{{-}{#1}}
+\newcommand{\smaller}{{\le}}
+\newcommand{\psm}{<}
+\newcommand{\smallerPhi}[1]{\smaller_{#1}}
+\newcommand{\smallerP}{\smallerPhi{\phi}}
+\newcommand{\ndisPhi}[1]{\ndis_{#1}}
+\newcommand{\ndisP}{\ndisPhi{\phi}}
+
+\newcommand{\sm}{\smaller}
+\newcommand{\PathDet}[1]{\PhiPredicate{minimal}{#1}}
+\newcommand{\DN}[1]{\PhiPredicate{down}{#1}} 
+\newcommand{\DownO}{\PredicateBasis{bound}{\phi}{}} 
+\newcommand{\Down}[1]{\DownO{(#1)}} 
+ 
+\def\pathcon#1#2{\pathPhi{#2}{#1}}
+
+\def\Select#1#2{#1.#2}
+\newcommand{\tphi}[1]{\Upper{#1}}
+\def\PathTop#1{\af{greatest}_\phi(#1)}
+\def\Pathes#1#2{#1{\stackrel{\phi}{\sim}}#2}
+\def\greatest#1{\af{top}(#1)}
+\def\NE{{\not\subseteq\emptyset}}
+\def\Cap{{\cap}}
+\def\con{{\equiv}}
+\def\defcon{\stackrel{def}{\con}}
+\def\defgleich{\stackrel{def}{=}}
+\def\minimal#1{\PathDet{#1}}
+\def\greatest#1{\af{greatest}_\phi({#1})}
+\def\greatestphi#1#2{\af{greatest}_{#2}({#1})}
+\def\greatestP#1{\af{greatest}_\phi^{\Model}({#1})}
+\def\upwards{}
+\def\Model{{\cal{A}}}
+%% %%
+%% %% Martin
+%% %%
+%% \def\etal{{\em et al.}}  
+%% \def\Null{{\bf 0}}
+%% \def\Feat{{\af{Feat}}}
+%% \def\SetOf{{\it Trees}}
+%% \def\Inf{{\rm Tree}}
+%% \def\Fin{{\rm Fin}}
+%% \def\Fea{{\rm Fea}}
+%% \def\TreePrefix{{\sl TP(\Inf)}}
+%% \def\Prefix{{\rm Prefix}}
+%% \def\ZeroPrefix{{{\rm Prefix}_{\Zero}}}
+%% \def\Label#1#2{{#2}(#1)}
+%% \def\Sel#1#2#3{#1[#2]#3}
+%% \def\PC#1{\af{P#1}}
+%% \newcounter{CounterPC}
+
+% entfernt wg. cmdfilter - ak, 17.11.99
+%\newenvironment{MyList}
+%               {
+%                  \begin{list}{\PC{\arabic{CounterPC}}}{\usecounter{CounterPC}
+%                  \labelwidth2.cm\leftmargin1cm\labelsep.2cm}}
+%               {\end{list}}
+
+\def\eop{\hfill\mbox{$\Box$}}
+\pagenumbering{arabic}
+
+\def\B#1{\af{B#1}}
+%\def\C#1{\af{C#1}}
+%\def\D#1{\af{D#1}}
+\def\E#1{\af{E#1}}
+%\def\F#1{\af{F#1}}
+\def\O#1{\af{O#1}}
+\def\Axioms{{\sl Ax}}
+\def\OldAx{\af{A}}
+\def\OldAxNoTrans{\OldAx^-}
+\def\NewAx{\af{B}}
+
+\def\Tproc#1{{\sf proc}(#1)}
+
+%%
+%% Joachim
+%%
+\def\Paar#1#2{({#1},\,{#2})}
+\def\MathCm{5em}
+\def\Space#1#2{\hspace{#2\MathCm}#1\hspace{#2\MathCm}}  % Space Relation 
+\def\Sp#1{\Space{#1}{.3}}
+\def\hmid{\Space{\mid}{.15}}
+\def\apc {\mathrel{\wedge}}
+\def\aex#1#2{\exists{#1}\hspace{.15ex}{#2}}
+\def\aexaex#1#2#3{\exists{#1}\aex{#2}{#3}}                 
+\def\aexaexaex#1#2#3#4{\exists{#1}\aexaex{#2}{#3}{#4}}  
+\def\aexaexaexaex#1#2#3#4{\exists{#1}\aexaexaex{#2}{#3}{#4}}
+\def\aexwb#1#2{\aex{#1}{(#2)}}
+\def\aexaexwb#1#2#3{\aexaex{#1}{#2}{(#3)}}
+\def\aexaexaexwb#1#2#3#4{\aexaexaex{#1}{#2}{#3}{(#4)}}
+\def\aexaexaexaexwb#1#2#3#4#5{\aexaexaexaex{#1}{#2}{#3}{#4}{(#5)}}
+\def\gleich{{=}}
+\def\Pair#1#2{({#1},\,{#2})}
+\def\ul#1{\underline#1\,}
+\def\ol#1{\hspace{.25mm}
+          \overline{\hspace{-.25mm}#1\hspace{-.15mm}}
+          \hspace{.15mm}}
+\def\x{\ol{x}}
+\def\se{\ol{s_1}}
+\def\sz{\ol{s_2}}
+\def\y{\ol{y}}
+\def\z{\ol{z}}
+\newcommand{\s}{\ol{s}}
+\newcommand{\ot}{\ol{t}}
+\def\single#1{\af{min}(#1)}
+\def\equivalent{\leftrightarrow}
+\def\Equivalent{\leftrightarrow}
+\def\bequiv{{\approx}} % ak 2.9.98: Bindungsaequivalenz von Knoten in CLLS
+\def\Trans#1{\Inter{\;#1\;}}
+\def\InvTrans#1{\Inter{\;#1\;}^{-1}}
+\def\store{{\sf S}}
+\def\tasks{{\sf T}}
+\def\clash-free{\mbox{\sf C}}
+\def\disjoint{\,\mid\!\mid\,}
+\def\nondisjoint{{\not\disjoint}}
+\def\ndis{\nondisjoint}
+\def\nesub#1#2{#1{\cap}#2{\not\subseteq}\emptyset}
+\def\boundto{\gleich}      % equality between var and non-var
+\def\isne{{\not\subseteq}\emptyset} 
+\def\subtree{t\!\!\mid_p\;} \def\xsubtree{t_x\!\!\mid_p\;}
+\def\subtreeAt#1{\!\!\mid_{#1}} \def\u{\bar{u}} \def\v{\bar{v}}
+\def\w{\bar{w}} \def\trees{T_\Sigma} \def\ftrees{T_{\S\cup\F}}
+\def\finsets{\af{P}(\Fin)} 
+\def\sets{\af{P}(\Inf)} 
+\def\nesets{\P^+(\trees)}
+\def\nefsets{\P^+(\ftrees)} \def\tsigma#1{T_\Sigma^{{#1}}}
+\def\ptsigma#1{\P(T_\Sigma^{{#1}})}
+\def\pplustsigma#1{\P^+(T_\Sigma^{{#1}})}
+\def\tsigmaRat{T_\Sigma^{{\it Rat}}} \def\tsigmaFin{T_\Sigma^{{\it
+      Fin}}} \def\tsigmaInf{T_\Sigma^{{\it Inf}}}
+\def\tsigmaFea{T_\Sigma^{{\it Fea}}}
+\def\pplustsigmaRat{\P^+(\tsigmaRat)}
+\def\pplustsigmaFin{\P^+(\tsigmaFin)}
+\def\pplustsigmaInf{\P^+(\tsigmaInf)} 
+\def\theory{\T} \def\newTheory{\T'} \def\Zero{0}
+\def\newpath#1{\pathcon{#1}{\phi}}
+\def\newpathcon#1#2{\pathcon{#1}{#2}}
+%\def\qed{\hfill{\it qed}}
+%\def\prop{\sf Property}
+\def\val{\nu}   % {\sf val}
+\def\domain{\sf Domain}
+\def\rep{{\sf r}}
+\def\CCP{\small CCP}
+\def\constraints{\sf Con}
+\def\nodes{\sf Nodes}
+\def\variables{\sf Var}
+\def\home{\sf home}
+\def\freevar{\sf free\_var}       %  not needed
+\def\maximum{\sf max}
+\def\phiAlpha{\phi_\alpha}
+\def\contextAlpha{\phi_{<\alpha}}
+\def\phiAlphaRep{\phiAlpha^\rep}
+\def\phiAlphaRepLocal{\phi_{\alpha,\sf local}^\rep}
+\def\suchthat{\;|\;}
+\def\structures{\sf Struct}
+\def\deref{{\sf vderef}}
+\def\And{\wedge}                        % parallel and
+\def\Or{\vee}
+\def\cong{\;\equiv\;}                   % congruence on expressions
+\def\notcong{\;\not\equiv\;}                   % congruence on expressions
+\def\phi{\varphi}
+\def\bn{\;\,\mid\;\,}                          % Backus-Naur or
+\def\BN{\;::=\;\,}                       % Backus-Naur generate
+%\def\red{\;\longrightarrow\;}           % reduces to
+\def\reduce{\;\Longrightarrow\;}
+\def\si{\mbox{if}}
+\def\ssi{\mbox{iff}}
+\def\d={=}  % {\!\doteq\!}
+\def\Iff{\leftrightarrow}
+\def\Implies{\rightarrow}
+\def\stick{\vrule width 0pt height 2mm depth 0mm} % to get space
+\def\bigstick{\vrule width 0pt height 2mm depth 3mm} % to get space
+\def\blank{\;\_\;}
+
+\def\egal#1{\stackrel{#1}{=}}                           % argument is node alpha
+\def\segal#1{\stackrel{#1}{=}}                           % right side is struct, or: Rightarrow?
+\def\egalAlpha{\egal{\alpha}}
+%\def\modelsDelta{\models_{_{\!\!\Delta}}}
+\def\egalAlphaB{\,{\stackrel{\alpha}{=}}_{_{\!\!\!\!\!\!B \stick}}\,}
+\def\conf#1{(E_{#1},B_{#1},I_{#1})}      % configuration i
+
+\def\entails {\mbox{$\,\models\,$}}              % |=  entails
+\def\And{\land}
+\def\Or{\lor{}}
+\def\relsimp#1{\stackrel{#1}{\rightarrow}}
+
+\let\SECTION\S
+
+%%% symbols
+\def\I{{\cal I}} 
+\def\J{{\cal J}}
+ \def\K{{\cal K}} 
+\def\L{{\cal L}}
+\def\M{{\cal M}} %\def\N{{\cal N}} 
+\def\P{{\cal P}}
+\def\O{{\cal O}}
+\def\Q{{\cal Q}}
+ \def\R{{\cal R}}
+ \def\S{{\cal S}}
+ \def\T{{\cal T}}
+\def\U{{\cal U}} 
+%\def\V{\Fo{Nodes}}
+%\newcommand{\V}{{\sf Var}}
+\def\V{{\cal V}}
+\def\Nodes{\Fo{Nodes}}
+\def\W{{\cal W}} 
+%\def\X{{\cal X}}
+\def\Y{{\cal Y}}
+ \def\Z{{\cal Z}}
+\def\sizedbox#1{\mbox{\@currsize #1}}
+%\def\ie{\sizedbox{\it i.e.}}
+\def\etc{\sizedbox{\it etc.}}
+%\def\eg{\sizedbox{\it e.g.}}
+\def\viz{\sizedbox{\it viz.}}
+\def\cf{\sizedbox{\it cf.}}
+\def\apriori{\sizedbox{\it a priori}}
+
+
+\long\def\ignore#1{\relax}
+%\long\def\margin#1{\marginpar{\begin{flushleft}\tiny #1\end{flushleft}}}
+%\long\def\margin#1{\relax}
+%\long\def\cite#1{{\em\small [#1]}}
+\def\para#1{\paragraph{{#1.}} \ }
+\def\smallpara#1{{\em #1.} \ }
+
+\def\Ines{\mbox{\rm I{\scriptsize N\`ES}}}
+\def\InesRat{\Ines(Rat)\/}
+\def\InesFin{\Ines(\Fin)\/}
+\def\InesInf{\Ines(\Inf)\/}
+\def\InesFea{\Ines(\Fea)\/}
+\def\BigAnd{\mbox{$\bigwedge$}}
+\def\NESet#1{\af{P}^{+}({#1})}
+\def\NEInf{\NESet{\Inf}}
+\def\NEInfSigma{\af{P}^{+}_\Sigma({\Inf})}
+\def\NEPrefix{\NESet{\Prefix}}
+\def\NEFin{\NESet{\Fin}}
+
+\def\Def#1{{\em #1}}
+
+%\renewcommand{\X}{\ol{X}}
+%\renewcommand{\Y}{\ol{Y}}
+%\renewcommand{\Z}{\ol{Z}}
+%\renewcommand{\U}{\ol{U}}
+%\renewcommand{\V}{\ol{V}}
+\newcommand{\Length}[1]{\af{len}(#1)}
+
+\newcommand{\Pato}[4]{{#1}{\downarrow}{#2}{\sim}{#3}{\downarrow}{#4}}
+
+\newcommand{\Problem}{\P}
+%\newcommand{\domedge}{\Dom}
+\newcommand{\iedge}[1]{\orelat{#1}{}{}}
+\newcommand{\Class}[1]{[#1]_\phi}
+\newcommand{\Graph}{\G}
+\newcommand\SimpleSat{\af{Sat}_\af{Simple}}
+
+\def\trans#1#2{{#2 \MetaGleich #1}}
+\newcommand\ovl[2]{\overline{#1}_{\!#2}}
+
+\newcommand{\Sol}{\hat}
+
+\newcommand{\Apply}{\af{apply}}
+%\newcommand{\SApply}{@}
+\newcommand{\SApply}{\Apply}
+\newcommand{\lamvar}[1]{\Word{var}_{#1}}
+
+\newcommand{\margin}[1]{\marginpar{\footnotesize #1}}
+\def\Notice#1{{{\em{#1}}}}
+
+
+\newcommand{\RRule}[4]{{(\rm #1)}\quad & #2  \quad \rel \quad #3
+  \qquad \mbox{#4}}
+
+\ignore{
+\newcommand{\RRule}[4]{
+    \[
+    \begin{array}{ll}
+    \af{#1}\qquad&
+    \begin{array}{ll}#2\end{array}
+    \quad \rel \quad
+    \begin{array}{ll}#3\end{array}
+    \qquad 
+    \begin{array}{ll}#4\end{array} 
+    \end{array}  
+    \]}
+}
+
+%\newcommand\ovl[2]{\overline{#1}_{\!#2}}
+\newcommand{\Neq}{{:}}
+\newcommand{\Eq}{{=}}
+\newcommand{\Supertree}{{\gg}}
+%\newcommand{\Super}{\stackrel{\Dom}{\Sim}}
+\newcommand{\Subtree}{{\ll}}
+%\newcommand{\Dom}{{\triangleleft}^*} % {{\lhd}^*} %
+\newcommand{\NotDom}{{\not{\/\!\! \lhd}}}
+%\newcommand{\DomDiv}[3]{#1\Dom #2 \apc #1\Dom #3 \apc #2\Div #3}
+\newcommand{\Div}{{\perp}}
+\newcommand{\Sim}{{\sim}}
+\newcommand{\Sto}[4]{{#1}/{#2}{\sim}{#3}/{#4}}
+\newcommand{\Eto}[4]{{#1}/{#2}{=}{#3}/{#4}}
+\newcommand{\Par}[2]{{#1}{\sim}{#2}}
+
+%\newcommand{\Trans}[1]{\repleins{#1}}
+\newcommand{\NotEq}{{\not=}}
+\newcommand{\Lam}[2]{\lambda({#1}){=}{#2}}
+\newcommand{\Link}[2]{\ante({#1}){=}{#2}}
+\newcommand{\link}{\Word{link}}
+\newcommand{\ante}{\Word{ante}}
+
+\newcommand{\Term}[4]{\GTerm{#1}{#2}{\ldots,#2_{#3},\ldots}{#4}}
+\newcommand{\GTerm}[4]{#1(#2_1,{#3},#2_{#4})}
+\newcommand{\STerm}[3]{\GTerm{#1}{#2}{\ldots}{#3}}
+
+
+
+  
+\newcommand\VAR{\lamvar{}}
+\newcommand\MIF{\mbox{if }\quad}
+\newcommand\ABS{\mbox{absent }}
+\newcommand\NOT{\mbox{absent }}
+\newcommand\ACT{\mbox{active }}
+\newcommand\MOR{\mbox{ or }}
+
+%%From Fei
+\newcommand{\nl}[1]{`{\sf #1}'}
+
+
+
+%%From Peter
+\newcommand{\ox}{{\tt x}}
+\newcommand{\oy}{{\tt y}}
+\newcommand{\mx}{\Word{var}_{\tt x}}
+\newcommand{\my}{\Word{var}_{\tt y}}
+\newcommand{\otwo}{{\tt two}}
+\newcommand{\ojohn}{{\tt john}}
+\newcommand{\olanguages}{{\tt language}}
+\newcommand{\otal}{{\tt t\_a\_l}}
+\newcommand{\oalanguages}{{\tt a\_language}}
+\newcommand{\omany}{{\tt many}}
+\newcommand{\olinguists}{{\tt linguist}}
+\newcommand{\oml}{{\tt m\_l}}
+\newcommand{\om}{{\tt m}}
+\newcommand{\oj}{{\tt j}}
+\newcommand{\olang}{{\tt l}}
+\newcommand{\os}{{\tt s}}
+\newcommand{\oel}{{\tt e\_l}}
+
+\newcommand{\ospokenby}{{\tt spokenby}}
+\newcommand{\ospeak}{{\tt speak}}
+
+\newcommand{\olambda}{\lambda}
+\newcommand{\qand}{\quad\wedge\quad}
+
+
+\newcommand{\sgt}{$\Sigma$-tree}
+\newcommand{\PDom}{{\triangleleft}^+}
+\newcommand{\lila}[2]{\ante_L({#1}){=}{#2}}
+\newcommand{\lala}[2]{\lambda({#1}){=}{#2}}
+\newcommand{\imp}{\Rightarrow}
+\newcommand{\lra}{\Leftrightarrow}
+\newcommand{\is}{{=}}
+\newcommand{\memb}{{\in}}
+\newcommand{\isnot}{{\neq}}
+\newcommand{\StoL}[4]{{#1}/{#2}{\sim_L}{#3}/{#4}}
+\newcommand{\sel}[2]{{#1}.{#2}}
+%\newcommand{\pdef}{{\downarrow_\Lambda}}
+\newcommand{\pdef}{\in \Delta}
+%\newcommand{\pdom}{{\leq}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% ak
+
+\newcommand{\ar}{\Word{ar}}
+\newcommand{\cl}{\Word{cl}}
+
+\newcommand{\todo}[1]{{\bf (#1)}}
+\newcommand{\lingex}[1]{{\it #1}}
+\newcommand{\str}{\; | \;}
+\newcommand{\subt}[2]{#1.#2}
+\newcommand{\DOM}[1]{{\cal D}^{#1}}
+\newcommand{\LAB}[1]{{\cal L}^{#1}}
+\newcommand{\MOD}[1]{{\cal M}^{#1}}
+\newcommand{\INT}[1]{{\cal I}^{#1}}
+\newcommand{\D}{{\cal D}}
+
+\newcommand{\lam}{\Word{lam}}
+\newcommand{\var}{\WS{var}}
+\newcommand{\nil}{{\tt nil}}
+\newcommand{\ana}{\Word{ana}}
+
+% Variablen von ...
+%\newcommand{\Var}[1]{\mbox{\textup{Var}}(#1)}
+
+\def\Conc#1#2#3{\mbox{$#1#3#2$}}
+\def\DoubleOBracket{{\Conc{[} {[} {\hspace{-.15\MathCm}}}}
+\def\DoubleCBracket{{\Conc{]} {]} {\hspace{-.15\MathCm}}}}
+\def\DoubleSlash{{   \Conc{/} {/} {\hspace{-.15\MathCm}}}}
+\newcommand\Emb[1]{{\DoubleOBracket}#1{\DoubleCBracket}}
+\newcommand\IEmb[1]{\Emb{#1}^{{-}1}}
+
+\newcommand{\Root}[1]{Root(#1)}
+
+\newcommand{\ddom}{{\lhd}}
+\newcommand{\dom}{{\ddom^{*}}} 
+\newcommand{\trdom}{{\ddom^{+}}}
+\newcommand{\trmod}{{\rhd^{+}}}
+\newcommand{\disj}{\,\bot\,}
+\newcommand{\parag}[1]{\strut\\{\bf #1.}}
+%\newcommand{\Dom}[1]{\mbox{\textup{Dom}}(#1)}
+\newcommand{\defined}{{\downarrow}}
+
+\newcommand{\disjat}[3]{#1 \disj #2 \; \mbox{\textup{at}} \; #3}
+
+\newcommand{\satl}[2]{\psline[showpoints=true]{-}(#1)(#2)}
+\newcommand{\doml}[2]{\psline[linestyle=dotted]{-}(#1)(#2)}
+\newcommand{\textat}[2]{\rput[Bl]{0}(#1){#2}}
+\newcommand{\satb}[2]{\textat{#1}{#2}}
+\newcommand{\trueat}[1]{\satb{#1}{$\True$}}
+\newcommand{\falseat}[1]{\satb{#1}{$\False$}}
+
+\newcommand{\cllsn}{CLLS$_0$}
+
+% Disjunkte Vereinigung
+%\newcommand{\dotcup}{\;\dot{\cup}\;}
+\newcommand{\dotcup}{\,\uplus\,}
+
+% entfernt wg. cmdfilter - ak, 17.11.99
+%\newenvironment{enuma}
+%        {\begin{enumerate}[a.]}
+%        {\end{enumerate}}
+%\newenvironment{directions}
+%        {\begin{itemize}}
+%        {\end{itemize}}
+%\def\itemlr{\item[``$\Rightarrow$'']}
+%\def\itemrl{\item[``$\Leftarrow$'']}
+
+\def\N{\mathbb{N}}
+\def\X{\top}
+
+\def\C{{\cal C}}
+\def\F{{\cal F}}
+\def\G{{\cal G}}
+
+\def\MODS{\MOD{\sigma}}
+\def\rembma{\Emb{\MOD{\sigma},\alpha}}
+\def\embma{\beta}
+
+\newcommand{\Gs}[2]{\Gamma^\sigma_{#1,#2}}
+
+\newcommand{\nlit}[1]{\bar{#1}}
+
+%\newcommand{\nequiv}{\approx}
+\newcommand{\nequiv}{{=}}
+%\newcommand{\ec}[1]{{\Bar{#1}}}
+\newcommand{\ec}[1]{{{\sf eq}_\varphi(#1)}}
+\newcommand{\gdom}{\rightsquigarrow}
+
+\def\False{{\bf false}}
+\def\True{{\bf true}}
+
+% entfernt wg. cmdfilter - ak, 17.11.99
+%\newenvironment{induction}
+%   {\begin{description}
+%   \renewcommand{\makelabel}[1]{\hspace \labelsep \normalfont \underline{##1.}}}
+%   {\end{description}}
+
+\newcommand{\myexample}[2]{\begin{example} \dlabel{#1} \parbox[t]{13.5cm}{#2} \end{example}}
+
+\newcommand{\pbt}[1]{\parbox[t]{13.5cm}{#1}}
+
+%\newcommand{\reint}[2]{\Emb{#1}_{#2}}
+%\newcommand{\reintt}[2]{[#1]_{#2}}
+\newcommand{\reint}[2]{\R_{#2}(#1)}
+\newcommand{\reintt}[2]{\blue \R'_{#2}(#1)}
+
+\newcommand{\proj}[3]{P^{#2}_{#3}(#1)}
+
+%\newcommand{\ec}[1]{{\overbar{#1}}}
+
+
+\newcommand{\lroles}{\roles_l}
+\newcommand{\uroles}{\roles_u}
+\newcommand{\KNroot}{\mbox{{\sc root}}}
+
+% AVM-Eintrag für covington.sty's \fs
+\newcommand{\fsline}[2]{\textbf{#1}: \textrm{#2}}
+
+\newcommand{\lexitem}[4]{\fs{\fsline{string}{#1} \\ \fsline{cats}{#2}
+    \\ \fsline{agrs}{#3} \\ \fsline{roles}{#4}}\hspace{-.5cm}}
+
+%\newcommand{\agr}[4]{$\langle #1,#2,#3,#4 \rangle$}
+\newcommand{\agr}[4]{\ensuremath{\langle #1,#4 \rangle}}
+
+% aus MOL-Papier
+\newcommand{\ROOT}[1]
+   {\strut\hspace{.5cm}\pstree[levelsep=0cm,linestyle=none]
+            {\Tc*[linestyle=none,fillcolor=white]{0pt}}
+            {#1}}
+
+%\newcommand{\mypara}[1]{{\bf #1.} $\quad$}
+\newcommand{\mypara}[1]{\paragraph*{#1.}}
+
+
+
+%%% für Syntax/Semantik-Interface; im Original aus MOL-Papier
+
+\newcommand{\Sent}{{\tt S}}
+\newcommand{\NP}{{\tt NP}}
+\newcommand{\PN}{{\tt PN}}
+\newcommand{\VP}{{\tt VP}}
+\newcommand{\De}{{\tt Det}}
+\newcommand{\Noun}{{\tt N}}
+\newcommand{\PP}{{\tt PP}}
+\newcommand{\RCl}{{\tt RCl}}
+\newcommand{\Prep}{{\tt P}}
+\newcommand{\RP}{{\tt RP}}
+\newcommand{\IV}{{\tt IV}}
+\newcommand{\TV}{{\tt TV}}
+\newcommand{\AV}{{\tt AV}}
+\newcommand{\SV}{{\tt SV}}
+\newcommand{\CV}{{\tt CV}}
+\newcommand{\ADV}{{\tt Adv}}
+\newcommand{\Terminal}{{\tt T}}
+\newcommand{\Lex}{Lex}
+\newcommand{\Conj}{{\tt Conj}}
+\newcommand{\Coord}{{\tt Coord}}
+\newcommand{\Nbar}{\ensuremath{\overline{\Noun}}}
+%\newcommand{\dc}{\ensuremath{\lhd^{\ast}}}
+
+\newcommand{\Xs}[1]{\ensuremath{X^s_{#1}}}
+\newcommand{\Xr}[1]{\ensuremath{X_{#1}}}
+
+%\def\In{\mbox{ {\em in} }}
+\newcommand{\In}[2]{\mbox{\ensuremath{#1} in \ensuremath{#2}}}
+%\newcommand{\eg}{EG}
+\newcommand{\egp}{\eg(\varphi)}
+
+%\newlength{\proofpostskipamount}
+%\setlength{\proofpostskipamount}{0.5ex}
+%\newlength{\proofpreskipamount}
+%\setlength{\proofpostskipamount}{0.5ex}
+%\newcommand{\qed}{\rule[-0.2ex]{0.3em}{1.4ex}}
+%\newenvironment{proof}%
+%               {\par\vspace{\proofpreskipamount}\noindent{\bf Proof:}\hspace{0.5em}}% 0.5 before
+%               {\nopagebreak%
+%                \strut\nopagebreak%
+%                \hspace{\fill}\qed\par\vspace{\proofpostskipamount}\noindent}
+
+\newcommand{\ndor}{\;\;\af{or}\;\;}
+
+
+
+
+%% %%%%%% STEFAN
+
+%% \newcommand\set[1]{\{#1\}}
+%% \newcommand\tuple[1]{(#1)}
+
+
+\newcommand\GramCat[1]{\textrm{#1}}
+\newcommand\GramWord[1]{\textrm{#1}}
+
+\newcommand{\xspace}{\ensuremath{\;}}
+
+\def\GramSent{\GramCat{S}}%wasxspace
+\def\GramNP{\GramCat{NP}}%wasxspace
+\def\GramVP{\GramCat{VP}}%wasxspace
+\def\GramN{\GramCat{N}}%wasxspace
+\def\GramIV{\GramCat{IV}}%wasxspace
+\def\GramTV{\GramCat{TV}}%wasxspace
+\def\GramAV{\GramCat{AV}}%wasxspace
+\def\GramRV{\GramCat{CV}}%wasxspace
+\def\GramSV{\GramCat{SV}}%wasxspace
+\def\GramPN{\GramCat{PN}}%wasxspace
+\def\GramNoun{\GramCat{N}}%wasxspace
+\def\GramRC{\GramCat{RC}}%wasxspace
+\def\GramDet{\GramCat{Det}}%wasxspace
+\def\GramRP{\GramCat{RP}}%wasxspace
+\def\GramConj{\GramCat{CONJ}}
+\def\GramCoord{\GramCat{COORD}}
+\def\GramNbar{\ensuremath{\bar{\GramCat{N}}}}%wasxspace
+\def\GramP{\GramCat{P}}%wasxspace
+\def\GramPP{\GramCat{PP}}%wasxspace
+
+%% \newcommand{\sss}[3]{
+%%   \parbox{3cm}{\strut\strut#1}
+%%   $\stackrel{(\rm #2)}{\Rightarrow}$
+%%   \parbox{9cm}{#3}\\[0.25cm]}
+%% \renewcommand\Neq{{:}}
+
+
+\renewcommand\Lex{\mathit{Lex}}
+ 
+
+%%% END STEFAN
+
+
+
+
+
+\newcommand{\disjointcup}{\mathbin {\dot{\cup}}}
+\newcommand{\bigdisjointcup}{\mathbin {\dot{\bigcup}}}
+\newcommand{\dbrackets}[1]{\DoubleOBracket #1 \DoubleCBracket}
+
+% dom. constraints
+\newcommand{\Var}{{\sf Var}}
+\newcommand{\Vars}{{\sf Vars}}
+\newcommand{\hasarity}[1]{\ensuremath{|_{#1}}}
+
+
+\newcommand{\maxfrag}[1]{\ensuremath{{\cal F}_\mathrm{max}(#1)}}
+\newcommand{\domgraph}[1]{\ensuremath{G(#1)}}
+\newcommand{\solvedforms}[1]{\ensuremath{{\sf sf}(#1)}}
+\newcommand{\unsolv}{{\sf unsolvable}}
+\newcommand{\choicetree}[2]{\ensuremath{{\sf ct}^{#1}_{#2}}}
+
+\newcommand{\hole}{{\sf hole}}
+
+\newcommand{\osReach}[1]{R_{#1}}
+\newcommand{\reach}[1]{\osReach{#1}^*}
+\newcommand{\osLReach}[1]{LR_{#1}}
+
+
+
+% DD-Solver usw.
+\newcommand{\choice}[2]{\ensuremath{#1 \; {\bf or} \; #2}}
+\newcommand{\denc}[1]{{\sf D}\DoubleOBracket #1 \DoubleCBracket}
+
+\newcommand{\selectUnion}[2]{\ensuremath{\cup \langle #1 \rangle [#2]}}
+\newcommand{\upperBound}[1]{\ensuremath{\lceil #1 \rceil}}
+\newcommand{\lowerBound}[1]{\ensuremath{\lfloor #1 \rfloor}}
+\def\setminus{-}
+
+% various style macros
+\newcommand{\papref}[1]{\footnote{\todo{Siehe Notizen: #1}}}
+
+
+
+% the components of a tree structure
+\newcommand{\Dom}[1]{\ensuremath{D_{#1}}}
+\newcommand{\Edges}[1]{\ensuremath{E_{#1}}}
+\newcommand{\Label}[1]{\ensuremath{L_{#1}}}
+\newcommand{\noninterv}[3]{\ensuremath{\neg (#1 \dom #2 \dom #3)}}
+
+% for binding -> dominance constraints encoding
+\newcommand{\structelab}[2]{\ensuremath{E_{#2}(#1)}}
+\newcommand{\compactify}[1]{\ensuremath{{\sf Comp}(#1)}}
+\newcommand{\normalize}[1]{\ensuremath{{{#1}^{\neq}}}}
+
+
+% various macros for first-order logic
+\newcommand{\fofragment}{\ensuremath{\F}}
+\newcommand{\cfofragment}{\ensuremath{\F}^c}
+\newcommand{\univClosure}{\ensuremath{\bar{\forall}}}
+\newcommand{\FV}{{\cal{V}}}
+
+% presupps
+\newcommand{\piip}[2]{\ensuremath{{#1}^{#2}}}
+\newcommand{\piproj}[2]{\ensuremath{{#1}^{p,#2}}}
+\newcommand{\piprojf}[2]{\ensuremath{{#1}^{\mathrm{ass},#2}}}
+\newcommand{\piprojs}[1]{\ensuremath{{#1}^\mathrm{pre}}}
+\newcommand{\piprojsp}[2]{\ensuremath{{#1}^\mathrm{pre}_{#2}}}
+
+
+% chains
+\newcommand{\upperfrags}{\ensuremath{{\cal U}}}
+\newcommand{\lowerfrags}{\ensuremath{{\cal L}}}
+
+\newcommand{\rotright}[1]{\ensuremath{{\sf rot}^r_{#1}}}
+\newcommand{\rotleft}[1]{\ensuremath{{\sf rot}^l_{#1}}}
+
+\newcommand{\uedge}[1]{\ensuremath{\{#1\}}}
+\newcommand{\reverse}[1]{\ensuremath{{#1}^\mathrm{rev}}}
+
+\newcommand{\indeg}{\ensuremath{\mathrm{indeg}}}
+\newcommand{\outdeg}{\ensuremath{\mathrm{outdeg}}}
+\renewcommand{\deg}{\ensuremath{\mathrm{deg}}}
+
+%% OL-Konnektive
+\newcommand{\olbinconnective}[1]{\mathbin{\underline{#1}}}
+\newcommand{\oland}{\olbinconnective{\wedge}}
+\newcommand{\olimplies}{\olbinconnective{\Rightarrow}}
+\newcommand{\olor}{\olbinconnective{\vee}}
+\newcommand{\olneg}{\underline{\neg}}
+\newcommand{\olforall}{{\underline{\forall}}}
+\newcommand{\olexists}{{\underline{\exists}}}
+\newcommand{\nonint}[3]{\neg(#1 \dom #2 \dom #3)}
+
+\newcommand{\bAll}[3]{(\olforall #1:#2)[#3]}
+\newcommand{\bExists}[3]{(\olexists #1:#2)[#3]}
+
+\newcommand{\sigconnID}{\ensuremath{\Sigma_{con}^{dyn}}}
+\newcommand{\sigconnES}{\ensuremath{\Sigma_{con}^{stat}}}
+
+\newcommand{\dplint}[2]{\dbrackets{#1}_{#2}}
+\newcommand{\lamdpl}{\Lambda_{DPL}}
+
+
+
+% TAG
+
+\newcommand{\subst}{{\sf subst}}
+\newcommand{\substrole}[3]{{\sf subst}_{#1,#2,#3}}
+\newcommand{\adjrole}[2]{{\sf adj}_{#1,#2}}
+
+\newcommand{\mysize}[1]{{\footnotesize #1}}
+\newcommand{\tagsem}[1]{\textit{#1}}
+\newcommand{\myup}[2]{\smash{\raise#1\hbox{#2}}}
+\newcommand{\hamilton}{{\sc hamiltonian-path}}
+\newcommand{\badguy}{\ensuremath{G_{\sc ham}}}
+
+
+\newcommand{\role}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\valencies}[1]{\ensuremath{\Word{vals}(#1)}}
+
+
+
+\newcommand{\ruleExplanation}[3]{\item[Rule (#1):] %\begin{example} %
+\label{ex:rule-#1} $\qquad$ \lingex{#2} \\[2ex] %\end{example} %
+#3}
+
+
+% XDG
+
+\newcommand*{\ID}{\textsc{id}}
+\newcommand*{\LP}{\textsc{lp}}
+\newcommand*{\LABEL}[1]{\text{\textsf{\MakeLowercase{#1}}}}
+\newcommand*{\IN}{\mathit{in}}
+\newcommand*{\OUT}{\mathit{out}}
+\newcommand*{\SET}[1]{\{#1\}}
+
+\newcommand{\astar}{A$^*$}
+
+
+
+\newcommand{\myminipage}[3]{\begin{minipage}[t]{#1} \strut \vspace{#2} #3\end{minipage}}
