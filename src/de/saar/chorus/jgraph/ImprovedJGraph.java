@@ -91,6 +91,7 @@ abstract public class ImprovedJGraph<NodeType,
         // set up tooltip handling
         ToolTipManager.sharedInstance().registerComponent(this);
     }
+    
 
     /**
      * Remove all nodes and edges in the graph.
@@ -110,7 +111,7 @@ abstract public class ImprovedJGraph<NodeType,
      * @param data the data for the new node.
      * @return a new DefaultGraphCell object in this graph.
      */
-    public DefaultGraphCell addNode(NodeData data) {
+    public DefaultGraphCell addNode(String name, NodeData data) {
         DefaultGraphCell ret = new DefaultGraphCell(data);
         GraphModel model = getModel();
         
@@ -124,7 +125,7 @@ abstract public class ImprovedJGraph<NodeType,
         model.insert(new Object[] { ret, port }, attributes, new ConnectionSet(), null, null);
         
         nodes.add(ret);
-        nameToNode.put(data.getName(), ret);
+        nameToNode.put(name, ret);
         
         return ret;
     }

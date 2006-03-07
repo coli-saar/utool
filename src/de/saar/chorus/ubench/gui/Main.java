@@ -9,9 +9,6 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +35,7 @@ import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
-import de.saar.chorus.ubench.DomGraphGXLCodec;
 import de.saar.chorus.ubench.DomGraphTConverter;
-import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.getopt.ConvenientGetopt;
 
@@ -398,9 +393,10 @@ public class Main  {
 	
     /**
      * 
+     * @deprecated
      * @param fileName
      * @return
-     */
+     *
 	public static JDomGraph loadGraph(String fileName) {
 		JDomGraph loadedGraph = new JDomGraph();
 		try {
@@ -420,6 +416,7 @@ public class Main  {
 	
 		return loadedGraph;
 	}
+    */
 	
 	/**
 	 * 
