@@ -25,30 +25,32 @@ package de.saar.chorus.domgraph.codec;
  */
 public class MalformedDomgraphException extends Exception {
     private int exitcode = 0;
+    private boolean hasMessage;
 
-    
     
     public MalformedDomgraphException(int exitcode) {
         super();
         this.exitcode = exitcode;
+        this.hasMessage = false;
     }
 
     public MalformedDomgraphException(String message, Throwable cause, int exitcode) {
         super(message, cause);
         this.exitcode = exitcode;
+        this.hasMessage = true;
     }
 
     public MalformedDomgraphException(String message, int exitcode) {
         super(message);
         this.exitcode = exitcode;
+        this.hasMessage = true;
     }
 
     public MalformedDomgraphException(Throwable cause, int exitcode) {
         super(cause);
         this.exitcode = exitcode;
+        this.hasMessage = false;
     }
-
-
     
     public MalformedDomgraphException() {
         this(0);
@@ -67,8 +69,15 @@ public class MalformedDomgraphException extends Exception {
     }
 
     
-    
     public int getExitcode() { 
         return exitcode; 
+    }
+    
+    public String toString() {
+    	if( hasMessage ) {
+    		return getMessage();
+    	} else {
+    		return super.toString() + " (code " + exitcode + ")";
+    	}
     }
 }
