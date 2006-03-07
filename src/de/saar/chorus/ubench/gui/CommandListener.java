@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
@@ -279,7 +281,7 @@ public class CommandListener implements ActionListener, ItemListener {
         	if( command.equals("saveUtool")) {
             JDomGraph graph = Main.getVisibleTab().getGraph();
             
-            /*if( graph != null) {
+            if( graph != null) {
                 JFileChooser fc = new JFileChooser();
                 
                 for( FileFilter ff : ffOutputCodecs ) {
@@ -296,11 +298,18 @@ public class CommandListener implements ActionListener, ItemListener {
                    
                    lastPath = file.getParentFile();
                    
-                   final DomSolver solver = new DomSolver();
-                   JDomGraphConverter conv = new JDomGraphConverter(solver);
-                   conv.toDomGraph(graph);
-                   
-                   if( !solver.saveGraph(file.getAbsolutePath()) ) {
+                  OutputCodec oc = 
+                	  Main.getCodecManager().getOutputCodecForFilename(file.getName(),null);
+                  
+                  try {
+                	  FileWriter writer = new FileWriter(file);
+                	  oc.print_header(writer);
+                	  oc.encode(Main.getVisibleTab().getDomGraph(),
+                			  null, 
+                			  Main.getVisibleTab().getNodeLabels(), 
+                			  writer);
+                	  oc.print_footer(writer);
+                  } catch (Exception ex) {
                        JOptionPane.showMessageDialog(Main.getWindow(),
                                "The output codec couldn't be determined, or it doesn't support"
                                + " output of this graph.",
@@ -308,7 +317,7 @@ public class CommandListener implements ActionListener, ItemListener {
                                JOptionPane.ERROR_MESSAGE);
                    }
                 
-            }*/
+            }
             
             
             
@@ -462,6 +471,7 @@ public class CommandListener implements ActionListener, ItemListener {
     				"About Ubench", 
     				JOptionPane.INFORMATION_MESSAGE);
         }
+       }
     }
     
     /**
