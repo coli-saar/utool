@@ -319,7 +319,7 @@ public class CommandListener implements ActionListener, ItemListener {
                 
             }
             
-            
+           }
             
         } else if ( command.equals("shut")) {
             
@@ -472,7 +472,7 @@ public class CommandListener implements ActionListener, ItemListener {
     				JOptionPane.INFORMATION_MESSAGE);
         }
        }
-    }
+    
     
     /**
      * Overwrites the <code>itemStateChanged</code> method of
