@@ -124,6 +124,15 @@ class MrsCodec {
 		}
 	}
 	
+	void addRelation(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
+	{
+		if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
+			addQuantifier(node, label, attrs);
+		} else {
+			addNonQuantifier(node, label, attrs);
+		}
+	}
+	
 	void addQuantifier(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
 	{
 		addNode(node, label);
@@ -142,7 +151,7 @@ class MrsCodec {
 			throw new MalformedDomgraphException("Illegal quantifier syntax", ErrorCodes.NOT_WELLFORMED);
 	}
 	
-	void addRelation(String node, String label, Map<String,String> attrs)
+	void addNonQuantifier(String node, String label, Map<String,String> attrs)
 	{
 		addNode(node, label);
 		
@@ -208,7 +217,7 @@ class MrsCodec {
 							addDomEdge(hole, (String) edge.getTarget());
 						}
 					}
-								
+					
 					for (Edge edge : edges) {
 						graph.remove(edge);
 					}
@@ -220,7 +229,7 @@ class MrsCodec {
 	void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
 		StringBuffer errorText = new StringBuffer();
-			
+		
 		this.addBindingEdges();
 		this.setTopHandle(handle);
 		this.normalise();
