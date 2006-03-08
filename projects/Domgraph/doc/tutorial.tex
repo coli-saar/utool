@@ -63,6 +63,7 @@ connected by solid ``tree'' edges) into a forest while realising the
 
 \begin{figure}
 \todo{draw me}
+\todo{graph; solved form; configuration}
 \caption{\texttt{chain3.clls}: The chain of length 3.
 \label{fig:chain3}}
 \end{figure}
@@ -95,7 +96,7 @@ normal and compact), the chart data structure computed by the solver
 chart. In addition, the program terminated with an exit code of 1 to
 signal that the graph was indeed solvable. If you ran Utool from a
 bash shell, you can display this exit code with the command
-\verb?echo XXX? \todo{fill this in}.
+``\verb!echo $?!''. %$
 
 As you can see, the Utool command line consists of four parts:
 \begin{itemize}
@@ -120,9 +121,7 @@ of the file from which the dominance graph should be read. The file
 can contain a direct specification of a dominance graph (as in this
 case), or it can contain an USR of some other underspecification
 formalism which is then translated to a dominance graph
-automatically. Utool recognised that this was a specification of a
-dominance graph, and decoded it using the \verb?domcon-oz? codec,
-because the filename extension was \verb?.clls?.
+automatically.
 \end{itemize}
 
 
@@ -130,8 +129,73 @@ because the filename extension was \verb?.clls?.
 \subsection{Enumerating solutions}
 
 Now that we know that the dominance graph is solvable, let's have
-Utool show us the five solutions.
+Utool show us the five solutions. We do this using the \verb?solve?
+command, like so:
 
+\begin{verbatim}
+$ java -jar Utool.jar solve -O term-prolog projects/Domgraph/examples/chain3.clls
+f1(a0,f2(a1,f3(a2,a3)))
+f1(a0,f3(f2(a1,a2),a3))
+f2(f1(a0,a1),f3(a2,a3))
+f3(f2(f1(a0,a1),a2),a3)
+f3(f1(a0,f2(a1,a2)),a3)
+\end{verbatim}
+%$
+
+The five solved forms of the graph are displayed as terms in Prolog
+syntax: Utool transforms each solved form into a \emph{configuration}
+by identifying roots and holes as shown in Fig.~\ref{fig:chain3}, and
+then prints the resulting trees as ground terms. You should convince
+yourself at this point that the graph indeed has exactly five solved
+forms, and that the five terms shown above are such term
+representations of the configurations.
+
+We had to use a new command-line option in the \verb?solve? command:
+\verb?-O term-prolog? (which is shorthand for
+\verb?--output-codec term-prolog?). Once Utool has computed a solved
+form, it needs to know how it should translate this solved form into a
+string representation. This translation is handled by an \emph{output
+codec}. A number of output codecs are distributed with Utool; you can
+also implement your own output codec if you like. In the example, we
+used the \verb?term-prolog? output codec, which maps solved forms into
+configurations and these configurations into Prolog terms as explained
+above.
+
+Speaking of codecs: There are also \emph{input codecs}, which map from
+a string representation of an USR into a dominance graph. In the
+example, Utool read the string representation from the file with the
+specified name (\url{chain3.clls}) and passed it to an input codec to
+obtain a dominance graph from it. In this case, we didn't have to
+specify the input codec explicity, because Utool knows that the
+filename extension \verb?.clls? is associated with the
+\verb?domcon-oz? input codec, and used this codec automatically. We
+could also have specified the input codec explicitly using the
+\verb?-I domcon-oz? or \verb?--input-codec domcon-oz? option. Codecs
+can be much more powerful than the ones mentioned here, and are
+described in depth in Section~\ref{sec:codecs}.
+
+ 
+\subsection{Converting and classifying USRs}
+
+Utool works with labelled dominance graphs internally; input codecs
+are used to translate from other formalisms into labelled dominance
+graphs, and output codecs are used to translate from labelled
+dominance graphs into other formalisms. These translations can be
+non-trivial, and we have proved them correct in several research
+papers \cite{KolNieTha03,mrs-dom}.
+
+But Utool allows you to convert USRs from one formalism into
+another. This is conceptually quite simple: Read the USR in one
+formalism, translating it into a labelled dominance graph, and then
+output exactly the same USR using a different output codec.
+
+Let's look at an example again. The file
+\url{projects/Domgraph/examples/rondane-1.mrs.pl} is an USR in the
+Minimal Recursion Semantics formalism \cite{CopFliSag97}. This MRS is
+computed by the English Resource Grammar
+\cite{Copestake&Flickinger:LKB} for the first sentence in the Rondane
+Treebank, which is distributed with the ERG. Its filename extension is
+\verb?.mrs.pl?, which indicates an MRS 
 
 
 
