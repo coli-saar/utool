@@ -2,7 +2,141 @@
 \section{A tutorial walkthrough}
 \label{sec:tutorial}
 
-b
+Welcome to the Utool tutorial! In this tutorial, we will walk you
+through some of the basic operations that Utool supports.
+
+
+
+\subsection{Installation}
+
+Utool is distributed as a Java package. This means that you can simply
+download it from our website and run it as follows.
+
+\begin{verbatim}
+$ java -jar Utool.jar
+Usage: java -jar Utool.jar <subcommand> [options] [args]
+Type `utool help <subcommand>' for help on a specific subcommand.
+Type `utool --help-options' for a list of global options.
+Type `utool --display-codecs' for a list of supported codecs.
+
+Available subcommands:
+    solve        Solve an underspecified description.
+    solvable     Check solvability without enumerating solutions.
+    convert      Convert underspecified description from one format to another.
+    classify     Check whether a description belongs to special classes.
+    server       Start Utool in server mode.
+    help         Display help on a command.
+
+Utool/Java is the Swiss Army Knife of Underspecification (Java version).
+For more information, see http://www.coli.uni-sb.de/projects/chorus/utool/
+\end{verbatim}
+%$
+
+(We write \verb?$ command? %$
+for commands that you type on a shell; everything else is the output
+of the system.)
+
+This assumes that you have installed Java 5.0 and it is in your path.
+
+You do not need to unpack the Jar file to run it. For the purposes of
+this tutorial, however, start by running the following command:
+
+\begin{verbatim}
+$ jar xf Utool.jar
+\end{verbatim}
+%$
+
+This will unpack the contents of the Jar file. Most importantly, it
+will create the directory \verb?projects/Domgraph/examples?, which
+contains the example files we will use below.
+
+
+
+
+\subsection{Checking whether an USR is solvable}
+
+First of all, let's use Utool to determine for a given dominance graph
+whether it is solvable. ``Solvable'' means that it is possible to
+configure the fragments of the graph (i.e.\ those subgraphs which are
+connected by solid ``tree'' edges) into a forest while realising the
+(dotted) dominance edges as reachability in the tree.
+
+\begin{figure}
+\todo{draw me}
+\caption{\texttt{chain3.clls}: The chain of length 3.
+\label{fig:chain3}}
+\end{figure}
+
+We will do this for the graph specified in the file
+\url{projects/Domgraph/examples/chain-3.clls} (shown in
+Fig.~\ref{fig:chain3}). This graph is in fact solvable, and has five
+solved forms.
+
+The Utool command for checking solvability is called
+\verb?solvable?. Thus you can check the example graph for solvability
+as follows:
+
+\begin{verbatim}
+$ java -jar Utool.jar solvable -s projects/Domgraph/examples/chain-3.clls
+The input graph is normal.
+The input graph is compact.
+
+Solving graph ... it is solvable.
+Splits in chart: 10
+Time to build chart: 60 ms
+Number of solved forms: 5
+\end{verbatim}
+%$
+
+The output states that the graph is solvable and has five solved
+forms. It also contains some information about the input graph (it is
+normal and compact), the chart data structure computed by the solver
+(it contains ten splits), and the time it took to compute the
+chart. In addition, the program terminated with an exit code of 1 to
+signal that the graph was indeed solvable. If you ran Utool from a
+bash shell, you can display this exit code with the command
+\verb?echo XXX? \todo{fill this in}.
+
+As you can see, the Utool command line consists of four parts:
+\begin{itemize}
+\item \verb?java -jar Utool.jar?: This instructs Java to load the Jar
+file and run its main class. You can pass further arguments to the
+Java VM by putting them before the \verb?-jar? option.
+\item \verb?solvable?: Most of the time, a call to Utool will contain
+exactly one \emph{command}. There are six commands -- \verb?solvable?,
+\verb?solve?, \verb?convert?, \verb?classify?, \verb?server?, and
+\verb?help? -- which perform different tasks. We will walk you through
+all four commands here, and then describe them in more detail in
+Section~\ref{sec:operations}.
+\item \verb?-s?: After the command, you can specify \emph{options}. In
+this case, we selected one option (\verb?-s? or
+\verb?--display-statistics?), which was responsible for printing all
+the output from the example run above. We could have left the option
+away; then the Utool run would have done exactly the same, and
+returned the same exit code, but it wouldn't have printed these
+informational messages.
+\item \verb?projects/Domgraph/examples/chain-3.clls?: This is the name
+of the file from which the dominance graph should be read. The file
+can contain a direct specification of a dominance graph (as in this
+case), or it can contain an USR of some other underspecification
+formalism which is then translated to a dominance graph
+automatically. Utool recognised that this was a specification of a
+dominance graph, and decoded it using the \verb?domcon-oz? codec,
+because the filename extension was \verb?.clls?.
+\end{itemize}
+
+
+
+\subsection{Enumerating solutions}
+
+Now that we know that the dominance graph is solvable, let's have
+Utool show us the five solutions.
+
+
+
+
+
+
 
 %%% Local Variables: 
 %%% mode: latex
