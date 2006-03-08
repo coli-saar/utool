@@ -183,8 +183,6 @@ public class Utool {
                             }
                             System.err.println(1000 * total_time / count + " microsecs/sf)");
                         }
-                        
-                        System.exit(1);
                     } catch (MalformedDomgraphException e) {
                         System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
                         System.err.println(e);
@@ -194,8 +192,9 @@ public class Utool {
                         e.printStackTrace();
                         System.exit(ExitCodes.IO_ERROR);
                     }
-                }
+                } // if operation == solve
                 
+                System.exit(1);
             } else {
                 // not solvable
                 if( options.hasOptionStatistics() ) {
