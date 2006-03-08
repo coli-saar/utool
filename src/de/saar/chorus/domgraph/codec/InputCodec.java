@@ -43,7 +43,7 @@ public abstract class InputCodec {
      * @throws MalformedDomgraphException if a semantic error occurred, i.e. the USR 
      * cannot be converted into a dominance graph
      */
-    public abstract void decode(Reader reader, DomGraph graph, NodeLabels labels)
+    protected abstract void decode(Reader reader, DomGraph graph, NodeLabels labels)
     throws IOException, ParserException, MalformedDomgraphException;
     
     /**

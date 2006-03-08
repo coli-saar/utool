@@ -35,6 +35,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
@@ -420,20 +421,22 @@ public class CommandListener implements ActionListener, ItemListener {
                 public void run() {
                     
                     
-                    if(! Main.getVisibleTab().isSolvedYet) {
+                    //if(! Main.getVisibleTab().isSolvedYet) {
                     	Chart chart = new Chart();
                     	ChartSolver solv = new ChartSolver(Main.getVisibleTab().getDomGraph(), chart);
                     	solv.solve();
                     	Main.getVisibleTab().setSolvedFormIterator(new SolvedFormIterator(chart, Main.getVisibleTab().getDomGraph()));
                         Main.getVisibleTab().setSolvedForms(chart.countSolvedForms().longValue());
                         System.out.println(chart.countSolvedForms());
-                    }
+                    //}
                     SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
                     DomGraph firstForm = (DomGraph) Main.getVisibleTab().getDomGraph().clone();
                     NodeLabels labels = Main.getVisibleTab().getNodeLabels();
+                    System.err.println("has sfs: " + solver.hasNext());
+                    List<DomEdge> solvedForm = solver.next();
                     
-                    System.out.println(solver.next());
-                    firstForm.setDominanceEdges(solver.next());
+                    System.out.println(solvedForm);
+                    firstForm.setDominanceEdges(solvedForm);
                     DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
                     JDomGraph domSolvedForm = conv.getJDomGraph();
                     
