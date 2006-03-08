@@ -36,8 +36,12 @@ ${START}.pdf: ${TEXSRC} ${START}.bbl
 	-grep -s "Rerun " ${START}.log && pdflatex ${START}
 
 
-
-
+${START}.ps: ${TEXSRC} ${START}.bbl
+	latex ${START}
+	-grep -s "Rerun " ${START}.log && latex ${START}
+	-grep -s "Rerun " ${START}.log && latex ${START}
+	-grep -s "Rerun " ${START}.log && latex ${START}
+	dvips -o ${START}.ps ${START}.dvi
 
 
 # .fig.eps:  
