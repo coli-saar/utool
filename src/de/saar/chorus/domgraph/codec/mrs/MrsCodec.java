@@ -111,14 +111,19 @@ class MrsCodec {
 		}
 	}
 	
-	public void addBindingEdges()
+	public void addBindingEdges() throws MalformedDomgraphException
 	{
 		for (Map.Entry<String,Set<String>> entry : bound.entrySet()) {
 			String node1 = binder.get(entry.getKey());
 			
 			for (String node2 : entry.getValue()) {
 				if (! graph.reachable(node1, node2)) {
-					addDomEdge(node1, graph.getRoot(node2));
+					String root = graph.getRoot(node2);
+					
+					if (root == null)
+						throw new MalformedDomgraphException(ErrorCodes.NOT_WEAKLY_NORMAL);
+					
+					addDomEdge(node1, root);
 				}
 			}
 		}
@@ -236,10 +241,13 @@ class MrsCodec {
 		
 		int errorCode = 0;
 		
+		if (! graph.isWeaklyNormal())
+			throw new MalformedDomgraphException("The graph is not weakly normal.\n", ErrorCodes.NOT_WEAKLY_NORMAL);
+			
 		if (! graph.isNormal()) {
 			errorCode |= ErrorCodes.NOT_NORMAL;
 			errorText.append("The graph is not normal.\n");
-		}
+		} 
 		if (! graph.isLeafLabelled()) {
 			errorCode |= ErrorCodes.NOT_LEAF_LABELLED;
 			errorText.append("The graph is not leaf-labelled.\n");
@@ -248,6 +256,7 @@ class MrsCodec {
 			errorCode |= ErrorCodes.NOT_HYPERNORMALLY_CONNECTED;
 			errorText.append("The graph is not hypernormally connected.\n");
 		}
+
 		if (errorCode != 0)
 			throw new MalformedDomgraphException(errorText.toString(), errorCode);
 	}

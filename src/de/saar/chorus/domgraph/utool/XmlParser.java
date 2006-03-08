@@ -37,6 +37,7 @@ import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
 import de.saar.chorus.domgraph.codec.glue.GlueInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
+import de.saar.chorus.domgraph.codec.mrs.MrsXmlInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
@@ -219,6 +220,7 @@ class XmlParser extends DefaultHandler {
             codecManager.registerCodec(DomconGxlInputCodec.class);
             codecManager.registerCodec(HolesemComsemInputCodec.class);
             codecManager.registerCodec(MrsPrologInputCodec.class);
+            codecManager.registerCodec(MrsXmlInputCodec.class);
             codecManager.registerCodec(GlueInputCodec.class);
         
             codecManager.registerCodec(DomconOzOutputCodec.class);
