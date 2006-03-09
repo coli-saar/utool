@@ -25,7 +25,6 @@ import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 
 import de.saar.chorus.domgraph.chart.OneSplitSource;
-import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 
 /**
  * A dominance graph. Dominance graphs are directed
@@ -53,6 +52,8 @@ public class DomGraph implements Cloneable {
 	private DirectedGraph graph;
 	private Map<String,NodeData> nodeData;
 	private Map<Edge,EdgeData> edgeData;
+    
+    private Map<String,Object> cachedResults;
 	
 	public DomGraph() {
 		clear();
@@ -194,6 +195,7 @@ public class DomGraph implements Cloneable {
 		graph = new DefaultDirectedGraph();
 		nodeData = new HashMap<String,NodeData>();
 		edgeData = new HashMap<Edge,EdgeData>();
+        cachedResults = null;
 	}
 	
 	/**
@@ -204,6 +206,7 @@ public class DomGraph implements Cloneable {
 	 * @param data the data for the new node
 	 */
 	public void addNode(String name, NodeData data) {
+        cachedResults = null;
 		graph.addVertex(name);
 		nodeData.put(name,data);
 	}
@@ -219,6 +222,7 @@ public class DomGraph implements Cloneable {
 	public void addEdge(String src, String tgt, EdgeData data) {
 		Edge e = graph.addEdge(src,tgt);
 		edgeData.put(e, data);
+        cachedResults = null;
 	}
 	
 	/**
@@ -228,6 +232,7 @@ public class DomGraph implements Cloneable {
 	 */
 	public void remove(String node) {
 		graph.removeVertex(node);
+        cachedResults = null;
 	}
 	
 	/**
@@ -237,6 +242,7 @@ public class DomGraph implements Cloneable {
 	 */
 	public void remove(Edge edge) {
 		graph.removeEdge(edge);
+        cachedResults = null;
 	}
 	
 	/**
@@ -685,6 +691,8 @@ public class DomGraph implements Cloneable {
 				graph.removeEdge(e);
 			}
 		}
+        
+        cachedResults = null;
 	}
 	
 	/**
@@ -700,6 +708,8 @@ public class DomGraph implements Cloneable {
 		for( DomEdge e : domedges ) {
 			addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
 		}
+        
+        cachedResults = null;
 	}
 	
 	
@@ -719,12 +729,16 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is weakly normal
 	 */
 	public boolean isWeaklyNormal() {
-		for( String node : getAllNodes() ) {
+        if( hasCachedResult("isWeaklyConnected")) {
+            return ((Boolean) getCachedResult("isWeaklyConnected")).booleanValue();
+        }
+        
+        for( String node : getAllNodes() ) {
 			if( getData(node).getType() == NodeType.UNLABELLED ) {
 				// unlabelled nodes must be leaves
 				if( !isLeaf(node) ) {
 					//System.err.println(node + " is unlabelled but no leaf!");
-					return false;
+					return cacheResult("isWeaklyConnected", false);
 				}
 				
 				/*
@@ -739,12 +753,12 @@ public class DomGraph implements Cloneable {
 			// no two incoming tree edges
 			if( indeg(node, EdgeType.TREE) > 1 ) {
 //				System.err.println(node + " has two in-tree-edges!");
-				return false;
+                return cacheResult("isWeaklyConnected", false);
 			}
 			
 			// no cycles via tree edges
 			if( hasCycle(null, EdgeType.TREE)) {
-				return false;
+                return cacheResult("isWeaklyConnected", false);
 			}
 		}
 		
@@ -753,12 +767,12 @@ public class DomGraph implements Cloneable {
 				// dominance edges go into roots
 				if( !isRoot((String) edge.getTarget()) ) {
 					//                  System.err.println(edge + " is a dom-edge into a non-root!");
-					return false;
+                    return cacheResult("isWeaklyConnected", false);
 				}
 			}
 		}
 		
-		return true;
+        return cacheResult("isWeaklyConnected", true);
 	}
 	
 	/**
@@ -772,20 +786,24 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is normal.
 	 */
 	public boolean isNormal() {
+        if( hasCachedResult("isNormal")) {
+            return ((Boolean) getCachedResult("isNormal")).booleanValue();
+        }
+
 		if( !isWeaklyNormal() ) {
-			return false;
+			return cacheResult("isNormal", false);
 		}
 		
 		for( Edge edge : getAllEdges() ) {
 			if( getData(edge).getType() == EdgeType.DOMINANCE ) {
 				// dominance edges go out of holes
 				if( getData((String) edge.getSource()).getType() != NodeType.UNLABELLED ) {
-					return false;
+                    return cacheResult("isNormal", false);
 				}
 			}
 		}
 		
-		return true;
+        return cacheResult("isNormal", true);
 	}
 	
 	/**
@@ -796,18 +814,22 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is compact.
 	 */
 	public boolean isCompact() {
+        if( hasCachedResult("isCompact")) {
+            return ((Boolean) getCachedResult("isCompact")).booleanValue();
+        }
+        
 		if( !isWeaklyNormal() ) {
-			return false;
+			return cacheResult("isCompact", false);
 		}
 		
 		for( String node : getAllNodes() ) {
 			// no labelled nodes with incoming tree edges
 			if( (getData(node).getType() == NodeType.LABELLED) && (indeg(node, EdgeType.TREE) > 0)) {
-				return false;
+                return cacheResult("isCompact", false);
 			}
 		}
 		
-		return true;
+        return cacheResult("isCompact", true);
 	}
 	
 	/**
@@ -818,8 +840,12 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph can be compactified
 	 */
 	public boolean isCompactifiable() {
-		if( !isWeaklyNormal() ) {
-			return false;
+        if( hasCachedResult("isCompactifiable")) {
+            return ((Boolean) getCachedResult("isCompactifiable")).booleanValue();
+        }
+
+        if( !isWeaklyNormal() ) {
+			return cacheResult("isCompactifiable", false);
 		}
 		
 		for( Edge edge : getAllEdges() ) {
@@ -828,12 +854,12 @@ public class DomGraph implements Cloneable {
 				String src = (String) edge.getSource();
 				if( (getData(src).getType() != NodeType.UNLABELLED)
 						&& !isRoot(src) ) {
-					return false;
+                    return cacheResult("isCompactifiable", false);
 				}
 			}
 		}
 		
-		return true;
+        return cacheResult("isCompactifiable", true);
 	}
 	
 	/**
@@ -844,19 +870,23 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is leaf-labelled
 	 */
 	public boolean isLeafLabelled() {
+        if( hasCachedResult("isLeafLabelled")) {
+            return ((Boolean) getCachedResult("isLeafLabelled")).booleanValue();
+        }
+
 		if( !isWeaklyNormal() ) {
-			return false;
+			return cacheResult("isLeafLabelled", false);
 		}
 		
 		for( String node : getAllNodes() ) {
 			// unlabelled nodes must have outgoing dom edges
 			if( (getData(node).getType() == NodeType.UNLABELLED)
 					&& (outdeg(node, EdgeType.DOMINANCE) == 0) ) {
-				return false;
+                return cacheResult("isLeafLabelled", false);
 			}
 		}
 		
-		return true;
+        return cacheResult("isLeafLabelled", true);
 	}
 	
 	/**
@@ -873,10 +903,14 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is hnc
 	 */
 	public boolean isHypernormallyConnected() {
+        if( hasCachedResult("isHypernormallyConnected")) {
+            return ((Boolean) getCachedResult("isHypernormallyConnected")).booleanValue();
+        }
+        
 		if( OneSplitSource.isGraphSolvable(this) ) {
-			return isHypernormallyConnectedFast();
+            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
 		} else {
-			return isHypernormallyConnectedSlow();
+            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
 		}
 	}
 	
@@ -974,24 +1008,29 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is a simple solved form.
 	 */
 	public boolean isSimpleSolvedForm() {
+        if( hasCachedResult("isSimpleSolvedForm")) {
+            return ((Boolean) getCachedResult("isSimpleSolvedForm")).booleanValue();
+        }
+        
+        
 		for( String node : getAllNodes() ) {
 			// no cycles
 			if( hasCycle(null, null)) {
-				return false;
+				return cacheResult("isSimpleSolvedForm", false);
 			}
 			
 			// no node with indeg > 1
 			if( indeg(node) > 1 ) {
-				return false;
+                return cacheResult("isSimpleSolvedForm", false);
 			}
 			
 			// no node with more than one outgoing dominance edge
 			if( outdeg(node, EdgeType.DOMINANCE) > 1 ) {
-				return false;
+                return cacheResult("isSimpleSolvedForm", false);
 			}
 		}
 		
-		return true;
+        return cacheResult("isSimpleSolvedForm", true);
 	}
 	
 	
@@ -1007,6 +1046,11 @@ public class DomGraph implements Cloneable {
 	public boolean isWellFormed() {
 		assert isWeaklyNormal();
 		assert isCompact();
+        
+        if( hasCachedResult("isWellFormed")) {
+            return ((Boolean) getCachedResult("isWellFormed")).booleanValue();
+        }
+        
 		
 		for( Edge edge : getAllEdges()) {
 			String src = (String) edge.getSource();
@@ -1014,11 +1058,11 @@ public class DomGraph implements Cloneable {
 			// this check assumes that the graph is compact 
 			if( (getData(src).getType() == NodeType.LABELLED)
 					&& isLeaf(src) ) {
-				return false;
+				return cacheResult("isWellFormed", false);
 			}
 		}
 		
-		return true;
+        return cacheResult("isWellFormed", true);
 	}
 	
 	
@@ -1192,6 +1236,41 @@ public class DomGraph implements Cloneable {
 			return null;
 		}
 	}
+    
+    
+    
+    /*
+     * Support for cached results.
+     */
+    
+    private Object getCachedResult(String key) {
+        if( cachedResults == null ) {
+            return null;
+        } else {
+            return cachedResults.get(key);
+        }
+    }
+    
+    private boolean hasCachedResult(String key) {
+        if( cachedResults == null ) {
+            return false;
+        } else {
+            return cachedResults.containsKey(key);
+        }
+    }
+    
+    private void setCachedResult(String key, Object value) {
+        if( cachedResults == null ) {
+            cachedResults = new HashMap<String,Object>();
+        }
+        
+        cachedResults.put(key,value);
+    }
+    
+    private boolean cacheResult(String key, boolean value) {
+        setCachedResult(key, new Boolean(value));
+        return value;
+    }
 	
 	
 }
