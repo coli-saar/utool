@@ -53,7 +53,7 @@ import de.saar.chorus.ubench.JDomGraph;
  */
 public class CommandListener implements ActionListener, ItemListener {
 	private File lastPath = null;
-	private String recentPath = "", recentFile="";
+	private String recentPath = ".", recentFile="";
 	
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
 	private List<FileFilter> ffInputCodecs;
@@ -228,7 +228,7 @@ public class CommandListener implements ActionListener, ItemListener {
 		} else 
 			// loading any graph file
 			if( command.equals("loadGXL") ) {
-				JFileChooser fc = new JFileChooser();
+				JFileChooser fc = new JFileChooser(recentPath);
 				
 				//    fc.addChoosableFileFilter(ffInNativeGxl);
 				for( FileFilter ff : ffInputCodecs )
@@ -283,7 +283,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					JDomGraph graph = Main.getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JFileChooser fc = new JFileChooser();
+						JFileChooser fc = new JFileChooser(recentPath);
 						
 						for( FileFilter ff : ffOutputCodecs ) {
 							fc.addChoosableFileFilter(ff);
@@ -296,6 +296,7 @@ public class CommandListener implements ActionListener, ItemListener {
 						int fcVal = fc.showSaveDialog(Main.getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							final File file = fc.getSelectedFile();
+                            recentPath = file.getAbsolutePath();
 							
 							lastPath = file.getParentFile();
 							
