@@ -335,14 +335,16 @@ public class CommandListener implements ActionListener, ItemListener {
 					
 					// duplicating the visible graph
 					if(Main.getVisibleTab() != null) {
-						NodeLabels labels = Main.getVisibleTab().getNodeLabels();
+						Main.addTab(Main.getVisibleTab().clone(), true);
+						
+						/*NodeLabels labels = Main.getVisibleTab().getNodeLabels();
 						if(! Main.getVisibleTab().isSolvedForm ) {
 							DomGraph clone = (DomGraph) Main.getVisibleTab().getDomGraph().clone();
 							
 							Main.addNewTab(Main.getVisibleTab().getCloneOfGraph(), 
 									Main.getVisibleTab().getDefaultName(), clone, true, true, labels);
 						} else {
-							JDomGraphTab sFormCopy = new JDomGraphTab(Main.getVisibleTab().getCloneOfGraph(), 
+							JSolvedFormTab sFormCopy = new JSolvedFormTab(Main.getVisibleTab().getCloneOfGraph(), 
 									Main.getVisibleTab().getGraphName() + " SF#" +Main.getVisibleTab().currentForm, 
 									Main.getVisibleTab().getSolvedFormIterator(), 
 									Main.getVisibleTab().getDomGraph(),
@@ -353,7 +355,7 @@ public class CommandListener implements ActionListener, ItemListener {
 							sFormCopy.setGraphName(Main.getVisibleTab().getGraphName());
 							Main.addTab(sFormCopy, true);
 							
-						}
+						}*/
 					}
 				}  else if ( command.equals("fit")) {
 					
@@ -374,7 +376,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					// solve the visible graph
 					if( (Main.getVisibleTab() != null) ) {
 						Main.showProgressBar();
-						Main.getVisibleTab().solve();
+						((JDomGraphTab) Main.getVisibleTab()).solve();
 						Main.refresh();
 					}
 				}
@@ -383,19 +385,20 @@ public class CommandListener implements ActionListener, ItemListener {
 					// changed text field and pressed "return"
 					
 					long no = 1;
-					no = Long.parseLong(Main.getVisibleTab().getSolvedForm().getText());
+					no = Long.parseLong(((JSolvedFormTab) Main.getVisibleTab()).getSolvedForm().getText());
 					
 					if(! ((no < 1) || (no > Main.getVisibleTab().getSolvedForms()) ) ) {
 						showSolvedFormWithIndex(no);
 					} else {
-						Main.getVisibleTab().resetSolvedFormText();
+						((JSolvedFormTab) Main.getVisibleTab()).resetSolvedFormText();
 					}
 				} else if(command.equals("plus")) {
 					// ">" button in the status bar
 					
 					
-					long no = Main.getVisibleTab().currentForm;
+					long no = Main.getVisibleTab().getCurrentForm();
 					if(no < Main.getVisibleTab().getSolvedForms()) {
+						System.err.println("enough sFs - more than " + no);
 						no++;
 						// bar.setSolvedFormText(String.valueOf(no));
 						showSolvedFormWithIndex(no);
@@ -406,7 +409,7 @@ public class CommandListener implements ActionListener, ItemListener {
 				} else if (command.equals("minus")) {
 					// "<" button in the status bar
 					
-					long no = Main.getVisibleTab().currentForm;
+					long no = Main.getVisibleTab().getCurrentForm();
 					if(no > 1) {
 						no--;
 						//bar.setSolvedFormText(String.valueOf(no));
@@ -422,8 +425,8 @@ public class CommandListener implements ActionListener, ItemListener {
 						public void run() {
 							
 							
-							if(! Main.getVisibleTab().isSolvedYet) {
-								Main.getVisibleTab().solve();
+							if(! ((JDomGraphTab) Main.getVisibleTab()).isSolvedYet) {
+								((JDomGraphTab) Main.getVisibleTab()).solve();
 							}
 							
 							SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
@@ -437,7 +440,7 @@ public class CommandListener implements ActionListener, ItemListener {
 							DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
 							JDomGraph domSolvedForm = conv.getJDomGraph();
 							
-							JDomGraphTab sFTab = new JDomGraphTab(domSolvedForm, Main.getVisibleTab().getDefaultName()  + "  SF #1", 
+							JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, Main.getVisibleTab().getDefaultName()  + "  SF #1", 
 									solver, firstForm,
 									1, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
 									Main.getListener(), labels);
@@ -514,7 +517,7 @@ public class CommandListener implements ActionListener, ItemListener {
 						}
 						Preferences.setAutoCount(true);
 						if( Main.getVisibleTab() != null  ) {
-							Main.getVisibleTab().solve();
+							((JDomGraphTab) Main.getVisibleTab()).solve();
 							Main.refresh();
 						}
 						
@@ -742,16 +745,18 @@ public class CommandListener implements ActionListener, ItemListener {
 		
 		
 		// setting up the new tab
-		JDomGraphTab solvedFormTab = new JDomGraphTab(domSolvedForm, 
+		JSolvedFormTab solvedFormTab = new JSolvedFormTab(domSolvedForm, 
 				Main.getVisibleTab().getGraphName()  + "  SF #" + no, solver,
 				nextForm,
-				no, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
-				Main.getListener(), labels);
+				no, Main.getVisibleTab().getSolvedForms(), 
+				Main.getVisibleTab().getGraphName(), 
+				Main.getListener(), 
+				labels);
 		// closing the tab with the previous solved form and
 		// showing the recent one.
 		Main.closeCurrentTab();
 		Main.addTab(solvedFormTab, true, toInsertHere);
-		Main.getStatusBar().showBar(solvedFormTab.getBarcode());
+		Main.getStatusBar().showBar(solvedFormTab.getBarCode());
 		
 	}
 	
