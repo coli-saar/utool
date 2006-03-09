@@ -337,25 +337,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					if(Main.getVisibleTab() != null) {
 						Main.addTab(Main.getVisibleTab().clone(), true);
 						
-						/*NodeLabels labels = Main.getVisibleTab().getNodeLabels();
-						if(! Main.getVisibleTab().isSolvedForm ) {
-							DomGraph clone = (DomGraph) Main.getVisibleTab().getDomGraph().clone();
-							
-							Main.addNewTab(Main.getVisibleTab().getCloneOfGraph(), 
-									Main.getVisibleTab().getDefaultName(), clone, true, true, labels);
-						} else {
-							JSolvedFormTab sFormCopy = new JSolvedFormTab(Main.getVisibleTab().getCloneOfGraph(), 
-									Main.getVisibleTab().getGraphName() + " SF#" +Main.getVisibleTab().currentForm, 
-									Main.getVisibleTab().getSolvedFormIterator(), 
-									Main.getVisibleTab().getDomGraph(),
-									Main.getVisibleTab().currentForm, 
-									Main.getVisibleTab().getSolvedForms(),
-									Main.getVisibleTab().getGraphName(),
-									Main.getListener(), labels );
-							sFormCopy.setGraphName(Main.getVisibleTab().getGraphName());
-							Main.addTab(sFormCopy, true);
-							
-						}*/
+						
 					}
 				}  else if ( command.equals("fit")) {
 					
@@ -423,29 +405,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					// "solve" button in the status bar
 					new Thread() {
 						public void run() {
-							
-							
-							if(! ((JDomGraphTab) Main.getVisibleTab()).isSolvedYet) {
-								((JDomGraphTab) Main.getVisibleTab()).solve();
-							}
-							
-							SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
-							DomGraph firstForm = (DomGraph) Main.getVisibleTab().getDomGraph().clone();
-							NodeLabels labels = Main.getVisibleTab().getNodeLabels();
-							System.err.println("has sfs: " + solver.hasNext());
-							List<DomEdge> solvedForm = solver.next();
-							
-							System.out.println(solvedForm);
-							firstForm.setDominanceEdges(solvedForm);
-							DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
-							JDomGraph domSolvedForm = conv.getJDomGraph();
-							
-							JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, Main.getVisibleTab().getDefaultName()  + "  SF #1", 
-									solver, firstForm,
-									1, Main.getVisibleTab().getSolvedForms(), Main.getVisibleTab().getGraphName(), 
-									Main.getListener(), labels);
-							
-							
+							JSolvedFormTab sFTab = ((JDomGraphTab) Main.getVisibleTab()).createFirstSolvedForm();
 							Main.addTab(sFTab, true);
 							Main.refresh();
 						}
