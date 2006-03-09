@@ -22,6 +22,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
@@ -693,6 +694,25 @@ public class JDomGraphTab extends JGraphTab  {
 		return solvedFormIterator;
 	}
 
+	public JSolvedFormTab createFirstSolvedForm() {
+		if(! isSolvedYet ) {
+			solve();
+		}
+		DomGraph firstForm = (DomGraph) domGraph.clone();
+		firstForm.setDominanceEdges(solvedFormIterator.next());
+		DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
+		JDomGraph domSolvedForm = conv.getJDomGraph();
+		JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
+				defaultName  + "  SF #1", 
+				solvedFormIterator, firstForm,
+				1, solvedForms, 
+				graphName, 
+				listener, nodeLabels);
+		
+		return sFTab;
+		
+	}
+	
 	
     
 }
