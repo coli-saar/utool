@@ -290,7 +290,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	public void computeLayout() {
 		
 		if(isForest()) {
-			System.err.println("TreeLayout");
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));

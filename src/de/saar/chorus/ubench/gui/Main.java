@@ -300,7 +300,7 @@ public class Main  {
 			tab.fitGraph();
 		
 		// solving?
-		if(Preferences.isAutoCount() && Preferences.utoolPresent()) {
+		if(Preferences.isAutoCount() ) {
 		
 			statusBar.showProgressBar();
 			
@@ -468,15 +468,7 @@ public class Main  {
      * @param args command line arfuments
      */
 	public static void main(String[] args)  {
-        // try to load Utool integration library
-        try {
-            System.loadLibrary("DomgraphSwig");
-            Preferences.setUtoolPresent(true);
-        } catch(UnsatisfiedLinkError e) {
-            System.err.println("Error while loading libdomgraph library: " + e.getMessage());
-            Preferences.setUtoolPresent(false);
-        }
-        
+              
         
         // register codecs
         codecManager = new CodecManager();

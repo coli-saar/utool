@@ -68,11 +68,9 @@ public class JDomGraphStatusBar extends JPanel {
 		progressBar = new JProgressBar(0, 1);
 		progressBar.setStringPainted(true); 
 		
-		if( Preferences.utoolPresent() ) {
-			progressBar.setString("Solving..."); 
-		} else {
-			progressBar.setString("Loading...");
-		}
+		
+		progressBar.setString("Loading...");
+		
 		progressBar.setIndeterminate(true);
 		progressBar.setPreferredSize(new Dimension(200,50));
 		progressPanel.add(progressBar, BorderLayout.CENTER);

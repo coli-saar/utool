@@ -18,8 +18,6 @@ package de.saar.chorus.ubench.gui;
  *
  */
 public class Preferences implements Cloneable {
-    // static fields: set once per run of the application
-    private static boolean utool = true;
     
     // static fields: per-application preferences 
     private static boolean autoCount = true;
@@ -61,22 +59,8 @@ public class Preferences implements Cloneable {
 		this.showLabels = showLabels;
 	}
     
-	/**
-	 * @return true if utool was detected at startup
-	 */
-    public static boolean utoolPresent(){
-        return utool;
-    }
-
-    /**
-     * This can manually disable or enable all utool 
-     * related functions.
-     * 
-     * @param b should be true if utool is available
-     */
-    public static void setUtoolPresent(boolean b) {
-        utool = b;
-    }
+	
+  
     
     /**
      * Set to true, fitWindow will cause the visible and

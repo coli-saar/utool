@@ -204,14 +204,10 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		showLabels.setSelected(true);
 
-		// If there's no utool, several items
-		// have to be disabled.
-        if(Preferences.utoolPresent()) {
+		
             countAndSolve.setSelected(true);
             cSolvForms.setEnabled(false);
-        } else {
-            utoolMenu.setEnabled(false);
-        }
+       
         
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
