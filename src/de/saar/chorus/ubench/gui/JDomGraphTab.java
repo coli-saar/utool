@@ -203,8 +203,10 @@ public class JDomGraphTab extends JPanel {
 				isSolvedYet = true;
 			}
 			statusBar = new DominanceGraphBar();
+			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
 			barCode = Main.getStatusBar().insertBar(statusBar);
 		}
+	
 	}
 	
 	public String getBarcode() {
