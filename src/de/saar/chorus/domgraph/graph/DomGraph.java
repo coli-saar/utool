@@ -42,10 +42,25 @@ import de.saar.chorus.domgraph.chart.OneSplitSource;
  * In this context, a subgraph is always a set of nodes.<p>
  * 
  * While nodes are marked as labelled or unlabelled here, the actual node
- * labels are not stored here, but in objects of the class NodeLabels.
+ * labels are not stored here, but in objects of the class NodeLabels.<p>
  * 
  * @author Alexander Koller
  *
+ */
+
+/*
+ * IMPLEMENTATION NOTE
+ * 
+ * This class offers a cache in which results of operations can be stored
+ * (field cachedResults; access it via the methods hasCachedResult etc.
+ * at the bottom of the class). This cache must be cleared whenever the 
+ * graph is changed; you can do this efficiently by setting cachedResults
+ * to null. PLEASE remember to clear the cache if you implement new
+ * methods for changing the graph, because otherwise you will get
+ * strange results for subsequent calls to the methods that do use
+ * caching. 
+ * 
+
  */
 
 public class DomGraph implements Cloneable {
