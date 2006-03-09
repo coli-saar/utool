@@ -15,6 +15,7 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 
@@ -86,7 +87,7 @@ import de.saar.getopt.ConvenientGetopt;
 public class Main  {
 	
 	// the tabs in their order of insertion
-	private static ArrayList<JDomGraphTab> tabs = new ArrayList<JDomGraphTab>();
+	private static ArrayList<JGraphTab> tabs = new ArrayList<JGraphTab>();
 	
 	// the pane containing the tabs
 	private static JDomTabbedPane tabbedPane ;
@@ -225,7 +226,7 @@ public class Main  {
 	/**
 	 * @return the currently shown tab or null if there is none
 	 */
-	public static JDomGraphTab getVisibleTab() {
+	public static JGraphTab getVisibleTab() {
 		int index = tabbedPane.getSelectedIndex();
 		
 		if( index > -1 )
@@ -248,7 +249,7 @@ public class Main  {
 	 * @param tab the tab to ad
 	 * @param showNow if set to true, the tab will be displayed at once
 	 */
-	public static void addTab(JDomGraphTab tab, boolean showNow) {
+	public static void addTab(JGraphTab tab, boolean showNow) {
 		
 		addTab(tab, showNow, tabbedPane.getTabCount());
 		
@@ -260,7 +261,7 @@ public class Main  {
 	 * @param tab the tab to ad
 	 * @param showNow if set to true, the tab will be displayed at once
 	 */
-	public static void addTab(JDomGraphTab tab, boolean showNow, int ind) {
+	public static void addTab(JGraphTab tab, boolean showNow, int ind) {
 		
 		int index;
 		
@@ -305,7 +306,6 @@ public class Main  {
 		
 			statusBar.showProgressBar();
 			
-			tab.solve();
 		}
         
 		refresh();

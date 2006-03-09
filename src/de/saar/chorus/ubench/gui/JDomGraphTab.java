@@ -33,14 +33,14 @@ import de.saar.chorus.ubench.JDomGraph;
  * @author Michaela Regneri
  *
  */
-public class JDomGraphTab extends JPanel {
+public class JDomGraphTab extends JGraphTab  {
 	
 	// the grapb is initialized empty
 	private JDomGraph graph = new JDomGraph();
 	
 	private DomGraph domGraph;
 	
-	//TODO move that, where it fits!!
+	
 	private NodeLabels nodeLabels;
 	
 	// graph information concerning solving and identity
@@ -75,51 +75,7 @@ public class JDomGraphTab extends JPanel {
 	
 	
 
-	/**
-	 * Constructor for setting up a tab with a solved form.
-	 * 
-	 * @param solvedForm the graph
-	 * @param name the name for the tab
-	 * @param solv the solvedFormIterator related to the graph
-	 */
-	public JDomGraphTab(JDomGraph solvedForm, String name, 
-			SolvedFormIterator solv, DomGraph origin, long form, long allForms, 
-			String gName, CommandListener lis, NodeLabels labels) {
-		
-		// initializing fields
-		listener = lis;
-		defaultName = name;
-		graph = solvedForm;
-		domGraph = origin;
-		nodeLabels = labels;
-		solvedFormIterator = solv;
-		currentForm = form;
-		isSolvedYet = false;
-		isSolvedForm = true;
-		solvable = false;
-		solvedForms = solv.getChart().countSolvedForms().longValue();
-        recentLayout = null;
-		graphName = gName;
-		
-		setBackground(Color.WHITE);
-		
-		// layouting the graph
-		graph.computeFragments();
-		
-		JFrame f = new JFrame("JGraph Test");
-		f.add(graph);
-		f.pack();
-        
-		repaintIfNecessary();
-        
-		add(graph);
-		
-		// don't need to solve solved forms...
-		isSolvedYet = true;
-		
-		statusBar = new SolvedFormBar(solvedForms, form, gName);
-		barCode = Main.getStatusBar().insertBar(statusBar);
-	}
+	
 	
 	
 	/**
@@ -209,9 +165,6 @@ public class JDomGraphTab extends JPanel {
 	
 	}
 	
-	public String getBarcode() {
-		return barCode;
-	}
 	
 	/**
 	 * @return Returns the isSolvedForm.
@@ -229,36 +182,13 @@ public class JDomGraphTab extends JPanel {
 	}
 	
 
-	/**
-	 * @return Returns the graph.
-	 */
-	public JDomGraph getGraph() {
-		return graph;
-	}
 	
 	public void resetSolvedFormText() {
 		solvedForm.setText(String.valueOf(currentForm));
 	}
 
 	/**
-	 * @deprecated doesn't work :)
-	 * @param graph The graph to set.
-	 */
-	public void setGraph(JDomGraph graph, String newName) {
-		if(isSolvedForm) {
-			
-			remove(this.graph);
-			this.graph = graph;
-			defaultName = newName;
-			//graph.computeFragments();
-			JFrame f = new JFrame("JGraph Test");
-			f.add(graph);
-			f.pack();
-			repaintIfNecessary();
-			add(graph);
-			
-		}
-	}
+	
 	
 
 	/**
@@ -292,22 +222,6 @@ public class JDomGraphTab extends JPanel {
 		this.solvedForms = solvedForms;
 	}
 
-	/**
-	 * @return Returns the defaultName.
-	 */
-	public String getDefaultName() {
-		return defaultName;
-	}
-	
-
-	/**
-	 * @param defaultName The defaultName to set.
-	 */
-	public void setDefaultName(String defaultName) {
-		this.defaultName = defaultName;
-		
-	}
-
 	
 
 	/**
@@ -324,13 +238,7 @@ public class JDomGraphTab extends JPanel {
 		this.isSolvedYet = isSolvedYet;
 	}
 
-	/**
-	 * @return Returns the solvedFormIterator.
-	 */
-	public SolvedFormIterator getSolvedFormIterator() {
-		
-		return solvedFormIterator;
-	}
+	
 
 	/**
 	 * @return Returns the solvedForm.
@@ -346,33 +254,9 @@ public class JDomGraphTab extends JPanel {
 		this.solvedForm = solvedForm;
 	}
 
-	/**
-	 * @param solvedFormIterator The solvedFormIterator to set.
-	 */
-	public void setSolver(SolvedFormIterator solver) {
-		this.solvedFormIterator = solver;
-	}
 	
-	/**
-	 * Fit the graph of this tab to the tab size.
-	 */
-	public void fitGraph() {
-		
-		// computing tab height (and add a little space...)
-		double myHeight = Main.getTabHeight()*0.9;
-		double myWidth = Main.getTabWidth()*0.9;
-		
-		// checking the current (!) graph height
-		double graphHeight = graph.getHeight()*(1/graph.getScale());
-		double graphWidth = graph.getWidth()*(1/graph.getScale());
-		
-		// computing the scale
-		double scale = Math.min(1 , Math.min((double) myHeight/graphHeight, (double) myWidth/graphWidth));
-
-		graph.setScale(scale);
-		
-		Main.resetSlider();
-	}
+	
+	
 	/**
 	 * @return Returns the currentForm.
 	 */
@@ -489,187 +373,7 @@ public class JDomGraphTab extends JPanel {
     }
     
     
-    /**
-     * A <code>JPanel</code> representing a status bar for 
-     * a solved form, to be inserted into the <code>CardLayout</code>
-     * of <code>JDomGraphStatusBar</code>.
-     * 
-     * @author Michaela Regneri
-     *
-     */
-    private class SolvedFormBar extends JPanel {
-    	private JPanel classified,
-    	formScroll;
-    	private JButton sLeft, 	// for showing the next solved form
-    					sRight; // for showing the previous solved form
-    	
-    	
-    	
-    	private JLabel 	of,  		  // right side of the solved-form-scroller
-    					norm,  		  // indicates normality (solved forms)
-    					comp,   		  // indicates compactness (solved forms)
-    					hn, 		  // indicates hypernormality(solved forms)
-    					ll;			  // indicates leaf labeling (solved forms)
-    	
-    	/**
-    	 * Sets up a new <code>SolvedFormBar</code> by
-    	 * initalizing the fields and doing the layout.
-    	 * 
-    	 * @param numOfSolvForms the number of solved forms of the related dominance graph
-    	 * @param form the number of this solved form
-    	 * @param gN the name of the related dominance grap
-    	 */
-    	private SolvedFormBar(long numOfSolvForms, long form, String gN) {
-    		super(new BorderLayout());
-    		
-    		formScroll = new JPanel();
-    		
-    		// button to go forward
-    		sLeft = new JButton("<");
-    		sLeft.setFont(new Font("SansSerif",Font.BOLD,16));
-    		sLeft.setPreferredSize(new Dimension(50,20));
-    		sLeft.setActionCommand("minus");
-    		sLeft.addActionListener(listener);
-    		
-    		// button to go backwards
-    		sRight = new JButton(">");
-    		sRight.setPreferredSize(new Dimension(50,20));
-    		sRight.setFont(new Font("SansSerif",Font.BOLD,16));
-    		sRight.setActionCommand("plus");
-    		sRight.addActionListener(listener);
-    		
-    		if( currentForm == 1 ) {
-    			sLeft.setEnabled(false);
-    		} else {
-    			sLeft.setEnabled(true);
-    		}
-    		
-    		if( currentForm == Main.getVisibleTab().getSolvedForms() ) {
-    			sRight.setEnabled(false);
-    		} else {
-    			sRight.setEnabled(true);
-    		}
-    		
-    		solvedForm = new JTextField(String.valueOf(form));
-    		solvedForm.setColumns(5);
-    		solvedForm.setHorizontalAlignment(JTextField.RIGHT);
-    		solvedForm.addActionListener(listener);
-    		solvedForm.setActionCommand("solvedFormDirectSelection");
-    		
-    		formScroll.add(sLeft);
-    		formScroll.add(solvedForm);
-    		formScroll.add(sRight);
-    		
-    		of = new JLabel("of " + String.valueOf(numOfSolvForms) + " (Graph: " + gN + ")");
-    		
-    		formScroll.add(of, BorderLayout.EAST);
-    		add(formScroll, BorderLayout.CENTER);
-    		
-    		classified = new JPanel();
-    		
-    		/*
-    		 * Every label is set up with its "standard" character
-    		 * and the tooltip-text gets a new position (above the
-    		 * symbol itself).
-    		 */
-    		
-    		ll = new JLabel("L") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				
-    				Point p1 = ll.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		ll.setForeground(Color.RED);
-    		
-    		hn = new JLabel("H") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 =hn.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		hn.setForeground(Color.RED);
-    		
-    		norm = new JLabel("N") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 = norm.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		norm.setForeground(Color.RED);
-    		
-    		
-    		comp = new JLabel("C") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 = comp.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		comp.setForeground(Color.RED);
-    		
-    		
-    		
-    		
-    		if(domGraph.isNormal()) {
-    			norm.setText("N");
-    			norm.setToolTipText("Normal");
-    			
-    		} else if (domGraph.isWeaklyNormal()) {
-    			norm.setText("n");
-    			norm.setToolTipText("Weakly Normal");
-    		} else {
-    			norm.setText("-");
-    			norm.setToolTipText("Not Normal");
-    		}
-    		
-    		
-    		if(domGraph.isCompact()) {
-    			comp.setText("C");
-    			comp.setToolTipText("Compact");
-    		} else if (domGraph.isCompactifiable()) {
-    			comp.setText("c");
-    			comp.setToolTipText("compactifiable");
-    		} else {
-    			comp.setText("-");
-    			comp.setToolTipText("Not Compactifiable");
-    		}
-    		
-    		
-    		if(domGraph.isHypernormallyConnected()) {
-    			hn.setText("H");
-    			hn.setToolTipText("Hypernormally Connected");
-    		} else {
-    			hn.setText("-");
-    			hn.setToolTipText("Not Hypernormally Connected");
-    		}
-    		
-    		if(domGraph.isLeafLabelled()) {
-    			ll.setText("L");
-    			ll.setToolTipText("Leaf-Labelled");
-    		} else {
-    			ll.setText("-");
-    			ll.setToolTipText("Not Leaf-Labelled");
-    		}
-    		
-    		classified.setAlignmentY(SwingConstants.HORIZONTAL);
-    		classified.add(new JLabel("Classify: "));
-    		classified.add(norm);
-    		classified.add(comp);
-    		
-    		classified.add(ll);
-    		classified.add(hn);
-    		
-    		classified.setForeground(Color.RED);
-    		classified.setAlignmentX(SwingConstants.LEFT);
-    		
-    		add(classified, BorderLayout.EAST);
-    	}
-    	
-    }
+    
     
     
     /**
@@ -898,5 +602,97 @@ public class JDomGraphTab extends JPanel {
 		this.nodeLabels = nodeLabels;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.saar.chorus.ubench.gui.JGraphTab#clone()
+	 */
+	@Override
+	public JGraphTab clone() {
+		JDomGraph jdomCl = graph.clone();
+		DomGraph domCl = (DomGraph) domGraph.clone();
+		
+		JDomGraphTab myClone = new JDomGraphTab(jdomCl, domCl,
+				defaultName,true, listener, nodeLabels);
+		
+		return myClone;
+	}
+
+	/**
+	 * @return Returns the barCode.
+	 */
+	public String getBarCode() {
+		return barCode;
+	}
+
+	/**
+	 * @param barCode The barCode to set.
+	 */
+	public void setBarCode(String barCode) {
+		this.barCode = barCode;
+	}
+
+	/**
+	 * @return Returns the defaultName.
+	 */
+	public String getDefaultName() {
+		return defaultName;
+	}
+
+	/**
+	 * @param defaultName The defaultName to set.
+	 */
+	public void setDefaultName(String defaultName) {
+		this.defaultName = defaultName;
+	}
+
+	/**
+	 * @return Returns the graph.
+	 */
+	public JDomGraph getGraph() {
+		return graph;
+	}
+
+	/**
+	 * @param graph The graph to set.
+	 */
+	public void setGraph(JDomGraph graph) {
+		this.graph = graph;
+	}
+
+	/**
+	 * @return Returns the listener.
+	 */
+	public CommandListener getListener() {
+		return listener;
+	}
+
+	/**
+	 * @param listener The listener to set.
+	 */
+	public void setListener(CommandListener listener) {
+		this.listener = listener;
+	}
+
+	/**
+	 * @return Returns the statusBar.
+	 */
+	public JPanel getStatusBar() {
+		return statusBar;
+	}
+
+	/**
+	 * @param statusBar The statusBar to set.
+	 */
+	public void setStatusBar(JPanel statusBar) {
+		this.statusBar = statusBar;
+	}
+
+	/**
+	 * @return Returns the solvedFormIterator.
+	 */
+	public SolvedFormIterator getSolvedFormIterator() {
+		return solvedFormIterator;
+	}
+
+	
     
 }

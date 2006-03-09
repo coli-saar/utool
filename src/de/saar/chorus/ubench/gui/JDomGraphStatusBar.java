@@ -106,7 +106,7 @@ public class JDomGraphStatusBar extends JPanel {
 		if(Main.getVisibleTab() == null) {
 			showEmptybar();
 		} else {
-			showBar(Main.getVisibleTab().getBarcode());
+			showBar(Main.getVisibleTab().getBarCode());
 		}
 	}
     
