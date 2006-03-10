@@ -67,7 +67,65 @@ public class GlueInputCodec extends InputCodec {
 	  
 	  formulas = new ArrayList<Formula>();
     }
-	  
+	
+	private List<Formula> suffixes(Formula f) {
+		List suff = new ArrayList<Formula>();
+	    switch ( f.getType() ) {
+        case IMPLICATION:
+        		suff.add(f);
+                suff.add(suffixes(f.getSubformulas().get(1)));
+                break;
+        case ATOM:
+        case VARIABLE:
+                suff.add(f);
+        }
+        return suff;
+	}
+
+	private boolean isSuffix(Formula f, List<Formula> formulas) {
+		for (int i = 0; i < formulas.size(); i++) {
+			if ( suffixes(formulas.get(i)).contains(f) )	return true;
+		}
+		return false;
+	}
+
+    private int depth(Formula f) {
+        switch ( f.getType() ) {
+        case IMPLICATION:
+                return depth(f.getSubformulas().get(1)) + 1;
+        case ATOM:
+        case VARIABLE:
+                return 0;
+        }
+        return 0;
+    }
+
+	private void z(int j, Formula phi, String address, DomGraph g, NodeLabels l, List<Formula> axioms) {
+        switch ( phi.getType() ) {
+        case IMPLICATION:
+        	Formula psi = phi.getSubformulas().get(0);
+        	Formula chi = phi.getSubformulas().get(1);
+            NodeData conclusion = new NodeData(NodeType.LABELLED);
+   	        NodeData premiss = new NodeData(NodeType.LABELLED);
+   	        String addr_cc = address.substring(0, address.length()-1);
+       	    String name_cc = "X" + String.valueOf(j+1) + "^" + addr_cc;
+       		String name_pr = "X" + String.valueOf(j+1) + "^" + addr_cc + "2";
+            g.addNode(name_cc, conclusion);
+   	        g.addNode(name_pr, premiss);
+        	l.addLabel(name_cc, "ie");
+        	if ( !isSuffix(psi, axioms) ) {
+    	    	l.addLabel(name_pr, "[" + psi.toString() + "]");
+    	    	z(j, chi, addr_cc, g, l, formulas);
+    	    } else {
+    	    	premiss.setType(NodeType.UNLABELLED);
+    	    	z(j, chi, addr_cc, g, l, formulas);
+    	    }
+        case ATOM:
+        case VARIABLE:
+        /*	should always match the following test - provided depth is computed accurately */
+            if ( address == "" ) break;
+        }
+	}
 
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
 	throws IOException, ParserException, MalformedDomgraphException {
@@ -94,10 +152,33 @@ public class GlueInputCodec extends InputCodec {
 		     * package. Just be sure to not make them public.
 		     */
 		    
-		    
 		    System.out.println(formulas);
 		} catch(Throwable e) {
 		    throw new ParserException(e);
+		}
+		
+		for ( int i = 0; i < formulas.size(); i++ ) {
+			Formula axiom = formulas.get(i);
+                        
+             /* Add first node, labelled with axiom and index; the name is also indexed by
+			  * the formula's address (as many 1s as the implicative depth)
+			  */
+                        NodeData axNode = new NodeData(NodeType.LABELLED);
+                        String axAddress;
+						StringBuffer sb = new StringBuffer();
+						for (int d = 0; d < depth(axiom); ++d) {
+							sb.append("1");
+						}
+						axAddress = sb.toString();
+                        String name = "X" + String.valueOf(i+1) + "^" + axAddress;
+                        graph.addNode(name, axNode);
+                        labels.addLabel(name, "ax_"+String.valueOf(i+1));
+             
+              /* Recursive call on the axiom formula
+			   * (to simulate the auxiliary function z);
+			   * expands the constraint ("graph" and "labels") obtained so far
+			   */
+                        z(i, axiom, axAddress, graph, labels, formulas);                        
 		}
 	}
 }
