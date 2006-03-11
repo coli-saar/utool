@@ -36,47 +36,9 @@ import de.saar.chorus.ubench.JDomGraph;
  */
 public class JDomGraphTab extends JGraphTab  {
 	
-	// the grapb is initialized empty
-	private JDomGraph graph = new JDomGraph();
-	
-	private DomGraph domGraph;
-	
-	
-	private NodeLabels nodeLabels;
-	
+
 	// graph information concerning solving and identity
-	boolean solvable,  isSolvedForm, isSolvedYet; 
-	
-	
-	// managing solved forms
-	long 	solvedForms, // number of solved forms 
-			currentForm; // current solved form
-	
-	// name of graph and the tab (when inserted to a
-	// tabed pane)
-	private String defaultName, graphName;
-	
-	// solvedFormIterator of the graph
-	private SolvedFormIterator solvedFormIterator;
-
-	
-	// layout preferences of the current graph
-    private Preferences recentLayout;
-    
-    private JPanel statusBar;
-    
-    private String barCode;
-    
-    private CommandListener listener;
-    
-    //  shows the number of the recent solved form
-	private JTextField solvedForm;
-    
-	
-	
-	
-
-	
+	boolean solvable, isSolvedYet; 
 	
 	
 	/**
@@ -102,16 +64,9 @@ public class JDomGraphTab extends JGraphTab  {
 		ChartSolver solver = new ChartSolver(origin, chart);
 		
 		solvedFormIterator = new SolvedFormIterator(chart, origin);
-		// a new solvedFormIterator and a new converter initialized
-		// with the given graph
-	/*	if(Preferences.utoolPresent()) {
-			solvedFormIterator = new DomSolver();
-			conv = new JDomGraphConverter(solvedFormIterator);
-			conv.toDomGraph(theGraph);
-		}*/
+		
 		
 		isSolvedYet = false;
-		isSolvedForm = false;
 		solvable = true;
 		solvedForms = -1;
 		setBackground(Color.WHITE);
@@ -166,31 +121,7 @@ public class JDomGraphTab extends JGraphTab  {
 	
 	}
 	
-	
-	/**
-	 * @return Returns the isSolvedForm.
-	 */
-	public boolean isSolvedForm() {
-		return isSolvedForm;
-	}
-	
 
-	/**
-	 * @param isSolvedForm The isSolvedForm to set.
-	 */
-	public void setSolvedForm(boolean isSolvedForm) {
-		this.isSolvedForm = isSolvedForm;
-	}
-	
-
-	
-	public void resetSolvedFormText() {
-		solvedForm.setText(String.valueOf(currentForm));
-	}
-
-	/**
-	
-	
 
 	/**
 	 * @return true if the graph is solvable
@@ -209,23 +140,6 @@ public class JDomGraphTab extends JGraphTab  {
 	
 
 	/**
-	 * @return Returns the number of solved forms.
-	 */
-	public long getSolvedForms() {
-		return solvedForms;
-	}
-	
-
-	/**
-	 * @param solvedForms The solvedForms to set.
-	 */
-	public void setSolvedForms(long solvedForms) {
-		this.solvedForms = solvedForms;
-	}
-
-	
-
-	/**
 	 * @return true if the graph has been solved yet.
 	 */
 	public boolean isSolvedYet() {
@@ -239,143 +153,6 @@ public class JDomGraphTab extends JGraphTab  {
 		this.isSolvedYet = isSolvedYet;
 	}
 
-	
-
-	/**
-	 * @return Returns the solvedForm.
-	 */
-	public JTextField getSolvedForm() {
-		return solvedForm;
-	}
-
-	/**
-	 * @param solvedForm The solvedForm to set.
-	 */
-	public void setSolvedForm(JTextField solvedForm) {
-		this.solvedForm = solvedForm;
-	}
-
-	
-	
-	
-	/**
-	 * @return Returns the currentForm.
-	 */
-	public long getCurrentForm() {
-		return currentForm;
-	}
-	/**
-	 * @param currentForm The currentForm to set.
-	 */
-	public void setCurrentForm(long currentForm) {
-		this.currentForm = currentForm;
-	}
-	/**
-	 * @return Returns the myGraph.
-	 */
-	public String getGraphName() {
-		return graphName;
-	}
-	/**
-	 * @param myGraph The myGraph to set.
-	 */
-	public void setGraphName(String myGraph) {
-		this.graphName = myGraph;
-	}
-
-    
-
-    /**
-     * @return Returns the recentLayout.
-     */
-    public Preferences getRecentLayout() {
-        return recentLayout;
-    }
-    
-    
-    
-    
-    
-    /**
-     * @param recentLayout The recentLayout to set.
-     */
-    public void setRecentLayout(Preferences recentLayout) {
-        this.recentLayout = recentLayout;
-    }
-    
-     /**
-      * Repaints the graph if its layout is not consistent
-      * with the recent layout preferences.
-      */
-    public void repaintIfNecessary() {
-        if( (recentLayout == null) || Preferences.mustUpdateLayout(recentLayout) ) {
-            graph.setShowLabels(Preferences.getInstance().isShowLabels());
-            graph.computeLayout();
-            
-            graph.adjustNodeWidths();
-            updateRecentLayout();
-        }
-    }
-    
-    /**
-     * Updates the graph's layout preferences
-     * by adopting the recent global layout 
-     * preferences.
-     */
-    public void updateRecentLayout() {
-        if( recentLayout == null ) {
-            recentLayout =  Preferences.getInstance().clone();
-        } else {
-            Preferences.getInstance().copyTo(recentLayout);
-        }
-    }
-    
-    
-    /*** methods for hiding JDomGraph from classes in leonardo.gui ***/
-    
-    /**
-     * @return number of the graph's nodes
-     */
-    public int numGraphNodes() {
-        return graph.getNodes().size();
-    }
-    
-    /**
-     * @return a clone of the displayed graph
-     */
-    public JDomGraph getCloneOfGraph() {
-        return graph.clone();
-    }
-    
-    /**
-     * Resets the layout to its initial 
-     * version.
-     */
-    public void resetLayout() {
-        graph.setScale(1);
-        graph.computeLayout();
-        graph.adjustNodeWidths();
-    }
-    
-    /**
-     * Changes the graph's scale.
-     * 
-     * @param s the scale (percentage of the original one)
-     */
-    public void setGraphScale(double s) {
-        graph.setScale(s);
-    }
-    
-    /**
-     * @return the scale (percentage of the original one)
-     */
-    public double getGraphScale() {
-        return graph.getScale();
-    }
-    
-    
-    
-    
     
     /**
      * A <code>JPanel</code> representing a status bar for 
@@ -543,70 +320,18 @@ public class JDomGraphTab extends JGraphTab  {
     			
     		
     		
-    		
-    			//solve.setEnabled(false);
-    		
     	}
     }
 
 
-    
-    /**
-     * Overwrites the <code>finalize</code>-Method of 
-     * <code>Object</code>.
-     * Removes the related status bar of this tab from the
-     * <code>JDomGraphStatusBar</code> of <code>Main</code>.
-     */
-    protected void finalize() throws Throwable {
-    	try {
-    		Main.getStatusBar().removeBar(statusBar);
-    	} finally {
-    		super.finalize();
-    	}
-    }
+
 
 
 	/**
-	 * @param solvedFormIterator The solvedFormIterator to set.
+	 * Returns a <code>JGraphTab</code> identic to this one
+	 * but containing clones of the <code>DomGraph</code> and the 
+	 * <code>JDomGraph</code>
 	 */
-	public void setSolvedFormIterator(SolvedFormIterator solvedFormIterator) {
-		this.solvedFormIterator = solvedFormIterator;
-	}
-
-
-	/**
-	 * @return Returns the domGraph.
-	 */
-	public DomGraph getDomGraph() {
-		return domGraph;
-	}
-
-
-	/**
-	 * @param domGraph The domGraph to set.
-	 */
-	public void setDomGraph(DomGraph domGraph) {
-		this.domGraph = domGraph;
-	}
-	/**
-	 * @return Returns the nodeLabels.
-	 */
-	public NodeLabels getNodeLabels() {
-		return nodeLabels;
-	}
-
-
-	/**
-	 * @param nodeLabels The nodeLabels to set.
-	 */
-	public void setNodeLabels(NodeLabels nodeLabels) {
-		this.nodeLabels = nodeLabels;
-	}
-
-	/* (non-Javadoc)
-	 * @see de.saar.chorus.ubench.gui.JGraphTab#clone()
-	 */
-	@Override
 	public JGraphTab clone() {
 		JDomGraph jdomCl = graph.clone();
 		DomGraph domCl = (DomGraph) domGraph.clone();
@@ -617,82 +342,6 @@ public class JDomGraphTab extends JGraphTab  {
 		return myClone;
 	}
 
-	/**
-	 * @return Returns the barCode.
-	 */
-	public String getBarCode() {
-		return barCode;
-	}
-
-	/**
-	 * @param barCode The barCode to set.
-	 */
-	public void setBarCode(String barCode) {
-		this.barCode = barCode;
-	}
-
-	/**
-	 * @return Returns the defaultName.
-	 */
-	public String getDefaultName() {
-		return defaultName;
-	}
-
-	/**
-	 * @param defaultName The defaultName to set.
-	 */
-	public void setDefaultName(String defaultName) {
-		this.defaultName = defaultName;
-	}
-
-	/**
-	 * @return Returns the graph.
-	 */
-	public JDomGraph getGraph() {
-		return graph;
-	}
-
-	/**
-	 * @param graph The graph to set.
-	 */
-	public void setGraph(JDomGraph graph) {
-		this.graph = graph;
-	}
-
-	/**
-	 * @return Returns the listener.
-	 */
-	public CommandListener getListener() {
-		return listener;
-	}
-
-	/**
-	 * @param listener The listener to set.
-	 */
-	public void setListener(CommandListener listener) {
-		this.listener = listener;
-	}
-
-	/**
-	 * @return Returns the statusBar.
-	 */
-	public JPanel getStatusBar() {
-		return statusBar;
-	}
-
-	/**
-	 * @param statusBar The statusBar to set.
-	 */
-	public void setStatusBar(JPanel statusBar) {
-		this.statusBar = statusBar;
-	}
-
-	/**
-	 * @return Returns the solvedFormIterator.
-	 */
-	public SolvedFormIterator getSolvedFormIterator() {
-		return solvedFormIterator;
-	}
 
 	public JSolvedFormTab createFirstSolvedForm() {
 		if(! isSolvedYet ) {
