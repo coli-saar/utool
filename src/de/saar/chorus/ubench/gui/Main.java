@@ -106,8 +106,6 @@ public class Main  {
     
 	// the main listener for menus and buttons
 	private static CommandListener listener;
-    
-	private static Map<DomGraph, NodeLabels> graphToLabels;
 	
 	// the menu bar 
 	private static JDomGraphMenu menuBar;
@@ -439,27 +437,9 @@ public class Main  {
                     JOptionPane.ERROR_MESSAGE);
             return null;
         }
-        
-        graphToLabels.put(graph,nl);
+
         DomGraphTConverter conv = new DomGraphTConverter(graph, nl);
         return conv.getJDomGraph();
-        
-     /*   
-    	DomSolver solver = new DomSolver();
-        boolean ok = solver.loadGraph(filename);
-        
-        if( !ok ) {
-            JOptionPane.showMessageDialog(window,
-                    "An error occurred while loading this graph\n(perhaps the file " +
-                    "doesn't exist,\nor the input codec couldn't be determined or was " +
-                    "unable to parse the graph).",
-                    "Error during import",
-                    JOptionPane.ERROR_MESSAGE);
-            return null;
-        } else {
-            DomGraphConverter conv = new DomGraphConverter(solver, solver.getGraph());
-            return conv.toJDomGraph();
-        }*/
     }    
     
     /**
@@ -494,8 +474,6 @@ public class Main  {
         // extract arguments
         boolean serverMode = getopt.hasOption('s');
         int port = Integer.parseInt(getopt.getValue('p'));
-        
-        graphToLabels = new HashMap<DomGraph, NodeLabels>();
         
         // set up the window
         window = makeWindow();
@@ -617,10 +595,7 @@ public class Main  {
         }
     }
 	
-	public static NodeLabels getLabelsFor(DomGraph gr) {
-		return graphToLabels.get(gr);
-	}
-
+	
     public static CodecManager getCodecManager() {
         return codecManager;
     }

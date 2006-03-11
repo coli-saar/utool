@@ -53,9 +53,11 @@ public class JDomGraphTab extends JGraphTab  {
 			boolean paintNow, CommandListener lis, NodeLabels labels) {
 		
 		super(theGraph, origin, name, lis, labels);
+	
+		// initializing
 		graphName = name;
 		
-		// initializing fields
+		
 		Chart chart = new Chart();
 		ChartSolver solver = new ChartSolver(origin, chart);
 		
