@@ -68,7 +68,7 @@ public class GlueInputCodec extends InputCodec {
 	  formulas = new ArrayList<Formula>();
     }
 	
-	private List<Formula> suffixes(Formula f) {
+	public List<Formula> suffixes(Formula f) {
 		List suff = new ArrayList<Formula>();
 	    switch ( f.getType() ) {
         case IMPLICATION:
@@ -82,14 +82,14 @@ public class GlueInputCodec extends InputCodec {
         return suff;
 	}
 
-	private boolean isSuffix(Formula f, List<Formula> formulas) {
+	public boolean isSuffix(Formula f, List<Formula> formulas) {
 		for (int i = 0; i < formulas.size(); i++) {
 			if ( suffixes(formulas.get(i)).contains(f) )	return true;
 		}
 		return false;
 	}
 
-    private int depth(Formula f) {
+    public int depth(Formula f) {
         switch ( f.getType() ) {
         case IMPLICATION:
                 return depth(f.getSubformulas().get(1)) + 1;
@@ -100,31 +100,72 @@ public class GlueInputCodec extends InputCodec {
         return 0;
     }
 
+/*	Subroutine z corresponds to the auxiliary mapping of formulas z in the paper;
+	it modifies the graph g and labels l passed in parameter
+*/
+
 	private void z(int j, Formula phi, String address, DomGraph g, NodeLabels l, List<Formula> axioms) {
         switch ( phi.getType() ) {
         case IMPLICATION:
-        	Formula psi = phi.getSubformulas().get(0);
-        	Formula chi = phi.getSubformulas().get(1);
-            NodeData conclusion = new NodeData(NodeType.LABELLED);
-   	        NodeData premiss = new NodeData(NodeType.LABELLED);
-   	        String addr_cc = address.substring(0, address.length()-1);
-       	    String name_cc = "X" + String.valueOf(j+1) + "^" + addr_cc;
-       		String name_pr = "X" + String.valueOf(j+1) + "^" + addr_cc + "2";
-            g.addNode(name_cc, conclusion);
-   	        g.addNode(name_pr, premiss);
+		Formula psi = phi.getSubformulas().get(0);
+		Formula chi = phi.getSubformulas().get(1);
+		NodeData conclusion = new NodeData(NodeType.LABELLED);
+		NodeData premiss = new NodeData(NodeType.LABELLED);
+		// Address may not be at this point the empty word
+		String addr_cc = address.substring(0, address.length()-1);
+		String addr_pr = addr_cc + "2";
+		String name_cc = "X" + String.valueOf(j+1) + addr_cc;
+		String name_pr = "X" + String.valueOf(j+1) + addr_pr;
+		String name_impl = "X" + String.valueOf(j+1) + address;
+		g.addNode(name_cc, conclusion);
         	l.addLabel(name_cc, "ie");
+		g.addNode(name_pr, premiss);
+		// Creates the labelling edges
+		EdgeData left = new EdgeData(EdgeType.TREE);
+		EdgeData right = new EdgeData(EdgeType.TREE);
+		g.addEdge(name_cc, name_impl, left);
+		g.addEdge(name_cc, name_pr, right);
         	if ( !isSuffix(psi, axioms) ) {
-    	    	l.addLabel(name_pr, "[" + psi.toString() + "]");
-    	    	z(j, chi, addr_cc, g, l, formulas);
-    	    } else {
-    	    	premiss.setType(NodeType.UNLABELLED);
-    	    	z(j, chi, addr_cc, g, l, formulas);
-    	    }
+			l.addLabel(name_pr, "[" + psi.toString() + "]");
+    	    		z(j, chi, addr_cc, g, l, formulas);
+    	    	} else {
+    	    		z(j, chi, addr_cc, g, l, formulas);
+    		/* 	if psi is not a suffix, branching downward does not necessarily
+			yield a label for the right-bottom node (corresp. to "premiss")
+			(only if the downward recursion (subroutine w) is not trivial):
+		*/
+			premiss.setType(NodeType.UNLABELLED);
+			w(j, psi, addr_pr, g, l);
+		}
         case ATOM:
         case VARIABLE:
-        /*	should always match the following test - provided depth is computed accurately */
+        //	should always match the following test - provided depth is computed accurately
             if ( address == "" ) break;
         }
+	}
+
+	private void w(int j, Formula phi, String address, DomGraph g, NodeLabels l) {
+		switch ( phi.getType() ) {
+		case IMPLICATION:
+			Formula psi = phi.getSubformulas().get(0);
+        		Formula chi = phi.getSubformulas().get(1);
+			// same remark as above: a priori, the new node downward needs not be labelled
+			NodeData conclusion = new NodeData(NodeType.UNLABELLED);
+			String addr_cc = address + "1";
+			String name_cc = "X" + String.valueOf(j+1) + addr_cc;
+			g.addNode(name_cc, conclusion);
+			// sets label for the implication-introduction node, previously defined
+			String name_impl = "X" + String.valueOf(j+1) + address;
+			NodeData implication = g.getData(name_impl);
+			implication.setType(NodeType.LABELLED);
+			l.addLabel(name_impl, "ii_<" + psi.toString() + ">");
+			// creates the labelling edge
+			EdgeData edge = new EdgeData(EdgeType.TREE);
+			g.addEdge(name_impl, name_cc, edge);
+			w(j, chi, addr_cc, g, l);
+		case ATOM:
+		case VARIABLE:
+		}
 	}
 
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
@@ -170,7 +211,7 @@ public class GlueInputCodec extends InputCodec {
 							sb.append("1");
 						}
 						axAddress = sb.toString();
-                        String name = "X" + String.valueOf(i+1) + "^" + axAddress;
+                        String name = "X" + String.valueOf(i+1) + axAddress;
                         graph.addNode(name, axNode);
                         labels.addLabel(name, "ax_"+String.valueOf(i+1));
              
