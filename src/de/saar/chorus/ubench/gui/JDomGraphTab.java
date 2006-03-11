@@ -98,6 +98,10 @@ public class JDomGraphTab extends JGraphTab  {
         
 		statusBar = new DominanceGraphBar();
 		barCode = Main.getStatusBar().insertBar(statusBar);
+		
+		if(Preferences.isAutoCount()) {
+			solve();
+		}
 	}
 	
 	/**
