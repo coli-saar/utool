@@ -30,15 +30,14 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
-import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
-import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.jgraph.ImprovedJGraphAdapter;
 import de.saar.chorus.ubench.DomGraphTConverter;
+import de.saar.chorus.ubench.JDomDataFactory;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
@@ -700,6 +699,11 @@ public class CommandListener implements ActionListener, ItemListener {
 		int toInsertHere = Main.getVisibleTabIndex();
 		
 		// converting the form to a JDomGraph
+		//JDomGraph domSolvedForm = new JDomGraph();
+		//JDomDataFactory fac = new JDomDataFactory(nextForm, labels, domSolvedForm);
+		//ImprovedJGraphAdapter.convert(nextForm, fac, domSolvedForm);
+		
+		
 		DomGraphTConverter conv = new DomGraphTConverter(nextForm, labels);
 		JDomGraph domSolvedForm = conv.getJDomGraph();
 		

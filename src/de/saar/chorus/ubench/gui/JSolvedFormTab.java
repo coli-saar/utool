@@ -24,7 +24,7 @@ import de.saar.chorus.ubench.JDomGraph;
 
 public class JSolvedFormTab extends JGraphTab {
 
-//	 managing solved forms
+	
 	long currentForm; // current solved form
 	   
     //  shows the number of the recent solved form
