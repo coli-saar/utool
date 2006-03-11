@@ -41,19 +41,13 @@ public class JSolvedFormTab extends JGraphTab {
 			SolvedFormIterator solv, DomGraph origin, long form, long allForms, 
 			String gName, CommandListener lis, NodeLabels labels) {
 		
+		super(solvedForm, origin, name, lis, labels);
 		// initializing fields
-		listener = lis;
-		defaultName = name;
-		graph = solvedForm;
-		domGraph = origin;
-		nodeLabels = labels;
 		solvedFormIterator = solv;
 		currentForm = form;
 		solvedForms = solv.getChart().countSolvedForms().longValue();
         recentLayout = null;
 		graphName = gName;
-		
-		setBackground(Color.WHITE);
 		
 		// layouting the graph
 		graph.computeFragments();

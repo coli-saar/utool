@@ -1,5 +1,7 @@
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Color;
+
 import javax.swing.JPanel;
 
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -41,6 +43,16 @@ public abstract class JGraphTab extends JPanel {
 	// the tabs have to define their clone-methods themselves
 	public abstract JGraphTab clone();
 
+	public JGraphTab(JDomGraph jdg, DomGraph dg, String name,
+			CommandListener lis, NodeLabels lab) {
+		graph = jdg;
+		domGraph = dg;
+		defaultName = name;
+		listener = lis;
+		nodeLabels = lab;
+		setBackground(Color.WHITE);
+	}
+	
 	
 	/*** Getters and setters equal for both kinds of tabs***/
 	
