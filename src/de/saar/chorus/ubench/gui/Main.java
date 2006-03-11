@@ -425,7 +425,6 @@ public class Main  {
     public static JDomGraph importGraph(String filename, DomGraph graph, NodeLabels nl) {
         InputCodec inputCodec = codecManager.getInputCodecForFilename(filename, null);
         
-        NodeLabels nodeLabels = new NodeLabels();
         try {
             inputCodec.decodeFile(filename, graph, nl);
         } catch(Exception e) {

@@ -379,12 +379,9 @@ public class CommandListener implements ActionListener, ItemListener {
 					
 					long no = ((JSolvedFormTab) Main.getVisibleTab()).getCurrentForm();
 					if(no < Main.getVisibleTab().getSolvedForms()) {
-						System.err.println("enough sFs - more than " + no);
 						no++;
-						// bar.setSolvedFormText(String.valueOf(no));
 						showSolvedFormWithIndex(no);
-						//Main.getVisibleTab().setCurrentForm(no);
-					}
+				}
 					
 					Main.refresh();
 				} else if (command.equals("minus")) {
@@ -393,9 +390,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					long no = ((JSolvedFormTab) Main.getVisibleTab()).getCurrentForm();
 					if(no > 1) {
 						no--;
-						//bar.setSolvedFormText(String.valueOf(no));
 						showSolvedFormWithIndex(no);
-						//Main.getVisibleTab().setCurrentForm(no);
 					}
 					
 					Main.refresh();
