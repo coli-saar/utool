@@ -173,7 +173,7 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		
 		// utool-Menu
-		utoolMenu = new JMenu("LibDomgraph");
+		utoolMenu = new JMenu("Utool");
 		utoolMenu.setMnemonic(KeyEvent.VK_U);
 		
 		// checkbox indicating whether all graphs loaded
