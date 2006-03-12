@@ -7,9 +7,10 @@ import javax.swing.JPanel;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.JDomGraph;
 
-public abstract class JGraphTab extends JPanel {
+public abstract class JGraphTab extends JScrollableJGraph {
 	//	the grapb is initialized empty
 	protected JDomGraph graph;
 
@@ -45,6 +46,7 @@ public abstract class JGraphTab extends JPanel {
 
 	public JGraphTab(JDomGraph jdg, DomGraph dg, String name,
 			CommandListener lis, NodeLabels lab) {
+		super(jdg);
 		graph = jdg;
 		domGraph = dg;
 		defaultName = name;

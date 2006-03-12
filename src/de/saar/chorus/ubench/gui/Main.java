@@ -5,23 +5,20 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
-import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
@@ -93,7 +90,7 @@ public class Main  {
 	private static JDomTabbedPane tabbedPane ;
 	
 	// the scaling slider
-	private static JDomGraphSlider slider = new JDomGraphSlider();
+	//private static JDomGraphSlider slider = new JDomGraphSlider();
 	
 	// the status bar
 	private static JDomGraphStatusBar statusBar;
@@ -119,12 +116,8 @@ public class Main  {
      */
 	public static void resetSlider() {
 		if(getVisibleGraph() != null) {
-			slider.setValue((int) (Main.getVisibleGraph().getScale()*100));
-		} else {
-			// if there is no graph to show, the slider
-			// is set to 100%.
-			slider.setValue(100);
-		}
+			getVisibleTab().resetSlider();
+		} 
 	}
 	
 	/**
@@ -485,16 +478,16 @@ public class Main  {
         statusBar = new JDomGraphStatusBar(listener);
      
         
-        ttm.registerComponent(slider);
+        //ttm.registerComponent(slider);
         ttm.registerComponent(statusBar);
         ttm.setInitialDelay(100);
         ttm.setLightWeightPopupEnabled(false);
         
-        window.add(slider, BorderLayout.EAST);
+     
         window.add(tabbedPane, BorderLayout.CENTER);
         window.add(statusBar, BorderLayout.SOUTH);
 
-        tabbedPane.copyShortcuts(slider);
+        //tabbedPane.copyShortcuts(slider);
         tabbedPane.copyShortcuts(statusBar);
         
         menuBar.setGraphSpecificItemsEnabled(false);
@@ -504,7 +497,7 @@ public class Main  {
         window.doLayout();
         window.pack();
         window.validate();
-        
+ 
         window.setVisible(true);
         
         
@@ -519,9 +512,15 @@ public class Main  {
                 		(new File(file)).getName(),anotherGraph,true, false, labels);
                 if( firstTab != null ) {
                     tabbedPane.copyShortcuts(firstTab);
+                    firstTab.setMinimumSize(new Dimension(
+                    		graph.getSize().width,
+                    		graph.getSize().height
+                    		));
                 }
             }
         }
+        window.pack();
+        window.validate();
         
         // if the program was started in server mode, start the server thread
         if( serverMode ) {

@@ -13,6 +13,8 @@ import javax.swing.event.ChangeListener;
 
 import org.jgraph.JGraph;
 
+import de.saar.chorus.ubench.gui.Main;
+
 public class JGraphSlider extends JSlider implements ChangeListener {
     private JGraph graph;
     
@@ -31,6 +33,19 @@ public class JGraphSlider extends JSlider implements ChangeListener {
         addChangeListener(this);
     }
     
+    /**
+     * Aligning the slider with the currently shown graph.
+     * (if there is one).
+     */
+	public void resetSlider() {
+		if(graph != null) {
+			setValue((int) (graph.getScale()*100));
+		} else {
+			// if there is no graph to show, the slider
+			// is set to 100%.
+			setValue(100);
+		}
+	}
 
     public void stateChanged(ChangeEvent e) {
         
