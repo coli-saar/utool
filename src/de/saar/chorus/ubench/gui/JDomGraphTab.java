@@ -88,6 +88,7 @@ public class JDomGraphTab extends JGraphTab  {
 
             add(graph);
             
+            
             // error message if layout fails
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(Main.getWindow(),

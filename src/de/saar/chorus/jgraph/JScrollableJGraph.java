@@ -14,6 +14,8 @@ import javax.swing.JScrollPane;
 
 import org.jgraph.JGraph;
 
+import de.saar.chorus.ubench.gui.Main;
+
 public class JScrollableJGraph extends JPanel {
     private JGraphSlider slider;
     private JScrollPane scrollpane;
@@ -26,5 +28,14 @@ public class JScrollableJGraph extends JPanel {
         
         add(scrollpane, BorderLayout.CENTER);
         add(slider, BorderLayout.EAST);
+        validate();
     }
+    
+    /**
+     * Aligning the slider with the currently shown graph.
+     * (if there is one).
+     */
+	public void resetSlider() {
+		slider.resetSlider();
+	}
 }
