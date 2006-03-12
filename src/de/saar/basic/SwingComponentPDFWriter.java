@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.basic;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -6,49 +6,40 @@ import java.awt.geom.AffineTransform;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.swing.JComponent;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
-
-import de.saar.chorus.ubench.JDomGraph;
 /**
  * 
- * Provides a static method to print a <code>JDomGraph</code> 
+ * Provides a static method to print a <code>JComponent</code> 
  * to a PDF.
  * 
  * @author Alexander Koller
  * @author Michaela Regneri
  *
  */
-public class DomPDFWriter  {
+public class SwingComponentPDFWriter  {
 
 	
 	/**
-	 * Method to print the given JDomGraph to a pdf-file with the
+	 * Method to print the given Swing component to a pdf-file with the
 	 * given name.
 	 * 
-	 * @param graph the JDomGraph to print
+	 * @param component the <code>JComponent</code> to print
 	 * @param filename the file to print in (has to be *.pdf)
+	 * @throws <code>IOException</code> if there is anything wrong with the file
 	 */
-	public static void printToPDF(JDomGraph graph, String filename) {
+	public static void printToPDF(JComponent component, String filename)
+			throws IOException {
 		
-	    /*JDomGraph graph = gr.clone();
-	    graph.computeFragments();
-		
-	    JFrame f = new JFrame("JGraph Test");
-		   f.add(graph);
-		   f.pack();
-		   
-		   graph.repaintIfNecessary();
-		    
 	
-	    */
-		// to resize the graph
-		double originalScale = graph.getScale(); 
+	
 		float scale;
-		Rectangle boundingBox = graph.getBoundingBox();
+		Rectangle boundingBox = component.getBounds();
 		
 		
 		// a4Paper - size
@@ -62,10 +53,10 @@ public class DomPDFWriter  {
 		// to choose between portrait and landscape
 		double boxRatio = boundingBox.height/boundingBox.width;
 		
-		// a graph that is longer than wide.
+		
 		if( boxRatio >= 1.0 ) {
-			// a graph that is longer than wide.
-			// width of the graph has to fit in the page 
+			// a piture that is longer than wide.
+			// the width of the picture has to fit in the page 
 			// (considering the margins with 40)
 			scale = Math.min(1, 
 					Math.min((PageSize.A4.width()-40)/(boundingBox.width + 50),
@@ -76,9 +67,9 @@ public class DomPDFWriter  {
 		
 			
 		} else {
-			// a graph that is square or wider than long.
+			// a picture that is square or wider than long.
 			
-			//width of the graph has to fit in the page 
+			//width of the picture has to fit in the page 
 			// (considering the margins with 40)
 			// landscape-width = portrait-height !
 			scale = Math.min(1, 
@@ -93,8 +84,6 @@ public class DomPDFWriter  {
         document= new Document(new com.lowagie.text.Rectangle(boundingBox.width, boundingBox.height));
 		
 		try {
-		
-			//boundingBox.setBounds(0,0, (int) (boundingBox.width*scale), (int) (boundingBox.height*scale));
 			//the writer
 			PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
 			
@@ -108,7 +97,7 @@ public class DomPDFWriter  {
 		
 
 			// painting myself 
-			graph.paint(g2);
+			component.paint(g2);
 
             cb.transform(AffineTransform.getScaleInstance(scale,scale));
 
@@ -122,9 +111,6 @@ public class DomPDFWriter  {
 		}
 		catch(DocumentException de) {
 			System.err.println(de.getMessage());
-		}
-		catch(IOException ioe) {
-			System.err.println(ioe.getMessage());
 		}
 	}
 	

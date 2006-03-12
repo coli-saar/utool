@@ -14,6 +14,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
+import de.saar.basic.SwingComponentPDFWriter;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
@@ -204,10 +206,15 @@ public class CommandListener implements ActionListener, ItemListener {
 						
 						progress.setVisible(true);
 						
-						
+						try {
 						// the actual PDF-printing
-						DomPDFWriter.printToPDF(Main.getVisibleTab().getGraph(), recentPath);
-						
+						SwingComponentPDFWriter.printToPDF(Main.getVisibleTab().getGraph(), recentPath);
+						} catch (IOException io) {
+							JOptionPane.showMessageDialog(Main.getWindow(),
+									"The output file can't be opened.",
+									"Error from PDF printer",
+									JOptionPane.ERROR_MESSAGE);
+						}
 						// after finishing, the progress bar becomes
 						// determined and fixated at maximum value (100%)
 						progressBar.setMaximum(100);
