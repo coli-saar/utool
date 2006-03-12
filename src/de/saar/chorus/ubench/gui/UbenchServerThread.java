@@ -26,7 +26,7 @@ public class UbenchServerThread extends Thread {
         openPattern = Pattern.compile("\\s*<open\\s+filename\\s*=\\s*\"([^\"]+).*");
         importPattern = Pattern.compile("\\s*<import\\s+filename\\s*=\\s*\"([^\"]+).*");
         
-        System.err.println("Leonardo is listening on port " + port);
+        System.err.println("Ubench is listening on port " + port);
     }
         
     public void run() {
