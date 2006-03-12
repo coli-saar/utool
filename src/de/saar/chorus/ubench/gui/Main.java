@@ -512,10 +512,7 @@ public class Main  {
                 		(new File(file)).getName(),anotherGraph,true, false, labels);
                 if( firstTab != null ) {
                     tabbedPane.copyShortcuts(firstTab);
-                    firstTab.setMinimumSize(new Dimension(
-                    		graph.getSize().width,
-                    		graph.getSize().height
-                    		));
+                    firstTab.setMinimumSize(graph.getSize());
                 }
             }
         }
@@ -524,7 +521,7 @@ public class Main  {
         
         // if the program was started in server mode, start the server thread
         if( serverMode ) {
-            new LeonardoServerThread(port).start();
+            new UbenchServerThread(port).start();
         }        
     }
     
