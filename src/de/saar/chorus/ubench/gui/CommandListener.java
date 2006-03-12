@@ -58,8 +58,8 @@ public class CommandListener implements ActionListener, ItemListener {
 	private String recentPath = ".", recentFile="";
 	
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
-	private List<FileFilter> ffInputCodecs;
-	private List<FileFilter> ffOutputCodecs;
+	private List<GenericFileFilter> ffInputCodecs;
+	private List<GenericFileFilter> ffOutputCodecs;
 	private OverallFileFilter showAll;
 	
 	
@@ -74,8 +74,8 @@ public class CommandListener implements ActionListener, ItemListener {
 		// initializing fields
 		eventSources = new HashMap<Object,String>();
 		
-		ffInputCodecs = new ArrayList<FileFilter>();
-		ffOutputCodecs = new ArrayList<FileFilter>();
+		ffInputCodecs = new ArrayList<GenericFileFilter>();
+		ffOutputCodecs = new ArrayList<GenericFileFilter>();
 		showAll = new OverallFileFilter();
 		
 		for( Class codec : codecman.getAllInputCodecs() ) {
@@ -300,9 +300,20 @@ public class CommandListener implements ActionListener, ItemListener {
 					if( graph != null) {
 						JFileChooser fc = new JFileChooser(recentPath);
 						
-						for( FileFilter ff : ffOutputCodecs ) {
-							fc.addChoosableFileFilter(ff);
+						// show plugging codecs just for solved forms.
+						// TODO perhaps find a more aesthetic solution here.
+						if( Main.getVisibleTab() instanceof JSolvedFormTab) {
+							for( FileFilter ff : ffOutputCodecs ) {
+								fc.addChoosableFileFilter(ff);
+							}
+						} else {
+							for( FileFilter ff : ffOutputCodecs ) {
+								if(! ff.getDescription().contains("plugging") ) {
+									fc.addChoosableFileFilter(ff);
+								}
+							}
 						}
+						
 						
 						if(! (lastPath == null) ) {
 							fc.setCurrentDirectory(lastPath);
@@ -310,10 +321,21 @@ public class CommandListener implements ActionListener, ItemListener {
 						
 						int fcVal = fc.showSaveDialog(Main.getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
-							final File file = fc.getSelectedFile();
-                            recentPath = file.getAbsolutePath();
 							
+							File file = fc.getSelectedFile();
 							lastPath = file.getParentFile();
+							String targetFile = file.getAbsolutePath();
+                            String defaultExtension = ((GenericFileFilter) 
+                            			fc.getFileFilter()).getExtension();
+                            
+                            if(! targetFile.endsWith(defaultExtension) ) {
+                            	targetFile += defaultExtension;
+                            	file = new File(targetFile);
+                            }
+							
+							recentPath = file.getAbsolutePath();
+							
+							
 							
 							OutputCodec oc = 
 								Main.getCodecManager().getOutputCodecForFilename(file.getName(),null);
@@ -655,6 +677,10 @@ public class CommandListener implements ActionListener, ItemListener {
 		 */
 		public String getDescription() {
 			return "*" + extension + " (" + desc + ")";
+		}
+		
+		public String getExtension() {
+			return extension;
 		}
 		
 	}
