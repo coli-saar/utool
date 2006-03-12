@@ -15,9 +15,12 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -35,9 +38,7 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.jgraph.ImprovedJGraphAdapter;
 import de.saar.chorus.ubench.DomGraphTConverter;
-import de.saar.chorus.ubench.JDomDataFactory;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
@@ -57,6 +58,8 @@ public class CommandListener implements ActionListener, ItemListener {
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
 	private List<FileFilter> ffInputCodecs;
 	private List<FileFilter> ffOutputCodecs;
+	private OverallFileFilter showAll;
+	
 	
 	private Map<Object,String> eventSources;
 	
@@ -71,6 +74,7 @@ public class CommandListener implements ActionListener, ItemListener {
 		
 		ffInputCodecs = new ArrayList<FileFilter>();
 		ffOutputCodecs = new ArrayList<FileFilter>();
+		showAll = new OverallFileFilter();
 		
 		for( Class codec : codecman.getAllInputCodecs() ) {
 			String name = CodecManager.getCodecName(codec);
@@ -78,6 +82,7 @@ public class CommandListener implements ActionListener, ItemListener {
 			
 			if( (name != null) && (extension != null)) {
 				ffInputCodecs.add(new GenericFileFilter(extension, name));
+				showAll.addExtension(extension);
 			}
 		}
 		
@@ -229,9 +234,13 @@ public class CommandListener implements ActionListener, ItemListener {
 			if( command.equals("loadGXL") ) {
 				JFileChooser fc = new JFileChooser(recentPath);
 				
+				fc.addChoosableFileFilter(showAll);
+				
 				//    fc.addChoosableFileFilter(ffInNativeGxl);
-				for( FileFilter ff : ffInputCodecs )
+				for( FileFilter ff : ffInputCodecs ) {
 					fc.addChoosableFileFilter(ff);
+				}
+				
 				
 				if(! (lastPath == null) ) {
 					fc.setCurrentDirectory(lastPath);
@@ -521,6 +530,74 @@ public class CommandListener implements ActionListener, ItemListener {
 		return eventSources.get(source);
 	}
 	
+	/**
+	 * A <code>FileFilter</code> designed to 
+	 * accept a succesively added collection of
+	 * extensions.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
+	private class OverallFileFilter extends FileFilter {
+
+		Set<String> extensions;
+		
+		/**
+		 *  Empty constructor (just for initialising).
+		 *
+		 */
+		OverallFileFilter() {
+			extensions = new HashSet<String>();
+		}
+		
+		/**
+		 * Initialise the Filter with a list of 
+		 * extensions to accept.
+		 * Please make sure to have a Collection of
+		 * extension strings starting with "." !
+		 * 
+		 * @param ext
+		 */
+		OverallFileFilter(Collection<String> ext) {
+			extensions = new HashSet<String>(ext);
+		}
+		
+		public void addExtension(String extension) {
+			if( extension.startsWith(".") ) {
+				extensions.add(extension);
+			} else {
+				extensions.add("."+ extension);
+			}
+		}
+		
+		/**
+		 * 
+		 */
+		public boolean accept(File f) {
+			
+			String fileName = f.getName();
+			
+			if( f.isDirectory() ) {
+				return true;
+			} 
+			
+			for(String extension : extensions ) {
+				if(fileName.endsWith(extension) ) {
+					return true;
+				}
+				
+			}
+			return false;
+		}
+
+		/**
+		 * 
+		 */
+		public String getDescription() {
+			return "Show all known files";
+		}
+		
+	}
 	
 	
 	/**
