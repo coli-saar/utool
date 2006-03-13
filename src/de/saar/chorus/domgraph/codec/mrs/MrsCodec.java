@@ -111,7 +111,7 @@ class MrsCodec {
 		}
 	}
 	
-	public void addBindingEdges() throws MalformedDomgraphException
+	private void addBindingEdges() throws MalformedDomgraphException
 	{
 		for (Map.Entry<String,Set<String>> entry : bound.entrySet()) {
 			String node1 = binder.get(entry.getKey());
@@ -129,86 +129,86 @@ class MrsCodec {
 		}
 	}
 	
-	void addRelation(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
+	public void addRelation(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
 	{
+		addNode(node, label);
+		
 		if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
-			addQuantifier(node, label, attrs);
-		} else {
-			addNonQuantifier(node, label, attrs);
-		}
-	}
-	
-	void addQuantifier(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
-	{
-		addNode(node, label);
-		
-		addTreeEdge(node, attrs.remove("RSTR"));
-		addTreeEdge(node, attrs.remove("BODY"));
-		
-		String var = attrs.remove("ARG0");
-		
-		if (binder.containsKey(var))
-			throw new MalformedDomgraphException("Variable " + var + " is used by distinct quantifiers", ErrorCodes.NOT_WELLFORMED);
-		
-		binder.put(var, node);
-		
-		if (attrs.size() > 0) 
-			throw new MalformedDomgraphException("Illegal quantifier syntax", ErrorCodes.NOT_WELLFORMED);
-	}
-	
-	void addNonQuantifier(String node, String label, Map<String,String> attrs)
-	{
-		addNode(node, label);
-		
-		for (Map.Entry<String,String> entry : attrs.entrySet()) {
-			String attr = entry.getKey();
-			String value = entry.getValue();
+			// Quantifier 
+			addTreeEdge(node, attrs.remove("RSTR"));
+			addTreeEdge(node, attrs.remove("BODY"));
 			
-			if (!ignore(attr) && sig.containsKey(value)) {
-				switch (sig.get(value)) {
-				case VARIABLE:
-					Set<String> nodes = bound.get(value);
-					if (nodes == null) 
-						bound.put(value, nodes = new TreeSet<String>());
-					nodes.add(node);
-					break;
-				case HANDLE:
-					addTreeEdge(node, value);
-					break;
+			String var = attrs.remove("ARG0");
+			
+			if (binder.put(var, node) != null)
+				throw new MalformedDomgraphException("Variable " + var + " is used by distinct quantifiers", ErrorCodes.NOT_WELLFORMED);
+			
+			if (attrs.size() > 0) 
+				throw new MalformedDomgraphException("Illegal quantifier syntax", ErrorCodes.NOT_WELLFORMED);
+		} else {
+			// Non-quantifier
+			for (Map.Entry<String,String> entry : attrs.entrySet()) {
+				String attr = entry.getKey();
+				String value = entry.getValue();
+				
+				if (!ignore(attr) && sig.containsKey(value)) {
+					switch (sig.get(value)) {
+					case VARIABLE:
+						Set<String> nodes = bound.get(value);
+						if (nodes == null) 
+							bound.put(value, nodes = new TreeSet<String>());
+						nodes.add(node);
+						break;
+					case HANDLE:
+						addTreeEdge(node, value);
+						break;
+					}
 				}
 			}
 		}
 	}
 	
-	void setTopHandle(String topnode)
+	private void setTopHandle(String topnode)
 	{
 		Set<String> top = graph.getFragment(topnode);
 		Collection<String> holes = graph.getHoles(top);
-		Set<String> withoutTop = new TreeSet<String>(graph.getAllNodes());
 		
-		withoutTop.removeAll(top);
-		
-		for (Set<String> wcc : graph.wccs(withoutTop)) {
-			for (String node : wcc) {
-				for (String parent : graph.getParents(node, EdgeType.DOMINANCE)) {						
-					if (holes.contains(parent)) {
-						for (String root : graph.getAllRoots(wcc)) {
-							if (graph.indeg(root, EdgeType.DOMINANCE) == 0) {
-								addDomEdge(parent, root);
+		if (holes.size() == 1) {
+			// this is more efficient
+			for (String hole : holes) {
+				for (String root : graph.getAllRoots()) {
+					if (graph.indeg(root, EdgeType.DOMINANCE) == 0 && !topnode.equals(root)) {
+						addDomEdge(hole, root);
+					}
+				}
+			}
+		} else {
+			Set<String> withoutTop = new TreeSet<String>(graph.getAllNodes());
+			
+			withoutTop.removeAll(top);
+			
+			for (Set<String> wcc : graph.wccs(withoutTop)) {
+				for (String node : wcc) {
+					for (String parent : graph.getParents(node, EdgeType.DOMINANCE)) {						
+						if (holes.contains(parent)) {
+							for (String root : graph.getAllRoots(wcc)) {
+								if (graph.indeg(root, EdgeType.DOMINANCE) == 0) {
+									addDomEdge(parent, root);
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-		for (String root : withoutTop) {
-			if (graph.indeg(root) == 0) {
-				addDomEdge(topnode, root);
+			for (String root : withoutTop) {
+				if (graph.indeg(root) == 0) {
+					addDomEdge(topnode, root);
+				}
 			}
 		}
 	}
 	
-	void normalise()
+	private void normalise()
 	{
 		for (String root : graph.getAllRoots()) {
 			Collection<Edge> edges = graph.getOutEdges(root, EdgeType.DOMINANCE);
@@ -231,10 +231,10 @@ class MrsCodec {
 		}
 	}
 	
-	void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
+	public void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
 		StringBuffer errorText = new StringBuffer();
-		
+
 		this.addBindingEdges();
 		this.setTopHandle(handle);
 		this.normalise();
@@ -256,7 +256,7 @@ class MrsCodec {
 			errorCode |= ErrorCodes.NOT_HYPERNORMALLY_CONNECTED;
 			errorText.append("The graph is not hypernormally connected.\n");
 		}
-
+		
 		if (errorCode != 0)
 			throw new MalformedDomgraphException(errorText.toString(), errorCode);
 	}

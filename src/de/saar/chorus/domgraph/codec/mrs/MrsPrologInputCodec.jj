@@ -134,11 +134,7 @@ void Rel() throws MalformedDomgraphException:
 {
     <REL> "(" label = Symbol() "," handle = Handle() "," Attributes(attrs) ")"
 	{
-	    if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
-			codec.addQuantifier(handle, label, attrs);
-	    } else {
-			codec.addRelation(handle, label, attrs);
-	    }
+	    codec.addRelation(handle, label, attrs);
 	}
 }
 
