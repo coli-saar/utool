@@ -107,6 +107,9 @@ class UtoolServer {
             
             // parse the command
             // ANALOGOUS to Utool
+            
+            long start = System.currentTimeMillis();
+            
             try {
                 options = parser.parse(cmd.toString());
             } catch(AbstractOptionsParsingException e) {
@@ -116,6 +119,8 @@ class UtoolServer {
                 sock.close();
                 continue;
             }
+            
+            long afterParsing = System.currentTimeMillis();
             
             // check statistics and compactify graph
             if( options.getOperation().requiresInput ) {
@@ -266,7 +271,11 @@ class UtoolServer {
                     programExitCode |= ExitCodes.CLASSIFY_LEAF_LABELLED;
                 }
                 
+                long afterEverything = System.currentTimeMillis();
+                
                 out.println("<result code='" + programExitCode + "' "
+                		+ "time1='" + (afterParsing - start) + "' "
+                		+ "time2='" + (afterEverything - afterParsing) + "' "
                         + "weaklynormal='" + weaklyNormal + "' "
                         + "normal='" + normal + "' "
                         + "compact='" + compact + "' "

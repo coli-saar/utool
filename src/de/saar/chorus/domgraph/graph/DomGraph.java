@@ -186,21 +186,21 @@ public class DomGraph implements Cloneable {
 	}
 	
 	private boolean reachable(String upper, String lower, Set<String> visited) {
-		if( visited.contains(upper)) {
-			return false;
-		} else if (upper.equals(lower)) {
+		// We expect that in typical dominance graphs the average indegree is smaller than 
+		// the outdegree, and therefore traverse the graph in reverse direction.
+
+		if( upper.equals(lower) )
 			return true;
-		} else {
-			visited.add(upper);
-			
-			for( String node : getChildren(upper, null)) {
-				if (reachable(node, lower, visited))  {
-					return true;
-				}
+		if( !visited.add(lower) )
+			return false; 
+		
+		for( String node : getParents(lower, null) ) {
+			if (reachable(upper, node, visited))  {
+				return true;
 			}
-			
-			return false;
 		}
+		
+		return false;
 	}
 	
 	/**
