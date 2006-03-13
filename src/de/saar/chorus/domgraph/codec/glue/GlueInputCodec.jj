@@ -68,38 +68,6 @@ public class GlueInputCodec extends InputCodec {
 	  formulas = new ArrayList<Formula>();
     }
 	
-	public List<Formula> suffixes(Formula f) {
-		List suff = new ArrayList<Formula>();
-	    switch ( f.getType() ) {
-        case IMPLICATION:
-        		suff.add(f);
-                suff.add(suffixes(f.getSubformulas().get(1)));
-                break;
-        case ATOM:
-        case VARIABLE:
-                suff.add(f);
-        }
-        return suff;
-	}
-
-	public boolean isSuffix(Formula f, List<Formula> formulas) {
-		for (int i = 0; i < formulas.size(); i++) {
-			if ( suffixes(formulas.get(i)).contains(f) )	return true;
-		}
-		return false;
-	}
-
-    public int depth(Formula f) {
-        switch ( f.getType() ) {
-        case IMPLICATION:
-                return depth(f.getSubformulas().get(1)) + 1;
-        case ATOM:
-        case VARIABLE:
-                return 0;
-        }
-        return 0;
-    }
-
 /*	Subroutine z corresponds to the auxiliary mapping of formulas z in the paper;
 	it modifies the graph g and labels l passed in parameter
 */
@@ -125,7 +93,7 @@ public class GlueInputCodec extends InputCodec {
 		EdgeData right = new EdgeData(EdgeType.TREE);
 		g.addEdge(name_cc, name_impl, left);
 		g.addEdge(name_cc, name_pr, right);
-        	if ( !isSuffix(psi, axioms) ) {
+        	if ( !psi.isSuffixModuloUnif(axioms) ) {
 			l.addLabel(name_pr, "[" + psi.toString() + "]");
     	    		z(j, chi, addr_cc, g, l, formulas);
     	    	} else {
@@ -148,7 +116,7 @@ public class GlueInputCodec extends InputCodec {
 		switch ( phi.getType() ) {
 		case IMPLICATION:
 			Formula psi = phi.getSubformulas().get(0);
-        		Formula chi = phi.getSubformulas().get(1);
+        	Formula chi = phi.getSubformulas().get(1);
 			// same remark as above: a priori, the new node downward needs not be labelled
 			NodeData conclusion = new NodeData(NodeType.UNLABELLED);
 			String addr_cc = address + "1";
@@ -200,14 +168,14 @@ public class GlueInputCodec extends InputCodec {
 		
 		for ( int i = 0; i < formulas.size(); i++ ) {
 			Formula axiom = formulas.get(i);
-                        
+            System.out.println(axiom.suffixes());            
              /* Add first node, labelled with axiom and index; the name is also indexed by
 			  * the formula's address (as many 1s as the implicative depth)
 			  */
                         NodeData axNode = new NodeData(NodeType.LABELLED);
                         String axAddress;
 						StringBuffer sb = new StringBuffer();
-						for (int d = 0; d < depth(axiom); ++d) {
+						for (int d = 0; d < axiom.depth(); ++d) {
 							sb.append("1");
 						}
 						axAddress = sb.toString();

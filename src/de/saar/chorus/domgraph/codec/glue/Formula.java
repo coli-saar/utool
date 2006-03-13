@@ -101,13 +101,72 @@ class Formula {
         } else {
             return false;
         }
-        
     }
     
-    
-    
-    
-    
-    
+        
+	public int depth() {
+		switch(type) {
+		case ATOM:
+		case VARIABLE:
+			return 0;
+		case IMPLICATION:
+			return 1 + subformulas.get(1).depth();
+		}
+		return 0;
+	}
 
+	public List<Formula> suffixes() {
+		List suff = new ArrayList<Formula>();
+	    switch ( type ) {
+        case IMPLICATION:
+        		suff.add(this);
+                suff.addAll(subformulas.get(1).suffixes());
+                break;
+        case ATOM:
+        case VARIABLE:
+                suff.add(this);
+        }
+        return suff;
+	}
+
+	public boolean isSuffix(List<Formula> formulas) {
+		for (int i = 0; i < formulas.size(); i++) {
+			if ( formulas.get(i).suffixes().contains(this) )
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isSubsumedBy(Formula f) {
+		switch(type) {
+		case IMPLICATION:
+			if ( (f.type != Type.IMPLICATION) || (!subformulas.get(0).equals(f.subformulas.get(0))) )
+				return false;
+			else {
+				return subformulas.get(1).isSubsumedBy(f.subformulas.get(1));
+			}
+		case ATOM:
+			if ( equals(f) )
+				return true;
+			else
+				return false;
+		case VARIABLE:
+			return true;
+		}
+		return false;
+	}
+	
+	// Tests only for right-unification! i.e. variables only tested for in the input formula (this)!
+	public boolean isSuffixModuloUnif(List<Formula> formulas) {
+		for (int i = 0; i < formulas.size(); i++) {
+			List<Formula> suffixes = formulas.get(i).suffixes();
+			for (int j = 0; j < suffixes.size(); j++)
+				if ( isSubsumedBy(suffixes.get(j)) ) {
+					System.out.println(this + " is a suffix of " + formulas.get(i)  + " (modulo unification).");
+					return true;
+				}
+		}
+		return false;
+	}
+	
 }
