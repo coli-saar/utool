@@ -39,7 +39,7 @@ public class JDomGraphTab extends JGraphTab  {
 
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet; 
-	
+	Chart chart;
 	
 	/**
 	 * Constructor to set up a tab with a dominance graph.
@@ -57,17 +57,16 @@ public class JDomGraphTab extends JGraphTab  {
 		// initializing
 		graphName = name;
 		
+	
 		
-		Chart chart = new Chart();
-		ChartSolver solver = new ChartSolver(origin, chart);
-		
-		solvedFormIterator = new SolvedFormIterator(chart, origin);
-		
-		
-		isSolvedYet = false;
 		solvable = true;
 		solvedForms = -1;
 		setBackground(Color.WHITE);
+		
+		if(Preferences.isAutoCount()) {
+		
+				solve();
+			}
 		
 		try {
 			
@@ -100,9 +99,7 @@ public class JDomGraphTab extends JGraphTab  {
 		statusBar = new DominanceGraphBar();
 		barCode = Main.getStatusBar().insertBar(statusBar);
 		
-		if(Preferences.isAutoCount()) {
-			solve();
-		}
+		
 	}
 	
 	/**
@@ -111,14 +108,14 @@ public class JDomGraphTab extends JGraphTab  {
 	 */
 	public void solve() {
 		if( ! isSolvedYet ) {
-			Chart chart = new Chart();
+			chart = new Chart();
 			ChartSolver solver = new ChartSolver(domGraph, chart);
 			if(solver.solve()) {
 				solvedForms = chart.countSolvedForms().longValue();
 				isSolvedYet = true;
 			}
 			statusBar = new DominanceGraphBar();
-			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
+			
 			barCode = Main.getStatusBar().insertBar(statusBar);
 		}
 	
@@ -350,6 +347,7 @@ public class JDomGraphTab extends JGraphTab  {
 		if(! isSolvedYet ) {
 			solve();
 		}
+		solvedFormIterator = new SolvedFormIterator(chart,domGraph);
 		DomGraph firstForm = (DomGraph) domGraph.clone();
 		firstForm.setDominanceEdges(solvedFormIterator.next());
 		DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);

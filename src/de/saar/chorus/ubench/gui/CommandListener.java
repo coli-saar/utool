@@ -241,13 +241,13 @@ public class CommandListener implements ActionListener, ItemListener {
 			if( command.equals("loadGXL") ) {
 				JFileChooser fc = new JFileChooser(recentPath);
 				
-				fc.addChoosableFileFilter(showAll);
+				
 				
 				//    fc.addChoosableFileFilter(ffInNativeGxl);
 				for( FileFilter ff : ffInputCodecs ) {
 					fc.addChoosableFileFilter(ff);
 				}
-				
+				fc.addChoosableFileFilter(showAll);
 				
 				if(! (lastPath == null) ) {
 					fc.setCurrentDirectory(lastPath);
@@ -623,7 +623,7 @@ public class CommandListener implements ActionListener, ItemListener {
 		 * 
 		 */
 		public String getDescription() {
-			return "Show all known files";
+			return "All known file types";
 		}
 		
 	}

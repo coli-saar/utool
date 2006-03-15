@@ -31,7 +31,7 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
 	// the solved form to layout
 	private ImprovedJGraph graph;
 	
-	
+	private int globalXOffset;
 	// the relative positions...
 	
 	//...to the parent node
@@ -56,6 +56,7 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
 	 */
 	public GecodeTreeLayout(ImprovedJGraph gr) {
 		graph = gr;
+		globalXOffset = 0;
 		
 		relXtoParent = new HashMap<DefaultGraphCell,Integer>();
 		relXtoRoot = new HashMap<DefaultGraphCell, Integer>();
@@ -68,7 +69,26 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
 		
 	}
 	
-	
+	/**
+	 * Initializes a new <code>SolvedFormLayout</code> with the
+	 * given <code>JDomGraph</code>.
+	 * 
+	 * @param gr the solved form as <code>JDomGraph</code> to layout
+	 */
+	public GecodeTreeLayout(ImprovedJGraph gr, int offset) {
+		graph = gr;
+		globalXOffset = offset;
+		
+		relXtoParent = new HashMap<DefaultGraphCell,Integer>();
+		relXtoRoot = new HashMap<DefaultGraphCell, Integer>();
+		relYpos = new HashMap<DefaultGraphCell,Integer>();
+		
+		xPos = new HashMap<DefaultGraphCell,Integer>();
+		yPos = new HashMap<DefaultGraphCell,Integer>();
+		
+		nodesToShape = new HashMap<DefaultGraphCell, Shape>();
+		
+	}
   
    
 	/**
@@ -139,7 +159,7 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
 	    	  * and additionally reduce by the half width of the node.
 	    	  */
 	    	 int x = relXtoRoot.get(node) + offset - graph.computeNodeWidth(node)/2;
-	    	 xPos.put(node, x);
+	    	 xPos.put(node, x + globalXOffset);
 	    	 
 	    	 // the root y-position is zero, that's why the relative
 	    	 // y-positions are equivalent to the absolute ones.

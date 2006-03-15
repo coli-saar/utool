@@ -52,6 +52,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	
 	// the dominance graph
 	private JDomGraph graph; 
+	private int globalXOffset;
 	
 	// the fragments
 	private Set<Fragment> fragments;
@@ -108,7 +109,49 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		
 		movedRoot = null;
 		yOffset = 0;
+		globalXOffset = 0;
+		//all the other fields are initialized empty
+		deactivatedEdges = new HashSet<DefaultEdge>();
 		
+		fragXpos = new HashMap<Fragment, Integer>();
+		fragYpos = new HashMap<Fragment, Integer>();
+		
+		fragWidth = new HashMap<Fragment, Integer>();
+		fragHeight = new HashMap<Fragment, Integer>();
+		
+		fragOffset = new HashMap<Fragment, Integer>();
+		
+		relXtoParent = new HashMap<DefaultGraphCell,Integer>();
+		relYpos = new HashMap<DefaultGraphCell,Integer>();
+		
+		xPos = new HashMap<DefaultGraphCell,Integer>();
+		yPos = new HashMap<DefaultGraphCell,Integer>();
+		
+		nodesToShape = new HashMap<DefaultGraphCell, Shape>();
+		nodesToDepth = new HashMap<DefaultGraphCell,Integer>();
+		fragmentToTowers = new HashMap<Fragment, List<FragmentTower>>();
+        relXtoRoot = new HashMap<DefaultGraphCell, Integer>();
+		
+        drawBoxes = false;
+	}
+	
+	/**
+	 * Initializes a new dominance graph layout
+	 * of a given dominanc graph.
+	 * 
+	 * @param gr the graph to compute the layout for
+	 */
+	DomGraphLayout(JDomGraph gr, int offset) {
+		/*
+		 * initializing the graph and its attributes
+		 * by getting them from the graph
+		 */
+		this.graph = gr;
+		fragments = graph.getFragments();
+		globalXOffset = offset;
+		movedRoot = null;
+		yOffset = 0;
+		globalXOffset = 0;
 		//all the other fields are initialized empty
 		deactivatedEdges = new HashSet<DefaultEdge>();
 		
@@ -1511,7 +1554,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			 */
 			x += xMovement ;
 			
-			xPos.put(node, x);
+			xPos.put(node, x + globalXOffset);
 			
 			/*
 			 * the absolute y- position is the relative
