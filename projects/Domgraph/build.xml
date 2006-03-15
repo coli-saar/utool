@@ -51,7 +51,7 @@
 		<jar jarfile="${utool.jar}"
 		             basedir="${build.classes}"
 		             includes="${utool.jar.classes},${jgrapht.unpacked.classes},
-							   ${getopt.unpacked.classes}.${itext.unpacked.classes}">
+							   ${getopt.unpacked.classes},${itext.unpacked.classes}">
 					<manifest>
 						<attribute name="Main-Class"
 		                           value="de.saar.chorus.domgraph.utool.Utool" />
