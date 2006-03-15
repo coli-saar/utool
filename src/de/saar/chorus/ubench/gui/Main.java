@@ -261,6 +261,8 @@ public class Main {
 		// registering the tab
 		tabs.add(tab);
 
+		
+		
 		if (ind < (tabs.size() - 1)) {
 			index = ind;
 
@@ -284,6 +286,12 @@ public class Main {
 		if (showNow) {
 			tabbedPane.setSelectedIndex(index);
 		}
+		
+		if(tabs.size() == 1) {
+			tab.setMinimumSize(tab.getGraph().getSize());
+			window.pack();
+			window.validate();
+		}
 
 		tabbedPane.validate();
 
@@ -301,6 +309,8 @@ public class Main {
 		}
 
 		refresh();
+		
+		
 	}
 
 	/**

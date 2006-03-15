@@ -288,7 +288,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		
+		//for()
 		if(isForest()) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
@@ -297,6 +297,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 	}
 	
+
 	/**
 	 * Group the nodes of the graph into the maximal fragments.
 	 * A fragment is a set of nodes that are connected by solid edges.
