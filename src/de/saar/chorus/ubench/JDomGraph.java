@@ -27,6 +27,7 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
+import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.jgraph.GecodeTreeLayout;
@@ -288,13 +289,15 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		//for()
+		if( (wccs().size() > 1)  ) {
+			JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
+		} else {
 		if(isForest()) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
 		}
-		
+		}
 	}
 	
 

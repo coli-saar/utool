@@ -424,9 +424,10 @@ public class Main {
 			NodeLabels nl) {
 		InputCodec inputCodec = codecManager.getInputCodecForFilename(filename,
 				null);
-
+	
 		try {
 			inputCodec.decodeFile(filename, graph, nl);
+			
 		} catch (Exception e) {
 			JOptionPane
 					.showMessageDialog(
@@ -435,6 +436,7 @@ public class Main {
 									+ "doesn't exist,\nor the input codec couldn't be determined or was "
 									+ "unable to parse the graph).",
 							"Error during import", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 			return null;
 		}
 

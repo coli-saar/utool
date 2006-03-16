@@ -643,4 +643,36 @@ abstract public class ImprovedJGraph<NodeType,
             return edgeOrder.get(x).compareTo(edgeOrder.get(y));
         }
     }
+    
+    public List<Set<DefaultGraphCell>> wccs() {
+    	Set<DefaultGraphCell> visited = new HashSet<DefaultGraphCell>();
+    	List<Set<DefaultGraphCell>> wccs = new ArrayList<Set<DefaultGraphCell>>();
+    	
+    	
+    	for(DefaultGraphCell node : nodes ) {
+    		if(! visited.contains(node)) {
+    			Set<DefaultGraphCell> lastWCC = new HashSet<DefaultGraphCell>();
+    			wccDFS(visited,node,lastWCC);
+    			wccs.add(lastWCC);
+    		}
+    	}
+    	
+    	return wccs;
+    }
+    
+    private void wccDFS(Set<DefaultGraphCell> visited, 
+    					DefaultGraphCell recentNode,
+    					Set<DefaultGraphCell> recentWCC ) {
+    	
+    	if(! visited.contains(recentNode)) {
+    		visited.add(recentNode);
+    		recentWCC.add(recentNode);
+    		for( DefaultGraphCell par : parents.get(recentNode) ) {
+    			wccDFS(visited, par, recentWCC);
+    		} 
+    		for( DefaultGraphCell child : children.get(recentNode) ) {
+    			wccDFS(visited,child,recentWCC);
+    		}
+    	}
+    }
 }
