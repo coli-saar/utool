@@ -40,6 +40,7 @@ public class JDomGraphTab extends JGraphTab  {
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet; 
 	Chart chart;
+	DomGraph compactGraph;
 	
 	/**
 	 * Constructor to set up a tab with a dominance graph.
@@ -57,7 +58,12 @@ public class JDomGraphTab extends JGraphTab  {
 		// initializing
 		graphName = name;
 		
-	
+		if(domGraph.isCompactifiable()) {
+			compactGraph = domGraph.compactify();
+		} else {
+			compactGraph = domGraph;
+			System.err.println("keep Graph");
+		}
 		
 		solvable = true;
 		solvedForms = -1;
@@ -109,12 +115,13 @@ public class JDomGraphTab extends JGraphTab  {
 	public void solve() {
 		if( ! isSolvedYet ) {
 			chart = new Chart();
-			ChartSolver solver = new ChartSolver(domGraph, chart);
+			ChartSolver solver = new ChartSolver(compactGraph, chart);
 			
 			if(solver.solve()) {
 				solvedForms = chart.countSolvedForms().longValue();
 				isSolvedYet = true;
 			}
+			
 			statusBar = new DominanceGraphBar();
 			barCode = Main.getStatusBar().insertBar(statusBar);
 		}

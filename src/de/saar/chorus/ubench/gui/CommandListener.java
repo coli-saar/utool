@@ -38,6 +38,7 @@ import de.saar.basic.SwingComponentPDFWriter;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
@@ -800,7 +801,11 @@ public class CommandListener implements ActionListener, ItemListener {
 		NodeLabels labels = Main.getVisibleTab().getNodeLabels();
 		
 		de.saar.chorus.domgraph.graph.DomGraph nextForm =   (de.saar.chorus.domgraph.graph.DomGraph) Main.getVisibleTab().getDomGraph().clone();
-		nextForm.setDominanceEdges(solver.getSolvedForm((int) no-1));
+		
+		List<DomEdge> domEdges = solver.getSolvedForm((int) no-1);
+		if( domEdges != null ) {
+			nextForm.setDominanceEdges(domEdges);
+		}
 		int toInsertHere = Main.getVisibleTabIndex();
 		
 		// converting the form to a JDomGraph
