@@ -49,6 +49,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		super(jdg);
 		graph = jdg;
 		domGraph = dg;
+		
 		defaultName = name;
 		listener = lis;
 		nodeLabels = lab;
