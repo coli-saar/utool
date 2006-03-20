@@ -52,8 +52,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	
 	// the dominance graph
 	private JDomGraph graph; 
-	private int globalXOffset;
-	
+		
 	// the fragments
 	private Set<Fragment> fragments;
 	
@@ -109,7 +108,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		
 		movedRoot = null;
 		yOffset = 0;
-		globalXOffset = 0;
 		//all the other fields are initialized empty
 		deactivatedEdges = new HashSet<DefaultEdge>();
 		
@@ -690,11 +688,12 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	 * @param to
 	 * @return the distance
 	 */
-	private double getFragmentDistance(Fragment from, Fragment to) {
-		int fromX = fragXpos.get(from) + (fragWidth.get(from)/2);
-		int fromY = fragYpos.get(from) + fragHeight.get(from);
-		int toX = fragXpos.get(to) + (fragWidth.get(to)/2);
-		int toY = fragYpos.get(to);
+	private double getFragmentDistance(Fragment from, Fragment to,
+			Map<Fragment,Integer> xCoordinates, Map<Fragment, Integer> yCoordinates) {
+		int fromX = xCoordinates.get(from) + (fragWidth.get(from)/2);
+		int fromY = yCoordinates.get(from) + fragHeight.get(from);
+		int toX = xCoordinates.get(to) + (fragWidth.get(to)/2);
+		int toY = yCoordinates.get(to);
 		
 		double roughDistance =
 			 Math.sqrt(
@@ -821,7 +820,9 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	 */
 	private Cost fragmentBoxDFS(Fragment fragment, Set<Fragment> visited, 
 			Rectangle box, int xStart, int yStart, 
-			Collection<Fragment> dfsDescendants, Cost co, boolean mayBuildTowers) {
+			Collection<Fragment> dfsDescendants, 
+			Cost co, boolean mayBuildTowers,
+			Map<Fragment,Integer> xStorage, Map<Fragment,Integer> yStorage) {
 		
         Cost cost = co;
         List<FragmentTower> myTowers = new ArrayList<FragmentTower>();
@@ -979,7 +980,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
             
             // 3. Place myself (X).
             nextX = xStart + Math.max(fragWidth.get(fragment), towersMaxX);
-            fragXpos.put(fragment, 
+            xStorage.put(fragment, 
                     xStart + Math.max(fragWidth.get(fragment), towersMaxX)/2
                     - fragWidth.get(fragment)/2);
             
@@ -994,7 +995,8 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				Rectangle tdpBox = new Rectangle();
 				Cost tdpCost = 
 					fragmentBoxDFS(tdp, visited, tdpBox,  
-							rightHandPartX, nextY, dfsDescendants, cost, false);
+							rightHandPartX, nextY, dfsDescendants, cost, false,
+							xStorage, yStorage);
 				
 				nextY += tdpBox.getHeight() + fragmentYDistance;
 				
@@ -1009,9 +1011,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				
 				Cost dpCost = 
 					fragmentBoxDFS(dp, visited, dpBox,  
-							rightHandPartX, nextY, dfsDescendants, cost, false);
+							rightHandPartX, nextY, dfsDescendants, cost, false,
+							xStorage, yStorage);
 				
-				yBottomDomParent = fragYpos.get(dp) + fragHeight.get(dp);
+				yBottomDomParent = yStorage.get(dp) + fragHeight.get(dp);
 				
 				nextY += dpBox.getHeight() + fragmentYDistance;
 				
@@ -1028,9 +1031,9 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			
 			// placing the towers dependent on the middle axis of the
 			// recent fragment
-			nextX = fragXpos.get(fragment) + (fragWidth.get(fragment) - towersMaxX)/2;
+			nextX = xStorage.get(fragment) + (fragWidth.get(fragment) - towersMaxX)/2;
 			for( FragmentTower tower : myTowers ) {
-				tower.place(nextX, towersMinY, fragXpos, fragYpos);
+				tower.place(nextX, towersMinY, xStorage, yStorage);
 				nextX += tower.getWidth() + towerXDistance;
 				updateBox(fragment, box, tower.getBox());
 			}
@@ -1053,7 +1056,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 }
                 
 				//my own position depends on my dominance parents (and towers)
-                fragYpos.put(fragment, myY);
+                yStorage.put(fragment, myY);
 				
 				if( !myDominanceChildren.isEmpty() ) {
 				/*
@@ -1067,23 +1070,24 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 Cost tcCost = 
                     fragmentBoxDFS(topChild, visited, topChildBox, 
                                  rightHandPartX, 
-                                nextY, tcDescendants, cost, true);
+                                nextY, tcDescendants, cost, true,
+                                xStorage, yStorage);
             
                 // the minimal acceptable y-Position of my topmost
 				// dominance child.
-                int hMe = fragYpos.get(fragment) 
+                int hMe = yStorage.get(fragment) 
                 			+ fragHeight.get(fragment) 
                 			+ fragmentYDistance;
 				
                 
                 // y-position of topChild
-                int posCh = fragYpos.get(topChild);
+                int posCh = yStorage.get(topChild);
                 
                 for(Fragment frag : tcDescendants ) {
                 	if(myDeactivatedChilrden.contains(frag) ||
                 			myDominanceChildren.contains(frag)) {
-                		if(fragYpos.get(frag) < posCh) {
-                			posCh = fragYpos.get(frag);
+                		if(yStorage.get(frag) < posCh) {
+                			posCh = yStorage.get(frag);
                 		}
                 	}
                 } 
@@ -1094,7 +1098,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 					//the childbox is placed too far above;
 					//move it down until it's placed far enough
 					//under myself.
-					translateFragments(tcDescendants, 0, hMe-posCh);
+					translateFragments(tcDescendants, 0, hMe-posCh, xStorage, yStorage);
                     
 					topChildBox.translate(0, hMe-posCh);
                 }
@@ -1113,19 +1117,20 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 Cost tcCost = 
                     fragmentBoxDFS(topChild, visited, topChildBox, 
                                  rightHandPartX, 
-                                yStart, tcDescendants, cost, true);
+                                yStart, tcDescendants, cost, true,
+                                xStorage, yStorage);
             
                 // By how much do I have to be above topChild?
                 int hMe = fragHeight.get(fragment) + fragmentYDistance;
                 
                 // How much is topChild below yStart?
-                int hTc = fragYpos.get(topChild) - yStart;
+                int hTc = yStorage.get(topChild) - yStart;
                 
                 for(Fragment frag : tcDescendants ) {
                 	if(myDeactivatedChilrden.contains(frag) ||
                 			myDominanceChildren.contains(frag)) {
-                		if(fragYpos.get(frag) < hTc) {
-                			hTc = fragYpos.get(frag);
+                		if(yStorage.get(frag) < hTc) {
+                			hTc = yStorage.get(frag);
                 		}
                 	}
                 } 
@@ -1133,12 +1138,12 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 
                 if( hMe <= hTc ) {
                     // tc-box is in the right place, now place myself
-                    fragYpos.put(fragment, fragYpos.get(topChild) - hMe);
+                	yStorage.put(fragment, yStorage.get(topChild) - hMe);
                 } else {
                     // tc-box is shallow, need to move it down a little
-                    fragYpos.put(fragment, yStart);
+                	yStorage.put(fragment, yStart);
                     
-                    translateFragments(tcDescendants, 0, hMe-hTc);
+                    translateFragments(tcDescendants, 0, hMe-hTc, xStorage, yStorage);
                     topChildBox.translate(0, hMe-hTc);
                 }
                 
@@ -1150,11 +1155,11 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 updateBox(topChild, box, topChildBox);
             } else {
                 // have no dfs children at all
-                fragYpos.put(fragment, yStart);
+            	yStorage.put(fragment, yStart);
             }
 
-            updateBox(fragment, box, new Rectangle(fragXpos.get(fragment),
-                                                    fragYpos.get(fragment),
+            updateBox(fragment, box, new Rectangle(xStorage.get(fragment),
+            		yStorage.get(fragment),
                                                     fragWidth.get(fragment),
                                                     fragHeight.get(fragment))
                     );
@@ -1167,7 +1172,8 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				
 				Cost dcCost = 
                        fragmentBoxDFS(dc, visited, dcBox, 
-                               rightHandPartX, nextY, dfsDescendants, cost, true);
+                               rightHandPartX, nextY, dfsDescendants, 
+                               cost, true, xStorage, yStorage);
                 
                 nextY += dcBox.getHeight() + fragmentYDistance;
                 
@@ -1177,11 +1183,11 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			// 10. update cost
 			
 			for( Fragment dp : myDominanceParents ) {
-				cost.updateEdgeCost(getFragmentDistance(fragment,dp));
+				cost.updateEdgeCost(getFragmentDistance(fragment,dp, xStorage, yStorage));
 			}
 			
 			for( Fragment dc : myDominanceChildren ) {
-				cost.updateEdgeCost(getFragmentDistance(fragment, dc));
+				cost.updateEdgeCost(getFragmentDistance(fragment, dc, xStorage, yStorage));
 			}
 			
 			cost.updateBoxParameter((int) box.getHeight(), (int) box.getWidth());
@@ -1198,25 +1204,27 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
      * @param xoff
      * @param yoff
      */
-    private void translateFragments(Collection<Fragment> frags, int xoff, int yoff) {
+    private void translateFragments(Collection<Fragment> frags, 
+    		int xoff, int yoff, Map<Fragment,Integer> xStore,
+    		Map<Fragment,Integer> yStore) {
         for( Fragment frag : frags ) {
             if( xoff != 0 ) {
 				int xMovement = xoff;
-				if(fragXpos.containsKey(frag)) {
-					xMovement += fragXpos.remove(frag);
+				if(xStore.containsKey(frag)) {
+					xMovement += xStore.remove(frag);
 				}
-                fragXpos.put(frag, xMovement);
+				xStore.put(frag, xMovement);
             }
             if( yoff != 0 ) {
 				int yMovement = yoff;
-				if(fragYpos.containsKey(frag)) {
-					yMovement += fragYpos.remove(frag);
+				if(yStore.containsKey(frag)) {
+					yMovement += yStore.remove(frag);
 				}
-                fragYpos.put(frag, yMovement);
+				yStore.put(frag, yMovement);
             }
             if( fragmentToTowers.containsKey(frag)) {
                 for( FragmentTower tower : fragmentToTowers.get(frag) ) {
-                    tower.translate(xoff, yoff, fragXpos, fragYpos);
+                    tower.translate(xoff, yoff, xStore, yStore);
                 }
             }
         }
@@ -1391,58 +1399,78 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	 * (for each root).
 	 */
 	private void computeFragmentPositions() {
-		/*
-		 * the roots to perform the fragment DFS to 
-		 * compute the x-positions of all fragments;
-		 * the resulting edge crossing are compared and the
-		 * root that causes the most less crossings is
-		 * chosen as final root.
-		 */
-		List<Fragment> possibleRoots = new ArrayList<Fragment>();
-		possibleRoots.addAll(graph.getFragments());
-
-        // the best root we have found so far, with its cost 
-		Fragment bestRoot = null;
-        Cost costBestRoot = new Cost(Integer.MAX_VALUE);
 		
+		Cost absoluteCost = null;
 		int possibleOffset = 0;
+		Fragment bestRoot = null;
+		int xStart = 0;
 		
-		// performing undirected DFS for with every possible root
-        drawBoxes = false;
-		for(Fragment root : possibleRoots) {
-            
-			Cost thisCost = 
-                fragmentBoxDFS(root, new HashSet<Fragment>(), new Rectangle(),
-                         0,0, new HashSet<Fragment>(), new Cost(), false);
-            
-            // update best root
-			if(thisCost.compareTo(costBestRoot) < 0) {
-				bestRoot = root;
-                costBestRoot = thisCost;
+		for(Set<DefaultGraphCell> wccs : graph.wccs() ) {
+			
+			/*
+			 * the roots to perform the fragment DFS to 
+			 * compute the x-positions of all fragments;
+			 * the resulting edge crossing are compared and the
+			 * root that causes the most less crossings is
+			 * chosen as final root.
+			 */
+			List<Fragment> possibleRoots = new ArrayList<Fragment>(graph.getWccFragments(wccs));
+		//	possibleRoots.addAll(graph.getFragments());
+			
+			// the best root we have found so far, with its cost 
+			Cost costBestRoot = new Cost(Integer.MAX_VALUE);
+			
+			Map<Fragment, Integer> tempXpos = 
+					new HashMap<Fragment,Integer>();
+			
+			Map<Fragment, Integer> tempYpos = 
+				new HashMap<Fragment,Integer>();
+			
+			// performing undirected DFS for with every possible root
+			drawBoxes = false;
+			for(Fragment root : possibleRoots) {
+				
+				Cost thisCost = 
+					fragmentBoxDFS(root, new HashSet<Fragment>(), new Rectangle(),
+							xStart,0, new HashSet<Fragment>(), new Cost(), false,
+							tempXpos, tempYpos);
+				
+				// update best root
+				if(thisCost.compareTo(costBestRoot) < 0) {
+					bestRoot = root;
+					costBestRoot = thisCost;
+				}
+				
+				//before the next pass, the maps to fill
+				//by fragmentDFS are cleared.
+				tempXpos.clear();
+				tempYpos.clear();
+				deactivatedEdges.clear();
+				fragmentToTowers.clear();
 			}
 			
-			//before the next pass, the maps to fill
-			//by fragmentDFS are cleared.
-			fragXpos.clear();
-			fragYpos.clear();
-			deactivatedEdges.clear();
-			fragmentToTowers.clear();
+			// repeat the DFS a last time for the optimal root
+			// to set the fields
+			drawBoxes = true;
+			fragmentBoxDFS(bestRoot, new HashSet<Fragment>(), new Rectangle(), 
+					xStart,0, new HashSet<Fragment>(), new Cost(), false,
+					fragXpos, fragYpos);
+			
+			if( absoluteCost == null ) {
+				absoluteCost = costBestRoot;
+			} else {
+				absoluteCost.add(costBestRoot);
+			}
+			xStart += costBestRoot.getMaxBoxWidth() + DomGraphLayoutParameters.fragmentXDistance;
 		}
-        
-        // repeat the DFS a last time for the optimal root
-        // to set the fields
-        drawBoxes = true;
-		fragmentBoxDFS(bestRoot, new HashSet<Fragment>(), new Rectangle(), 0,0, new HashSet<Fragment>(), new Cost(), false);
-        
 		
-		
-        // if there is exactly one root with exactly one hole,
+		// if there is exactly one root with exactly one hole,
 		// it's assumed that it should be placed centred.
-        if(getFragmentGraphRoots().size() == 1) {
+		if(getFragmentGraphRoots().size() == 1) {
 			Fragment root = getFragmentGraphRoots().get(0);
 			if(getFragHoles(root).size() == 1) {
-				int rootX = (costBestRoot.getMaxBoxWidth()
-							- fragWidth.get(root)) /2;
+				int rootX = (absoluteCost.getMaxBoxWidth()
+						- fragWidth.get(root)) /2;
 				GraphModel model = graph.getModel();
 				
 				fragXpos.remove(root);
@@ -1459,16 +1487,16 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 					
 					for( Fragment frag : fragments ) {
 						int newOffset = fragOffset.get(frag) 
-									- possibleOffset;
+						- possibleOffset;
 						fragOffset.remove(frag);
 						fragOffset.put(frag, newOffset);
 					} 
 				}
 				
 			}
-        } 
+		} 
 		
-		graph.setBoundingBox(new Rectangle(costBestRoot.getMaxBoxWidth() - possibleOffset, costBestRoot.getMaxBoxHeight()));
+		graph.setBoundingBox(new Rectangle(absoluteCost.getMaxBoxWidth() - possibleOffset, absoluteCost.getMaxBoxHeight()));
 		
 		//boxdebugger.drawAll();
 		//paintDebugger();
@@ -1514,7 +1542,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			 */
 			x += xMovement ;
 			
-			xPos.put(node, x + globalXOffset);
+			xPos.put(node, x);
 			
 			/*
 			 * the absolute y- position is the relative

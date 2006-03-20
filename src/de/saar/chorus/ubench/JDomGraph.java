@@ -289,15 +289,15 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		if( (wccs().size() > 1)  ) {
+		/*if( (wccs().size() > 1)  ) {
 			JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
-		} else {
-		if(isForest()) {
+		} else {*/
+		if(isForest() && (wccs().size() == 1) ) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
 		}
-		}
+	//	}
 	}
 	
 
@@ -693,5 +693,15 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			edgeCounter--;
 		}
     	dominanceEdges.clear();
+    }
+    
+    public Set<Fragment> getWccFragments(Set<DefaultGraphCell> wcc) {
+    	
+    	Set<Fragment> frags = new HashSet<Fragment>();
+    	for(DefaultGraphCell node : wcc) {
+    		frags.add(findFragment(node));
+    	}
+    	return frags;
+    	
     }
 }
