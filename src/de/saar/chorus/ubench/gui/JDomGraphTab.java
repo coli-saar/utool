@@ -110,13 +110,12 @@ public class JDomGraphTab extends JGraphTab  {
 		if( ! isSolvedYet ) {
 			chart = new Chart();
 			ChartSolver solver = new ChartSolver(domGraph, chart);
-		
+			
 			if(solver.solve()) {
 				solvedForms = chart.countSolvedForms().longValue();
 				isSolvedYet = true;
 			}
 			statusBar = new DominanceGraphBar();
-			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
 			barCode = Main.getStatusBar().insertBar(statusBar);
 		}
 	
@@ -350,7 +349,8 @@ public class JDomGraphTab extends JGraphTab  {
 		}
 	
 		DomGraph firstForm = (DomGraph) domGraph.clone();
-		
+
+		solvedFormIterator = new SolvedFormIterator(chart,domGraph);
 		firstForm.setDominanceEdges(solvedFormIterator.next());
 		
 		DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
