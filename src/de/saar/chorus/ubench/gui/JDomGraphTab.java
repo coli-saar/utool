@@ -3,7 +3,6 @@ package de.saar.chorus.ubench.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -14,7 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -22,6 +20,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.utool.Utool;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 
@@ -57,13 +56,8 @@ public class JDomGraphTab extends JGraphTab  {
 	
 		// initializing
 		graphName = name;
+		compactGraph = domGraph.compactify();
 		
-		if(domGraph.isCompactifiable()) {
-			compactGraph = domGraph.compactify();
-		} else {
-			compactGraph = domGraph;
-			System.err.println("keep Graph");
-		}
 		
 		solvable = true;
 		solvedForms = -1;

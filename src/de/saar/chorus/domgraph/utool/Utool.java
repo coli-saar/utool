@@ -125,6 +125,7 @@ public class Utool {
                         new RedundancyEliminationSplitSource(
                                 new IndividualRedundancyElimination(compactGraph, 
                                         options.getLabels(), options.getEquations()), compactGraph));
+                
             } else {
                 solver = new ChartSolver(compactGraph, chart); 
             }

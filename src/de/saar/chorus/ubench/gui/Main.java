@@ -5,7 +5,6 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -26,6 +25,7 @@ import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
 import de.saar.chorus.domgraph.codec.glue.GlueInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
+import de.saar.chorus.domgraph.codec.holesem.HolesemComsemOutputCodec;
 import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
@@ -579,7 +579,7 @@ public class Main {
 			codecManager.registerCodec(DomconGxlOutputCodec.class);
 			codecManager.registerCodec(DomconUdrawOutputCodec.class);
 			// TBD //
-			// codecManager.registerCodec(HolesemComsemOutputCodec.class);
+			codecManager.registerCodec(HolesemComsemOutputCodec.class);
 			codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
 			codecManager.registerCodec(LkbPluggingOutputCodec.class);
 			codecManager.registerCodec(OzTermOutputCodec.class);

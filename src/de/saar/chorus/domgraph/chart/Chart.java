@@ -65,10 +65,10 @@ public class Chart {
      */
     public void addSplit(Set<String> subgraph, Split split) {
         List<Split> splitset = chart.get(subgraph);
-        
         if( splitset == null ) {
             splitset = new ArrayList<Split>();
             chart.put(subgraph, splitset);
+            
         }
         
         // add split to the chart

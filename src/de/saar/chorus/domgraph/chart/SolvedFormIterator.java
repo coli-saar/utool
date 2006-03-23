@@ -143,15 +143,16 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	
 	private void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
 		Split split = ese.getCurrentSplit();
-
-        // iterate over all dominators
-        for( String node : split.getAllDominators() ) {
-            List<Set<String>> wccs = split.getWccs(node);
-            for( int i = 0; i < wccs.size(); i++ ) {
-                Set<String> wcc = wccs.get(i);
-                addFragsetToAgendaAndAccu(wcc, node, ese);
+		
+		// iterate over all dominators
+			for( String node : split.getAllDominators() ) {
+				List<Set<String>> wccs = split.getWccs(node);
+				for( int i = 0; i < wccs.size(); i++ ) {
+					Set<String> wcc = wccs.get(i);
+					addFragsetToAgendaAndAccu(wcc, node, ese);
+				}
 			}
-		}
+		
 	}
 	
 	private void addFragsetToAgendaAndAccu(Set<String> fragSet, String dominator, EnumerationStackEntry ese) {
