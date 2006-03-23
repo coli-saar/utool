@@ -65,6 +65,7 @@ public class HolesemComsemOutputCodec extends GraphOutputCodec {
         
                 
         if( getTopNodes(graph).size() !=  1 ) {
+        	System.out.println("Top-Fragment");
         	content.append("some(" + supertopname + ",and(label(" +
         			supertopname + "),");
         	content.append("some(" + topname + ",and(hole(" +
@@ -240,12 +241,13 @@ public class HolesemComsemOutputCodec extends GraphOutputCodec {
     			if( i == 0 ) {
     				if(Character.isUpperCase(chars[i]) ||
     						Character.isDigit((chars[i]))) {
+    					
     					return "\'" + var + "\'";
     				}
     			}
     			if(! ((Character.isLetterOrDigit(chars[i]) && 
-    					( (-1 < chars[i]) && (chars[i] < 128) ))) ) {
-    				return "\'" + var + "\'";
+    					( (-1 < (int) chars[i]) && ((int) chars[i] < 128) ))) ) {
+    								return "\'" + var + "\'";
     			}
     		}
     	}
