@@ -30,7 +30,7 @@
 
 	<property name="domgraph-dist.jar" value="${build.lib}/Domgraph-1.0.jar" />
 	<property name="domgraph.jar" value="${build.lib}/Domgraph.jar" />
-	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*" />
+	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic" />
 	
 	<property name="utool.jar" value="${build.lib}/Utool.jar" />
 	<property name="utool.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*" />
