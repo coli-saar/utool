@@ -141,10 +141,11 @@ class XmlParser extends DefaultHandler {
             
             // obtain input codec
             String inputCodecOptions = mydecode(attributes.getValue("codec-options"));
-            InputCodec codec = codecManager.getInputCodecForName(attributes.getValue("codec"), inputCodecOptions);
+            String codecName = attributes.getValue("codec");
+            InputCodec codec = codecManager.getInputCodecForName(codecName, inputCodecOptions);
             
             if( codec == null ) {
-                throw new SAXException(new AbstractOptionsParsingException("Unknown input codec: " + codec, ExitCodes.NO_SUCH_INPUT_CODEC));
+                throw new SAXException(new AbstractOptionsParsingException("Unknown input codec: " + codecName, ExitCodes.NO_SUCH_INPUT_CODEC));
             }
             
             if( inputCodecOptions != null ) {
