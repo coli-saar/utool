@@ -18,6 +18,7 @@ import java.net.SocketException;
 import java.util.List;
 
 import de.saar.basic.XmlEncodingWriter;
+import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -373,7 +374,8 @@ class UtoolServer {
     }
     
     private static String versionString() {
-        return "Utool/Java (The Swiss Army Knife of Underspecification), version 0.9\n"
+        return "Utool/Java (The Swiss Army Knife of Underspecification), version "
+        + GlobalDomgraphProperties.getVersion() + "\n"
         + "(running in server mode)\n"
         + "Created by the CHORUS project, SFB 378, Saarland University\n\n";
     }

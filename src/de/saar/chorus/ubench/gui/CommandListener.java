@@ -35,6 +35,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
 import de.saar.basic.SwingComponentPDFWriter;
+import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.OutputCodec;
@@ -455,11 +456,8 @@ public class CommandListener implements ActionListener, ItemListener {
 							JOptionPane.INFORMATION_MESSAGE);
 				} else if (command.equals("about") ) {
 					JOptionPane.showMessageDialog(Main.getWindow(),
-							"Ubench version 1.0" + System.getProperty("line.separator")
+							"Ubench version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
-							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
-							"libdomgraph version 2.0pre" + System.getProperty("line.separator") +
-							"created by the CHORUS project, SFB 378, Saarland University"
 							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
 							"JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
 							"(c) by Gaudenz Alder et al. 2001-2004" + 

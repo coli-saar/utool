@@ -25,10 +25,13 @@
 
 	<property name="coli" value="de/saar" />
 	<property name="chorus" value="de/saar/chorus" />
+	
+	<property name="domgraph.properties" value="${source}/${chorus}/domgraph/domgraph.properties" />
+	<property file="${domgraph.properties}" />
 
 
 
-	<property name="domgraph-dist.jar" value="${build.lib}/Domgraph-1.0.jar" />
+	<property name="domgraph-dist.jar" value="${build.lib}/Domgraph-${domgraph.version}.jar" />
 	<property name="domgraph.jar" value="${build.lib}/Domgraph.jar" />
 	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic" />
 	
@@ -73,36 +76,16 @@
 			</classpath>
 		</javac>
 
-		
+		<copy file="${domgraph.properties}" todir="${build.classes}/${chorus}/domgraph/" />
 
 	</target>
 
 
 
-	<target name="dist" depends="init,jgrapht.unpacked,getopt.unpacked,itext.unpacked,utool-swig.unpacked">
-
-
-		<javac srcdir="${source}"
-               destdir="${build.classes}"
-               debug="true"
-               includes="${chorus}/domgraph/*.java,
-							${chorus}/jgraph/*.java,
-							${chorus}/treelayout/*.java,
-							${chorus}/domgraph/gui/*.java,
-							${chorus}/domgraph/utool/*.java,
-							${coli}/getopt/*.java"
-               excludes="**/Test*.java"
-               source="1.5">
-
-			<classpath>
-				<pathelement path="${build.classes}" />
-			</classpath>
-		</javac>
-
-
+	<target name="dist" depends="compile-all">
 		<copy todir="tmp_Domgraph/src">
-			<fileset dir="${source}"
-					includes="${domgraph.jar.classes}"/>
+			<fileset dir="${source}" includes="${domgraph.jar.classes}"/>
+			<fileset dir="${source}" includes="**/*.properties"/>
 		</copy>
 
 
