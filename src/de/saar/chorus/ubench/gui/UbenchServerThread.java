@@ -17,14 +17,16 @@ import de.saar.chorus.ubench.Server;
 
 public class UbenchServerThread extends Thread {
     private int port;
-    private Pattern openPattern, importPattern;
+    private Pattern openPattern;
         
     public UbenchServerThread(int port) {
         super();
         this.port = port;
         
-        openPattern = Pattern.compile("\\s*<open\\s+filename\\s*=\\s*\"([^\"]+).*");
-        importPattern = Pattern.compile("\\s*<import\\s+filename\\s*=\\s*\"([^\"]+).*");
+        openPattern = Pattern.compile("\\s*<open\\s+filename\\s*=\\s*(?:\"|\')([^\"\']+).*");
+        //importPattern = Pattern.compile("\\s*<import\\s+filename\\s*=\\s*\"|\'([^\"\']+).*");
+        
+        System.err.println(openPattern);
         
         System.err.println("Ubench is listening on port " + port);
     }
@@ -36,27 +38,32 @@ public class UbenchServerThread extends Thread {
             
             // read a line from the socket
             String messageStr = serv.read();
+            String filename = null;
+            
+            
+        //    System.err.println("[Server] " + messageStr);
             
             // "open" command
             Matcher mOpen = openPattern.matcher(messageStr);
             if( mOpen.matches() ) {
-                String filename = mOpen.group(1);
+                filename = mOpen.group(1);
+            }
+            
+            /*
+            Matcher mImport = importPattern.matcher(messageStr);
+            if( mImport.matches() ) {
+                filename = mImport.group(1);
+            }
+            */
+            
+            if( filename != null ) {
+          //      System.err.println("[Server] open: " + filename);
+                
                 DomGraph aDomGraph = new DomGraph();
                 NodeLabels labels = new NodeLabels();
                 JDomGraph graph = Main.importGraph(filename, aDomGraph, labels);
                 Main.addNewTab(graph, filename, aDomGraph, true, true, labels);
-            } else {
-                Matcher mImport = importPattern.matcher(messageStr);
-                if( mImport.matches() ) {
-                    String filename = mImport.group(1);
-                    DomGraph aDomGraph = new DomGraph();
-                    NodeLabels labels = new NodeLabels();
-                    JDomGraph graph = Main.importGraph(filename, aDomGraph, labels);
-                    if( graph != null ) {
-                       Main.addNewTab(graph, filename,aDomGraph, true, true, labels);
-                    }
-                }
-            }
+            } 
             
             serv.close();
         }
