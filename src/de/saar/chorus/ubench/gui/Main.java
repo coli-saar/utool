@@ -110,6 +110,10 @@ public class Main {
 	// the codec manager
 	private static CodecManager codecManager;
 
+    // if true, the next tab addition will resize the main jframe
+    // to fit the preferred size of this tab
+    private static boolean useNextTabToResizeFrame;
+
 	/**
 	 * Aligning the slider with the currently shown graph. (if there is one).
 	 */
@@ -310,7 +314,13 @@ public class Main {
 
 		refresh();
 		
-		
+        if( useNextTabToResizeFrame  ) {
+            window.pack();
+            window.validate();
+            
+            useNextTabToResizeFrame = false;
+        }
+
 	}
 
 	/**
@@ -498,11 +508,14 @@ public class Main {
 		window.setTitle("Underspecification Workbench");
 
 		window.doLayout();
-		window.pack();
+/*		window.pack();
 		window.validate();
+        */
 
 		window.setVisible(true);
 
+        useNextTabToResizeFrame = false;
+        
 		// load files that were specified on the command line
 		for (String file : getopt.getRemaining()) {
 			DomGraph anotherGraph = new DomGraph();
@@ -520,6 +533,10 @@ public class Main {
 		}
 		window.pack();
 		window.validate();
+        
+        if( getopt.getRemaining().isEmpty() ) {
+            useNextTabToResizeFrame = true;
+        }
 
 		// if the program was started in server mode, start the server thread
 		if (serverMode) {
