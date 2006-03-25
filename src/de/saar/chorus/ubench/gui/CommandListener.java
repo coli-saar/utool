@@ -439,8 +439,10 @@ public class CommandListener implements ActionListener, ItemListener {
 					new Thread() {
 						public void run() {
 							JSolvedFormTab sFTab = ((JDomGraphTab) Main.getVisibleTab()).createFirstSolvedForm();
-							Main.addTab(sFTab, true);
-							Main.refresh();
+                            if( sFTab != null ) {
+                                Main.addTab(sFTab, true);
+                                Main.refresh();
+                            }
 						}
 					}.start();
 					

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,7 +21,6 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.domgraph.utool.Utool;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 
@@ -108,16 +108,27 @@ public class JDomGraphTab extends JGraphTab  {
 	 */
 	public void solve() {
 		if( ! isSolvedYet ) {
-			chart = new Chart();
-			ChartSolver solver = new ChartSolver(compactGraph, chart);
-			
-			if(solver.solve()) {
-				solvedForms = chart.countSolvedForms().longValue();
-				isSolvedYet = true;
-			}
-			
-			statusBar = new DominanceGraphBar();
-			barCode = Main.getStatusBar().insertBar(statusBar);
+            try {
+                chart = new Chart();
+                ChartSolver solver = new ChartSolver(compactGraph, chart);
+                
+                if(solver.solve()) {
+                    solvedForms = chart.countSolvedForms().longValue();
+                    isSolvedYet = true;
+                }
+                
+                statusBar = new DominanceGraphBar();
+                barCode = Main.getStatusBar().insertBar(statusBar);
+            } catch( OutOfMemoryError e ) {
+                chart = null;
+                isSolvedYet = false;
+                
+                JOptionPane.showMessageDialog(Main.getWindow(),
+                        "The solver ran out of memory while solving this graph. "
+                        + "Try increasing the heap size with the -Xmx option.",
+                        "Out of memory",
+                        JOptionPane.ERROR_MESSAGE);
+            }
 		}
 	
 	}
@@ -349,21 +360,27 @@ public class JDomGraphTab extends JGraphTab  {
 			solve();
 		}
 	
-		DomGraph firstForm = (DomGraph) domGraph.clone();
-
-		solvedFormIterator = new SolvedFormIterator(chart,domGraph);
-		firstForm.setDominanceEdges(solvedFormIterator.next());
+		if( isSolvedYet ) {
+		    DomGraph firstForm = (DomGraph) domGraph.clone();
+		    
+		    solvedFormIterator = new SolvedFormIterator(chart,domGraph);
+		    firstForm.setDominanceEdges(solvedFormIterator.next());
+		    
+		    DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
+		    JDomGraph domSolvedForm = conv.getJDomGraph();
+		    JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
+		            defaultName  + "  SF #1", 
+		            solvedFormIterator, firstForm,
+		            1, solvedForms, 
+		            graphName, 
+		            listener, nodeLabels);
+            
+            return sFTab;
+        } else {
+            return null;
+        }
+        
 		
-		DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
-		JDomGraph domSolvedForm = conv.getJDomGraph();
-		JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
-				defaultName  + "  SF #1", 
-				solvedFormIterator, firstForm,
-				1, solvedForms, 
-				graphName, 
-				listener, nodeLabels);
-		
-		return sFTab;
 		
 	}
 	
