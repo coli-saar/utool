@@ -10,6 +10,7 @@ package de.saar.chorus.domgraph.utool;
 import java.io.IOException;
 import java.util.List;
 
+import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -348,7 +349,8 @@ public class Utool {
     }
 
     private static void displayVersion() {
-        System.err.println("Utool/Java (The Swiss Army Knife of Underspecification), version 0.9");
+        System.err.println("Utool/Java (The Swiss Army Knife of Underspecification), "
+                + "version " + GlobalDomgraphProperties.getVersion());
         System.err.println("Created by the CHORUS project, SFB 378, Saarland University");
         System.err.println();
     }
