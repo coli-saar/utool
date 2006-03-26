@@ -10,21 +10,17 @@ package de.saar.chorus.domgraph.codec.holesem;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.domgraph.graph.EdgeType;
 
 /*
  * TODO: Implement this class.
@@ -35,6 +31,11 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  */
 
 public class HolesemComsemOutputCodec extends GraphOutputCodec {
+    
+    public static final int ERROR_NOT_NORMAL = 1;
+    public static final int ERROR_NOT_HNC = 2;
+    public static final int ERROR_TOO_MANY_CHILDREN = 3;
+    public static final int ERROR_NO_ADJACENT_TREE_EDGES = 4;
     
 	/**
 	 * 
@@ -56,13 +57,6 @@ public class HolesemComsemOutputCodec extends GraphOutputCodec {
   
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
-        
-    	// check whether the graph is applicable for holesemantics conversion
-        if( !graph.isNormal() || !graph.isHypernormallyConnected() ||
-        		! encodeGraphApplicable(graph, labels)) {
-            throw new MalformedDomgraphException();
-        }
-        
         int closeBrackets = 0;	
         StringBuffer content = new StringBuffer();
         String top = null;
@@ -75,28 +69,36 @@ public class HolesemComsemOutputCodec extends GraphOutputCodec {
         String topname = "_utool_top_";
         String supertopname = "_utool_top_1_";
         
-                
-        /*
-         * TODO check for cycles here
-         * Is there a top-node dominating all other nodes (and
-         * thus having no incoming edges)?
-         */
-        if( getTopNodes(graph).size() !=  1 ) {
-        	// if there are no cycles, there can't be more
-        	// than one root of that kind.
-        	// so, if there is none, we create one.
+
+        
+        // check whether the graph is applicable for holesemantics conversion
+        if( !graph.isNormal() ) {
+            throw new MalformedDomgraphException(ERROR_NOT_NORMAL);
+        }
+        
+        if( !graph.isHypernormallyConnected() ) {
+            throw new MalformedDomgraphException(ERROR_NOT_HNC);
+        }
+        
+
+        // A hole semantics USR requires a unique top node, which 
+        // dominates all other nodes. Here we determine this top node
+        // if the graph has one already, or we introduce a new top node.
+        if( getTopNodes(graph).size() ==  1 ) {
+            // if there is exactly one node without incoming edges,
+            // use it as the top node
+            top = getTopNodes(graph).get(0);
+            topname = varifyIfNecessary(top);
+        } else {
+            // otherwise, create a new top node
         	content.append("some(" + supertopname + ",and(label(" +
         			supertopname + "),");
         	content.append("some(" + topname + ",and(hole(" +
         			topname + "),");
-        	conjunction.add("top(" + supertopname + "," + topname + ")");
-        	
-        	closeBrackets += 4;
-        } else {
-        	// if there is a root, we don't need to create one.
-        	top = getTopNodes(graph).get(0);
-        	topname = varifyIfNecessary(top);
-        }
+        	content.append("and(pred1(" + supertopname + ",top," + topname + "),");
+            
+        	closeBrackets += 5;
+        } 
         
         // node conversion
         for( String node : graph.getAllNodes() ) {
@@ -338,31 +340,33 @@ public class HolesemComsemOutputCodec extends GraphOutputCodec {
     }
     
     /**
+     * @deprecated
+     * 
      * Checks whether a graph is applicable for holesem-comsem
      * conversion.
-     * 
-     * TODO revise me!!!
      * 
      * @param graph the graph
      * @param labels the node labels 
      * @return true if the graph can be converted
-     */
-    private boolean encodeGraphApplicable(DomGraph graph, 
-    		NodeLabels labels) {
-    	
+     *
+    private boolean encodeGraphApplicable(DomGraph graph, NodeLabels labels) {
     	for( String node : graph.getAllNodes() ) {
+            // nodes with more than two children can't be represented
     		if( graph.getChildren(node, null).size() > 2 ) 
     			return false;
     		
+            // every node must have an adjacent tree edge
     		if( graph.getData(node).getType() == NodeType.LABELLED ) {
-    			
-    			if( graph.getAdjacentEdges(node).size() == 0 )
-    			return false;
-    		
+                if( graph.indeg(node,EdgeType.TREE) + graph.outdeg(node, EdgeType.DOMINANCE)
+                        == 0 ) {
+                    return false;
+                }
     		}	
     	}
     	
+        // graph must be hypernormally connected
     	return graph.isHypernormallyConnected();
     }
+    */
 
 }
