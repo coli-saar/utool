@@ -20,6 +20,8 @@ import java.util.*;
 import de.saar.chorus.domgraph.codec.*;
 import de.saar.chorus.domgraph.graph.*;
 
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -52,6 +54,10 @@ public class GlueInputCodec extends InputCodec {
     private NodeLabels labels;
 	
 	private List<Formula> formulas;
+	// Variable-to-formula mapping - meant to emulate the "type inference"
+	private Map<String,Formula> varToFormula;
+	
+//	private Map<Formula,Integer>[] behavior;
 	
 	public static String getName() {
 		return "glue";
@@ -64,7 +70,8 @@ public class GlueInputCodec extends InputCodec {
 	
 	public GlueInputCodec() {
 	  this((Reader) null);
-	  
+	  varToFormula = new HashMap<String,Formula>();
+//	  behavior = new HashMap[];
 	  formulas = new ArrayList<Formula>();
     }
 	
@@ -75,29 +82,32 @@ public class GlueInputCodec extends InputCodec {
 	private void z(int j, Formula phi, String address, DomGraph g, NodeLabels l, List<Formula> axioms) {
         switch ( phi.getType() ) {
         case IMPLICATION:
-		Formula psi = phi.getSubformulas().get(0);
-		Formula chi = phi.getSubformulas().get(1);
-		NodeData conclusion = new NodeData(NodeType.LABELLED);
-		NodeData premiss = new NodeData(NodeType.LABELLED);
-		// Address may not be at this point the empty word
-		String addr_cc = address.substring(0, address.length()-1);
-		String addr_pr = addr_cc + "2";
-		String name_cc = "X" + String.valueOf(j+1) + addr_cc;
-		String name_pr = "X" + String.valueOf(j+1) + addr_pr;
-		String name_impl = "X" + String.valueOf(j+1) + address;
-		g.addNode(name_cc, conclusion);
+			Formula psi = phi.getSubformulas().get(0);
+			Formula chi = phi.getSubformulas().get(1);
+			NodeData conclusion = new NodeData(NodeType.LABELLED);
+			NodeData premiss = new NodeData(NodeType.LABELLED);
+			// Address may not be at this point the empty word
+			String addr_cc = address.substring(0, address.length()-1);
+			String addr_pr = addr_cc + "2";
+			String name_cc = "X" + String.valueOf(j+1) + addr_cc;
+			String name_pr = "X" + String.valueOf(j+1) + addr_pr;
+			String name_impl = "X" + String.valueOf(j+1) + address;
+			g.addNode(name_cc, conclusion);
         	l.addLabel(name_cc, "ie");
-		g.addNode(name_pr, premiss);
-		// Creates the labelling edges
-		EdgeData left = new EdgeData(EdgeType.TREE);
-		EdgeData right = new EdgeData(EdgeType.TREE);
-		g.addEdge(name_cc, name_impl, left);
-		g.addEdge(name_cc, name_pr, right);
+			g.addNode(name_pr, premiss);
+			// Updates the Variable-to-formula map
+			varToFormula.put(name_pr, psi);
+			varToFormula.put(name_cc, chi);
+			// Creates the labelling edges
+			EdgeData left = new EdgeData(EdgeType.TREE);
+			EdgeData right = new EdgeData(EdgeType.TREE);
+			g.addEdge(name_cc, name_impl, left);
+			g.addEdge(name_cc, name_pr, right);
         	if ( !psi.isSuffixModuloUnif(axioms) ) {
-			l.addLabel(name_pr, "[" + psi.toString() + "]");
-    	    		z(j, chi, addr_cc, g, l, formulas);
-    	    	} else {
-    	    		z(j, chi, addr_cc, g, l, formulas);
+				l.addLabel(name_pr, "[" + psi.toString() + "]");
+        		z(j, chi, addr_cc, g, l, formulas);
+   	    	} else {
+ 	    		z(j, chi, addr_cc, g, l, formulas);
     		/* 	if psi is not a suffix, branching downward does not necessarily
 			yield a label for the right-bottom node (corresp. to "premiss")
 			(only if the downward recursion (subroutine w) is not trivial):
@@ -127,6 +137,8 @@ public class GlueInputCodec extends InputCodec {
 			NodeData implication = g.getData(name_impl);
 			implication.setType(NodeType.LABELLED);
 			l.addLabel(name_impl, "ii_<" + psi.toString() + ">");
+			// updates the variable-to-formula map
+			varToFormula.put(name_cc, chi);
 			// creates the labelling edge
 			EdgeData edge = new EdgeData(EdgeType.TREE);
 			g.addEdge(name_impl, name_cc, edge);
@@ -134,6 +146,36 @@ public class GlueInputCodec extends InputCodec {
 		case ATOM:
 		case VARIABLE:
 		}
+	}
+
+	private void updateBehavior(int j, HashMap[] behavior) {
+		HashMap<Formula, Integer> res = new HashMap();
+		Set<String> fragment = graph.getFragment("X" + String.valueOf(j+1));
+		for( String node_name : fragment ) {
+			NodeData nd = graph.getData(node_name);
+			if( nd.getType() == NodeType.LABELLED ) {
+				Formula F = (Formula) varToFormula.get(node_name);
+				String label = labels.getLabel(node_name);
+				if( label.contains("ii") ) {
+					// the node has value "phi -o psi"
+					// (if it wasn't an implication there shouldn't be a label "ii"),
+					// but the label is "ii_<phi>"
+					F = F.getSubformulas().get(0);
+					if( res.containsKey(F) ) {
+						Integer aux = res.get(F);
+						res.remove(F);
+						res.put(F, new Integer(aux.intValue() - 1));
+					} else
+						res.put(F, new Integer(-1));
+				} else if( label.contains("[") ) {
+					if( res.containsKey(F) )
+						res.put(F, new Integer(res.get(F).intValue() + 1));
+					else
+						res.put(F, new Integer(1));
+				}
+			}
+		}
+		behavior[j] = res;
 	}
 
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
@@ -167,6 +209,7 @@ public class GlueInputCodec extends InputCodec {
 		}
 		
 		for ( int i = 0; i < formulas.size(); i++ ) {
+			// Compute the fragment related to each axiom
 			Formula axiom = formulas.get(i);
             System.out.println(axiom.suffixes());            
              /* Add first node, labelled with axiom and index; the name is also indexed by
@@ -182,12 +225,65 @@ public class GlueInputCodec extends InputCodec {
                         String name = "X" + String.valueOf(i+1) + axAddress;
                         graph.addNode(name, axNode);
                         labels.addLabel(name, "ax_"+String.valueOf(i+1));
+                        varToFormula.put(name, axiom);
              
               /* Recursive call on the axiom formula
 			   * (to simulate the auxiliary function z);
 			   * expands the constraint ("graph" and "labels") obtained so far
 			   */
                         z(i, axiom, axAddress, graph, labels, formulas);                        
+		}
+		
+		// Proper dominance atoms
+		
+		// For every fragment, a map that describes its behavior w.r.t. resources:
+		// g=1  -> produces a g via [g]
+		// g=-1 -> consumes a g via ii_<g>
+		HashMap[] behavior = new HashMap[formulas.size()];
+		for( int i = 0; i < formulas.size(); i++)
+			behavior[i] = new HashMap<Formula,Integer>();
+		// Collect fragment from each axiom
+		System.out.println(varToFormula);
+		List<Set<String>> fragments = new ArrayList<Set<String>>(formulas.size());
+		for ( int i = 0; i < formulas.size(); i++ ) {
+			updateBehavior(i, behavior);
+			fragments.add(i, graph.getFragment("X" + String.valueOf(i+1)));
+			Set<String> Fi = fragments.get(i);
+			Map<Formula,Integer> m = (Map<Formula,Integer>)behavior[i];
+			System.out.println(m);
+			for( int j = 0; j < fragments.size() - 1; j++ ) {
+				Set<String> Fj = fragments.get(j);
+				Map<Formula,Integer> n = behavior[j];
+				System.out.println("\t" + n.toString());
+				for( Formula i_res : (Set<Formula>)behavior[i].keySet() )
+					// if it contains a key, then there can be only one entry:
+					// at most one behavior (-1, 0, +1; or none) for each resource in each fragment
+					for( Formula j_res : (Set<Formula>)behavior[j].keySet() )
+						if( i_res.equals(j_res) ) {
+							if ( ((Integer)behavior[i].get(i_res)).intValue() < ((Integer)behavior[j].get(j_res)).intValue()) {
+								// if behaviors may plug in each other,
+								// 1. check type of root and hole
+								// 2. add dominance edge
+								String root = graph.getRoot("X" + String.valueOf(j+1));// extracts the root from the root of Fj...
+								for( String hole : graph.getHoles(Fi) )
+									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
+										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
+										graph.addEdge(hole, root, edge);
+										break;
+									}
+							} else if (((Integer)behavior[i].get(i_res)).intValue() > ((Integer)behavior[j].get(j_res)).intValue()) {
+								// idem...
+								String root = graph.getRoot("X" + String.valueOf(i+1));
+								for( String hole : graph.getHoles(Fj) )
+									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
+										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
+										graph.addEdge(hole, root, edge);
+										break;
+									}
+							}
+						}
+						// no else: nothing happens if two fragments exhibit the same behavior w.r.t. the same resource
+				System.out.println(Fi);		}
 		}
 	}
 }

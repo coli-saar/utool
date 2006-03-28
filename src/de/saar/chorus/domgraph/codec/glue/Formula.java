@@ -137,13 +137,13 @@ class Formula {
 		return false;
 	}
 	
-	public boolean isSubsumedBy(Formula f) {
+	public boolean subsumes(Formula f) {
 		switch(type) {
 		case IMPLICATION:
 			if ( (f.type != Type.IMPLICATION) || (!subformulas.get(0).equals(f.subformulas.get(0))) )
 				return false;
 			else {
-				return subformulas.get(1).isSubsumedBy(f.subformulas.get(1));
+				return subformulas.get(1).subsumes(f.subformulas.get(1));
 			}
 		case ATOM:
 			if ( equals(f) )
@@ -161,8 +161,8 @@ class Formula {
 		for (int i = 0; i < formulas.size(); i++) {
 			List<Formula> suffixes = formulas.get(i).suffixes();
 			for (int j = 0; j < suffixes.size(); j++)
-				if ( isSubsumedBy(suffixes.get(j)) ) {
-					System.out.println(this + " is a suffix of " + formulas.get(i)  + " (modulo unification).");
+				if ( subsumes(suffixes.get(j)) ) {
+					System.out.println(this + " is/subsumes a suffix of " + formulas.get(i)  + ".");
 					return true;
 				}
 		}
