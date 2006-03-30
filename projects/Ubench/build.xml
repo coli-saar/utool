@@ -33,6 +33,8 @@
 	<property name="ubench.jar.classes" value="${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/jgraph/*,
 		${coli}/getopt/*,${chorus}/domgraph/**/*,${coli}/basic/*" />
 
+	<property name="testng.jar" value="${packages}/testng-4.6.1/testng-4.6.1-jdk15.jar" />
+
 	<property name="junit.jar" value="${packages}/junit.jar" />
 	<property name="reports.tests" location="testreports" />
 
@@ -55,6 +57,7 @@
 
 			<classpath>
 				<pathelement path="${build.classes}" />
+				<pathelement path="${testng.jar}" />
 			</classpath>
 		</javac>
 
@@ -62,7 +65,9 @@
              basedir="${build.classes}"
              includes="${ubench.jar.classes},${jgraph.unpacked.classes},
 					   ${getopt.unpacked.classes},${itext.unpacked.classes},
-					   ${jgrapht.unpacked.classes}">
+					   ${jgrapht.unpacked.classes}"
+		   excludes="**/*$UnitTests.class">
+
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.ubench.gui.Main" />
@@ -109,7 +114,9 @@
 		<jar jarfile="${ubench-dist.jar}"
              basedir="${build.classes}"
              includes="${ubench.jar.classes},${jgraph.unpacked.classes},${getopt.unpacked.classes},
-			${itext.unpacked.classes},${utool-swig.unpacked.classes},${jgrapht.unpacked.classes}">
+			${itext.unpacked.classes},${utool-swig.unpacked.classes},${jgrapht.unpacked.classes}"
+		excludes="**/*$UnitTests.class">
+
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.ubench.gui.Main" />

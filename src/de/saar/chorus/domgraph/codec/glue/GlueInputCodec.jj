@@ -93,7 +93,7 @@ public class GlueInputCodec extends InputCodec {
 			String name_pr = "X" + String.valueOf(j+1) + addr_pr;
 			String name_impl = "X" + String.valueOf(j+1) + address;
 			g.addNode(name_cc, conclusion);
-        	l.addLabel(name_cc, "ie");
+        	l.addLabel(name_cc, "-o E");
 			g.addNode(name_pr, premiss);
 			// Updates the Variable-to-formula map
 			varToFormula.put(name_pr, psi);
@@ -136,7 +136,7 @@ public class GlueInputCodec extends InputCodec {
 			String name_impl = "X" + String.valueOf(j+1) + address;
 			NodeData implication = g.getData(name_impl);
 			implication.setType(NodeType.LABELLED);
-			l.addLabel(name_impl, "ii_<" + psi.toString() + ">");
+			l.addLabel(name_impl, "-o I, " + psi.toString());
 			// updates the variable-to-formula map
 			varToFormula.put(name_cc, chi);
 			// creates the labelling edge
@@ -156,7 +156,7 @@ public class GlueInputCodec extends InputCodec {
 			if( nd.getType() == NodeType.LABELLED ) {
 				Formula F = (Formula) varToFormula.get(node_name);
 				String label = labels.getLabel(node_name);
-				if( label.contains("ii") ) {
+				if( label.contains("-o I") ) {
 					// the node has value "phi -o psi"
 					// (if it wasn't an implication there shouldn't be a label "ii"),
 					// but the label is "ii_<phi>"
@@ -224,7 +224,7 @@ public class GlueInputCodec extends InputCodec {
 						axAddress = sb.toString();
                         String name = "X" + String.valueOf(i+1) + axAddress;
                         graph.addNode(name, axNode);
-                        labels.addLabel(name, "ax_"+String.valueOf(i+1));
+                        labels.addLabel(name, "ax"+String.valueOf(i+1));
                         varToFormula.put(name, axiom);
              
               /* Recursive call on the axiom formula
