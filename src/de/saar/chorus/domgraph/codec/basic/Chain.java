@@ -143,7 +143,7 @@ public class Chain extends InputCodec {
         private DomGraph graph;
         private NodeLabels labels;
         
-        @Configuration(beforeTest = true)
+        @Configuration(beforeTestMethod = true)
         public void setup() {
             codec = new Chain();
             graph = new DomGraph();
