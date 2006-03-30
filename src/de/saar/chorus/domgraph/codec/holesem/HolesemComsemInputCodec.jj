@@ -184,7 +184,7 @@ public class HolesemComsemInputCodec extends InputCodec {
 	      while( !graph.isRoot(rootOfTarget) ) {
 		List<String> parents = graph.getParents(rootOfTarget, EdgeType.TREE);
 		if( parents.size() > 1 ) {
-		  throw new MalformedDomgraphException();
+		  throw new MalformedDomgraphException("node with multiple parents");
 		} else {
 		  rootOfTarget = parents.get(0);
 		}
@@ -202,7 +202,16 @@ public class HolesemComsemInputCodec extends InputCodec {
 	// at this point, the graph must be normal; otherwise, the
 	// encoding was not applicable in the first place.
 	if( !graph.isNormal() ) {
-	  throw new MalformedDomgraphException();
+	  throw new MalformedDomgraphException("graph is not normal");
+	}
+
+	// likewise for hnc and ll
+	if( !graph.isHypernormallyConnected() ) {
+	    throw new MalformedDomgraphException("graph is not hypernormally connected");
+	}
+
+	if( !graph.isLeafLabelled() ) {
+	    throw new MalformedDomgraphException("graph is not leaf-labelled");
 	}
     }
 
