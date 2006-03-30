@@ -23,6 +23,7 @@ import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
 
 import de.saar.chorus.domgraph.chart.OneSplitSource;
@@ -1300,10 +1301,19 @@ public class DomGraph implements Cloneable {
      * UNIT TESTS
      **************************************************************/
 	
+    @Test(groups = {"Domgraph"})
     public class UnitTests {
-        @Test(groups = {"Domgraph"})
         public void demoTest() {
-            assert true;
+            assert true : "test passed";
+        }
+        
+        @ExpectedExceptions(NullPointerException.class)
+        public void exceptionTest() {
+            String x = null;
+            String y = x.toString();
+            
+            assert false : "exception was not thrown";
+            
         }
     }
 	
