@@ -10,8 +10,10 @@ package de.saar.chorus.domgraph.utool;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.util.List;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -149,7 +151,16 @@ public class CommandLineParser {
                 }
                 
                 try {
-                    inputCodec.decodeFile(argument, graph, labels);
+                    Reader reader = null;
+                    
+                    if( "-".equals(argument)) {
+                        reader = new InputStreamReader(System.in);
+                    } else {
+                        reader = inputCodec.getReaderForSpecification(argument);
+                    }
+                    
+                    inputCodec.decode(reader, graph, labels);
+                    
                     ret.setGraph(graph);
                     ret.setLabels(labels);
                 } catch(MalformedDomgraphException e) {

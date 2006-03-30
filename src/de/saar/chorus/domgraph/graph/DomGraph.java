@@ -1304,7 +1304,7 @@ public class DomGraph implements Cloneable {
     @Test(groups = {"Domgraph"})
     public class UnitTests {
         public void demoTest() {
-            assert true : "test passed";
+            assert true : "test failed";
         }
         
         @ExpectedExceptions(NullPointerException.class)

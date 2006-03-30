@@ -158,7 +158,7 @@ class XmlParser extends DefaultHandler {
             try {
                 String usr = mydecode(attributes.getValue("string"));
                 //System.err.println("----- [USR] -----\n" + usr + "\n---------------");
-                codec.decodeString(usr, graph, labels);
+                codec.decode(new StringReader(usr), graph, labels);
             } catch(MalformedDomgraphException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A semantic error occurred while decoding the graph.", 
                         e, ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode()));

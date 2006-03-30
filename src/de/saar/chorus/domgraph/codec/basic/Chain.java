@@ -7,10 +7,18 @@
 
 package de.saar.chorus.domgraph.codec.basic;
 
+import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.nio.CharBuffer;
+
+import org.testng.annotations.Configuration;
+import org.testng.annotations.ExpectedExceptions;
+import org.testng.annotations.Test;
 
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
@@ -28,16 +36,6 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * and (possibly transitive) verbs, and as such are a convenient
  * type of graphs for benchmarks.<p>
  * 
- * The {@link Chain#decodeFile(String, DomGraph, NodeLabels) decodeFile} and 
- * {@link Chain#decodeString(String, DomGraph, NodeLabels) decodeString} methods of this
- * input codec are both implemented in such a way that they parse
- * their string argument as a number, and then generate the pure
- * chain of that length. This differs from the specification of
- * an ordinary input codec, which interprets these methods as
- * instructions to read an USR from a file or string. The 
- * {@link Chain#decode(Reader, DomGraph, NodeLabels) decode}
- * method for reading a USR from a reader is not supported by this
- * codec.
  * 
  * @author Alexander Koller
  *
@@ -51,39 +49,53 @@ public class Chain extends InputCodec {
         return null;
     }
     
-    public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) {
-	throw new UnsupportedOperationException();
-    }
-
-    
-    public void decodeFile(String lengthAsString, DomGraph graph, NodeLabels labels)
-    throws MalformedDomgraphException {
-        makeChain(lengthAsString, graph, labels);
-    }
-
-    public void decodeString(String lengthAsString, DomGraph graph, NodeLabels labels)
-    throws MalformedDomgraphException {
-        makeChain(lengthAsString, graph, labels);
-    }
-
-    private void makeChain(String lengthAsString, DomGraph graph, NodeLabels labels)
-    throws MalformedDomgraphException {
-    	String upper_root, upper_lefthole, upper_righthole;
-    	String lower;
-    	int length;
+    public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) 
+    throws IOException, ParserException, MalformedDomgraphException {
+        CharBuffer buf = CharBuffer.allocate(10);
+        int chainLength = -1;
+        String lengthAsString;
         
+        inputStream.read(buf);
+        
+        buf.limit(buf.position());
+        buf.rewind();
+        lengthAsString = buf.toString();
+                
         try {
-            length = Integer.parseInt(lengthAsString);
+            chainLength = Integer.parseInt(lengthAsString);
         } catch(NumberFormatException e) {
-            throw new MalformedDomgraphException(e);
+            throw new ParserException(e);
         }
 
-    	if( length < 1 ) {
-    		throw new MalformedDomgraphException("You must specify a numeric chain length of at least 1!");
-    	}
-    	
-    	
-    	graph.clear();
+        if( chainLength < 1 ) {
+            throw new MalformedDomgraphException("You must specify a numeric chain length of at least 1!");
+        }
+        
+        makeChain(chainLength, graph, labels);
+    }
+    
+    /** 
+     * Determines a <code>Reader</code> from which the USR specified
+     * by the <code>spec</code> will be read. In the context of the
+     * <code>Chain</code> input codec, the <code>spec</code> must be
+     * a string representing a number, which is taken to specify
+     * the length of the chain to generate. (This is different than
+     * the implementation in {@link de.saar.chorus.domgraph.codec.InputCodec},
+     * where <code>spec</code> is read as a filename.)
+     * 
+     * @param spec a string specifying the length of the chain
+     * @return a <code>StringReader</code> for the given string
+     */
+    public Reader getReaderForSpecification(String spec) {
+        return new StringReader(spec);
+    }
+
+    private void makeChain(int length, DomGraph graph, NodeLabels labels) {
+    	String upper_root, upper_lefthole, upper_righthole;
+    	String lower;
+        
+        
+        graph.clear();
     	
     	lower = "y0";
     	graph.addNode("y0", new NodeData(NodeType.LABELLED));
@@ -115,7 +127,86 @@ public class Chain extends InputCodec {
     		// dominance edge to new lower fragment
         	graph.addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE));
     	}
-    	
+    }
+    
+    
+    
+    
+    /****************************************************************
+     * UNIT TESTS
+     ****************************************************************/
+    
+
+    @Test(groups = {"Domgraph"})
+    public class UnitTests {
+        private InputCodec codec;
+        private DomGraph graph;
+        private NodeLabels labels;
+        
+        @Configuration(beforeTest = true)
+        public void setup() {
+            codec = new Chain();
+            graph = new DomGraph();
+            labels = new NodeLabels();
+        }
+        
+        
+        // reader construction
+        public void overridenReaderConstruction() throws Exception {
+            assert codec.getReaderForSpecification("3").getClass()
+                        == StringReader.class;
+        }
+        
+        public void readerCorrectContents() throws Exception {
+            Reader r = codec.getReaderForSpecification("-32aa7");
+            StringBuffer buf = new StringBuffer();
+            int c;
+            
+            while( (c = r.read()) != -1 ) {
+                buf.append((char) c);
+            }
+            
+            assert "-32aa7".equals(buf.toString());
+        }
+        
+        
+        // argument parsing
+        
+        @ExpectedExceptions(ParserException.class)
+        public void nonNumericArgument() throws Exception {
+            codec.decode(codec.getReaderForSpecification("xyzzy"), graph, labels);
+            assert false;
+        }
+        
+        @ExpectedExceptions(ParserException.class)
+        public void emptyArgument() throws Exception {
+            codec.decode(codec.getReaderForSpecification(""), graph, labels);
+            assert false;
+        }
+        
+        @ExpectedExceptions(MalformedDomgraphException.class)
+        public void negativeArgument() throws Exception {
+            codec.decode(codec.getReaderForSpecification("-1"), graph, labels);
+            assert false;
+        }
+
+        @ExpectedExceptions(MalformedDomgraphException.class)
+        public void zeroArgument() throws Exception {
+            codec.decode(codec.getReaderForSpecification("0"), graph, labels);
+            assert false;
+        }
+
+        
+        // generates correct graph and labels
+        
+        public void chainLength3() throws Exception {
+            codec.decode(codec.getReaderForSpecification("3"), graph, labels);
+            
+            // TODO compare this with the correct graph
+            
+            assert graph.getAllNodes().size() == 13 :
+                "Graph has wrong number of nodes (" + graph.getAllNodes().size() + ")";
+        }
     }
 
 }
