@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -436,7 +437,7 @@ public class Main {
 				null);
 	
 		try {
-			inputCodec.decodeFile(filename, graph, nl);
+			inputCodec.decode(new FileReader(filename), graph, nl);
 			
 		} catch (Exception e) {
 			JOptionPane

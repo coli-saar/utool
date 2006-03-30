@@ -72,6 +72,11 @@ import org._3pq.jgrapht.Edge;
 
 
 public class HolesemComsemInputCodec extends InputCodec {
+	public static final int ERROR_GRAPH_NOT_NORMAL = 1;
+	public static final int ERROR_GRAPH_NOT_HNC = 2;
+	public static final int ERROR_GRAPH_NOT_LEAF_LABELLED = 3;
+	public static final int ERROR_MULTIPLE_PARENTS = 4;
+	
     private DomGraph graph;
     private NodeLabels labels;
   private List<String> varlist;
@@ -135,39 +140,6 @@ public class HolesemComsemInputCodec extends InputCodec {
 	    throw new ParserException(e);
 	}
 
-/** I don't see why we need to ensure there is a top fragment. - ak 02/06
-	// put a label above the top hole if necessary
-	for( String node : graph.getAllNodes() ) {
-	  if( graph.indeg(node) == 0 ) {
-	    topNodes.add(node);
-	  }
-	}
-
-	switch(topNodes.size()) {
-	case 0:
-	  // NOP -- the graph has a cycle, and we will detect this later
-	  break;
-
-	case 1:
-	  // there is a single top node; if it is unlabelled, add a fake root
-	  String topnode = topNodes.iterator().next();
-
-	  if( graph.getData(topnode).getType() == NodeType.UNLABELLED ) {
-	    graph.addNode("__hs_topnode__", new NodeData(NodeType.LABELLED));
-	    labels.addLabel("__hs_topnode__", null);
-	    graph.addEdge("__hs_topnode__", topnode,
-			  new EdgeData(EdgeType.TREE));
-	  }
-
-	  break;
-
-	default:
-	  // more than one top node => can't fix this with a fake root
-	  throw new MalformedDomgraphException();
-	}
-	**/
-
-
 	// move dom edges up to roots
 	List<Edge> allEdges = new ArrayList<Edge>();
 	allEdges.addAll(graph.getAllEdges());
@@ -184,7 +156,7 @@ public class HolesemComsemInputCodec extends InputCodec {
 	      while( !graph.isRoot(rootOfTarget) ) {
 		List<String> parents = graph.getParents(rootOfTarget, EdgeType.TREE);
 		if( parents.size() > 1 ) {
-		  throw new MalformedDomgraphException("node with multiple parents");
+		  throw new MalformedDomgraphException("The graph contains a node with multiple parents", ERROR_MULTIPLE_PARENTS);
 		} else {
 		  rootOfTarget = parents.get(0);
 		}
@@ -202,16 +174,16 @@ public class HolesemComsemInputCodec extends InputCodec {
 	// at this point, the graph must be normal; otherwise, the
 	// encoding was not applicable in the first place.
 	if( !graph.isNormal() ) {
-	  throw new MalformedDomgraphException("graph is not normal");
+	  throw new MalformedDomgraphException("The graph is not normal", ERROR_GRAPH_NOT_NORMAL);
 	}
 
 	// likewise for hnc and ll
 	if( !graph.isHypernormallyConnected() ) {
-	    throw new MalformedDomgraphException("graph is not hypernormally connected");
+	    throw new MalformedDomgraphException("The graph is not hypernormally connected", ERROR_GRAPH_NOT_HNC);
 	}
 
 	if( !graph.isLeafLabelled() ) {
-	    throw new MalformedDomgraphException("graph is not leaf-labelled");
+	    throw new MalformedDomgraphException("The graph is not leaf-labelled", ERROR_GRAPH_NOT_LEAF_LABELLED);
 	}
     }
 

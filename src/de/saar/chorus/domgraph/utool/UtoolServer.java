@@ -380,4 +380,18 @@ class UtoolServer {
         + "Created by the CHORUS project, SFB 378, Saarland University\n\n";
     }
 
+    
+    
+    
+    
+
+    /****************************************************************
+     * UNIT TESTS
+     ****************************************************************/
+    
+    /*
+     * - codecs yield correct results (domcon-oz and chain)
+     * - ensure correct communication; then try to skip socket communication
+     *   and call things directly
+     */
 }
