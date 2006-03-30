@@ -100,7 +100,27 @@ class MrsCodec {
 			NodeData data = graph.getData(node);
 			
 			if (data.getType() == NodeType.LABELLED) {
-				labels.addLabel(node, labels.getLabel(node) + "&" + label);
+				labels.addLabel(node, 	/**
+						private boolean reachable(String upper, String lower, Set<String> visited) {
+						if( visited.contains(upper)) {
+							return false;
+						} else if (upper.equals(lower)) {
+							return true;
+						} else {
+							visited.add(upper);
+							
+							for( String node : getChildren(upper, null)) {
+								if (reachable(node, lower, visited))  {
+									return true;
+								}
+							}
+							
+							return false;
+						}
+					}
+					**/
+					
+labels.getLabel(node) + "&" + label);
 			} else {
 				data.setType(NodeType.LABELLED);
 				labels.addLabel(node, label);
