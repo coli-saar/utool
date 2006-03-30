@@ -23,6 +23,8 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 public class DomconUdrawOutputCodec extends GraphOutputCodec {
+	private boolean pipe = false;
+	
 	public static String getName()
 	{
 		return "domcon-udraw";
@@ -33,6 +35,11 @@ public class DomconUdrawOutputCodec extends GraphOutputCodec {
 		return ".dc.udg";
 	}
 	
+	public DomconUdrawOutputCodec(String options)
+	{
+		pipe = "pipe".equals(options);
+	}
+
 	public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException 
 	{
 		Set<String> indeg0 = new HashSet<String>();
@@ -66,7 +73,7 @@ public class DomconUdrawOutputCodec extends GraphOutputCodec {
 		if( !refp.add(root)) {
 			writer.write("r(\"" + root + "\")");
 		} else {
-			writer.write("l(\"" + root + ",n(\"\",[a(\"OBJECT\",\"" + root);
+			writer.write("l(\"" + root + "\",n(\"\",[a(\"OBJECT\",\"" + root);
 			
 			if( graph.getData(root).getType() == NodeType.LABELLED ) {
 				writer.write(":" + labels.getLabel(root));
@@ -105,12 +112,21 @@ public class DomconUdrawOutputCodec extends GraphOutputCodec {
 	
 	public void print_header(Writer writer) throws IOException
 	{
-		writer.write("[");
+		if (pipe) {
+			writer.write("graph(new([");
+		} else {
+			writer.write("[");
+		}
 	}
 	
 	public void print_footer(Writer writer) throws IOException
 	{
-		writer.write("]");
+		if (pipe) {
+			writer.write("]))\n");
+		} else {
+			writer.write("]\n");
+		}
+		writer.flush();
 	}
 	
 	public void print_start_list(Writer writer) throws IOException
