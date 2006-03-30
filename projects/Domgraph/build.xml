@@ -101,7 +101,9 @@
 
 		<jar jarfile="${domgraph-dist.jar}"
              basedir="${build.classes}"
-             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}">
+             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}"
+					excludes="**/*$UnitTests.class">
+
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.domgraph.gui.Main" />
