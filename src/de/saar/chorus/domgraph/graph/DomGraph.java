@@ -23,6 +23,7 @@ import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.testng.annotations.Test;
 
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 
@@ -1286,66 +1287,28 @@ public class DomGraph implements Cloneable {
         setCachedResult(key, new Boolean(value));
         return value;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**************************************************************
+     * UNIT TESTS
+     **************************************************************/
 	
+    public class UnitTests {
+        @Test(groups = {"Domgraph"})
+        public void demoTest() {
+            assert true;
+        }
+    }
 	
 }
 
 
 
 
-
-/*
- public Map<Set<String>, String> getFragments() {
- Set<String> visited = new HashSet<String>();
- Map<Set<String>,String> ret = new HashMap<Set<String>, String>();
- 
- for( Set<String> wcc : wccs() ) {
- computeFragmentTableDfs(wcc.iterator().next(), null, ret, visited);
- }
- 
- return ret;
- }
- 
- private void computeFragmentTableDfs(String node, Set<String> currentFragment, Map<Set<String>, String> fragmentTable, Set<String> visited) {
- visited.add(node);
- 
- if( currentFragment == null ) {
- currentFragment = new HashSet<String>();
- }
- 
- currentFragment.add(node);
- 
- if( isRoot(node) ) {
- fragmentTable.put(currentFragment, node);
- }
- 
- // visit the other nodes in my fragment
-  List<Edge> adjacentEdges = getAdjacentEdges(node);
-  for( Edge edge : adjacentEdges ) {
-  if( getData(edge).getType() == EdgeType.TREE ) {
-  String neighbour = (String) edge.oppositeVertex(node);
-  if( !visited.contains(neighbour) ) {
-  computeFragmentTableDfs(neighbour, currentFragment, fragmentTable, visited);
-  }
-  }
-  }
-  
-  // visit nodes in other fragments
-   for( Edge edge : adjacentEdges ) {
-   if( getData(edge).getType() == EdgeType.DOMINANCE ) {
-   String neighbour = (String) edge.oppositeVertex(node);
-   if( !visited.contains(neighbour) ) {
-   computeFragmentTableDfs(neighbour, null, fragmentTable, visited);
-   }
-   }
-   }
-   }
-   */
-
-
-
-/*
- public DirectedGraph getLowlevelGraph() {
- return graph;
- }
- */
