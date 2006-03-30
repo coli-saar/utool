@@ -264,6 +264,7 @@ public class ConvenientGetopt {
     private void usage() {
          char[] whitespace = 
             "                                                                                           ".toCharArray();
+         final int paddingLength = 32;
          
          if( howToCall == null ) {
              System.err.println("Usage: " + progname + " [options]");
@@ -273,10 +274,20 @@ public class ConvenientGetopt {
          
          System.err.println("\nOptions:");
          for( GetoptEntry entry : entriesInOrder ) {
-             StringBuffer line = new StringBuffer("   -" + entry.shortname);
+             StringBuffer line = new StringBuffer("   ");
+             boolean hasShortname = false;
+             
+             if( Character.isLetterOrDigit(entry.shortname) ) {
+            	 line.append("-" + entry.shortname);
+            	 hasShortname = true;
+             }	 
              
              if( entry.longname != null ) {
-                 line.append(", --" + entry.longname);
+            	 if( hasShortname ) {
+            		 line.append(", ");
+            	 }
+            	 
+                 line.append("--" + entry.longname);
              }
              
              if( entry.hasArg == REQUIRED_ARGUMENT ) {
@@ -285,7 +296,12 @@ public class ConvenientGetopt {
                  line.append(" [<arg>]");
              }
              
-             line.append(whitespace, 0, 30-line.length()); // pad to 30 characters
+             if( line.length() >= paddingLength) {
+            	 line.append(" ");
+             } else {
+            	 // pad with whitespace
+            	 line.append(whitespace, 0, paddingLength-line.length()); 
+             }
              
              if( entry.description != null ) {
                  line.append(entry.description);
