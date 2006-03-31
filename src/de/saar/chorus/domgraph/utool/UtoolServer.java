@@ -225,23 +225,27 @@ class UtoolServer {
                 
             
             case convert:
-                if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
-                    sendError(out, ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE,  "Output codec must be a graph codec!");
-                    sock.close();
-                    continue;
+                if( options.hasOptionNoOutput() ) {
+                    out.println("<result />");
+                } else {
+                    if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
+                        sendError(out, ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE,  "Output codec must be a graph codec!");
+                        sock.close();
+                        continue;
+                    }
+                    
+                    try {
+                        XmlEncodingWriter enc = new XmlEncodingWriter(out);
+                        out.print("<result usr='");
+                        options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), enc);
+                        out.println("' />");
+                    } catch(MalformedDomgraphException e) {
+                        sendError(out, ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode(), "This graph is not supported by the specified output codec.");
+                        sock.close();
+                        continue;
+                    }
                 }
-
-                try {
-                    XmlEncodingWriter enc = new XmlEncodingWriter(out);
-                    out.print("<result usr='");
-                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), enc);
-                    out.println("' />");
-                } catch(MalformedDomgraphException e) {
-                    sendError(out, ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode(), "This graph is not supported by the specified output codec.");
-                    sock.close();
-                    continue;
-                }
-                
+                    
                 break;
                 
                 
