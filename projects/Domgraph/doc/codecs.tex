@@ -1,48 +1,403 @@
-
 \section{Codecs}  \label{sec:codecs}
 
+Utool is intended as a ``Swiss Army Knife'' for working with
+underspecified representations, and one of our design goals was
+therefore to make it compatible with as many current
+underspecification formalisms as possible. This is not a trivial task,
+as different formalisms typically differ in crucial details, and naive
+translations from one formalism to another are typically incorrect for
+pathological inputs.
 
+As we have explained above, Utool internally works with labelled
+dominance graphs and uses \emph{codecs} to translate between these
+graphs and the actual USRs that the user sees. An \emph{input codec}
+transforms a USR in a certain format into an equivalent labelled
+dominance graph, and an \emph{output codec} transforms a labelled
+dominance graph into a USR in a certain format. There are two
+different types of output codecs: \emph{graph output codecs} are
+capable of encoding arbitrary USRs, whereas \emph{plugging output
+  codecs} can only encode solved forms.
 
+Some codecs are quite simple; for instance, the \verb?domcon-oz? and
+\verb?domcon-gxl? input and output codecs are simply deal with
+syntaxes for labelled dominance graphs. However, there are also input
+codecs for MRS and Hole Semantics that do quite a bit of work to
+compute correct dominance graphs, and rely on nontrivial formal
+results; and there are output codecs for reading the solutions as
+terms or translating them into graph file formats that can be
+displayed using external viewers.
 
-\begin{itemize}
-\item existing codecs; each with pointers to literature and examples
-\item how to write your own codec
-\item Limitations of current input codecs
-\end{itemize}
+In addition, the Codec API is quite simple, and writing your own codec
+doesn't require a deep knowledge of the rest of the Utool system. As
+long as you observe certain rules about, say, the labelled dominance
+graph that your input codec computes for your own underspecification
+formalism, the rest of the Utool system will simply cooperate with
+your new codec.
+
+Below, we will go through the input and output codecs in the current
+Utool distribution one by one, explain the formal background and the
+concrete syntax we assume, and discuss their limitations.
 
 
 
 \subsection{The domcon-oz codecs}
 
+The \verb?domcon-oz? codecs deal with string representations of
+labelled dominance graphs as lists of terms of the Oz programming
+language. An example USR that these codecs can deal with looks as
+follows:
+
+\begin{verbatim}
+[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z)]
+\end{verbatim}
+
+As you can see, USRs are lists of terms whose head symbols are either
+\verb?label? or \verb?dom?. The term \verb?label(x f(x1 ... xn))?
+expresses that the node \verb?x? should have the label \verb?f? and
+its children (over tree edges) should be the nodes \verb?x1? to
+\verb?xn?, from left to right. The term \verb?dom(x y)? expresses that
+there should be a dominance edge from the node \verb?x? to the node
+\verb?y?. All labels and node names must be Oz atoms (essentially,
+this means that they must start with a lowercase letter).
+
+This format was first used in the old CHORUS demo (in 1999 or so),
+which was written in Mozart Oz. At the time, it was used to represent
+dominance \emph{constraints} \cite{clls2000}, but as we know today,
+weakly normal dominance constraints can be seen as dominance graphs
+quite directly \cite{Koller04}. If we want to read a \verb?domcon-oz?
+USR as a weakly normal dominance constraints, we can read \verb?label?
+terms as labelling atoms, \verb?dom? terms as dominance atoms, and
+silently assume an inequality atom $x \neq y$ for any two symbols $x$
+and $y$ that appear as the first argument of a \verb?label? term.
+
+Both the input and the output codec require that the dominance graph
+is weakly normal. If it isn't, they raise a
+\verb?MalformedDomgraphException?.
+
+The \verb?domcon-oz? input codec considers lines that start with a
+percent symbol as comments and ignores them. The output codec is a
+graph output codec which will encode arbitrary graphs. These codecs
+are associated with the filename extension \verb?.clls?.
+
+
+
 \subsection{The domcon-gxl codecs}
+
+The \verb?domcon-gxl? codecs deal with representations of a labelled
+dominance graph in the GXL graph representation language. GXL
+(\url{http://www.gupro.de/GXL/}) is a XML-based standard language for
+this purpose. A USR in this format looks as follows:
+
+\begin{verbatim}
+<gxl xmlns:xlink="http://www.w3.org/1999/xlink">
+   <graph id="utool-graph" edgeids="true" hypergraph="false" edgemode="directed">
+      <node id="x">
+         <type xlink:href="root" />
+         <attr name="label"><string>f</string></attr>
+      </node>
+      <edge from="x" to="x1" id="edge0">
+        <type xlink:href="solid" />
+      </edge>
+
+      <node id="x1">
+         <type xlink:href="hole" />
+      </node>
+      <edge from="x1" to="z" id="edge3">
+        <type xlink:href="dominance" />
+      </edge>
+
+      <node id="z">
+         <type xlink:href="leaf" />
+         <attr name="label"><string>a</string></attr>
+      </node>
+   </graph>
+</gxl>
+\end{verbatim}
+
+The USR specifies nodes (using \verb?node? elements), which can have
+the type \verb?root? (a node with outgoing tree edges), \verb?hole? (a
+node with incoming but no outgoing tree edges), or \verb?leaf? (a node
+with not adjacent tree edges). Each node which is not a hole must have
+an embedded \verb?attr? element which specifies its label. In
+addition, the USR specifies edges, which can have the types
+\verb?solid? or \verb?dominance?.
+
+Both the input and the output codec require that the dominance graph
+is weakly normal. If it isn't, they raise a
+\verb?MalformedDomgraphException?.
+
+The \verb?domcon-gxl? codecs are intended primarily as a portable
+exchange format for labelled dominance graphs. The output codec is a
+graph output codec which will encode arbitrary graphs. These codecs
+are associated with the filename extension \verb?.dc.xml?.
+
+
 
 \subsection{The mrs-prolog input codec}
 
 \cite{mrs-dom}
 
+\todo{Stefan}
+
 \subsection{The mrs-xml input codec}
 
-\subsection{The holesem-comsem codecs}
+\todo{Stefan}
 
-\cite{KolNieTha03}
+
+
+\subsection{The holesem-comsem input codec}
+
+The \verb?holesem-comsem? input codec can read USRs of the Hole
+Semantics formalism. Hole Semantics \cite{Bos96} is a rather popular
+underspecification formalism because it is conceptually very
+accessible (underspecify formulas by allowing them to have holes which
+can be plugged by other formulas). We assume the concrete syntax used
+in the Prolog system that accompanies the Computational Semantics
+textbook \cite{blackburn05:_repres_infer_natur_languag}; that is, it
+should be possible to use all USRs generated by the book software with
+this codec. USRs in this syntax are Prolog terms that look e.g.\ as
+follows:
+
+\begin{verbatim}
+some(A, some(B, some(C, some(X, and(label(A), and(hole(B),
+and(label(C), and(some(A, X, B), and(pred1(C,man,X), leq(C,B))))))))))
+\end{verbatim}
+
+Here \verb?A? and \verb?C? are labels, \verb?B? is a hole, and
+\verb?X? is a object variable of the intended semantic representation,
+which will be bound by an existential quantifier. All four symbols are
+introduced by the outer \verb?some? terms. In addition, the term
+\verb?some(A,X,B)? expresses that \verb?A? is labelled with $\exists
+X. \verb?B?$, and the term \verb?pred1(C,man,X)? expresses that
+\verb?C? is labelled with $man(X)$. The term \verb?leq(C,B)? says that
+the label \verb?C? must be below the hole \verb?B?.
+
+This codec makes use of the theoretical result that Hole Semantics
+USRs that are hypernormally connected and leaf-labelled can be
+translated into equivalent labelled dominance graphs
+\cite{KolNieTha03}. The translation itself is not that complicated,
+but the correctness proof is not trivial. The codec checks whether the
+resulting graph is normal, leaf-labelled, and hypernormally
+connected. If it isn't, it throws a \verb?MalformedDomgraphException?
+with one of the following error codes:
+
+\begin{tabular}{lll}
+code & symbolic name & meaning \\ \hline
+193 &  \verb?ERROR_GRAPH_NOT_NORMAL? & resulting graph is not normal \\
+194 &  \verb?ERROR_GRAPH_NOT_HNC? & resulting graph is not hypernormally
+connected \\
+195 &  \verb?ERROR_GRAPH_NOT_LEAF_LABELLED? & resulting graph is not
+leaf-labelled \\
+196 &  \verb?ERROR_MULTIPLE_PARENTS? & graph has a node with more than one
+parent 
+\end{tabular}
+
+Although every normal, hypernormally connected, and leaf-labelled
+dominance graph can in principle be translated back into an equivalent
+Hole Semantics USR \cite{KolNieTha03}, there is no corresponding
+output codec. This is because the concrete syntax imposes a number of
+very inconvenient restrictions on the USRs that it can express. For
+instance, all nodes that are not holes must have exactly one or two
+children via tree edges, and all non-holes whose children are not
+object-level variables must be labelled with a connective of predicate
+logic. This has the consequence that only a tiny minority of all
+labelled dominance graphs can actually be encoded given this syntax,
+which made the encoding more difficult to implement and debug than we
+felt it was worth.
+
+The input codec is associated with the filename extension \verb?.hs.pl?.
+
+
+
 
 \subsection{The domcon-udraw output codec}
 
-\subsection{The plugging-oz and plugging-lkb output codecs}
+\todo{Stefan}
 
-LKB see Section~\ref{sec:integration}
+\todo{discuss option}
 
-\subsection{The term-oz and term-prolog output codecs}
+
+
+
+\subsection{The plugging output codecs}
+
+The \verb?plugging-oz? and \verb?plugging-lkb? output codecs are
+plugging output codecs which can be used to encode solved forms. Both
+codecs display the solved form as a list of pairs (hole, root) that
+specify the dominance edges in the solved form (in Hole Semantics
+terminology, this is a \emph{plugging}). They differ only in the
+concrete syntax:
+
+\begin{itemize}
+\item \verb?plugging-oz?: The output is an Oz list of lists of terms
+  that looks as follows:
+\begin{verbatim}
+[[plug(xr2 y2) plug(xl2 x1) plug(xl1 y0) plug(xr1 y1)]
+ [plug(xl1 y0) plug(xr1 x2) plug(xr2 y2) plug(xl2 y1)]]
+\end{verbatim}
+Each list consists of terms of the form \verb?plug(x y)? which encode
+the dominance edges (here: from \verb?x? to \verb?y?) in the solved
+form.
+\item \verb?plugging-lkb?: The output is a Lisp list of lists of lists
+  that looks as follows:
+\begin{verbatim}
+( ( (r2 r2 2) (2 r2 2) (l2 l2 1) (1 l2 1) (l1 l1 0) (0 l1 0) (r1 r1 1) (1 r1 1))
+  ( (l1 l1 0) (0 l1 0) (r1 r1 2) (2 r1 2) (r2 r2 2) (2 r2 2) (l2 l2 1) (1 l2 1)) )
+\end{verbatim}
+
+\todo{Stefan}
+
+\end{itemize}
+
+\verb?plugging-oz? is intended as a convenient output format if you
+only want to see the dominance edges. On the other hand,
+\verb?plugging-lkb? is practically relevant because it displays
+pluggings in the format that the LKB workbench expects from its own
+MRS solver. This means that Utool with the \verb?mrs-prolog? input
+codec and the \verb?plugging-lkb? output codec can be used as a
+drop-in replacement for the LKB's own MRS solver (see also
+Section~\ref{sec:integration-lkb}).
+
+Both codecs are plugging codecs; that is, they are only intended to be
+run on dominance graphs in solved form. Both codecs will also accept
+any other dominance graph and will then display its dominance edges,
+but it is less meaningful than displaying the dominance edges in a
+solved form. The \verb?plugging-oz? codec is associated with the
+filename extension \verb?.plug.oz?, and the \verb?plugging-lkb? codec
+is associated with the extension \verb?.lkbplug.lisp?.
+
+
+
+\subsection{The term output codecs}
+
+The \verb?term-oz? and \verb?term-prolog? output codecs are plugging
+output codecs which can be used to encode labelled dominance graphs in
+simple solved form, i.e.\ trees in which each hole has exactly one
+outgoing dominance edge. They traverse these trees top-down and print
+the ground term that corresponds to the tree structure. Their output
+looks as follows:
+\begin{itemize}
+\item \verb?term-oz?: The codec computes a collection of Oz terms, one
+  for each solved form, separated by newlines:
+\begin{verbatim}
+f2(f1(a0 a1) a2)
+f1(a0 f2(a1 a2))
+\end{verbatim}
+\item \verb?term-prolog?: The codec computes a collection of Prolog
+  terms, one for each solved form, separated by newlines:
+\begin{verbatim}
+f2(f1(a0,a1),a2)
+f1(a0,f2(a1,a2))
+\end{verbatim}
+\end{itemize}
+
+The only difference between the two codecs is that the Prolog codec
+separates arguments of a term by commas, whereas the Oz codec
+separates them with whitespace. These two codecs are intended as
+human-readable representations of solved forms.
+
+Both codecs assume that the solved form they encode is simple and
+leaf-labelled, and will throw a \verb?MalformedDomgraphException? if
+it isn't.
+
+\verb?term-oz? is associated with the filename extension \verb?.t.oz?, and
+\verb?term-prolog? with \verb?.t.pl?.
+
+
+
+
 
 \subsection{The chain input codec}
 
+The \verb?chain? input codec will generate the pure chain
+\cite{Koller04} of a given length. A chain is a zig-zag graph
+consisting of upper and lower fragments that are connected by
+dominance edges; the pure chain of length 3 is shown in
+Fig.~\ref{fig:chain3}. Chains appear frequently as parts of
+linguistically motivated USRs, and are therefore a nice basis for
+benchmarking (e.g.\ in \cite{bodirsky-weakly-normal-constraints}).
+
+The ``USRs'' that can be processed by this codec are simply string
+representations of numbers (such as the string \verb?3?). The codec
+will then generate the pure chain of this length. When used with the
+command-line version of Utool, \verb?chain? behaves differently than
+all other codecs discussed so far in that it doesn't interpret its
+argument as a filename, but again directly as the chain length. This
+means that you can use a Utool call as follows:
+
+\begin{verbatim}
+$ java -jar Utool.jar convert -I chain 3 -O domcon-oz
+\end{verbatim}
+%$
+
+The codec will throw a \verb?ParserException? if the length string
+isn't a number, and a \verb?MalformedDomgraphException? if the number
+isn't positive. Because \verb?chain? doesn't read its USRs from files,
+it is not associated with any filename extension.
+
+
+
+
+
+
 \subsection{Writing your own codecs}
 
+Although Utool comes with a collection of codecs that cover most
+existing popular underspecification formalisms, there are some
+formalisms we don't support (yet), and we can expect that other
+formalisms will be developed in the future. To this end, it may be
+helpful for you to write your own codec.
+
+A codec is a class that is derived from one of the abstract base
+classes \verb?InputCodec?, \verb?GraphOutputCodec?, or
+\verb?PluggingOutputCodec?, all of which are in the package
+\verb?de.saar.chorus.domgraph.codec?. Your own codec can be in any
+package you like. You never need to create objects of your codec
+class; Utool creates objects of your class as needed.
+
+Your codec class has the task of writing a representation of a
+dominance graph to a Java \verb?Writer? (if it is an output codec) or
+of reading such a representation from a Java \verb?Reader? and
+initialising a labelled dominance graph (if it is an input codec). In
+order to do this, you must implement certain abstract methods that
+depend on the respective base class. This is documented in more detail
+in the API documentation of the codec base classes on the website,
+which is also distributed with the Utool package.
+
+Your class must also have either a public constructor that takes no
+arguments, or a public constructor that takes a single argument of
+type \verb?String?. If it defines the second type of constructor,
+Utool will pass the codec options string to your constructor if any
+were specified on the command line or in the XML command. If no codec
+options were specified, it will pass the value \verb?null?. Utool will
+always call the \verb?String? constructor if it exists, and fall back
+to the argumentless constructor if it doesn't.
+
+In addition, your codec class is expected to implement public static
+methods \verb?getName()? and \verb?getExtension()?, both with return
+type \verb?String?. These methods should return the codec name and the
+filename extension that you want to associate with your codec.
+
+Finally, in order to inform Utool of your codec's existence, you must
+\emph{register} the codec. In the current release, this task is a bit
+of a nuisance, as you must add a call to \verb?registerCodec? for your
+codec class in each of the following places of the Utool source code:
 \begin{itemize}
-\item the classes \verb?InputCodec?, \verb?GraphOutputCodec?, and
-\verb?PluggingOutputCodec?.
-\item Registering codecs
+\item method \verb?registerAllCodecs? in
+  \url{de.saar.chorus.domgraph.utool.CommandLineParser};
+\item method \verb?registerAllCodecs? in
+  \url{de.saar.chorus.domgraph.utool.XmlParser};
+\item method \verb?registerAllCodecs? in
+  \url{de.saar.chorus.ubench.gui.Main}. 
 \end{itemize}
+
+You must then recompile Utool as described in \todo{where?}. Make sure
+that your compiled codec class is in your classpath both when you
+compile and when you run Utool. Then run \verb?java -jar Utool.jar -d?
+to check whether your codec was loaded by Utool.
+
+
+
 
 
 
