@@ -209,23 +209,25 @@ public class Utool {
             
         
         case convert:
-            if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
-                System.err.println("Output codec must be graph codec!");
-                System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
-            }
-
-            try {
-                options.getOutputCodec().print_header(options.getOutput());
-                options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), options.getOutput());
-                options.getOutputCodec().print_footer(options.getOutput());
-            } catch(MalformedDomgraphException e) {
-                System.err.println("This graph is not supported by the specified output codec.");
-                System.err.println(e);
-                System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
-            } catch(IOException e) {
-                System.err.println("An I/O error occurred while trying to print the results.");
-                System.err.println(e);
-                System.exit(ExitCodes.IO_ERROR);
+            if( !options.hasOptionNoOutput() ) {
+                if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
+                    System.err.println("The output codec must be a graph codec!");
+                    System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
+                }
+                
+                try {
+                    options.getOutputCodec().print_header(options.getOutput());
+                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), options.getOutput());
+                    options.getOutputCodec().print_footer(options.getOutput());
+                } catch(MalformedDomgraphException e) {
+                    System.err.println("This graph is not supported by the specified output codec.");
+                    System.err.println(e);
+                    System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
+                } catch(IOException e) {
+                    System.err.println("An I/O error occurred while trying to print the results.");
+                    System.err.println(e);
+                    System.exit(ExitCodes.IO_ERROR);
+                }
             }
             
             break;
