@@ -1,10 +1,12 @@
 \section{Using Utool}  \label{sec:operations}
 
-In the current release, Utool supports four commands: ``solve'',
-``solvable'', ``classify'', and ``convert''. Each of these commands
-can be used from the command-line or in the Utool Server. In addition,
-Utool supports some auxiliary pseudo-commands for displaying help and
-for starting the Utool Server.
+In the current release, Utool supports six commands: \verb?solve?,
+\verb?solvable?, \verb?classify?, \verb?convert?, \verb?server?, and
+\verb?display?. Each of these commands can be used from the
+command-line or in the Utool Server (but running the \verb?server?
+command in the Utool Server doesn't do anything). In addition, Utool
+supports some auxiliary pseudo-commands for displaying help and for
+starting the Utool Server.
 
 In this section, we describe these commands in some detail.
 
@@ -12,23 +14,22 @@ In this section, we describe these commands in some detail.
 \subsection{Command-line interface}
 When Utool is run from the command-line, it executes the single
 command you specify on the command line and then exits. For instance,
-the following call executes one ``solvable'' command and outputs some
-information about it:
+the following call executes one \verb?solvable? command and outputs
+some information about it:
 
 \begin{verbatim}
 $ java -jar Utool.jar solvable -s chain-3.clls
-The input graph is normal.
-The input graph is compact.
-
-Solving graph ... it is solvable.
-Splits in chart: 10
-Time to build chart: 30 ms
-Number of solved forms: 5
 \end{verbatim}
 % $
 
-You can get help on how to use the different commands by running Utool
-with the ``help'' command.
+Commands typically require \emph{arguments} (in the example, the
+filename \verb?chain-3.clls? of the USR that we want to solve), and
+accept certain \emph{options} (here, the \verb?-s? option, which
+instructs Utool to display statistical information). These arguments
+and options are written after the command on the command line.
+
+You can get help on using the different commands by running Utool with
+the \verb?help? command.
 
 
 \subsection{Server mode}
@@ -37,9 +38,11 @@ Alternatively, you can run Utool in server mode. In this mode, it will
 not execute any commands at first. Instead, it will accept network
 connections on a specific socket. Each time it is sent a command on
 this socket, it will execute this command, send the results back over
-the socket, and then close the socket. This means that the same Utool
-process keeps running and can execute many commands during its
-lifetime. You start Utool in server mode as follows:
+the socket, and then close the socket. But the same Utool process
+keeps running and can execute many commands during its lifetime. 
+
+You start Utool in server mode by making Utool execute the
+\verb?server? command:
 
 \begin{verbatim}
 $ java -jar Utool.jar server
@@ -52,16 +55,25 @@ and no name for the logfile, in which case it will write some
 information to standard error. 
 
 By default, the server will listen for socket connections on port
-2802. If you like, you can change this port to whatever you like by
-using the \verb?--port? command-line option. You communicate with it
-by sending it XML queries and accepting the XML results. These queries
-are always of the following form:
+2802, but the port can be specified using the \verb?--port?
+option. You communicate with it by sending it XML queries and
+accepting the XML results. You start by sending a query of the
+following form:
 
 \begin{verbatim}
 <utool cmd="..." (more options)>
   (arguments of the command)
 </utool>
 \end{verbatim}
+
+Next, you shut down the half of the socket that is responsible for
+sending data to the server. Many socket libraries (e.g.\ the standard
+libraries for C and Perl) offer a \verb?shutdown? function, which you
+should use to shut down the socket for sending. The Utool Server will
+recognise this and start processing the command. Notice that
+\verb?shutdown? is different from \verb?close? because it only closes
+one direction of the socket; you can't close the socket yet because
+you still need to receive the response from the server.
 
 If the command is executed successfully, the server will respond with
 a message of the following form:
@@ -96,12 +108,16 @@ comparable to the C++ implementation in the server mode.
 
 \subsection{Passing USRs}
 
-All four commands require the user to specify an USR that should be
+Most commands require the user to specify an USR that should be
 processed.
 
-In command-line mode, you pass the filename from which the USR should
-be read as a command-line argument. In the example above, this was
-\verb?chain-3.clls?.
+In command-line mode, you pass a specification of the USR as a
+command-line argument. Most input codecs interpret this specification
+string as the filename from which the USR should be read; in the
+example above, we used the file name \verb?chain-3.clls?. However, it
+is up to the input codec to decide how the argument string should be
+interpreted; the \verb?chain? codec, for example, interprets the
+string as the chain length and not as a filename.
 
 In server mode, you can't pass a filename because the server may run
 on a different machine than the client and may not have access to its
@@ -111,20 +127,52 @@ like so:
 
 \begin{verbatim}
 <utool command="solvable">
-  <usr codec="domcon-oz" string="label(x f(y)) ..." />
+  <usr codec="domcon-oz" string="[label(x f(y)) ...]" />
 </utool>
 \end{verbatim}
 
 Notice that the attribute values must be valid XML attribute
 strings. This means that you must replace special characters by
-their respective character entities.
+their respective character entities (see also
+Section~\ref{sec:practice} for tips on this).
+
+
+\subsection{Exit codes}
+
+Each execution of a Utool command returns an \emph{exit code}. The
+command-line version of Utool will return this as the programme exit
+code, which you can access e.g.\ in the \texttt{\$?} variable in a
+Bash shell. The server version will return the exit code in the
+\verb?code? attribute in the responses for many commands (and always
+when it reports an error).
+
+Exit codes are numbers between 0 and 255. They are split up into
+ranges with different meanings as follows:
+
+\begin{tabular}{l|l}
+exit codes & meaning \\\hline
+0 -- 127 & command was executed successfully \\
+128 -- 191 & an error occurred in the main programme \\
+192 -- 223 & an error occurred in the input codec \\
+224 -- 255 & an error occurred in the output codec
+\end{tabular}
+
+The exit codes for successful termination of a command are documented
+with the commands below. The exit codes signifying codec errors are
+documented with the codecs in Section~\ref{sec:codecs}. The exit codes
+for the main programme are as follows:
+
+\begin{tabular}{l|l}
+exit codes & meaning \\\hline
+128 & \todo{document this}
+\end{tabular}
 
 
 
 
-\subsection{The operations supported by Utool}
+\subsection{The commands supported by Utool}
 
-We will now go through the four main commands and describe what each
+We will now go through the six main commands and describe what each
 command does and what options it takes.
 
 
@@ -147,7 +195,7 @@ see the ``solve'' command below.
 \paragraph{Result.}
 In command-line mode, the Utool process will terminate with an exit
 code of 1 if the graph was solvable. It will terminate with an exit
-code of 0 if it wasn't. Exit codes of 128 or more indicate errors.
+code of 0 if it wasn't. 
 
 In server mode, Utool will send a reply of the following form:
 \begin{verbatim}
@@ -193,9 +241,8 @@ solvable, proceeds to enumerate all solved forms.
 \paragraph{Result.}
 In command-line mode, Utool will output all solved forms. By default,
 it will write them to standard output, but there is a command-line
-option for redirecting them into a file. The Utool process will
-terminate with exit code 0 if everything went well, and with an exit
-code of 128 or above if an error occurred.
+option for redirecting them into a file. This command will always
+terminate with an exit code of 0 if no errors occurred.
 
 In server mode, Utool will send a reply of the following form:
 \begin{verbatim}
@@ -262,9 +309,8 @@ formalism to another (to the extent that this is supported by theory).
 \paragraph{Result.}
 In command-line mode, Utool will output the USR using the specified
 output codec. By default, it will write it to standard output, but you
-can again redirect the output to a file. As before, exit code 0
-signifies successful completion, whereas exit codes of 128 and above
-are error codes.
+can again redirect the output to a file. The command always returns an
+exit code 0 on successful completion.
 
 In server mode, Utool will send a reply of the following form:
 \begin{verbatim}
@@ -287,9 +333,9 @@ The \verb?convert? command can take the following options:
 
 
 
-\subsubsection{Classify}
+\subsubsection{Classify} \label{sec:op-classify}
 
-Finally, you can use Utool to check whether a dominance graph belongs
+The \verb?classify? command checks whether a dominance graph belongs
 to certain particularly well-behaved classes. It currently
 distinguishes the following classes:
 
@@ -344,8 +390,8 @@ leaf-labelled & 32
 \end{tabular}
 \end{center}
 
-The command-line tool will return this value as its exit code, or 128
-or above if an error occurred.
+The command-line tool will return this value as its exit code upon
+successful completion.
 
 The Utool Server will return a message of the following form:
 \begin{verbatim}
@@ -366,18 +412,152 @@ The \verb?classify? command can take the following options:
 \end{description}
 
 
+\subsubsection{Server}
 
-\subsection{Command-line options}
+The \verb?server? command starts a new Utool Server. By default, this
+server listens to new connections on port 2802, but you can specify a
+different port using the \verb?--port? option. This command is ignored
+if Utool is already running in server mode; it can only be run from
+the command line.
+
+\paragraph{Result.} This command doesn't terminate by itself; you have
+to shut down the server process by hand.
+
+\paragraph{Options.} The \verb?server? command can take the following
+options:
+
+\begin{description}
+\item[port:] By default, the server will listen on a socket on port
+2802. You can specify a different port using the option
+\verb?--port <number>? (or \verb?-p <number>?), where \verb?<number>?
+is the port number you want.
+
+\item[logging:] Using this option, you can make the server log
+information about incoming commands and its responses. If you specify
+the option \verb?--logging? (or \verb?-l?) by itself, the log messages
+will be written to standard error. Alternatively, you can log the
+messages into a file by specifying the filename:
+\verb?--logging <filename>? or \verb?-l <filename>?.
+\end{description}
+
+
+
+\subsubsection{Display}
+
+
+\todo{Write this once we have integrated Ubench into Utool.}
+
+\paragraph{Result.} This command doesn't terminate by itself; you have
+to shut down the server process by hand.
+
+\paragraph{Options.} The \verb?server? command can take the following
+options:
+
+\begin{description}
+\item[foo:]
+\end{description}
+
+
+
+\subsection{Pseudo-commands}
+
+In addition to the six main commands, the command-line version of
+Utool will accept a number of ``pseudo-commands'', which display help
+information. If you call Utool with a pseudo-command, it executes the
+pseudo-command and terminates immediately. You cannot specify both a
+command and a pseudo-command at the same time.
+
+There are the following pseudo-commands:
 
 \begin{itemize}
-\item an overview of all command-line options
-\item for each option, describe to which commands it applies 
+\item \verb?help [command]?: If you specify a command, this will
+display a brief help message for that command. Otherwise, this will
+display an overview over the possible commands.
+\item \verb?--version?: Displays the version of Utool.
+\item \verb?--display-codecs? or \verb?-d?: Displays the installed
+codecs.
+\item \verb?--help-options?: Displays an overview over some frequently
+used options.
+\end{itemize}
+
+
+
+
+\subsection{Options overview}
+
+We conclude this section with an overview over all options.
+
+\newcommand{\optiondesc}[4]{\item #1 \\ (Server mode: #2) \\
+(applies to: #3) \\ \strut\\ #4}
+
+\begin{itemize}
+\optiondesc
+{\texttt{--input-codec <codecname>} or \texttt{-I <codecname>}}
+{\texttt{codec} attribute of the \texttt{usr} elements}
+{\texttt{solvable}, \texttt{solve}, \texttt{classify}, \texttt{convert}}
+{Specify the input codec.}
+
+\optiondesc{\texttt{--input-codec-options <options>}}
+{\texttt{codec-options} attribute of the \texttt{usr} elements}
+{\texttt{solvable}, \texttt{solve}, \texttt{classify}, \texttt{convert}}
+{If the selected input codec accepts options, use this option to
+specify them.}
+
+\optiondesc{\texttt{--output-codec <codecname>} or \texttt{-O <codecname>}}
+{\texttt{output-codec} attribute of the \texttt{utool} element}
+{\texttt{solve}, \texttt{convert}}
+{Specify the output codec.}
+
+\optiondesc{\texttt{--output-codec-options <options>}}
+{\texttt{output-codec-options} attribute of the \texttt{utool} element}
+{\texttt{solve}, \texttt{convert}}
+{If the selected output codec accepts options, use this option to
+specify them.}
+
+\optiondesc{\texttt{--no-output} or \texttt{-n}}
+{assumes this option if no output codec is specified}
+{\texttt{solve}, \texttt{convert}}
+{Compute the output, but don't display it (useful for runtime
+measurements). If you specify this option, you don't need to specify
+the output codec (and if you do, it is ignored). }
+
+\optiondesc{\texttt{--output <filename>} or \texttt{-o <filename>}}
+{not applicable: the server doesn't write to an output file}
+{\texttt{solve}, \texttt{convert}}
+{Write the output to the specified file, rather than to standard
+output. If you use this option and don't specify an output codec
+explicitly, Utool will try to guess the appropriate output codec from
+the filename extension.}
+
+
+
+
+\optiondesc{\texttt{--display-statistics} or \texttt{-s}}
+{not applicable: the server reports statistics information anyway}
+{\texttt{solvable}, \texttt{solve}, \texttt{classify}, \texttt{convert}}
+{Display statistics information while executing the command, such as
+information about the graph classification, chart size, and
+runtimes. All statistics information is written to standard error.}
+
+
+\optiondesc{\texttt{--equivalences <equivfile>} or
+\texttt{-e <equivfile>}}
+{specify an element of the form \texttt{<eliminate equations="..." />}
+as a child of the \texttt{utool} element}
+{\texttt{solvable}, \texttt{solve}}
+{Run a redundancy elimination algorithm on the chart
+\cite{koller06:_towar}. This is an 
+advanced option that is documented \todo{somewhere -- where should
+this go?}.}
+
+
 \end{itemize}
 
 
 
 
 %%% Local Variables: 
-%%% mode: latex%%% TeX-master: "0"
+%%% mode: latex
+%%% TeX-master: "0"
 %%% TeX-command-default: "LaTeX"
 %%% End: 
