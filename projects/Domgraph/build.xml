@@ -1,27 +1,33 @@
 <?xml version="1.0"?>
 
 <project name="domgraph" default="utool">
+	<!-- the main paths -->
+	<property name="prefix" location="../.." />
 	
-	
-	<property name="build" location="../../build" />
-	<property name="source" location="../../src" />
-	<property name="packages" location="../../packages" />
-	<property name="doc.api" location="../../docs/api" />
+	<property name="build" location="${prefix}/build" />
+	<property name="source" location="${prefix}/src" />
+	<property name="packages" location="${prefix}/packages" />
+	<property name="doc.api" location="${prefix}/docs/api" />
 
+	<property name="build.classes" location="${build}/classes" />
+	<property name="build.lib" location="${build}/lib" />
+
+	<!-- tools we use for compiling -->
 	<property name="javacchome" location="${packages}/javacc-4.0" />
-
+	<property name="testng.jar" value="${packages}/testng-4.6.1/testng-4.6.1-jdk15.jar" />
+	
+	
+	<!-- included Jars and the classes they unpack to -->
 	<property name="jgrapht.jar" location="${packages}/jgrapht-0.6.0/jgrapht-0.6.0.jar" />
-
 	<property name="jgrapht.unpacked.classes" value="org/_3pq/jgrapht/**" />
 
 	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
 
+	<property name="itext.jar" location="${packages}/itext-1.3.1.jar" />
+	<property name="itext.unpacked.classes" value="com/lowagie/**" />
 
 
-	<property name="build.classes" location="${build}/classes" />
-	<property name="build.lib" location="${build}/lib" />
-	<property name="build.src" location="${build}/src" />
 
 	<property name="coli" value="de/saar" />
 	<property name="chorus" value="de/saar/chorus" />
@@ -30,33 +36,42 @@
 	<property file="${domgraph.properties}" />
 
 
+	<!-- file sets -->
+	<property name="domgraph.jar" value="${build.lib}/Utool-full-${domgraph.version}.jar" />
+	<property name="domgraph-compact.jar" value="${build.lib}/Utool-${domgraph.version}.jar" />
+	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*" />
+	<property name="domgraph.allsourcefiles" value="${chorus}/domgraph/**/*.java, ${chorus}/domgraph/**/*.jj, ${chorus}/domgraph/**/*.properties, ${coli}/basic/*.java, ${coli}/getopt/*.java" />
 
-	<property name="domgraph-dist.jar" value="${build.lib}/Domgraph-${domgraph.version}.jar" />
-	<property name="domgraph.jar" value="${build.lib}/Domgraph.jar" />
-	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic" />
+	<!-- parameters for the distribution -->
+	<property name="domgraph-dist.jar" value="${build.lib}/Utool-src-${domgraph.version}.jar" />
+	<property name="distribution.exclude" value="" />
 	
-	<property name="utool.jar" value="${build.lib}/Utool.jar" />
-	<property name="utool.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*" />
-	<property name="utool.allsourcefiles" value="${chorus}/domgraph/**/*.java,
-	${coli}/basic/*.java,
-	${coli}/getopt/*.java" />
-
-	<property name="itext.jar" location="${packages}/itext-1.3.1.jar" />
-	<property name="itext.unpacked.classes" value="com/lowagie/**" />
 	
-	<property name="testng.jar" value="${packages}/testng-4.6.1/testng-4.6.1-jdk15.jar" />
-	
-	<property name="junit.jar" value="${packages}/junit.jar" />
-	<property name="reports.tests" location="testreports" />
 
 
 
 	<!-- Jars -->
+	<target name="utool-compact" depends="compile-all">
+		<classfileset id="domgraph.required.classes" dir="${build.classes}">
+			<root classname="de.saar.chorus.domgraph.utool.Utool" />
+			<exclude name="**/*$UnitTests.class" />	
+		</classfileset>
+				
+		<jar jarfile="${domgraph-compact.jar}">
+			<fileset refid="domgraph.required.classes" />
+			<fileset dir="${build.classes}" includes="**/*.properties" />
+
+			<manifest>
+				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
+			</manifest>
+		</jar>
+	</target>
+	
 	<target name="utool" depends="compile-all">
-		<jar jarfile="${utool.jar}"
+		<jar jarfile="${domgraph.jar}"
 		             basedir="${build.classes}"
-		             includes="${utool.jar.classes},${jgrapht.unpacked.classes},
-							   ${getopt.unpacked.classes},${itext.unpacked.classes}"
+	         includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},
+								   ${getopt.unpacked.classes},${itext.unpacked.classes}"
 					excludes="**/*$UnitTests.class"
 			>
 					<manifest>
@@ -71,7 +86,7 @@
 		<javac srcdir="${source}"
                destdir="${build.classes}"
                debug="true"
-               includes="${utool.allsourcefiles}"
+               includes="${domgraph.allsourcefiles}"
                excludes="**/Test*.java"
                source="1.5">
 
@@ -89,24 +104,27 @@
 
 	<target name="dist" depends="compile-all">
 		<copy todir="tmp_Domgraph/src">
-			<fileset dir="${source}" includes="${domgraph.jar.classes}"/>
-			<fileset dir="${source}" includes="**/*.properties"/>
+			<fileset dir="${source}" includes="${domgraph.allsourcefiles}" excludes="${distribution.exclude}" />
+			<fileset dir="${source}" includes="${prefix}/*.properties" excludes="${distribution.exclude}" />
 		</copy>
 
 
 		<copy todir="tmp_Domgraph/projects/Domgraph">
-			<fileset dir="../../projects/Domgraph/" includes="*.xml" />
+			<fileset dir="${prefix}/projects/Domgraph/" includes="**/*" excludes="tmp_Domgraph/**,${distribution.exclude}" />
+		</copy>
+		
+		<copy todir="tmp_Domgraph">
+			<fileset dir="${prefix}" includes="packages/javacc-4.0/**, packages/testng-4.6.1/**" />
 		</copy>
 
 
 		<jar jarfile="${domgraph-dist.jar}"
              basedir="${build.classes}"
-             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes},${utool-swig.unpacked.classes}"
+             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes}"
 					excludes="**/*$UnitTests.class">
 
 			<manifest>
-				<attribute name="Main-Class"
-                           value="de.saar.chorus.domgraph.gui.Main" />
+				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
 
 			<fileset dir="tmp_Domgraph/"/>
@@ -115,12 +133,6 @@
 		<delete dir="tmp_Domgraph/" />
 	</target>
 
-	<!-- JUnit -->
-	<!-- If the JUnit targets don't work, make sure that junit.jar is in
-	     the classpath, e.g.
-	     
-	        CLASSPATH=packages/junit.jar:$CLASSPATH ant leonardo-run-tests
-	-->
 
 	
 	<!-- JavaCC -->
@@ -164,8 +176,6 @@
 	    targetfile="${build.classes}/timestamps-unpackjar/${unpack.jar.id}">
 			<srcfiles dir="." includes="${unpack.jar}" />
 		</uptodate>
-
-
 	</target>
 
 	<target name="jgrapht.unpacked" depends="init" if="jgrapht.jar.present">
@@ -189,13 +199,6 @@
 		</antcall>
 	</target>
 
-	<target name="utool-swig.unpacked" depends="init" if="itext.jar.present">
-		<antcall target="unpack">
-			<param name="unpack.jar" value="${utool-swig.jar}" />
-			<param name="unpack.jar.id" value="utool-swig" />
-		</antcall>
-	</target>
-
 
 	<!-- Javadoc -->
 
@@ -204,7 +207,7 @@
 			access="public"
 			noqualifier="all"
 			>
-			<fileset dir="${source}" includes="${utool.allsourcefiles}"/>
+			<fileset dir="${source}" includes="${domgraph.allsourcefiles}"/>
 			<classpath>
 				<pathelement path="${build.classes}" />
 			</classpath>
@@ -219,39 +222,38 @@
 		<mkdir dir="${build.classes}" />
 		<mkdir dir="${build.classes}/timestamps-unpackjar" />
 		<mkdir dir="${build.lib}" />
-		<mkdir dir="${build.src}" />
-		<mkdir dir="${reports.tests}" />
 		<mkdir dir="${doc.api}" />
 
 		<available file="${jgrapht.jar}" property="jgrapht.jar.present"/>
 		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
 		<available file="${getopt.jar}" property="getopt.jar.present"/>
 		<available file="${itext.jar}" property="itext.jar.present"/>
-		<available file="${utool-swig.jar}" property="utool-swig.jar.present"/>
-		<available file="${unpack.jar}" property="unpack.jar.present"/>
-
 	</target>
 
 	<!-- Delete all compiled files -->
-	<target name="clean">
+	<target name="clean" depends="init">
 		<delete>
 			<fileset dir="${build.classes}" includes="${domgraph.jar.classes}" />
+			<fileset dir="${build.lib}" />
+			<fileset dir="${doc.api}" />
 		</delete>
-		<delete dir="${build.lib}" />
+	</target>
+	
+	<target name="veryclean">
+		<delete dir="${build}" />
 		<delete dir="${doc.api}" />
 	</target>
-
 	
 	
-	<target name="prepare">
-		<mkdir dir="${build.classes}" />
+	<target name="prepare" depends="init">
 		<copy todir="${build.classes}">
-			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
+			<fileset dir="${prefix}" excludes="projects/**,META-INF/**,*.jar, build/**, src/**, packages/**"/>
 		</copy>
+		
 		<delete>
-			<fileset dir="../../" excludes="projects/**,META-INF/**,*.jar, build/**, src/**"/>
+			<fileset dir="${prefix}" excludes="projects/**, *.jar, build/**, src/**, packages/**"/>
 		</delete>
-		<antcall target="clean"/>
-
+		
+		<antcall target="clean" />
 	</target>
 </project>
