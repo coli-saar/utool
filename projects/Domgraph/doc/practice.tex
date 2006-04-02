@@ -1,22 +1,91 @@
 
 \section{Utool in Practice} \label{sec:practice}
 
-\begin{itemize}
-\item some benchmark results
-\item practical tips:
-\begin{itemize}
-\item \verb?java -server?
-\item Notice that the server expects that you have encoded special
-characters in the USR as XML character entities -- that is, that you
-have replaced the \" character by \verb?&quot;?, etc. You should also
-be aware that according to the XML specification, whitespace within an attribute is ignored. If the concrete syntax of an input codec requires that there are newlines (e.g.\ to terminate a comment line in the domcon-oz codec), you must encode this newline character as the character entity \verb?&#xA;?.
-\item \verb?-Xmx512m?
-\end{itemize}
-\end{itemize}
+We conclude this documentation with some examples for using Utool in
+practice. We will start with some tips on how to use Utool
+efficiently. Then we will describe a scenario which we have applied a
+lot in our papers \cite{FucKolNieTha04,FliKolTha05,KolTha05b}: running
+Utool on all MRS descriptions from a HPSG treebank. This second point
+will also contain a runtime comparison between Utool and other
+underspecification solvers (including the older C++ version of
+Utool).
+
+\subsection{Some practical tips}
+
+\begin{enumerate}
+\item \textit{Increasing performance.} The Sun implementation of the
+Java VM can run in either ``client'' or ``server'' mode. The client
+mode is the default, but if you have a long-running process, the
+server mode can be significantly more efficient because it
+just-in-time compiles and optimises the Java bytecode more
+aggressively.
+
+For optimum performance of Utool, we recommend that you run the JVM in
+server mode by calling it as follows:
+\begin{verbatim}
+$ java -server -jar Utool.jar ...
+\end{verbatim}
+%$
+
+Because of the increased time for startup and compilation, this works
+best if you also run Utool in server mode and send it commands via a
+socket, because this gives you the most profit out of the JIT
+compilation (Utool needs to solve 3--4 USRs to ``warm up'' until it
+achieves optimal performance) and eliminates the startup time.
+
+\begin{figure}
+\begin{center}
+\todo{runtimes for solving chains using server mode and client mode}
+\end{center}
+\caption{Runtimes for the command \texttt{solve -n -s -I chain
+<length>}, running the Java VM in client and server
+mode. \label{fig:chains-server-client}}
+\end{figure}
+
+
+\item \textit{Memory consumption.} The chart that Utool computes for
+large USRs can grow to eat up quite a bit of your memory. If it grows
+larger than the heap limit of the Java VM, Java will throw an
+\verb?OutOfMemoryError? and terminate the process. For most USRs that
+you will encounter in practice (including almost all USRs in the HPSG
+treebanks), the default limit of 256 MB will be sufficient. However,
+for those cases where more memory is needed (e.g.\
+\verb?rondane-650.mrs.pl? in the examples directory, which has about
+$2 \cdot 10^{12}$ solved forms), you can allow Java to use more heap
+space by calling it with the \verb?-Xmx512m? option.
+
+\item \textit{XML character entities.} The Utool Server takes commands
+as well-formed XML strings, so it expects you to encode special
+characters in the USR as XML character entities. You are probably
+familiar with having to replace the \" character by \verb?&quot;?
+etc., and performing the inverse replacement when decoding the
+server's responses.
+
+A lesser known aspect of this, however, is that XML parsers will
+ignore whitespace within attribute values according to the XML
+specification. In particular, you may use newline characters within a
+USR, but these characters will be ignored by the parser. If the
+concrete syntax of an input codec requires that there are newlines
+(e.g.\ to terminate a comment line in the domcon-oz codec), you must
+encode this newline character as the character entity \verb?&#xA;?.
+\end{enumerate}
+
+
+
+
+\subsection{Batch processing a treebank with Utool}
+
+\todo{Stefan}
+
+\todo{add some benchmark results here: Utool/C++ vs. Java 1.5 vs. Java
+1.6, on Linux vs. on Windows, on e.g.\ Rondane or whatever corpus is
+convenient for this}
+
 
 
 
 %%% Local Variables: 
-%%% mode: latex%%% TeX-master: "0"
+%%% mode: latex
+%%% TeX-master: "0"
 %%% TeX-command-default: "LaTeX"
 %%% End: 

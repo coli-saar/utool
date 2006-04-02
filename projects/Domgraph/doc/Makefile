@@ -13,7 +13,7 @@ PREAMBLE = preamble.tex
 
 ## Components: texts, macros, pictures, bibtex databases
 TEXTS = intro.tex tutorial.tex operations.tex codecs.tex \
-	integration.tex further.tex conclusion.tex
+	integration.tex further.tex conclusion.tex building.tex
 
 MACROS =  tree-macros.sty local-macros.tex
 
