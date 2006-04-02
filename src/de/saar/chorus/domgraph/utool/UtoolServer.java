@@ -140,13 +140,13 @@ class UtoolServer {
             case solve:
             case solvable:
                 if( !weaklyNormal ) {
-                    sendError(out, ExitCodes.ILLFORMED_GRAPH, "Cannot solve graphs that are not weakly normal!");
+                    sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not weakly normal!");
                     sock.close();
                     continue;
                 }
                 
                 if( !compact && !compactifiable ) {
-                    sendError(out, ExitCodes.ILLFORMED_GRAPH, "Cannot solve graphs that are not compact and not compactifiable!");
+                    sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not compact and not compactifiable!");
                     sock.close();
                     continue;
                 }
