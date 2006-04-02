@@ -103,12 +103,12 @@ public class Utool {
             
             if( !weaklyNormal ) {
                 System.err.println("Cannot solve graphs that are not weakly normal!");
-                System.exit(ExitCodes.ILLFORMED_GRAPH);
+                System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
             }
             
             if( !compact && !compactifiable ) {
                 System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
-                System.exit(ExitCodes.ILLFORMED_GRAPH);
+                System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
             }
 
             if( options.hasOptionStatistics() ) {
