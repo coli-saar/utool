@@ -56,6 +56,7 @@ public class JDomGraphTab extends JGraphTab  {
 	
 		// initializing
 		graphName = name;
+		
 		compactGraph = domGraph.compactify();
 		
 		
@@ -64,7 +65,6 @@ public class JDomGraphTab extends JGraphTab  {
 		setBackground(Color.WHITE);
 		
 		if(Preferences.isAutoCount()) {
-		
 				solve();
 			}
 		
@@ -115,6 +115,10 @@ public class JDomGraphTab extends JGraphTab  {
                 if(solver.solve()) {
                     solvedForms = chart.countSolvedForms().longValue();
                     isSolvedYet = true;
+                    Main.setSolvingEnabled(true);
+                } else {
+                	solvable = false;
+                	Main.setSolvingEnabled(false);
                 }
                 
                 statusBar = new DominanceGraphBar();
@@ -206,10 +210,18 @@ public class JDomGraphTab extends JGraphTab  {
     		layout.setVgap(5);
     		
     		if( isSolvedYet ) {
-    			numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
-    		} else {
-    			numberOfForms.setText("This graph has an unknown number of solved forms.");    		
+    			if(solvedForms > 1 ) {
+    				numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
+    			} else {
+    				numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
     			}
+    		} else {
+    			if(solvable) {
+    				numberOfForms.setText("This graph has an unknown number of solved forms."); 
+    			} else {
+    				numberOfForms.setText("This graph is unsolvable."); 
+    			}
+    		}
     		
     		
     		add(numberOfForms, BorderLayout.CENTER);
@@ -222,6 +234,10 @@ public class JDomGraphTab extends JGraphTab  {
     		solve.setPreferredSize(new Dimension(80,25));
     		
     		add(solve, BorderLayout.WEST);
+    		if(! solvable) {
+    			solve.setEnabled(false);
+    		}
+    		
     		layout.addLayoutComponent(solve, BorderLayout.WEST);
     		/*
     		 * Every label is set up with its "standard" character

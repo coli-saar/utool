@@ -254,6 +254,9 @@ public class JDomGraphMenu extends JMenuBar {
 		}
     }
 	
-	
+	public void setSolvingEnabled(boolean b) {
+		countAndSolve.setEnabled(b);
+		cSolvForms.setEnabled(false);
+	}
 	
 }

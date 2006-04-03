@@ -323,6 +323,10 @@ public class Main {
         }
 
 	}
+	
+	public static void setSolvingEnabled(boolean b) {
+		menuBar.setSolvingEnabled(b);
+	}
 
 	/**
 	 * Adding a new tab to the window displaying the given
