@@ -207,9 +207,10 @@
 			access="public"
 			noqualifier="all"
 			>
-			<fileset dir="${source}" includes="${domgraph.allsourcefiles}"/>
+			<fileset dir="${source}" includes="${domgraph.allsourcefiles}" excludes="**/*.jj, **/*.properties"/>
 			<classpath>
 				<pathelement path="${build.classes}" />
+				<pathelement path="${testng.jar}" />
 			</classpath>
 		</javadoc>
 	</target>

@@ -45,7 +45,7 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination {
      * list of splits for this subgraph.
      * 
      * @param subgraph a subgraph
-     * @param allSplits the complete list of splits for this subgraph
+     * @param splits the complete list of splits for this subgraph
      * @return a list of irredundant splits
      */
     public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> splits) {

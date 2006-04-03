@@ -27,8 +27,8 @@ public class CodecTools {
      * the argument itself is returned; otherwise, the argument
      * is surrounded by quotes '...'. 
      * 
-     * @param label 
-     * @return
+     * @param label a string
+     * @return the string possibly surrounded with quotes
      */
     public static String atomify(String label) {
         boolean must_atomify = false;
@@ -58,8 +58,8 @@ public class CodecTools {
      * Prolog variable name if it contains symbols that are not
      * valid in Prolog variable names.
      * 
-     * @param label
-     * @return
+     * @param label a straing
+     * @return the string, possibly prefixed with an underscore
      */
     public static String varify(String label) {
         if( !label.startsWith("_") && !Character.isUpperCase(label.charAt(0)) ) {
