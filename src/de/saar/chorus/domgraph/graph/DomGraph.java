@@ -413,8 +413,8 @@ public class DomGraph implements Cloneable {
 	/**
 	 * Gets the data associated with the given node.
 	 * 
-	 * @param node
-	 * @return
+	 * @param node a node in this graph
+	 * @return the node data
 	 */
 	public NodeData getData(String node) {
 		return nodeData.get(node);
@@ -423,8 +423,8 @@ public class DomGraph implements Cloneable {
 	/**
 	 * Gets the data associated with the given edge.
 	 * 
-	 * @param edge
-	 * @return
+	 * @param edge an edge in this graph
+	 * @return the edge data
 	 */
 	public EdgeData getData(Edge edge) {
 		return edgeData.get(edge);
@@ -437,8 +437,8 @@ public class DomGraph implements Cloneable {
 	 * Computes the number of incoming edges of a given node. This is
 	 * equivalent to indeg(node,null).
 	 * 
-	 * @param node
-	 * @return
+	 * @param node a node in this graph
+	 * @return the indegree of the node
 	 */
 	public int indeg(String node) {
 		return graph.inDegreeOf(node);
@@ -448,8 +448,8 @@ public class DomGraph implements Cloneable {
 	 * Computes the number of outgoing edges of a given node. This is
 	 * equivalent to outdeg(node,null).
 	 * 
-	 * @param node
-	 * @return
+	 * @param node a node in this graph
+	 * @return the outdegree of this node
 	 */
 	public int outdeg(String node) {
 		return graph.outDegreeOf(node);
@@ -639,9 +639,8 @@ public class DomGraph implements Cloneable {
 	 * A weakly connected component is a maximal subgraph which is connected
 	 * via edges or inverse edges of any type. 
 	 * 
+	 * @param nodes the subgraph whose wccs we want
 	 * @return the list of wccs; each wcc is a set of nodes.
-	 * @param nodes
-	 * @return
 	 */
 	public List<Set<String>> wccs(Set<String> nodes) {
 		final List<Set<String>> components = new ArrayList<Set<String>>();

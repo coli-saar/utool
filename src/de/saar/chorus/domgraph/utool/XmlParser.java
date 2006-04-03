@@ -227,7 +227,6 @@ class XmlParser extends DefaultHandler {
             codecManager.registerCodec(DomconOzOutputCodec.class);
             codecManager.registerCodec(DomconGxlOutputCodec.class);
             codecManager.registerCodec(DomconUdrawOutputCodec.class);
-            // TBD // codecManager.registerCodec(HolesemComsemOutputCodec.class);
             codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
             codecManager.registerCodec(LkbPluggingOutputCodec.class);
             codecManager.registerCodec(OzTermOutputCodec.class);

@@ -26,7 +26,6 @@ import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
 import de.saar.chorus.domgraph.codec.glue.GlueInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
-import de.saar.chorus.domgraph.codec.holesem.HolesemComsemOutputCodec;
 import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
 import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
 import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
@@ -600,8 +599,6 @@ public class Main {
 			codecManager.registerCodec(DomconOzOutputCodec.class);
 			codecManager.registerCodec(DomconGxlOutputCodec.class);
 			codecManager.registerCodec(DomconUdrawOutputCodec.class);
-			// TBD //
-			codecManager.registerCodec(HolesemComsemOutputCodec.class);
 			codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
 			codecManager.registerCodec(LkbPluggingOutputCodec.class);
 			codecManager.registerCodec(OzTermOutputCodec.class);
