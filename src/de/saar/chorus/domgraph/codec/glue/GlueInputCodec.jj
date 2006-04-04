@@ -11,7 +11,6 @@ options {
 PARSER_BEGIN(GlueInputCodec)
 
 
-
 package de.saar.chorus.domgraph.codec.glue;
 
 import java.io.*;
@@ -56,8 +55,6 @@ public class GlueInputCodec extends InputCodec {
 	private List<Formula> formulas;
 	// Variable-to-formula mapping - meant to emulate the "type inference"
 	private Map<String,Formula> varToFormula;
-	
-//	private Map<Formula,Integer>[] behavior;
 	
 	public static String getName() {
 		return "glue";
@@ -239,39 +236,39 @@ public class GlueInputCodec extends InputCodec {
 		// For every fragment, a map that describes its behavior w.r.t. resources:
 		// g=1  -> produces a g via [g]
 		// g=-1 -> consumes a g via ii_<g>
-		HashMap[] behavior = new HashMap[formulas.size()];
+		HashMap[] hypBehavior = new HashMap[formulas.size()];
 		for( int i = 0; i < formulas.size(); i++)
-			behavior[i] = new HashMap<Formula,Integer>();
+			hypBehavior[i] = new HashMap<Formula,Integer>();
 		// Collect fragment from each axiom
 		System.out.println(varToFormula);
 		List<Set<String>> fragments = new ArrayList<Set<String>>(formulas.size());
 		for ( int i = 0; i < formulas.size(); i++ ) {
-			updateBehavior(i, behavior);
+			updateBehavior(i, hypBehavior);
 			fragments.add(i, graph.getFragment("X" + String.valueOf(i+1)));
 			Set<String> Fi = fragments.get(i);
-			Map<Formula,Integer> m = (Map<Formula,Integer>)behavior[i];
+			Map<Formula,Integer> m = (Map<Formula,Integer>)hypBehavior[i];
 			System.out.println(m);
 			for( int j = 0; j < fragments.size() - 1; j++ ) {
 				Set<String> Fj = fragments.get(j);
-				Map<Formula,Integer> n = behavior[j];
+				Map<Formula,Integer> n = hypBehavior[j];
 				System.out.println("\t" + n.toString());
-				for( Formula i_res : (Set<Formula>)behavior[i].keySet() )
+				for( Formula i_res : m.keySet() )
 					// if it contains a key, then there can be only one entry:
 					// at most one behavior (-1, 0, +1; or none) for each resource in each fragment
-					for( Formula j_res : (Set<Formula>)behavior[j].keySet() )
+					for( Formula j_res : n.keySet() )
 						if( i_res.equals(j_res) ) {
-							if ( ((Integer)behavior[i].get(i_res)).intValue() < ((Integer)behavior[j].get(j_res)).intValue()) {
+							if ( m.get(i_res).intValue() < n.get(j_res).intValue() ) {
 								// if behaviors may plug in each other,
 								// 1. check type of root and hole
 								// 2. add dominance edge
-								String root = graph.getRoot("X" + String.valueOf(j+1));// extracts the root from the root of Fj...
+								String root = graph.getRoot("X" + String.valueOf(j+1));// extracts the root of Fj from the root of Fj...
 								for( String hole : graph.getHoles(Fi) )
 									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
 										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
 										graph.addEdge(hole, root, edge);
 										break;
 									}
-							} else if (((Integer)behavior[i].get(i_res)).intValue() > ((Integer)behavior[j].get(j_res)).intValue()) {
+							} else if (m.get(i_res).intValue() > n.get(j_res).intValue()) {
 								// idem...
 								String root = graph.getRoot("X" + String.valueOf(i+1));
 								for( String hole : graph.getHoles(Fj) )
@@ -281,9 +278,9 @@ public class GlueInputCodec extends InputCodec {
 										break;
 									}
 							}
-						}
 						// no else: nothing happens if two fragments exhibit the same behavior w.r.t. the same resource
-				System.out.println(Fi);		}
+						}
+				}
 		}
 	}
 }
@@ -353,4 +350,3 @@ Formula VarOrAtom() :
   		return new Formula(Formula.Type.ATOM, t.image);
   }
 }
-
