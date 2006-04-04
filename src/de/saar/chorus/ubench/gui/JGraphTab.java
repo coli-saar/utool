@@ -91,8 +91,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		JDomGraph graph = getGraph();
 
 		//		computing tab height (and add a little space...)
-		double myHeight = Main.getTabHeight() * 0.9;
-		double myWidth = Main.getTabWidth() * 0.9;
+		double myHeight = Ubench.getInstance().getTabHeight() * 0.9;
+		double myWidth = Ubench.getInstance().getTabWidth() * 0.9;
 
 		// checking the current (!) graph height
 		double graphHeight = graph.getHeight() * (1 / graph.getScale());
@@ -104,7 +104,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 
 		graph.setScale(scale);
 
-		Main.resetSlider();
+		Ubench.getInstance().resetSlider();
 	}
 
 	/**
@@ -313,11 +313,11 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Overwrites the <code>finalize</code>-Method of 
 	 * <code>Object</code>.
 	 * Removes the related status bar of this tab from the
-	 * <code>JDomGraphStatusBar</code> of <code>Main</code>.
+	 * <code>JDomGraphStatusBar</code> of <code>Ubench</code>.
 	 */
 	protected void finalize() throws Throwable {
 		try {
-			Main.getStatusBar().removeBar(statusBar);
+			Ubench.getInstance().getStatusBar().removeBar(statusBar);
 		} finally {
 			super.finalize();
 		}

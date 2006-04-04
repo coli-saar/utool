@@ -1,5 +1,5 @@
 /*
- * Main.java
+ * Ubench.java
  */
 package de.saar.chorus.XTAGLexicon;
 

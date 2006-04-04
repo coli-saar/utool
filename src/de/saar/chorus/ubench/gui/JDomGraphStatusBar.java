@@ -103,10 +103,10 @@ public class JDomGraphStatusBar extends JPanel {
 	public void refresh() {
 		
 		// empty window
-		if(Main.getVisibleTab() == null) {
+		if(Ubench.getInstance().getVisibleTab() == null) {
 			showEmptybar();
 		} else {
-			showBar(Main.getVisibleTab().getBarCode());
+			showBar(Ubench.getInstance().getVisibleTab().getBarCode());
 		}
 	}
     

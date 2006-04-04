@@ -71,7 +71,7 @@ public class CommandListener implements ActionListener, ItemListener {
 	 * Creates a new Instance of <code>CommandListener</code>.
 	 */
 	public CommandListener() {
-		CodecManager codecman = Main.getCodecManager();
+		CodecManager codecman = Ubench.getInstance().getCodecManager();
 		
 		// initializing fields
 		eventSources = new HashMap<Object,String>();
@@ -138,7 +138,7 @@ public class CommandListener implements ActionListener, ItemListener {
 			}
 			
 			// configuring button and window texts
-			int fcVal =  fc.showDialog(Main.getWindow(), "Print PDF");
+			int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Print PDF");
 			fc.setApproveButtonText("Print!");
 			
 			// proceed with a chosen file
@@ -167,10 +167,10 @@ public class CommandListener implements ActionListener, ItemListener {
 					public void run() {
 						
 						// that's just a guess...
-						int taskLength = Main.getVisibleTab().numGraphNodes();
+						int taskLength = Ubench.getInstance().getVisibleTab().numGraphNodes();
 						
 						// the progress bar and the panel containing it.
-						JDialog progress = new JDialog(Main.getWindow(), false);
+						JDialog progress = new JDialog(Ubench.getInstance().getWindow(), false);
 						JPanel dialogPane = new JPanel();
 						JProgressBar progressBar = new JProgressBar(0, taskLength);
 						
@@ -203,16 +203,16 @@ public class CommandListener implements ActionListener, ItemListener {
 						progress.validate();
 						
 						// locating the panel centered
-						progress.setLocation((Main.getWindow().getWidth() - progress.getWidth())/2,
-								(Main.getWindow().getHeight() - progress.getHeight())/2); 
+						progress.setLocation((Ubench.getInstance().getWindow().getWidth() - progress.getWidth())/2,
+								(Ubench.getInstance().getWindow().getHeight() - progress.getHeight())/2); 
 						
 						progress.setVisible(true);
 						
 						try {
 						// the actual PDF-printing
-						SwingComponentPDFWriter.printToPDF(Main.getVisibleTab().getGraph(), recentPath);
+						SwingComponentPDFWriter.printToPDF(Ubench.getInstance().getVisibleTab().getGraph(), recentPath);
 						} catch (IOException io) {
-							JOptionPane.showMessageDialog(Main.getWindow(),
+							JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 									"The output file can't be opened.",
 									"Error from PDF printer",
 									JOptionPane.ERROR_MESSAGE);
@@ -255,7 +255,7 @@ public class CommandListener implements ActionListener, ItemListener {
 					fc.setCurrentDirectory(lastPath);
 				}
 				
-				int fcVal = fc.showOpenDialog(Main.getWindow());
+				int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());
 				
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
@@ -277,7 +277,7 @@ public class CommandListener implements ActionListener, ItemListener {
 							// JDomGraph
 							DomGraph theDomGraph = new DomGraph();
 							NodeLabels labels = new NodeLabels();
-							JDomGraph graph = Main.genericLoadGraph(recentPath, theDomGraph, labels);
+							JDomGraph graph = Ubench.getInstance().genericLoadGraph(recentPath, theDomGraph, labels);
 							
 							
 							if( graph != null ) {
@@ -286,7 +286,7 @@ public class CommandListener implements ActionListener, ItemListener {
 								
 								// setting up a new graph tab.
 								// the graph is painted and shown at once.
-								Main.addNewTab(graph, recentFile, theDomGraph, true, true, labels);
+								Ubench.getInstance().addNewTab(graph, recentFile, theDomGraph, true, true, labels);
 							}
 						}
 					}.start();
@@ -297,14 +297,14 @@ public class CommandListener implements ActionListener, ItemListener {
 				
 				// exporting the visible graph.
 				if( command.equals("saveUtool")) {
-					JDomGraph graph = Main.getVisibleTab().getGraph();
+					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
 						JFileChooser fc = new JFileChooser(recentPath);
 						
 						// show plugging codecs just for solved forms.
 						// TODO perhaps find a more aesthetic solution here.
-						if( Main.getVisibleTab() instanceof JSolvedFormTab) {
+						if( Ubench.getInstance().getVisibleTab() instanceof JSolvedFormTab) {
 							for( FileFilter ff : ffOutputCodecs ) {
 								fc.addChoosableFileFilter(ff);
 							}
@@ -321,7 +321,7 @@ public class CommandListener implements ActionListener, ItemListener {
 							fc.setCurrentDirectory(lastPath);
 						}
 						
-						int fcVal = fc.showSaveDialog(Main.getWindow());
+						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
@@ -340,18 +340,18 @@ public class CommandListener implements ActionListener, ItemListener {
 							
 							
 							OutputCodec oc = 
-								Main.getCodecManager().getOutputCodecForFilename(file.getName(),null);
+								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),null);
 							
 							try {
 								FileWriter writer = new FileWriter(file);
 								oc.print_header(writer);
-								oc.encode(Main.getVisibleTab().getDomGraph(),
+								oc.encode(Ubench.getInstance().getVisibleTab().getDomGraph(),
 										null, 
-										Main.getVisibleTab().getNodeLabels(), 
+										Ubench.getInstance().getVisibleTab().getNodeLabels(), 
 										writer);
 								oc.print_footer(writer);
 							} catch (Exception ex) {
-								JOptionPane.showMessageDialog(Main.getWindow(),
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 										"The output codec couldn't be determined, or it doesn't support"
 										+ " output of this graph.",
 										"Error from output codec",
@@ -365,40 +365,40 @@ public class CommandListener implements ActionListener, ItemListener {
 				} else if ( command.equals("shut")) {
 					
 					//closing the visible graph.
-					Main.closeCurrentTab();
+					Ubench.getInstance().closeCurrentTab();
 				} else if ( command.equals("quit") ) {
 					
 					// closing the window
-					Main.quit();
+					Ubench.getInstance().quit();
 				} else if ( command.equals("dup")) {
 					
 					// duplicating the visible graph
-					if(Main.getVisibleTab() != null) {
-						Main.addTab(Main.getVisibleTab().clone(), true);
+					if(Ubench.getInstance().getVisibleTab() != null) {
+						Ubench.getInstance().addTab(Ubench.getInstance().getVisibleTab().clone(), true);
 						
 						
 					}
 				}  else if ( command.equals("fit")) {
 					
 					// fitting the visible graph to the window.
-					if(Main.getVisibleTab() != null)
-						Main.getVisibleTab().fitGraph();
+					if(Ubench.getInstance().getVisibleTab() != null)
+						Ubench.getInstance().getVisibleTab().fitGraph();
 				} else if ( command.equals("closeAll")) {
 					
 					// close all tabs (but not the window)
-					Main.closeAllTabs();
+					Ubench.getInstance().closeAllTabs();
 				} else if ( command.equals("resL")) {
 					
 					// resetting the layout
-					Main.getVisibleTab().resetLayout();
-					Main.resetSlider();
+					Ubench.getInstance().getVisibleTab().resetLayout();
+					Ubench.getInstance().resetSlider();
 				} else if ( command.equals("cSF")) {
 					
 					// solve the visible graph
-					if( (Main.getVisibleTab() != null) ) {
-						Main.showProgressBar();
-						((JDomGraphTab) Main.getVisibleTab()).solve();
-						Main.refresh();
+					if( (Ubench.getInstance().getVisibleTab() != null) ) {
+						Ubench.getInstance().showProgressBar();
+						((JDomGraphTab) Ubench.getInstance().getVisibleTab()).solve();
+						Ubench.getInstance().refresh();
 					}
 				}
 		
@@ -406,50 +406,50 @@ public class CommandListener implements ActionListener, ItemListener {
 					// changed text field and pressed "return"
 					
 					long no = 1;
-					no = Long.parseLong(((JSolvedFormTab) Main.getVisibleTab()).getSolvedForm().getText());
+					no = Long.parseLong(((JSolvedFormTab) Ubench.getInstance().getVisibleTab()).getSolvedForm().getText());
 					
-					if(! ((no < 1) || (no > Main.getVisibleTab().getSolvedForms()) ) ) {
+					if(! ((no < 1) || (no > Ubench.getInstance().getVisibleTab().getSolvedForms()) ) ) {
 						showSolvedFormWithIndex(no);
 					} else {
-						((JSolvedFormTab) Main.getVisibleTab()).resetSolvedFormText();
+						((JSolvedFormTab) Ubench.getInstance().getVisibleTab()).resetSolvedFormText();
 					}
 				} else if(command.equals("plus")) {
 					// ">" button in the status bar
 					
 					
-					long no = ((JSolvedFormTab) Main.getVisibleTab()).getCurrentForm();
-					if(no < Main.getVisibleTab().getSolvedForms()) {
+					long no = ((JSolvedFormTab) Ubench.getInstance().getVisibleTab()).getCurrentForm();
+					if(no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
 						no++;
 						showSolvedFormWithIndex(no);
 				}
 					
-					Main.refresh();
+					Ubench.getInstance().refresh();
 				} else if (command.equals("minus")) {
 					// "<" button in the status bar
 					
-					long no = ((JSolvedFormTab) Main.getVisibleTab()).getCurrentForm();
+					long no = ((JSolvedFormTab) Ubench.getInstance().getVisibleTab()).getCurrentForm();
 					if(no > 1) {
 						no--;
 						showSolvedFormWithIndex(no);
 					}
 					
-					Main.refresh();
+					Ubench.getInstance().refresh();
 					
 				} else if (command.equals("solve")) {
 					// "solve" button in the status bar
 					new Thread() {
 						public void run() {
-							JSolvedFormTab sFTab = ((JDomGraphTab) Main.getVisibleTab()).createFirstSolvedForm();
+							JSolvedFormTab sFTab = ((JDomGraphTab) Ubench.getInstance().getVisibleTab()).createFirstSolvedForm();
                             if( sFTab != null ) {
-                                Main.addTab(sFTab, true);
-                                Main.getMenuBar().setPlusMinusEnabled(true,false);
-                                Main.refresh();
+                                Ubench.getInstance().addTab(sFTab, true);
+                                Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,false);
+                                Ubench.getInstance().refresh();
                             }
 						}
 					}.start();
 					
 				} else if (command.equals("about") ) {
-					JOptionPane.showMessageDialog(Main.getWindow(),
+					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 							"Ubench version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
 							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
@@ -488,8 +488,8 @@ public class CommandListener implements ActionListener, ItemListener {
 				}
 				
 				// refresh the visible graph if necessary.
-				if(Main.getVisibleTab() != null) {
-					Main.getVisibleTab().repaintIfNecessary();
+				if(Ubench.getInstance().getVisibleTab() != null) {
+					Ubench.getInstance().getVisibleTab().repaintIfNecessary();
 				}
 			} else 
 				
@@ -499,18 +499,18 @@ public class CommandListener implements ActionListener, ItemListener {
 					
 					// enable/disable menu items and change preferences
 					if(e.getStateChange() == ItemEvent.SELECTED) {
-						if( Main.getMenuBar() != null ) {
-							Main.getMenuBar().setCountSfEnabled(false);
+						if( Ubench.getInstance().getMenuBar() != null ) {
+							Ubench.getInstance().getMenuBar().setCountSfEnabled(false);
 						}
 						Preferences.setAutoCount(true);
-						if( Main.getVisibleTab() != null  ) {
-							((JDomGraphTab) Main.getVisibleTab()).solve();
-							Main.refresh();
+						if( Ubench.getInstance().getVisibleTab() != null  ) {
+							((JDomGraphTab) Ubench.getInstance().getVisibleTab()).solve();
+							Ubench.getInstance().refresh();
 						}
 						
 					} else {
-						if( Main.getMenuBar() != null ) {
-							Main.getMenuBar().setCountSfEnabled(true);
+						if( Ubench.getInstance().getMenuBar() != null ) {
+							Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
 						}
 						
 						Preferences.setAutoCount(false);
@@ -524,8 +524,8 @@ public class CommandListener implements ActionListener, ItemListener {
 						// graph 
 						if(e.getStateChange() == ItemEvent.SELECTED) {
 							Preferences.setFitToWindow(true);
-							if( Main.getVisibleTab() != null ) {
-								Main.getVisibleTab().fitGraph();
+							if( Ubench.getInstance().getVisibleTab() != null ) {
+								Ubench.getInstance().getVisibleTab().fitGraph();
 							}
 						} else {
 							Preferences.setFitToWindow(false);
@@ -791,16 +791,16 @@ public class CommandListener implements ActionListener, ItemListener {
 	void showSolvedFormWithIndex(long no) {
 		
 		// extracting the wanted solved form
-		SolvedFormIterator solver = Main.getVisibleTab().getSolvedFormIterator();
-		NodeLabels labels = Main.getVisibleTab().getNodeLabels();
+		SolvedFormIterator solver = Ubench.getInstance().getVisibleTab().getSolvedFormIterator();
+		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels();
 		
-		de.saar.chorus.domgraph.graph.DomGraph nextForm =   (de.saar.chorus.domgraph.graph.DomGraph) Main.getVisibleTab().getDomGraph().clone();
+		de.saar.chorus.domgraph.graph.DomGraph nextForm =   (de.saar.chorus.domgraph.graph.DomGraph) Ubench.getInstance().getVisibleTab().getDomGraph().clone();
 		
 		List<DomEdge> domEdges = solver.getSolvedForm((int) no-1);
 		if( domEdges != null ) {
 			nextForm.setDominanceEdges(domEdges);
 		}
-		int toInsertHere = Main.getVisibleTabIndex();
+		int toInsertHere = Ubench.getInstance().getVisibleTabIndex();
 		
 		// converting the form to a JDomGraph
 		//JDomGraph domSolvedForm = new JDomGraph();
@@ -814,26 +814,26 @@ public class CommandListener implements ActionListener, ItemListener {
 		
 		// setting up the new tab
 		JSolvedFormTab solvedFormTab = new JSolvedFormTab(domSolvedForm, 
-				Main.getVisibleTab().getGraphName()  + "  SF #" + no, solver,
+				Ubench.getInstance().getVisibleTab().getGraphName()  + "  SF #" + no, solver,
 				nextForm,
-				no, Main.getVisibleTab().getSolvedForms(), 
-				Main.getVisibleTab().getGraphName(), 
-				Main.getListener(), 
+				no, Ubench.getInstance().getVisibleTab().getSolvedForms(), 
+				Ubench.getInstance().getVisibleTab().getGraphName(), 
+				Ubench.getInstance().getListener(), 
 				labels);
 		// closing the tab with the previous solved form and
 		// showing the recent one.
-		Main.closeCurrentTab();
-		Main.addTab(solvedFormTab, true, toInsertHere);
-		if(no > 1 && no < Main.getVisibleTab().getSolvedForms()) {
-			Main.getMenuBar().setPlusMinusEnabled(true,true);
-		} else if (no == 1 && no < Main.getVisibleTab().getSolvedForms()) {
-			Main.getMenuBar().setPlusMinusEnabled(true,false);
-		} else if (no > 1 && no == Main.getVisibleTab().getSolvedForms()) {
-			Main.getMenuBar().setPlusMinusEnabled(false,true);
+		Ubench.getInstance().closeCurrentTab();
+		Ubench.getInstance().addTab(solvedFormTab, true, toInsertHere);
+		if(no > 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
+			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,true);
+		} else if (no == 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
+			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,false);
+		} else if (no > 1 && no == Ubench.getInstance().getVisibleTab().getSolvedForms()) {
+			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(false,true);
 		} else {
-			Main.getMenuBar().setPlusMinusEnabled(false,false);
+			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(false,false);
 		}
-		Main.getStatusBar().showBar(solvedFormTab.getBarCode());
+		Ubench.getInstance().getStatusBar().showBar(solvedFormTab.getBarCode());
 		
 	}
 	

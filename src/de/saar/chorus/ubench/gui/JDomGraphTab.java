@@ -65,8 +65,13 @@ public class JDomGraphTab extends JGraphTab  {
 		setBackground(Color.WHITE);
 		
 		if(Preferences.isAutoCount()) {
+			if(domGraph.isCompactifiable()) {
 				solve();
+			} else {
+				solvable = false;
+				Ubench.getInstance().setSolvingEnabled(false);
 			}
+		}
 		
 		try {
 			
@@ -90,14 +95,14 @@ public class JDomGraphTab extends JGraphTab  {
             
             // error message if layout fails
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(Main.getWindow(),
+			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 					"An error occurred while laying out this graph.",
 					"Error during layout",
 					JOptionPane.ERROR_MESSAGE);
 		}
         
 		statusBar = new DominanceGraphBar();
-		barCode = Main.getStatusBar().insertBar(statusBar);
+		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 		
 		
 	}
@@ -109,25 +114,26 @@ public class JDomGraphTab extends JGraphTab  {
 	public void solve() {
 		if( ! isSolvedYet ) {
             try {
+            	
                 chart = new Chart();
                 ChartSolver solver = new ChartSolver(compactGraph, chart);
                 
-                if(solver.solve()) {
+                if(solver.solve())  {
                     solvedForms = chart.countSolvedForms().longValue();
                     isSolvedYet = true;
-                    Main.setSolvingEnabled(true);
+                    Ubench.getInstance().setSolvingEnabled(true);
                 } else {
                 	solvable = false;
-                	Main.setSolvingEnabled(false);
+                	Ubench.getInstance().setSolvingEnabled(false);
                 }
                 
                 statusBar = new DominanceGraphBar();
-                barCode = Main.getStatusBar().insertBar(statusBar);
+                barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
             } catch( OutOfMemoryError e ) {
                 chart = null;
                 isSolvedYet = false;
                 
-                JOptionPane.showMessageDialog(Main.getWindow(),
+                JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
                         "The solver ran out of memory while solving this graph. "
                         + "Try increasing the heap size with the -Xmx option.",
                         "Out of memory",
