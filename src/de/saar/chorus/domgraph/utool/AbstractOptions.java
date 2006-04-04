@@ -100,6 +100,18 @@ public class AbstractOptions {
         "  --input-codec, -I codecname     Specify the input codec.\n",
         true, false),      
         
+        display
+        ("Start the Underspecification Workbench GUI",
+                "Usage: utool display [input-source]\n\n" +
+                "This command brings up a the Underspecification Workbench, a GUI\n" +
+                "for the Domgraph functionality. You may specify a USR filename on\n" +
+                "the command line, and this USR is then decoded and displayed. \n" +
+                "Alternatively, you may leave the filename away; this will then bring\n" +
+                "up an empty Underspecification Workbench window.\n\n" +
+                "Valid options:\n" +
+                "  --input-codec, -I codecname     Specify the input codec.\n",
+                true, false),      
+                
         server
         ("Start Utool in server mode",
                 "Usage: utool server [options]\n\n" +
@@ -157,6 +169,8 @@ public class AbstractOptions {
     private NodeLabels labels;
     
     private Writer output;
+    
+    private String inputName;
     
     private EquationSystem equations;
     
@@ -327,4 +341,19 @@ public class AbstractOptions {
     public void setOutputCodecOptions(String outputCodecOptions) {
         this.outputCodecOptions = outputCodecOptions;
     }
+
+
+
+    public String getInputName() {
+        return inputName;
+    }
+
+
+
+    public void setInputName(String inputName) {
+        this.inputName = inputName;
+    }
+
+
+
 }

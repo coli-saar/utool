@@ -18,12 +18,13 @@ $usage = << "EOF";
 usage: utool classify -I <codec> 
    or: utool solvable -I <codec>
    or: utool solve -I <codec> -O <codec> 
+   or: utool display -I <codec>
 EOF
 
 $command = shift
   or die $usage;
 
-$command =~ /^classify|solve|solvable$/
+$command =~ /^classify|solve|solvable|display$/
   or die $usage;
 
 # parse command line options

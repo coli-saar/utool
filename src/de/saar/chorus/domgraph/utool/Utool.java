@@ -21,6 +21,7 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.ubench.gui.Ubench;
 
 /**
  * The Utool main program for accessing the Domgraph functionality
@@ -275,6 +276,13 @@ public class Utool {
             }
 
             System.exit(programExitCode);
+            
+        case display:
+            Ubench.getInstance().addNewTab(
+                    options.getInputName(),
+                    options.getGraph(),
+                    options.getLabels());
+            break;
             
         case server:
             try {

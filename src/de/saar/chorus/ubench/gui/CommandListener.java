@@ -450,15 +450,25 @@ public class CommandListener implements ActionListener, ItemListener {
 					
 				} else if (command.equals("about") ) {
 					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-							"Ubench version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
+							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
-							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
-							"JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
-							"(c) by Gaudenz Alder et al. 2001-2004" + 
-							System.getProperty("line.separator") + System.getProperty("line.separator")
-							+ "iText version 1.3.1" + System.getProperty("line.separator") +
-							"(c) by Bruno Lowagie 2005",
-							"About Ubench", 
+							
+                            + System.getProperty("line.separator") +System.getProperty("line.separator") +
+							
+                            "JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
+							"(c) Gaudenz Alder et al., 2001-2004" + 
+							
+                            System.getProperty("line.separator") + System.getProperty("line.separator") +
+                            
+                            "JGraphT version 0.6.0" + System.getProperty("line.separator") +
+                            "(c) Barak Naveh and Contributors, 2003-2005" +
+                            
+                            System.getProperty("line.separator") + System.getProperty("line.separator") +
+                            
+                            "iText version 1.3.1" + System.getProperty("line.separator") +
+							"(c) Bruno Lowagie, 2005",
+							
+                            "About the Underspecification Workbench", 
 							JOptionPane.INFORMATION_MESSAGE);
 				}
 	}
