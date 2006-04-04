@@ -61,7 +61,7 @@ public class JSolvedFormTab extends JGraphTab {
 		add(graph);
 		
 		statusBar = new SolvedFormBar(solvedForms, form, gName);
-		barCode = Main.getStatusBar().insertBar(statusBar);
+		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 	}
 	
    
@@ -121,7 +121,7 @@ public class JSolvedFormTab extends JGraphTab {
    			sLeft.setEnabled(true);
    		}
    		
-   		if( currentForm == Main.getVisibleTab().getSolvedForms() ) {
+   		if( currentForm == Ubench.getInstance().getVisibleTab().getSolvedForms() ) {
    			sRight.setEnabled(false);
    		} else {
    			sRight.setEnabled(true);

@@ -14,7 +14,7 @@ import javax.swing.JScrollPane;
 
 import org.jgraph.JGraph;
 
-import de.saar.chorus.ubench.gui.Main;
+import de.saar.chorus.ubench.gui.Ubench;
 
 public class JScrollableJGraph extends JPanel {
     private JGraphSlider slider;

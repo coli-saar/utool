@@ -24,7 +24,6 @@ import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconUdrawOutputCodec;
-import de.saar.chorus.domgraph.codec.dot.DotOutputCodec;
 import de.saar.chorus.domgraph.codec.glue.GlueInputCodec;
 import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
 import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
@@ -82,43 +81,53 @@ import de.saar.getopt.ConvenientGetopt;
  * @author Michaela Regneri
  * 
  */
-public class Main {
+public class Ubench {
+	
+	private static Ubench instance = null;
 
 	// the tabs in their order of insertion
-	private static ArrayList<JGraphTab> tabs = new ArrayList<JGraphTab>();
+	private ArrayList<JGraphTab> tabs = new ArrayList<JGraphTab>();
 
 	// the pane containing the tabs
-	private static JDomTabbedPane tabbedPane;
+	private JDomTabbedPane tabbedPane;
 
 	// the scaling slider
 	// private static JDomGraphSlider slider = new JDomGraphSlider();
 
 	// the status bar
-	private static JDomGraphStatusBar statusBar;
+	private JDomGraphStatusBar statusBar;
 
 	// the manager for tooltips (needed to shorten the stanard delay)
-	private static ToolTipManager ttm = ToolTipManager.sharedInstance();
+	private ToolTipManager ttm = ToolTipManager.sharedInstance();
 
 	// the main window
-	private static JFrame window;
+	private JFrame window;
 
 	// the main listener for menus and buttons
-	private static CommandListener listener;
+	private CommandListener listener;
 
 	// the menu bar
-	private static JDomGraphMenu menuBar;
+	private JDomGraphMenu menuBar;
 
 	// the codec manager
-	private static CodecManager codecManager;
+	private CodecManager codecManager;
 
     // if true, the next tab addition will resize the main jframe
     // to fit the preferred size of this tab
-    private static boolean useNextTabToResizeFrame;
+    private boolean useNextTabToResizeFrame;
 
+    private Ubench() {
+//    	 register codecs
+		codecManager = new CodecManager();
+		registerAllCodecs(codecManager);
+		
+		
+    }
+    
 	/**
 	 * Aligning the slider with the currently shown graph. (if there is one).
 	 */
-	public static void resetSlider() {
+	public void resetSlider() {
 		if (getVisibleGraph() != null) {
 			getVisibleTab().resetSlider();
 		}
@@ -127,21 +136,21 @@ public class Main {
 	/**
 	 * Showing the bar for the solving process.
 	 */
-	public static void showProgressBar() {
+	public void showProgressBar() {
 		statusBar.showProgressBar();
 	}
 
 	/**
 	 * @return the main window itself
 	 */
-	public static JFrame getWindow() {
+	public JFrame getWindow() {
 		return window;
 	}
 
 	/**
 	 * Closing all tabs.
 	 */
-	public static void closeAllTabs() {
+	public void closeAllTabs() {
 		tabbedPane.removeAll();
 		refresh();
 	}
@@ -149,7 +158,7 @@ public class Main {
 	/**
 	 * Closing Ubench.
 	 */
-	public static void quit() {
+	public void quit() {
 		System.exit(0);
 	}
 
@@ -159,7 +168,7 @@ public class Main {
 	 * 
 	 * @return the height
 	 */
-	public static double getTabHeight() {
+	public double getTabHeight() {
 		int index = tabbedPane.getSelectedIndex();
 		double windowScale = 1;
 		if (window.getState() != JFrame.NORMAL)
@@ -181,7 +190,7 @@ public class Main {
 	 * 
 	 * @return the width
 	 */
-	public static double getTabWidth() {
+	public double getTabWidth() {
 		double windowScale = 1;
 		if (window.getState() != JFrame.NORMAL)
 			windowScale = (double) window.getWidth()
@@ -193,7 +202,7 @@ public class Main {
 	/**
 	 * Refreshes the menu, the slider and the status bar.
 	 */
-	public static void refresh() {
+	public void refresh() {
 		if (getVisibleTab() != null) {
 			getVisibleTab().repaintIfNecessary();
 		} else {
@@ -206,7 +215,7 @@ public class Main {
 	/**
 	 * Closes the currently shown tab (if there is one).
 	 */
-	public static void closeCurrentTab() {
+	public void closeCurrentTab() {
 		int index = tabbedPane.getSelectedIndex();
 
 		if (index > -1) {
@@ -220,7 +229,7 @@ public class Main {
 	/**
 	 * @return the currently shown tab or null if there is none
 	 */
-	public static JGraphTab getVisibleTab() {
+	public JGraphTab getVisibleTab() {
 		int index = tabbedPane.getSelectedIndex();
 
 		if (index > -1)
@@ -233,7 +242,7 @@ public class Main {
 	 * 
 	 * @return the index of the currently shown tab
 	 */
-	public static int getVisibleTabIndex() {
+	public int getVisibleTabIndex() {
 		return tabbedPane.getSelectedIndex();
 	}
 
@@ -245,7 +254,7 @@ public class Main {
 	 * @param showNow
 	 *            if set to true, the tab will be displayed at once
 	 */
-	public static void addTab(JGraphTab tab, boolean showNow) {
+	public void addTab(JGraphTab tab, boolean showNow) {
 
 		addTab(tab, showNow, tabbedPane.getTabCount());
 
@@ -259,7 +268,7 @@ public class Main {
 	 * @param showNow
 	 *            if set to true, the tab will be displayed at once
 	 */
-	public static void addTab(JGraphTab tab, boolean showNow, int ind) {
+	public void addTab(JGraphTab tab, boolean showNow, int ind) {
 
 		int index;
 
@@ -324,7 +333,7 @@ public class Main {
 
 	}
 	
-	public static void setSolvingEnabled(boolean b) {
+	public void setSolvingEnabled(boolean b) {
 		menuBar.setSolvingEnabled(b);
 	}
 
@@ -338,7 +347,7 @@ public class Main {
 	 * @param showNow if set to true, the tab will be shown after creating
 	 * @return the tab or null if an error occured while setting up the tab
 	 */
-	public static JDomGraphTab addNewTab(JDomGraph graph, String label,
+	public JDomGraphTab addNewTab(JDomGraph graph, String label,
 			DomGraph origin, boolean paintNow, boolean showNow,
 			NodeLabels labels) {
 
@@ -357,6 +366,19 @@ public class Main {
 
 	}
 
+	public boolean addNewTab(DomGraph graph, String label, NodeLabels labels) {
+		
+		DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
+		JDomGraph jDomGraph = conv.getJDomGraph();
+		if(jDomGraph == null)
+			return false;
+		
+		JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, label, true,
+				listener, labels);
+		addTab(tab, true);
+		return true;
+	}
+	
 	/**
 	 * Adding a new tab to the window displaying the given
 	 * <code>JDomGraph</Code>, given the index indicating
@@ -369,7 +391,7 @@ public class Main {
 	 * @param index indicating on which place of the tab the new tab shall be inserted
 	 * @return the new tab or null if anything fails
 	 */
-	public static JDomGraphTab addNewTab(JDomGraph graph, String label,
+	public JDomGraphTab addNewTab(JDomGraph graph, String label,
 			DomGraph origin, boolean paintNow, boolean showNow, int index,
 			NodeLabels labels) {
 
@@ -391,7 +413,7 @@ public class Main {
 	/**
 	 * @return the <code>JDomGraph</code> currently displayed
 	 */
-	private static JDomGraph getVisibleGraph() {
+	private JDomGraph getVisibleGraph() {
 		int index = tabbedPane.getSelectedIndex();
 
 		if (index > -1)
@@ -405,7 +427,7 @@ public class Main {
 	 * @param filename
 	 * @return
 	 */
-	public static JDomGraph genericLoadGraph(String filename, DomGraph graph,
+	public JDomGraph genericLoadGraph(String filename, DomGraph graph,
 			NodeLabels nl) {
 
 		return importGraph(filename, graph, nl);
@@ -435,7 +457,7 @@ public class Main {
 	 * @param filename
 	 * @return
 	 */
-	public static JDomGraph importGraph(String filename, DomGraph graph,
+	public JDomGraph importGraph(String filename, DomGraph graph,
 			NodeLabels nl) {
 		InputCodec inputCodec = codecManager.getInputCodecForFilename(filename,
 				null);
@@ -467,9 +489,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		// register codecs
-		codecManager = new CodecManager();
-		registerAllCodecs(codecManager);
+	
+		
 
 		// parse command-line arguments
 		ConvenientGetopt getopt = new ConvenientGetopt("Ubench",
@@ -477,18 +498,93 @@ public class Main {
 				"If Ubench doesn't run in server mode, specify a filename on the command line"
 						+ "\nto display the graph.");
 
-		getopt.addOption('s', "server", ConvenientGetopt.NO_ARGUMENT,
-				"Run in server mode", null);
-		getopt.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
-				"Use port <arg> for server mode", "4300");
-
 		getopt.parse(args);
 
 		// extract arguments
-		boolean serverMode = getopt.hasOption('s');
-		int port = Integer.parseInt(getopt.getValue('p'));
+		        
+		// load files that were specified on the command line
+		for (String file : getopt.getRemaining()) {
+			DomGraph anotherGraph = new DomGraph();
+			NodeLabels labels = new NodeLabels();
+			JDomGraph graph = getInstance().genericLoadGraph(file, anotherGraph, labels);
+			if (graph != null) {
+				// DomGraphTConverter conv = new DomGraphTConverter(graph);
+				JDomGraphTab firstTab = getInstance().addNewTab(graph, (new File(file))
+						.getName(), anotherGraph, true, false, labels);
+				
+			}
+		}
+		
+	}
 
-		// set up the window
+	/**
+	 * Create a new JFrame window. The application will be terminated once this
+	 * window is closed.
+	 * 
+	 * @return the new window
+	 */
+	private JFrame makeWindow() {
+		JFrame f = new JFrame("JGraph Test");
+
+		f.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		return f;
+	}
+
+	JDomGraphMenu getMenuBar() {
+		return menuBar;
+	}
+
+	JDomGraphStatusBar getStatusBar() {
+		return statusBar;
+	}
+
+	/**
+	 * @return Returns the listener.
+	 */
+	public CommandListener getListener() {
+		return listener;
+	}
+
+	/**
+	 * @param listener
+	 *            The listener to set.
+	 */
+	public void setListener(CommandListener listener) {
+		this.listener = listener;
+	}
+
+	private void registerAllCodecs(CodecManager codecManager) {
+		try {
+			codecManager.registerCodec(GlueInputCodec.class);
+			codecManager.registerCodec(HolesemComsemInputCodec.class);
+			codecManager.registerCodec(MrsPrologInputCodec.class);
+			codecManager.registerCodec(DomconOzInputCodec.class);
+			codecManager.registerCodec(DomconGxlInputCodec.class);
+
+			codecManager.registerCodec(DomconOzOutputCodec.class);
+			codecManager.registerCodec(DomconGxlOutputCodec.class);
+			codecManager.registerCodec(DomconUdrawOutputCodec.class);
+			// TBD //
+			codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
+			codecManager.registerCodec(LkbPluggingOutputCodec.class);
+			codecManager.registerCodec(OzTermOutputCodec.class);
+			codecManager.registerCodec(PrologTermOutputCodec.class);
+		} catch (Exception e) {
+			System.err.println("An error occurred trying to register a codec.");
+			e.printStackTrace(System.err);
+			System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
+		}
+	}
+
+	public CodecManager getCodecManager() {
+		return codecManager;
+	}
+	public void initialise() {
+//		 set up the window
 		window = makeWindow();
 
 		listener = new CommandListener();
@@ -513,107 +609,20 @@ public class Main {
 		window.setTitle("Underspecification Workbench");
 
 		window.doLayout();
-/*		window.pack();
-		window.validate();
-        */
-
 		window.setVisible(true);
 
-        useNextTabToResizeFrame = false;
-        
-		// load files that were specified on the command line
-		for (String file : getopt.getRemaining()) {
-			DomGraph anotherGraph = new DomGraph();
-			NodeLabels labels = new NodeLabels();
-			JDomGraph graph = genericLoadGraph(file, anotherGraph, labels);
-			if (graph != null) {
-				// DomGraphTConverter conv = new DomGraphTConverter(graph);
-				JDomGraphTab firstTab = addNewTab(graph, (new File(file))
-						.getName(), anotherGraph, true, false, labels);
-				if (firstTab != null) {
-					tabbedPane.copyShortcuts(firstTab);
-					firstTab.setMinimumSize(graph.getSize());
-				}
-			}
-		}
-		window.pack();
+        useNextTabToResizeFrame = true;
+        window.pack();
 		window.validate();
-        
-        if( getopt.getRemaining().isEmpty() ) {
-            useNextTabToResizeFrame = true;
-        }
-
-		// if the program was started in server mode, start the server thread
-		if (serverMode) {
-			new UbenchServerThread(port).start();
+	}
+	
+	public static Ubench getInstance() {
+		if( instance == null ) {
+			instance = new Ubench();
+			instance.initialise();
 		}
-	}
-
-	/**
-	 * Create a new JFrame window. The application will be terminated once this
-	 * window is closed.
-	 * 
-	 * @return the new window
-	 */
-	private static JFrame makeWindow() {
-		JFrame f = new JFrame("JGraph Test");
-
-		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
-		return f;
-	}
-
-	static JDomGraphMenu getMenuBar() {
-		return menuBar;
-	}
-
-	static JDomGraphStatusBar getStatusBar() {
-		return statusBar;
-	}
-
-	/**
-	 * @return Returns the listener.
-	 */
-	public static CommandListener getListener() {
-		return listener;
-	}
-
-	/**
-	 * @param listener
-	 *            The listener to set.
-	 */
-	public static void setListener(CommandListener listener) {
-		Main.listener = listener;
-	}
-
-	private static void registerAllCodecs(CodecManager codecManager) {
-		try {
-			codecManager.registerCodec(GlueInputCodec.class);
-			codecManager.registerCodec(HolesemComsemInputCodec.class);
-			codecManager.registerCodec(MrsPrologInputCodec.class);
-			codecManager.registerCodec(DomconOzInputCodec.class);
-			codecManager.registerCodec(DomconGxlInputCodec.class);
-
-			codecManager.registerCodec(DomconOzOutputCodec.class);
-			codecManager.registerCodec(DomconGxlOutputCodec.class);
-			codecManager.registerCodec(DomconUdrawOutputCodec.class);
-            codecManager.registerCodec(DotOutputCodec.class);
-			codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
-			codecManager.registerCodec(LkbPluggingOutputCodec.class);
-			codecManager.registerCodec(OzTermOutputCodec.class);
-			codecManager.registerCodec(PrologTermOutputCodec.class);
-		} catch (Exception e) {
-			System.err.println("An error occurred trying to register a codec.");
-			e.printStackTrace(System.err);
-			System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
-		}
-	}
-
-	public static CodecManager getCodecManager() {
-		return codecManager;
+		
+		return instance;
 	}
 
 }

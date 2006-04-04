@@ -49,7 +49,7 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 				else {
 					setSelectedIndex(0);
 				}
-				Main.refresh();
+				Ubench.getInstance().refresh();
 			}
 		};
 		getActionMap().getParent().put(browse.getValue(Action.NAME), browse);
@@ -64,7 +64,7 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 				else {
 					setSelectedIndex(getComponentCount() - 1);
 				}
-			        Main.refresh();
+			        Ubench.getInstance().refresh();
 			}
 		};
 		getActionMap().getParent().put(browseBack.getValue(Action.NAME), browseBack);
@@ -98,8 +98,8 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 	 * Just causes refreshing all visible GUI components.
 	 */
 	public void stateChanged(ChangeEvent e) {
-      if ( ! (Main.getVisibleTab() == null) ) {
-		  Main.refresh();
+      if ( ! (Ubench.getInstance().getVisibleTab() == null) ) {
+		  Ubench.getInstance().refresh();
 		  validate();
       }
    }

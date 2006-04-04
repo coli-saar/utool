@@ -61,8 +61,8 @@ public class UbenchServerThread extends Thread {
                 
                 DomGraph aDomGraph = new DomGraph();
                 NodeLabels labels = new NodeLabels();
-                JDomGraph graph = Main.importGraph(filename, aDomGraph, labels);
-                Main.addNewTab(graph, filename, aDomGraph, true, true, labels);
+                JDomGraph graph = Ubench.getInstance().importGraph(filename, aDomGraph, labels);
+                Ubench.getInstance().addNewTab(graph, filename, aDomGraph, true, true, labels);
             } 
             
             serv.close();

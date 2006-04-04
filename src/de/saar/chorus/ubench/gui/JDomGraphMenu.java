@@ -249,7 +249,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 * @param b set to true the item gets enabled
 	 */
     void setCountSfEnabled(boolean b) {
-    	if( Main.getVisibleTab() != null )
+    	if( Ubench.getInstance().getVisibleTab() != null )
     		cSolvForms.setEnabled(b);
     }
 	

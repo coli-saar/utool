@@ -1,5 +1,5 @@
 /*
- * @(#)Main.java created 18.07.2005
+ * @(#)Ubench.java created 18.07.2005
  * 
  * Copyright (c) 2005 Alexander Koller
  *  
