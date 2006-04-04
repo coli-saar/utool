@@ -442,18 +442,12 @@ public class CommandListener implements ActionListener, ItemListener {
 							JSolvedFormTab sFTab = ((JDomGraphTab) Main.getVisibleTab()).createFirstSolvedForm();
                             if( sFTab != null ) {
                                 Main.addTab(sFTab, true);
+                                Main.getMenuBar().setPlusMinusEnabled(true,false);
                                 Main.refresh();
                             }
 						}
 					}.start();
 					
-				} else if( command.equals("utool-about")) {
-					//DomSolver solv = new DomSolver();
-					
-					JOptionPane.showMessageDialog(Main.getWindow(),
-							"Utool version " + /*solv.getLibdomgraphVersion() +*/ " loaded.",
-							"About utool",
-							JOptionPane.INFORMATION_MESSAGE);
 				} else if (command.equals("about") ) {
 					JOptionPane.showMessageDialog(Main.getWindow(),
 							"Ubench version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
@@ -830,6 +824,15 @@ public class CommandListener implements ActionListener, ItemListener {
 		// showing the recent one.
 		Main.closeCurrentTab();
 		Main.addTab(solvedFormTab, true, toInsertHere);
+		if(no > 1 && no < Main.getVisibleTab().getSolvedForms()) {
+			Main.getMenuBar().setPlusMinusEnabled(true,true);
+		} else if (no == 1 && no < Main.getVisibleTab().getSolvedForms()) {
+			Main.getMenuBar().setPlusMinusEnabled(true,false);
+		} else if (no > 1 && no == Main.getVisibleTab().getSolvedForms()) {
+			Main.getMenuBar().setPlusMinusEnabled(false,true);
+		} else {
+			Main.getMenuBar().setPlusMinusEnabled(false,false);
+		}
 		Main.getStatusBar().showBar(solvedFormTab.getBarCode());
 		
 	}

@@ -48,8 +48,11 @@ public class JDomGraphMenu extends JMenuBar {
 					  fitAll,        // checkbox indicating whether or not the recent
 									 // and all further loaded graphs shall be zoomed
 									 // out until fitting the window
-					  utoolInfo,
-					  about;
+				
+					  about,
+					  solve,
+					  next,
+					  previous;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -173,8 +176,8 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		
 		// utool-Menu
-		utoolMenu = new JMenu("Utool");
-		utoolMenu.setMnemonic(KeyEvent.VK_U);
+		utoolMenu = new JMenu("Solving");
+		utoolMenu.setMnemonic(KeyEvent.VK_S);
 		
 		// checkbox indicating whether all graphs loaded
 		// shall be solved at once
@@ -194,20 +197,34 @@ public class JDomGraphMenu extends JMenuBar {
 		utoolMenu.add(cSolvForms);
 		graphSpecificItems.add(cSolvForms);
 
-		// Utool/"About"
-		utoolInfo = new JMenuItem("About...");
-		utoolInfo.setActionCommand("utool-about");
-		utoolInfo.addActionListener(listener);
 		
-		utoolMenu.addSeparator();
-		utoolMenu.add(utoolInfo);
+		
 		
 		showLabels.setSelected(true);
 
 		
-            countAndSolve.setSelected(true);
-            cSolvForms.setEnabled(false);
+        countAndSolve.setSelected(true);
+        cSolvForms.setEnabled(false);
        
+        
+        solve = new JMenuItem("Solve");
+        solve.setActionCommand("solve");
+        solve.addActionListener(listener);
+        utoolMenu.addSeparator();
+        utoolMenu.add(solve);
+        
+        next = new JMenuItem("Show next solved form");
+        next.setActionCommand("plus");
+        next.addActionListener(listener);
+        next.setEnabled(false);
+        
+        previous = new JMenuItem("Show previous solved form");
+        previous.setActionCommand("minus");
+        previous.addActionListener(listener);
+        previous.setEnabled(false);
+        
+        utoolMenu.add(next);
+        utoolMenu.add(previous);
         
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
@@ -256,7 +273,13 @@ public class JDomGraphMenu extends JMenuBar {
 	
 	public void setSolvingEnabled(boolean b) {
 		countAndSolve.setEnabled(b);
+		solve.setEnabled(b);
 		cSolvForms.setEnabled(false);
+	}
+	
+	public void setPlusMinusEnabled(boolean plus, boolean minus) {
+		next.setEnabled(plus);
+		previous.setEnabled(minus);
 	}
 	
 }
