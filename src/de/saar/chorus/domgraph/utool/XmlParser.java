@@ -171,6 +171,7 @@ class XmlParser extends DefaultHandler {
                         e, ExitCodes.PARSING_ERROR));
             }
             
+            options.setInputName("(graph from server)"); // TODO reasonable graph label
             options.setGraph(graph);
             options.setLabels(labels);
         

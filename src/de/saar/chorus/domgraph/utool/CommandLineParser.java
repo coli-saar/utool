@@ -161,6 +161,7 @@ public class CommandLineParser {
                     
                     inputCodec.decode(reader, graph, labels);
                     
+                    ret.setInputName(argument);
                     ret.setGraph(graph);
                     ret.setLabels(labels);
                 } catch(MalformedDomgraphException e) {

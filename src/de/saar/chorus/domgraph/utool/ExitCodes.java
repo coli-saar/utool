@@ -35,6 +35,7 @@ public class ExitCodes {
     // range of 10000000 ... 10111111 reserved for Utool main program
     public static final int IO_ERROR = 128;
     public static final int SERVER_IO_ERROR = 129;
+    public static final int GRAPH_DRAWING_ERROR = 130;
 
     public static final int PARSER_CONFIGURATION_ERROR = 140;
     public static final int NO_SUCH_COMMAND = 141;

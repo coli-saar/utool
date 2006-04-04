@@ -366,7 +366,7 @@ public class Ubench {
 
 	}
 
-	public boolean addNewTab(DomGraph graph, String label, NodeLabels labels) {
+	public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
 		
 		DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
 		JDomGraph jDomGraph = conv.getJDomGraph();

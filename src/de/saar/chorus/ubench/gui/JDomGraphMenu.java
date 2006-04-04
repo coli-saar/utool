@@ -8,6 +8,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 
@@ -105,7 +106,37 @@ public class JDomGraphMenu extends JMenuBar {
 		pdfPrint.addActionListener(listener);
 		graphSpecificItems.add(pdfPrint);
 		fileMenu.add(pdfPrint);
-		
+        
+        
+        fileMenu.addSeparator();
+        
+        
+        
+        // item to duplicate the visible graph
+        duplicate = new JMenuItem("Duplicate Tab");
+        duplicate.setActionCommand("dup");
+        duplicate.setMnemonic(KeyEvent.VK_D);
+        duplicate.setAccelerator(KeyStroke.getKeyStroke("ctrl D"));
+        duplicate.addActionListener(listener);
+        fileMenu.add(duplicate);
+        
+        // item to close the graph
+        close = new JMenuItem("Close Tab");
+        close.setActionCommand("shut");
+        close.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
+        close.addActionListener(listener);
+        fileMenu.add(close);
+        
+        // item to close all loaded graphs
+        closeAll = new JMenuItem("Close All Tabs");
+        closeAll.setActionCommand("closeAll");
+        closeAll.addActionListener(listener);
+        fileMenu.add(closeAll);
+        
+        
+        fileMenu.addSeparator();
+        
+        
 		// item for quitting Leonardo
 		quit = new JMenuItem("Quit");
 		quit.setActionCommand("quit");
@@ -116,36 +147,9 @@ public class JDomGraphMenu extends JMenuBar {
 		fileMenu.validate();
 		add(fileMenu);
 		
-		//	graph Menu
-		graphMenu = new JMenu("Graph");
-		graphMenu.setMnemonic(KeyEvent.VK_G);
-		
-		// item to duplicate the visible graph
-		duplicate = new JMenuItem("Duplicate");
-		duplicate.setActionCommand("dup");
-		duplicate.setMnemonic(KeyEvent.VK_D);
-		duplicate.setAccelerator(KeyStroke.getKeyStroke("ctrl D"));
-		duplicate.addActionListener(listener);
-		graphMenu.add(duplicate);
-		
-		
-		
-		// item to close the graph
-		close = new JMenuItem("Close");
-		close.setActionCommand("shut");
-		close.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
-		close.addActionListener(listener);
-		graphMenu.add(close);
-		
-		// item to close all loaded graphs
-		closeAll = new JMenuItem("Close All Graphs");
-		closeAll.setActionCommand("closeAll");
-		closeAll.addActionListener(listener);
-		graphMenu.add(closeAll);
-		
-		graphMenu.validate();
-		add(graphMenu);
-		graphSpecificItems.add(graphMenu);
+        
+        
+        
 		
 		// view Menu
 		viewMenu = new JMenu("View");
@@ -176,7 +180,7 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		
 		// utool-Menu
-		utoolMenu = new JMenu("Solving");
+		utoolMenu = new JMenu("Solver");
 		utoolMenu.setMnemonic(KeyEvent.VK_S);
 		
 		// checkbox indicating whether all graphs loaded
@@ -207,7 +211,7 @@ public class JDomGraphMenu extends JMenuBar {
         cSolvForms.setEnabled(false);
        
         
-        solve = new JMenuItem("Solve");
+        solve = new JMenuItem("Show first solved form");
         solve.setActionCommand("solve");
         solve.addActionListener(listener);
         utoolMenu.addSeparator();

@@ -30,6 +30,7 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.ubench.gui.Ubench;
 
 
 /**
@@ -289,6 +290,19 @@ class UtoolServer {
                         + "leaflabelled='" + options.getGraph().isLeafLabelled() + "' "
                         + "/>");
                 break;
+                
+                
+            case display:
+                if(Ubench.getInstance().addNewTab(
+                        options.getInputName(),
+                        options.getGraph(),
+                        options.getLabels()))  {
+                    out.println("<result code='0' />");
+                } else {
+                    sendError(out, ExitCodes.GRAPH_DRAWING_ERROR, "An error occurred while drawing the graph.");
+                }
+                break;
+
                 
             case help:
                 out.println("<result help='" + helpString(options.getHelpArgument()) + "' />");
