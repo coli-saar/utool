@@ -22,6 +22,32 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+/**
+ * An output codec that represents a dominance graph in the uDraw(Graph)
+ * format. 
+ * <a href="http://www.informatik.uni-bremen.de/uDrawGraph/en/index.html">uDraw(Graph)</a> 
+ * is a tool for displaying and editing graphs which
+ * was developed at the University of Bremen. 
+ * <p>
+ * 
+ * This codec can be run into two modes. By default, it computes an uDraw
+ * representation which is suitable for loading into uDraw(Graph) via
+ * the File/Open menu. Alternatively, you can pass the string "pipe" to
+ * it as a codec option. In this case, the codec will compute a uDraw
+ * graph drawing command which can be fed to uDraw(Graph) via a pipe, e.g.
+ * <blockquote><code>utool convert -O domcon-udraw --output-codec-options pipe | uDraw -pipe</code></blockquote>
+ * <p>
+ * 
+ * <strong>Note:</strong> This codec is not suitable for printing
+ * a list of graphs, e.g. in the context of printing the solved
+ * forms computed by the <code>solve</code> command.<p>
+ * 
+ * The name of this codec is <code>domcon-udraw</code>, and its associated
+ * file extension is <code>.dc.udg</code>.
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class DomconUdrawOutputCodec extends GraphOutputCodec {
 	private boolean pipe = false;
 	
