@@ -37,7 +37,7 @@ public class JDomGraphTab extends JGraphTab  {
 	
 
 	// graph information concerning solving and identity
-	boolean solvable, isSolvedYet; 
+	boolean solvable, isSolvedYet, compactifiable; 
 	Chart chart;
 	DomGraph compactGraph;
 	
@@ -66,9 +66,11 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		if(Preferences.isAutoCount()) {
 			if(domGraph.isCompactifiable()) {
+				compactifiable = true;
 				solve();
 			} else {
 				solvable = false;
+				compactifiable = false;
 				Ubench.getInstance().setSolvingEnabled(false);
 			}
 		}
@@ -222,10 +224,14 @@ public class JDomGraphTab extends JGraphTab  {
     				numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
     			}
     		} else {
+    			if(compactifiable) {
     			if(solvable) {
     				numberOfForms.setText("This graph has an unknown number of solved forms."); 
     			} else {
     				numberOfForms.setText("This graph is unsolvable."); 
+    			}
+    			} else {
+    				numberOfForms.setText("This graph is not compactifiable, so we cannot determine solvability.");
     			}
     		}
     		
