@@ -519,7 +519,8 @@ public class CommandListener implements ActionListener, ItemListener {
 						}
 						
 					} else {
-						if( Ubench.getInstance().getMenuBar() != null ) {
+						if( (Ubench.getInstance().getMenuBar() != null) && 
+								Ubench.getInstance().getVisibleTab().getClass() != JSolvedFormTab.class) {
 							Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
 						}
 						

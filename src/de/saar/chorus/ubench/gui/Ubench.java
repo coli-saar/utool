@@ -206,6 +206,16 @@ public class Ubench {
 	public void refresh() {
 		if (getVisibleTab() != null) {
 			getVisibleTab().repaintIfNecessary();
+			if(getVisibleTab().getClass() == JSolvedFormTab.class ) {
+				setSolvingEnabled(false);
+			} else {
+				if( ((JDomGraphTab) getVisibleTab()).isSolvable()) {
+					setSolvingEnabled(true);
+				} else {
+					setSolvingEnabled(false);
+				}
+				menuBar.setPlusMinusEnabled(false,false);
+			}
 		} else {
 			menuBar.setGraphSpecificItemsEnabled(false);
 		}

@@ -214,17 +214,20 @@ public class JDomGraphMenu extends JMenuBar {
         solve = new JMenuItem("Show first solved form");
         solve.setActionCommand("solve");
         solve.addActionListener(listener);
+        graphSpecificItems.add(solve);
         utoolMenu.addSeparator();
         utoolMenu.add(solve);
         
         next = new JMenuItem("Show next solved form");
         next.setActionCommand("plus");
+        graphSpecificItems.add(next);
         next.addActionListener(listener);
         next.setEnabled(false);
         
         previous = new JMenuItem("Show previous solved form");
         previous.setActionCommand("minus");
         previous.addActionListener(listener);
+        graphSpecificItems.add(previous);
         previous.setEnabled(false);
         
         utoolMenu.add(next);
@@ -276,9 +279,9 @@ public class JDomGraphMenu extends JMenuBar {
     }
 	
 	public void setSolvingEnabled(boolean b) {
-		countAndSolve.setEnabled(b);
 		solve.setEnabled(b);
-		cSolvForms.setEnabled(false);
+		if(! countAndSolve.isSelected() )
+			cSolvForms.setEnabled(b);
 	}
 	
 	public void setPlusMinusEnabled(boolean plus, boolean minus) {
