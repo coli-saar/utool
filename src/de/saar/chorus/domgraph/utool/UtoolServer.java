@@ -293,13 +293,18 @@ class UtoolServer {
                 
                 
             case display:
-                if(Ubench.getInstance().addNewTab(
-                        options.getInputName(),
-                        options.getGraph(),
-                        options.getLabels()))  {
-                    out.println("<result code='0' />");
+                if( options.getGraph() != null ) {
+                    if(Ubench.getInstance().addNewTab(
+                            options.getInputName(),
+                            options.getGraph(),
+                            options.getLabels()))  {
+                        out.println("<result code='0' />");
+                    } else {
+                        sendError(out, ExitCodes.GRAPH_DRAWING_ERROR, "An error occurred while drawing the graph.");
+                    }
                 } else {
-                    sendError(out, ExitCodes.GRAPH_DRAWING_ERROR, "An error occurred while drawing the graph.");
+                    Ubench.getInstance();
+                    out.println("<result code='0' />");
                 }
                 break;
 

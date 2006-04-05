@@ -127,7 +127,7 @@ public class CommandLineParser {
         
 
         // obtain graph
-        if( op.requiresInput ) {
+        if( op.requiresInput || (argument != null) ) {
             String inputCodecOptions = null;
             
             if( getopt.hasOption(OPTION_INPUT_CODEC_OPTIONS)) {
@@ -145,9 +145,10 @@ public class CommandLineParser {
                 NodeLabels labels = new NodeLabels();
                 
                 ret.setInputCodec(inputCodec);
-                
+                                
                 if( argument == null ) {
-                    argument = "-"; // stdin
+                    throw new AbstractOptionsParsingException("This operation requires an input graph.",
+                            ExitCodes.NO_INPUT);
                 }
                 
                 try {
@@ -155,13 +156,14 @@ public class CommandLineParser {
                     
                     if( "-".equals(argument)) {
                         reader = new InputStreamReader(System.in);
+                        ret.setInputName("(standard input)");
                     } else {
                         reader = inputCodec.getReaderForSpecification(argument);
+                        ret.setInputName(argument);
                     }
                     
                     inputCodec.decode(reader, graph, labels);
                     
-                    ret.setInputName(argument);
                     ret.setGraph(graph);
                     ret.setLabels(labels);
                 } catch(MalformedDomgraphException e) {

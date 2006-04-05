@@ -110,7 +110,7 @@ public class AbstractOptions {
                 "up an empty Underspecification Workbench window.\n\n" +
                 "Valid options:\n" +
                 "  --input-codec, -I codecname     Specify the input codec.\n",
-                true, false),      
+                false, false),      
                 
         server
         ("Start Utool in server mode",

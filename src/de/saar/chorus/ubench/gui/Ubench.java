@@ -11,6 +11,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -82,17 +84,16 @@ import de.saar.getopt.ConvenientGetopt;
  * 
  */
 public class Ubench {
-	
 	private static Ubench instance = null;
 
 	// the tabs in their order of insertion
 	private ArrayList<JGraphTab> tabs = new ArrayList<JGraphTab>();
+    
+    // the number of times that tabs with this name were created so far
+    private Map<String,Integer> numTabsWithThisName = new HashMap<String,Integer>();
 
 	// the pane containing the tabs
 	private JDomTabbedPane tabbedPane;
-
-	// the scaling slider
-	// private static JDomGraphSlider slider = new JDomGraphSlider();
 
 	// the status bar
 	private JDomGraphStatusBar statusBar;
@@ -350,9 +351,11 @@ public class Ubench {
 	public JDomGraphTab addNewTab(JDomGraph graph, String label,
 			DomGraph origin, boolean paintNow, boolean showNow,
 			NodeLabels labels) {
+        
+        String normalisedLabel = normaliseTabLabel(label);
 
 		// the new tab
-		JDomGraphTab tab = new JDomGraphTab(graph, origin, label, paintNow,
+		JDomGraphTab tab = new JDomGraphTab(graph, origin, normalisedLabel, paintNow,
 				listener, labels);
 		if (tab.getGraph() != null) {
 
@@ -366,15 +369,30 @@ public class Ubench {
 
 	}
 
-	public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
+	private String normaliseTabLabel(String label) {
+        String stripSlashes = new File(label).getName();
+        
+        if( numTabsWithThisName.containsKey(stripSlashes)) {
+            int next = numTabsWithThisName.get(stripSlashes) + 1;
+            String ret = stripSlashes + "/" + next;
+            numTabsWithThisName.put(stripSlashes, next);
+            
+            return ret;
+        } else {
+            numTabsWithThisName.put(stripSlashes,1);
+            return stripSlashes;
+        }
+    }
+
+    public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
 		
 		DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
 		JDomGraph jDomGraph = conv.getJDomGraph();
 		if(jDomGraph == null)
 			return false;
 		
-		JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, label, true,
-				listener, labels);
+		JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
+                true, listener, labels);
 		addTab(tab, true);
 		return true;
 	}
@@ -396,8 +414,8 @@ public class Ubench {
 			NodeLabels labels) {
 
 		// the new tab
-		JDomGraphTab tab = new JDomGraphTab(graph, origin, label, paintNow,
-				listener, labels);
+		JDomGraphTab tab = new JDomGraphTab(graph, origin, normaliseTabLabel(label),
+                paintNow, listener, labels);
 		if (tab.getGraph() != null) {
 
 			// tab sucessfully created

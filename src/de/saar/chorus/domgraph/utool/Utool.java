@@ -278,10 +278,15 @@ public class Utool {
             System.exit(programExitCode);
             
         case display:
-            Ubench.getInstance().addNewTab(
-                    options.getInputName(),
-                    options.getGraph(),
-                    options.getLabels());
+            if( options.getGraph() != null ) {
+                Ubench.getInstance().addNewTab(
+                        options.getInputName(),
+                        options.getGraph(),
+                        options.getLabels());
+            } else {
+                Ubench.getInstance();
+            }
+            
             break;
             
         case server:
