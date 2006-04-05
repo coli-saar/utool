@@ -90,7 +90,8 @@ public class GlueInputCodec extends InputCodec {
 			String name_pr = "X" + String.valueOf(j+1) + addr_pr;
 			String name_impl = "X" + String.valueOf(j+1) + address;
 			g.addNode(name_cc, conclusion);
-        	l.addLabel(name_cc, "-o E");
+        	//l.addLabel(name_cc, "-o E");
+        	l.addLabel(name_cc, chi.toString());
 			g.addNode(name_pr, premiss);
 			// Updates the Variable-to-formula map
 			varToFormula.put(name_pr, psi);
@@ -100,7 +101,9 @@ public class GlueInputCodec extends InputCodec {
 			EdgeData right = new EdgeData(EdgeType.TREE);
 			g.addEdge(name_cc, name_impl, left);
 			g.addEdge(name_cc, name_pr, right);
-        	if ( !psi.isSuffixModuloUnif(axioms) ) {
+			List<Formula> other_axioms = new ArrayList<Formula>(axioms);
+			other_axioms.remove(axioms.get(j));
+        	if ( !psi.isSuffixModuloUnif(other_axioms) ) {
 				l.addLabel(name_pr, "[" + psi.toString() + "]");
         		z(j, chi, addr_cc, g, l, formulas);
    	    	} else {
@@ -144,6 +147,7 @@ public class GlueInputCodec extends InputCodec {
 		case VARIABLE:
 		}
 	}
+
 
 	private void updateBehavior(int j, HashMap[] behavior) {
 		HashMap<Formula, Integer> res = new HashMap();
@@ -208,7 +212,7 @@ public class GlueInputCodec extends InputCodec {
 		for ( int i = 0; i < formulas.size(); i++ ) {
 			// Compute the fragment related to each axiom
 			Formula axiom = formulas.get(i);
-            System.out.println(axiom.suffixes());            
+//            System.out.println(axiom.getSuffixes());            
              /* Add first node, labelled with axiom and index; the name is also indexed by
 			  * the formula's address (as many 1s as the implicative depth)
 			  */
@@ -221,7 +225,8 @@ public class GlueInputCodec extends InputCodec {
 						axAddress = sb.toString();
                         String name = "X" + String.valueOf(i+1) + axAddress;
                         graph.addNode(name, axNode);
-                        labels.addLabel(name, "ax"+String.valueOf(i+1));
+                        //labels.addLabel(name, "ax"+String.valueOf(i+1));
+                        labels.addLabel(name, axiom.toString());
                         varToFormula.put(name, axiom);
              
               /* Recursive call on the axiom formula
@@ -243,12 +248,14 @@ public class GlueInputCodec extends InputCodec {
 		System.out.println(varToFormula);
 		List<Set<String>> fragments = new ArrayList<Set<String>>(formulas.size());
 		for ( int i = 0; i < formulas.size(); i++ ) {
+			String rooti = "X" + String.valueOf(i+1);
 			updateBehavior(i, hypBehavior);
-			fragments.add(i, graph.getFragment("X" + String.valueOf(i+1)));
+			fragments.add(i, graph.getFragment(rooti));
 			Set<String> Fi = fragments.get(i);
 			Map<Formula,Integer> m = (Map<Formula,Integer>)hypBehavior[i];
 			System.out.println(m);
-			for( int j = 0; j < fragments.size() - 1; j++ ) {
+			for( int j = 0; j < i; j++ ) {
+				String rootj = "X" + String.valueOf(j+1);
 				Set<String> Fj = fragments.get(j);
 				Map<Formula,Integer> n = hypBehavior[j];
 				System.out.println("\t" + n.toString());
@@ -261,7 +268,7 @@ public class GlueInputCodec extends InputCodec {
 								// if behaviors may plug in each other,
 								// 1. check type of root and hole
 								// 2. add dominance edge
-								String root = graph.getRoot("X" + String.valueOf(j+1));// extracts the root of Fj from the root of Fj...
+								String root = graph.getRoot(rootj);// extracts the root of Fj from the root of Fj...
 								for( String hole : graph.getHoles(Fi) )
 									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
 										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
@@ -270,7 +277,7 @@ public class GlueInputCodec extends InputCodec {
 									}
 							} else if (m.get(i_res).intValue() > n.get(j_res).intValue()) {
 								// idem...
-								String root = graph.getRoot("X" + String.valueOf(i+1));
+								String root = graph.getRoot(rooti);
 								for( String hole : graph.getHoles(Fj) )
 									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
 										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
@@ -280,8 +287,26 @@ public class GlueInputCodec extends InputCodec {
 							}
 						// no else: nothing happens if two fragments exhibit the same behavior w.r.t. the same resource
 						}
-				}
+			}
 		}
+		// all dominance edges based on hypotheses have been attributed;
+		// now the rest must match holes not yet attributed to roots.
+		for ( int i = 0; i < fragments.size(); i++ ) {
+			String rooti = "X" + String.valueOf(i+1);
+			List<String> oh = graph.getOpenHoles(rooti);
+			if(!oh.isEmpty())
+				for( int j = 0; j < fragments.size() - 1; j++ ) {
+					String rootj = "X" + String.valueOf(j+1);
+					for( String hole : oh )
+						// the test is here EQUALITY, and not SUBSUMPTION!!!
+						// --> assumption to be checked!
+						if( varToFormula.get(hole).equals(varToFormula.get(rootj)) ) {
+							EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
+							graph.addEdge(hole, rootj, edge);
+							break;
+						}
+				}
+		}	
 	}
 }
 PARSER_END(GlueInputCodec)
