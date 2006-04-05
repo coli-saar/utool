@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,8 @@ import javax.swing.ToolTipManager;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconGxlOutputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
@@ -489,22 +492,49 @@ public class Ubench {
 			NodeLabels nl) {
 		InputCodec inputCodec = codecManager.getInputCodecForFilename(filename,
 				null);
-	
+		if(inputCodec != null ) {
 		try {
 			inputCodec.decode(new FileReader(filename), graph, nl);
 			
-		} catch (Exception e) {
+		} catch (IOException e) {
 			JOptionPane
 					.showMessageDialog(
 							window,
-							"An error occurred while loading this graph\n(perhaps the file "
-									+ "doesn't exist,\nor the input codec couldn't be determined or was "
-									+ "unable to parse the graph).",
+							"An error occurred while loading this graph\nThe file to load"
+									+ "doesn't exist or cannot be opened",
 							"Error during import", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			return null;
-		}
+		} catch (ParserException pe) {
+			JOptionPane
+			.showMessageDialog(
+					window,
+					"An error occurred while loading this graph\nThe input file contains"
+					+ "syntax errors",
+					"Error during import", JOptionPane.ERROR_MESSAGE);
 
+	return null;
+		} catch (MalformedDomgraphException me) {
+			JOptionPane
+			.showMessageDialog(
+					window,
+					"An error occurred while loading this graph\n" + 
+					"A semantic error occured; the input graph cannot\n" + 
+					"be converted into a dominance graph",
+					"Error during import", JOptionPane.ERROR_MESSAGE);
+	
+			return null;
+		}
+		} else {
+			JOptionPane
+			.showMessageDialog(
+					window,
+					"An error occurred while loading this graph\n" + 
+					"There is no input codec for importing this file.",
+					"Error during import", JOptionPane.ERROR_MESSAGE);
+	
+			return null;
+		}
 		DomGraphTConverter conv = new DomGraphTConverter(graph, nl);
 		return conv.getJDomGraph();
 	}
