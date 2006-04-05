@@ -38,6 +38,7 @@ import de.saar.basic.SwingComponentPDFWriter;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -341,7 +342,7 @@ public class CommandListener implements ActionListener, ItemListener {
 							
 							OutputCodec oc = 
 								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),null);
-							
+							if( oc != null ) {
 							try {
 								FileWriter writer = new FileWriter(file);
 								oc.print_header(writer);
@@ -350,10 +351,25 @@ public class CommandListener implements ActionListener, ItemListener {
 										Ubench.getInstance().getVisibleTab().getNodeLabels(), 
 										writer);
 								oc.print_footer(writer);
-							} catch (Exception ex) {
+							} catch (IOException ex) {
 								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-										"The output codec couldn't be determined, or it doesn't support"
-										+ " output of this graph.",
+										"The target File can't be created.",
+										"Error from output codec",
+										JOptionPane.ERROR_MESSAGE);
+							} catch (MalformedDomgraphException md) {
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+										"The output codec doesn't support output of this graph.",
+										"Error from output codec",
+										JOptionPane.ERROR_MESSAGE);
+							} catch (UnsupportedOperationException uE) {
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+										uE.getMessage(),
+										"Error from output codec",
+										JOptionPane.ERROR_MESSAGE);
+							}
+							} else {
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+										"An output coded for this format cannot be determined.",
 										"Error from output codec",
 										JOptionPane.ERROR_MESSAGE);
 							}
