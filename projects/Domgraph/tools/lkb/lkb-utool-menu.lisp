@@ -44,14 +44,33 @@
 	   (format os "</utool>")))
     (collect-solutions nil (send-to-utool #'writer))))
 
-(defun display-mrs (mrs)
-  (flet ((writer (os)
-	   (format os "<utool cmd=\"display\">")
-	   (format os "<usr codec=\"mrs-prolog\" string=\"")
-	   (mrs::output-mrs1 mrs 'mrs::prolog os)
-	   (format os "\"/>")
-	   (format os "</utool>")))
-    (send-to-utool #'writer)))
+(defun display-mrs (edge)
+  (let ((tree (lkb::deriv-tree-compute-derivation-tree edge))
+	(mrs (mrs::extract-mrs edge)))
+    (flet ((writer (os)
+	     (format os "<utool cmd=\"display\">")
+	     (format os "<usr codec=\"mrs-prolog\" name=\"&quot;~A&quot;\" string=\""
+		     (prefix tree))
+	     (mrs::output-mrs1 mrs 'mrs::prolog os)
+	     (format os "\"/>")
+	     (format os "</utool>")))
+      (send-to-utool #'writer))))
+
+
+
+(defun sdrow (acc tree)
+  (cond ((stringp (car tree))
+	 (cons (car tree) acc))
+	(t
+	 (reduce #'sdrow (cdddr tree) :initial-value acc))))
+
+(defun prefix (tree)
+  (let ((words (reverse (sdrow nil tree))))
+    (case (length words)
+      (0 "")
+      (1 (format nil "~A" (nth 0 words)))
+      (t (format nil "~A ~A ..." (nth 0 words) (nth 1 words))))))
+
 
 (in-package :mrs)
 
@@ -155,7 +174,7 @@
 	     (setf mrs::*solver* mrs::*solver-utool*)
 	     (funcall 'show-mrs-scoped-window (prtree-edge tree)))
 	    (display-utool
-	     (funcall 'utool::display-mrs (mrs::extract-mrs (prtree-edge tree))))
+	     (funcall 'utool::display-mrs (prtree-edge tree)))
 ;;; }}}
             (rmrs (funcall 'show-mrs-rmrs-window (prtree-edge tree)))
             (dependencies 
