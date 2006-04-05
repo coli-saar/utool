@@ -115,12 +115,12 @@ class Formula {
 		return 0;
 	}
 
-	public List<Formula> suffixes() {
+	public List<Formula> getSuffixes() {
 		List suff = new ArrayList<Formula>();
 	    switch ( type ) {
         case IMPLICATION:
         		suff.add(this);
-                suff.addAll(subformulas.get(1).suffixes());
+                suff.addAll(subformulas.get(1).getSuffixes());
                 break;
         case ATOM:
         case VARIABLE:
@@ -131,7 +131,7 @@ class Formula {
 
 	public boolean isSuffix(List<Formula> formulas) {
 		for (int i = 0; i < formulas.size(); i++) {
-			if ( formulas.get(i).suffixes().contains(this) )
+			if ( formulas.get(i).getSuffixes().contains(this) )
 				return true;
 		}
 		return false;
@@ -159,12 +159,12 @@ class Formula {
 	// Tests only for right-unification! i.e. variables only tested for in the input formula (this)!
 	public boolean isSuffixModuloUnif(List<Formula> formulas) {
 		for (int i = 0; i < formulas.size(); i++) {
-			List<Formula> suffixes = formulas.get(i).suffixes();
-			for (int j = 0; j < suffixes.size(); j++)
-				if ( subsumes(suffixes.get(j)) ) {
-					System.out.println(this + " is/subsumes a suffix of " + formulas.get(i)  + ".");
-					return true;
-				}
+				List<Formula> suffixes = formulas.get(i).getSuffixes();
+				for (int j = 0; j < suffixes.size(); j++)
+					if ( subsumes(suffixes.get(j)) ) {
+						System.out.println("\t\t" + this + " subsumes " + suffixes.get(j) + ", a suffix of " + formulas.get(i)  + ".");
+						return true;
+					}
 		}
 		return false;
 	}
