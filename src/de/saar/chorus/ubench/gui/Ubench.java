@@ -294,10 +294,10 @@ public class Ubench {
 		if (ind < (tabs.size() - 1)) {
 			index = ind;
 
-			tabbedPane.insertTab(tab.getDefaultName(), null, new JScrollPane(
-					tab), tab.getDefaultName(), index);
+			tabbedPane.insertTab(tab.getDefaultName(), null, 
+					tab, tab.getDefaultName(), index);
 		} else {
-			tabbedPane.addTab(tab.getDefaultName(), new JScrollPane(tab));
+			tabbedPane.addTab(tab.getDefaultName(), tab);
 			index = tabs.size() - 1;
 		}
 

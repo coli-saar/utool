@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -58,7 +59,8 @@ public class JSolvedFormTab extends JGraphTab {
         
 		repaintIfNecessary();
         
-		add(graph);
+		scrollpane = new JScrollPane(graph);
+        add(scrollpane, BorderLayout.CENTER);
 		
 		statusBar = new SolvedFormBar(solvedForms, form, gName);
 		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);

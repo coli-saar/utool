@@ -289,7 +289,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		/*if( (wccs().size() > 1)  ) {
+	/*	if( (wccs().size() > 0)  ) {
 			JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
 		} else {*/
 		if(isForest() && (wccs().size() == 1) ) {
