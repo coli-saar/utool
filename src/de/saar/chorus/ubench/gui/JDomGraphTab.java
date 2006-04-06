@@ -9,11 +9,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -79,22 +79,23 @@ public class JDomGraphTab extends JGraphTab  {
 		try {
 			
 			// graph layout
-            graph = theGraph;
+           // graph = theGraph;
             
             // comute fragments 
-            theGraph.computeFragments();
+            graph.computeFragments();
 			
             // if it should be painted directly, the 
             // graph is layoutet.
 			if(paintNow) {
 				JFrame f = new JFrame("JGraph Test");
-				f.add(theGraph);
+				f.add(graph);
 				f.pack();
 				repaintIfNecessary();
 			}
 
-            add(graph);
-            
+           // add(graph);
+			scrollpane = new JScrollPane(graph);
+	        add(scrollpane, BorderLayout.CENTER);
             
             // error message if layout fails
 		} catch (Exception e) {
@@ -106,6 +107,8 @@ public class JDomGraphTab extends JGraphTab  {
         
 		statusBar = new DominanceGraphBar();
 		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
+		graph.revalidate();
+		revalidate();
 		
 		
 	}

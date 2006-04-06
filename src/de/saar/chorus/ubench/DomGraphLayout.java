@@ -1414,7 +1414,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			 * root that causes the most less crossings is
 			 * chosen as final root.
 			 */
+			
 			List<Fragment> possibleRoots = new ArrayList<Fragment>(graph.getWccFragments(wccs));
+			
+			//List<Fragment> possibleRoots = new ArrayList<Fragment>(graph.getWccFragments(wccs));
 		//	possibleRoots.addAll(graph.getFragments());
 			
 			// the best root we have found so far, with its cost 
