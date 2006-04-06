@@ -57,7 +57,7 @@ public class JDomGraphTab extends JGraphTab  {
 		// initializing
 		graphName = name;
 		
-		compactGraph = domGraph.compactify();
+		
 		
 		
 		solvable = true;
@@ -66,6 +66,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		if(Preferences.isAutoCount()) {
 			if(domGraph.isCompactifiable()) {
+				compactGraph = domGraph.compactify();
 				compactifiable = true;
 				solve();
 			} else {
@@ -329,7 +330,7 @@ public class JDomGraphTab extends JGraphTab  {
         		}
         		
         		
-        		if(domGraph.isHypernormallyConnected()) {
+        		if(compactifiable && domGraph.isHypernormallyConnected()) {
         			hn.setText("H");
         			hn.setToolTipText("Hypernormally Connected");
         		} else {
@@ -344,7 +345,7 @@ public class JDomGraphTab extends JGraphTab  {
         			ll.setText("-");
         			ll.setToolTipText("Not Leaf-Labelled");
         		}
-    			
+        		
     			classified.setAlignmentY(SwingConstants.HORIZONTAL);
         		classified.add(new JLabel("Classify: "));
         		classified.add(norm);
