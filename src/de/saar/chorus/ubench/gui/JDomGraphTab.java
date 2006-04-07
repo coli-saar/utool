@@ -100,7 +100,9 @@ public class JDomGraphTab extends JGraphTab  {
             // error message if layout fails
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"An error occurred while laying out this graph.",
+					"An error occurred while laying out this graph.\n"
+					+ "Probably the graph is constructed in a very strange way,\n"
+					+ "so Ubench unfortunately cannot display it.",
 					"Error during layout",
 					JOptionPane.ERROR_MESSAGE);
 		}
