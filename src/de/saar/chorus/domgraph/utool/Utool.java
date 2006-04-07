@@ -43,7 +43,6 @@ public class Utool {
         boolean normal = false;
         boolean compact = false;
         boolean compactifiable = false;
-        DomGraph compactGraph = null;
         
         // parse command-line options and load graph
         try {
@@ -89,8 +88,6 @@ public class Utool {
                 }
             }
             
-            // compactify if necessary
-            compactGraph = options.getGraph().compactify();
         }            
         
         
@@ -98,6 +95,8 @@ public class Utool {
         switch(options.getOperation()) {
         case solve:
         case solvable:
+            DomGraph compactGraph = null;
+
             if( options.hasOptionStatistics() ) {
                 System.err.println();
             }
@@ -111,6 +110,9 @@ public class Utool {
                 System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
                 System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
             }
+            
+            // compactify if necessary
+            compactGraph = options.getGraph().compactify();
 
             if( options.hasOptionStatistics() ) {
                 System.err.print("Solving graph ... ");

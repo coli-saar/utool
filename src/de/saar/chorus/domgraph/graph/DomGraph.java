@@ -923,6 +923,11 @@ public class DomGraph implements Cloneable {
             return ((Boolean) getCachedResult("isHypernormallyConnected")).booleanValue();
         }
         
+        // non-normal graphs are not hnc by definition
+        if( !isNormal() ) {
+            return cacheResult("isHypernormallyConnected", false);
+        }
+        
 		if( OneSplitSource.isGraphSolvable(this) ) {
             return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
 		} else {
