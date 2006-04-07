@@ -509,8 +509,8 @@ public class Ubench {
 			JOptionPane
 			.showMessageDialog(
 					window,
-					"An error occurred while loading this graph\nThe input file contains"
-					+ "syntax errors",
+					"An error occurred while loading this graph:\nThe input file contains"
+					+ " syntax errors.",
 					"Error during import", JOptionPane.ERROR_MESSAGE);
 
 	return null;
@@ -518,7 +518,7 @@ public class Ubench {
 			JOptionPane
 			.showMessageDialog(
 					window,
-					"An error occurred while loading this graph\n" + 
+					"An error occurred while loading this graph:\n" + 
 					"A semantic error occured; the input graph cannot\n" + 
 					"be converted into a dominance graph",
 					"Error during import", JOptionPane.ERROR_MESSAGE);
