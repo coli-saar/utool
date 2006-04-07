@@ -338,6 +338,7 @@ public class Ubench {
 		refresh();
 		
         if( useNextTabToResizeFrame  ) {
+        	window.setExtendedState(JFrame.MAXIMIZED_BOTH); 
             window.pack();
             window.validate();
             
