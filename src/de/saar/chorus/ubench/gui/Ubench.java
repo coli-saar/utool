@@ -156,6 +156,7 @@ public class Ubench {
 	 */
 	public void closeAllTabs() {
 		tabbedPane.removeAll();
+		tabs.clear();
 		refresh();
 	}
 
@@ -245,7 +246,7 @@ public class Ubench {
 	 */
 	public JGraphTab getVisibleTab() {
 		int index = tabbedPane.getSelectedIndex();
-
+		
 		if (index > -1)
 			return (tabs.get(tabbedPane.getSelectedIndex()));
 		else
@@ -285,23 +286,21 @@ public class Ubench {
 	public void addTab(JGraphTab tab, boolean showNow, int ind) {
 
 		int index;
-
+		tabs.add(ind, tab);
 		// registering the tab
-		tabs.add(tab);
-
-		
-		
 		if (ind < (tabs.size() - 1)) {
 			index = ind;
 
 			tabbedPane.insertTab(tab.getDefaultName(), null, 
 					tab, tab.getDefaultName(), index);
+			
 		} else {
 			tabbedPane.addTab(tab.getDefaultName(), tab);
+			//tabs.add(tab);
 			index = tabs.size() - 1;
 		}
 
-		tabs.add(ind, tab);
+		
 		ttm.registerComponent(tab.getGraph());
 
 		// if it's the first tab added, the graph menus get enabled
