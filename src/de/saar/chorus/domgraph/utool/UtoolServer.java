@@ -65,7 +65,6 @@ class UtoolServer {
         boolean normal = false;
         boolean compact = false;
         boolean compactifiable = false;
-        DomGraph compactGraph = null;
 
         
         // parse cmd-line options
@@ -130,9 +129,6 @@ class UtoolServer {
                 normal = options.getGraph().isNormal();
                 compact = options.getGraph().isCompact();
                 compactifiable = options.getGraph().isCompactifiable();
-                
-                // compactify if necessary
-                compactGraph = options.getGraph().compactify();
             }            
             
             
@@ -140,6 +136,8 @@ class UtoolServer {
             switch(options.getOperation()) {
             case solve:
             case solvable:
+                DomGraph compactGraph = null;
+                
                 if( !weaklyNormal ) {
                     sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not weakly normal!");
                     sock.close();
@@ -151,6 +149,9 @@ class UtoolServer {
                     sock.close();
                     continue;
                 }
+                
+                // compactify if necessary
+                compactGraph = options.getGraph().compactify();
 
                 // compute chart
                 long start_solver = System.currentTimeMillis();
