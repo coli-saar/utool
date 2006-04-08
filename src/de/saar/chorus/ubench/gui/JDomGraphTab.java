@@ -335,7 +335,7 @@ public class JDomGraphTab extends JGraphTab  {
         		}
         		
         		
-        		if(compactifiable && domGraph.isHypernormallyConnected()) {
+        		if(domGraph.isHypernormallyConnected()) {
         			hn.setText("H");
         			hn.setToolTipText("Hypernormally Connected");
         		} else {
