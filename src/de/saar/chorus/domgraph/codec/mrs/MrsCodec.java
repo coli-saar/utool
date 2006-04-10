@@ -116,6 +116,9 @@ class MrsCodec {
 		for (Map.Entry<String,Set<String>> entry : bound.entrySet()) {
 			String node1 = binder.get(entry.getKey());
 			
+			if (node1 == null)
+				throw new MalformedDomgraphException("Free variable " + entry.getKey(), ErrorCodes.NOT_WELLFORMED);
+			
 			for (String node2 : entry.getValue()) {
 				if (! graph.reachable(node1, node2)) {
 					String root = graph.getRoot(node2);
@@ -212,11 +215,32 @@ class MrsCodec {
 	}
 	
 	private void normalise()
+		throws MalformedDomgraphException
 	{
 		for (String root : graph.getAllRoots()) {
 			Collection<Edge> edges = graph.getOutEdges(root, EdgeType.DOMINANCE);
 			
 			if (edges.size() > 0) {
+				
+				// check that the dominance children of the edges are pairwise connected by hypernormal paths
+				
+				Set<String> rootSet = new TreeSet<String>(); 
+				rootSet.add(root);
+				
+				Object[] edgeArray = edges.toArray();
+				
+				for (int i = 0; i < edgeArray.length; ++i) {
+					for (int j = i + 1; j < edgeArray.length; ++j) {
+						String ni = (String) ((Edge)edgeArray[i]).getTarget();
+						String nj = (String) ((Edge)edgeArray[j]).getTarget();
+					
+						if (! graph.isHypernormallyReachable(ni, nj, rootSet)) {
+							// XXX -- check error code
+							throw new MalformedDomgraphException(ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
+						}
+					}
+				}
+						
 				Collection<String> holes = graph.getOpenHoles(root);
 				
 				if (holes.size() == 1) {

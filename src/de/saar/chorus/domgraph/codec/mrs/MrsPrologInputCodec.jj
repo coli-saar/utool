@@ -50,7 +50,6 @@ public class MrsPrologInputCodec extends InputCodec
 		} catch(MalformedDomgraphException e) {
 			throw e;
 		} catch(Throwable e) {
-			e.printStackTrace();
 		    throw new ParserException(e);
 		}
     }
