@@ -194,7 +194,7 @@ public class Utool {
                         System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
                     } catch (IOException e) {
                         System.err.println("An error occurred while trying to print the results.");
-                        e.printStackTrace();
+                        //e.printStackTrace();
                         System.exit(ExitCodes.IO_ERROR);
                     }
                 } // if operation == solve
