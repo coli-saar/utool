@@ -502,7 +502,7 @@ public class Ubench {
                         window,
                         "The specified file doesn't exist or cannot be opened.",
                         "Error during import", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
+                //e.printStackTrace();
                 return null;
             } catch (ParserException pe) {
                 JOptionPane
@@ -624,14 +624,14 @@ public class Ubench {
             codecManager.registerCodec(DomconOzOutputCodec.class);
             codecManager.registerCodec(DomconGxlOutputCodec.class);
             codecManager.registerCodec(DomconUdrawOutputCodec.class);
-            // TBD //
             codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
             codecManager.registerCodec(LkbPluggingOutputCodec.class);
             codecManager.registerCodec(OzTermOutputCodec.class);
             codecManager.registerCodec(PrologTermOutputCodec.class);
         } catch (Exception e) {
             System.err.println("An error occurred trying to register a codec.");
-            e.printStackTrace(System.err);
+            System.err.println(e);
+            //e.printStackTrace(System.err);
             System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
     }

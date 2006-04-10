@@ -241,7 +241,8 @@ class XmlParser extends DefaultHandler {
             codecManager.registerCodec(PrologTermOutputCodec.class);
         } catch(Exception e) {
             System.err.println("An error occurred trying to register a codec.");
-            e.printStackTrace(System.err);
+            System.err.println(e);
+            //e.printStackTrace(System.err);
             System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
     }
