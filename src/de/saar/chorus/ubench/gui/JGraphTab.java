@@ -14,6 +14,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	//	the grapb is initialized empty
 	protected JDomGraph graph;
 
+	protected boolean empty;
+	
 	protected DomGraph domGraph;
 
 	protected NodeLabels nodeLabels;
@@ -47,6 +49,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	public JGraphTab(JDomGraph jdg, DomGraph dg, String name,
 			CommandListener lis, NodeLabels lab) {
 		super(jdg);
+		empty = false;
 		graph = jdg;
 		domGraph = dg;
 		
@@ -321,6 +324,14 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		} finally {
 			super.finalize();
 		}
+	}
+
+	public boolean isEmpty() {
+		return empty;
+	}
+
+	public void setEmpty(boolean empty) {
+		this.empty = empty;
 	}
 
 }

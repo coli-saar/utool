@@ -99,6 +99,7 @@ public class JDomGraphTab extends JGraphTab  {
             
             // error message if layout fails
 		} catch (Exception e) {
+			empty = true;
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 					"An error occurred while laying out this graph.\n"
 					+ "Probably the graph is constructed in a very strange way,\n"
