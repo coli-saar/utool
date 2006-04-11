@@ -284,67 +284,71 @@ public class Ubench {
      *            if set to true, the tab will be displayed at once
      */
     public void addTab(JGraphTab tab, boolean showNow, int ind) {
-        
-        int index;
-        tabs.add(ind, tab);
-        // registering the tab
-        if (ind < (tabs.size() - 1)) {
-            index = ind;
-            
-            tabbedPane.insertTab(tab.getDefaultName(), null, 
-                    tab, tab.getDefaultName(), index);
-            
-        } else {
-            tabbedPane.addTab(tab.getDefaultName(), tab);
-            //tabs.add(tab);
-            index = tabs.size() - 1;
-        }
-        
-        
-        ttm.registerComponent(tab.getGraph());
-        
-        // if it's the first tab added, the graph menus get enabled
-        if (tabbedPane.getTabCount() == 1) {
-            menuBar.setGraphSpecificItemsEnabled(true);
-        }
-        
-        // if the tab shall be shown, the selected index is
-        // the last one
-        if (showNow) {
-            tabbedPane.setSelectedIndex(index);
-        }
-        
-        if(tabs.size() == 1) {
-            tab.setMinimumSize(tab.getGraph().getSize());
-            window.pack();
-            window.validate();
-        }
-        
-        tabbedPane.validate();
-        
-        // aligning with preferences...
-        
-        // fitting?
-        if (Preferences.isFitToWindow())
-            tab.fitGraph();
-        
-        // solving?
-        if (Preferences.isAutoCount()) {
-            
-            statusBar.showProgressBar();
-            
-        }
-        
-        refresh();
-        
-        if( useNextTabToResizeFrame  ) {
-            window.setExtendedState(JFrame.MAXIMIZED_BOTH); 
-            window.pack();
-            window.validate();
-            
-            useNextTabToResizeFrame = false;
-        }
-        
+    	
+    	
+    	if(tab != null && (! tab.isEmpty())) {
+    		int index;
+    		tabs.add(ind, tab);
+    		// registering the tab
+    		if (ind < (tabs.size() - 1)) {
+    			index = ind;
+    			
+    			tabbedPane.insertTab(tab.getDefaultName(), null, 
+    					tab, tab.getDefaultName(), index);
+    			
+    		} else {
+    			tabbedPane.addTab(tab.getDefaultName(), tab);
+    			//tabs.add(tab);
+    			index = tabs.size() - 1;
+    		}
+    		
+    		
+    		ttm.registerComponent(tab.getGraph());
+    		
+    		// if it's the first tab added, the graph menus get enabled
+    		if (tabbedPane.getTabCount() == 1) {
+    			menuBar.setGraphSpecificItemsEnabled(true);
+    		}
+    		
+    		// if the tab shall be shown, the selected index is
+    		// the last one
+    		if (showNow) {
+    			tabbedPane.setSelectedIndex(index);
+    		}
+    		
+    		if(tabs.size() == 1) {
+    			tab.setMinimumSize(tab.getGraph().getSize());
+    			window.pack();
+    			window.validate();
+    		}
+    		
+    		tabbedPane.validate();
+    		
+    		// aligning with preferences...
+    		
+    		// fitting?
+    		if (Preferences.isFitToWindow())
+    			tab.fitGraph();
+    		
+    		// solving?
+    		if (Preferences.isAutoCount()) {
+    			
+    			statusBar.showProgressBar();
+    			
+    		}
+    		
+    		refresh();
+    		
+    		if( useNextTabToResizeFrame  ) {
+    			window.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+    			window.pack();
+    			window.validate();
+    			
+    			useNextTabToResizeFrame = false;
+    		}
+    		
+    	}
+    	
     }
     
     public void setSolvingEnabled(boolean b) {
