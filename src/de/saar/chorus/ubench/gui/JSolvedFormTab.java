@@ -84,9 +84,10 @@ public class JSolvedFormTab extends JGraphTab {
    	
    	
    	
-   	private JLabel 	of,  		  // right side of the solved-form-scroller
+   	private JLabel 	solvedFormNo, // left side of the solved-form-scroller
+   					of,  		  // right side of the solved-form-scroller
    					norm,  		  // indicates normality (solved forms)
-   					comp,   		  // indicates compactness (solved forms)
+   					comp,   	  // indicates compactness (solved forms)
    					hn, 		  // indicates hypernormality(solved forms)
    					ll;			  // indicates leaf labeling (solved forms)
    	
@@ -135,11 +136,16 @@ public class JSolvedFormTab extends JGraphTab {
    		solvedForm.addActionListener(listener);
    		solvedForm.setActionCommand("solvedFormDirectSelection");
    		
+   		
+   		solvedFormNo = new JLabel("Solved form ");
+   		formScroll.add(solvedFormNo, BorderLayout.WEST);
    		formScroll.add(sLeft);
    		formScroll.add(solvedForm);
    		formScroll.add(sRight);
    		
+   		
    		of = new JLabel("of " + String.valueOf(numOfSolvForms) + " (Graph: " + gN + ")");
+   		
    		
    		formScroll.add(of, BorderLayout.EAST);
    		add(formScroll, BorderLayout.CENTER);
