@@ -644,7 +644,7 @@ abstract public class ImprovedJGraph<NodeType,
         }
     }
     
-    public List<Set<DefaultGraphCell>> wccs() {
+    protected List<Set<DefaultGraphCell>> wccs() {
     	Set<DefaultGraphCell> visited = new HashSet<DefaultGraphCell>();
     	List<Set<DefaultGraphCell>> wccs = new ArrayList<Set<DefaultGraphCell>>();
     	
