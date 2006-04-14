@@ -1047,6 +1047,27 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			
 			// 8. Place myself (Y) and my topmost dominance child (if
 			// there is one).
+			Fragment topChild = null;
+			if(! myDominanceChildren.isEmpty() ) {
+				topChild = myDominanceChildren.remove(0);
+			} else if(! hnc ) {
+				boolean first = true;
+				for(Fragment deac : myDeactivatedChilrden ) {
+					if(! visited.contains(deac) ) {
+						
+						if(first) {
+							System.err.println("Deactivated topChild");
+							topChild = deac;
+						} else {
+							myDominanceChildren.add(deac);
+						}
+						
+					}
+				}
+				if( topChild != null ) {
+					myDeactivatedChilrden.remove(topChild);
+				}
+			}
 			if( !myTowers.isEmpty() || !myDominanceParents.isEmpty() ) {
 				// have towers or dominance parents -> place myself
 				// below the towers or parents
@@ -1065,13 +1086,13 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				//my own position depends on my dominance parents (and towers)
                 yStorage.put(fragment, myY);
 				
-				if( !myDominanceChildren.isEmpty() ) {
+				if( topChild != null ) {
 				/*
 				 * My topmost dominance child has to be placed under myself,
 				 * so possibly its box has to be moved down (and not start directly
 				 * under the dominance parents' box) 
 				 */
-				Fragment topChild = myDominanceChildren.remove(0);
+			//	Fragment topChild = myDominanceChildren.remove(0);
                 Rectangle topChildBox = new Rectangle();
                 Set<Fragment> tcDescendants = new HashSet<Fragment>();
                 Cost tcCost = 
@@ -1115,10 +1136,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	                
 	                updateBox(topChild, box, topChildBox);
 				}
-            } else if( !myDominanceChildren.isEmpty() ) {
+            } else if( topChild != null ) {
                 // have no towers or dominance parents, but I do have
                 // children -> arrange myself and the topmost child
-                Fragment topChild = myDominanceChildren.remove(0);
+              //  Fragment topChild = myDominanceChildren.remove(0);
                 Rectangle topChildBox = new Rectangle();
                 Set<Fragment> tcDescendants = new HashSet<Fragment>();
                 Cost tcCost = 
@@ -1188,75 +1209,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
             }
             
             
-            if(!hnc) {
-      //      	System.out.println("not hnc!");
-            	boolean first = true;
-            	
-            	for( Fragment deactivated : myDeactivatedChilrden ) {
-            		if( ! visited.contains(deactivated) ) {
-            			
-            			if(first && myDominanceChildren.isEmpty()) {
-            				// the first arranged child is a deactivated one
-            				first = false;
-            				Rectangle topChildBox = new Rectangle();
-            				Set<Fragment> tcDescendants = new HashSet<Fragment>();
-            				Cost tcCost = 
-            					fragmentBoxDFS(deactivated, visited, topChildBox, 
-            							rightHandPartX, 
-            							nextY, tcDescendants, cost, true,
-            							xStorage, yStorage);
-            				
-            				// the minimal acceptable y-Position of my topmost
-            				// dominance child.
-            				int hMe = yStorage.get(fragment) 
-            				+ fragHeight.get(fragment) 
-            				+ fragmentYDistance;
-            				
-            				
-            				// y-position of topChild
-            				int posCh = yStorage.get(deactivated);
-            				for(Fragment frag : tcDescendants ) {
-            					if(myDeactivatedChilrden.contains(frag) ||
-            							myDominanceChildren.contains(frag)) {
-            						if(yStorage.get(frag) < posCh) {
-            							posCh = yStorage.get(frag);
-            						}
-            					}
-            				} 
-            				
-            				if( hMe > posCh ) {
-            					
-            					
-            					//the childbox is placed too far above;
-            					//move it down until it's placed far enough
-            					//under myself.
-            					translateFragments(tcDescendants, 0, hMe-posCh, xStorage, yStorage);
-            					
-            					topChildBox.translate(0, hMe-posCh);
-            				}
-            				
-            				
-            				dfsDescendants.addAll(tcDescendants);
-            				
-            				nextY = (int) topChildBox.getMaxY() + fragmentYDistance;
-            				updateBox(deactivated, box, topChildBox);
-            				
-            			}
-            			
-            			Rectangle dcBox = new Rectangle();
-            //			System.err.println("unseen deactivated child");
-            			
-            			Cost dcCost = 
-            				fragmentBoxDFS(deactivated, visited, dcBox, 
-            						rightHandPartX, nextY, dfsDescendants, 
-            						cost, true, xStorage, yStorage);
-            			
-            			nextY += dcBox.getHeight() + fragmentYDistance;
-            			
-            			updateBox(deactivated, box, dcBox);
-            		}
-            	}
-            }
+     
 			// 10. update cost
 			
 			for( Fragment dp : myDominanceParents ) {
@@ -1509,7 +1462,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			// performing undirected DFS for with every possible root
 			drawBoxes = false;
 			for(Fragment root : possibleRoots) {
-				
+				System.err.println("New DFS");
 				Cost thisCost = 
 					fragmentBoxDFS(root, new HashSet<Fragment>(), new Rectangle(),
 							xStart,0, new HashSet<Fragment>(), new Cost(), false,
