@@ -1050,16 +1050,22 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			Fragment topChild = null;
 			if(! myDominanceChildren.isEmpty() ) {
 				topChild = myDominanceChildren.remove(0);
-			} else if(! hnc ) {
-				boolean first = true;
+			}  
+			else if(false) {
+				
 				for(Fragment deac : myDeactivatedChilrden ) {
 					if(! visited.contains(deac) ) {
 						
-						if(first) {
+						if(topChild == null) {
 							topChild = deac;
-						} else {
+							cost.raiseCrossings();
+							cost.add(cost);
+							cost.add(cost);
+							System.out.println("Deactivated top: " + topChild);
+							break;
+						} /* else {
 							myDominanceChildren.add(deac);
-						}
+						} */
 						
 					}
 				}
@@ -1205,6 +1211,28 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 nextY += dcBox.getHeight() + fragmentYDistance;
                 
                 updateBox(dc, box, dcBox);
+            }
+            
+           if( false ) {
+            	for( Fragment dc : myDeactivatedChilrden ) {
+                    
+            		if(! visited.contains(dc)) {
+            			System.out.println("Placing deactivated frag: " + dc);
+            			Rectangle dcBox = new Rectangle();
+            			myDominanceChildren.add(dc);
+    				
+                    Cost dcCost = 
+                    	fragmentBoxDFS(dc, visited, dcBox, 
+                    			rightHandPartX, nextY, dfsDescendants, 
+                    			cost, true, xStorage, yStorage);
+                    
+                    nextY += dcBox.getHeight() + fragmentYDistance;
+                    
+                    updateBox(dc, box, dcBox);
+                   // cost.add(dcCost);
+                } 
+            		
+            	} 
             }
             
             
@@ -1460,12 +1488,30 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			
 			// performing undirected DFS for with every possible root
 			drawBoxes = false;
+	
 			for(Fragment root : possibleRoots) {
+			//	System.out.println("New DFS with Root: " + root);
+				
+				Set<Fragment> visited = new HashSet<Fragment>();
 				Cost thisCost = 
-					fragmentBoxDFS(root, new HashSet<Fragment>(), new Rectangle(),
+					fragmentBoxDFS(root, visited, new Rectangle(),
 							xStart,0, new HashSet<Fragment>(), new Cost(), false,
 							tempXpos, tempYpos);
 				
+				
+				for(Fragment frag : fragments ) {
+					if(! visited.contains(frag) ) {
+						Set<Fragment> deactivatedPlacements = new HashSet<Fragment>();
+						Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
+								xStart + thisCost.getMaxBoxWidth() + fragmentXDistance,
+								0, deactivatedPlacements, new Cost(), false, 
+								fragXpos, fragYpos);
+						thisCost.add(add);
+						for(int i = 0; i< deactivatedPlacements.size(); i++ ) {
+							thisCost.raiseCrossings();
+						}
+					}
+				}
 				// update best root
 				if(thisCost.compareTo(costBestRoot) < 0) {
 					bestRoot = root;
@@ -1483,9 +1529,33 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			// repeat the DFS a last time for the optimal root
 			// to set the fields
 			drawBoxes = true;
-			fragmentBoxDFS(bestRoot, new HashSet<Fragment>(), new Rectangle(), 
+		//	System.err.println("Best Root: " + bestRoot);
+		//	System.err.println("Crossings: " + costBestRoot.getCrossings());
+			Set<Fragment> visited = new HashSet<Fragment>();
+			Cost lastCost = fragmentBoxDFS(bestRoot,visited, new Rectangle(), 
 					xStart,0, new HashSet<Fragment>(), new Cost(), false,
 					fragXpos, fragYpos);
+			
+			xStart += costBestRoot.getMaxBoxWidth() + DomGraphLayoutParameters.fragmentXDistance;
+			for(Fragment frag : fragments ) {
+				if(! visited.contains(frag) ) {
+					int yStart = 0;
+					for( DefaultEdge edge : graph.getInEdges(getFragRoot(frag))) {
+						Fragment source = graph.getSourceFragment(edge);
+						int potentialY = fragYpos.get(source) 
+										 + fragHeight.get(source)
+										 + fragmentYDistance;
+						if(potentialY > yStart) {
+							yStart = potentialY;
+						}
+					}
+					Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
+						xStart,
+							yStart, new HashSet<Fragment>(), new Cost(), false, 
+							fragXpos, fragYpos);
+					costBestRoot.add(add);
+				}
+			}
 			
 			if( absoluteCost == null ) {
 				absoluteCost = costBestRoot;
