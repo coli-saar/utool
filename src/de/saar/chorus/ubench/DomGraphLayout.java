@@ -1056,7 +1056,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 					if(! visited.contains(deac) ) {
 						
 						if(first) {
-							System.err.println("Deactivated topChild");
 							topChild = deac;
 						} else {
 							myDominanceChildren.add(deac);
@@ -1462,7 +1461,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			// performing undirected DFS for with every possible root
 			drawBoxes = false;
 			for(Fragment root : possibleRoots) {
-				System.err.println("New DFS");
 				Cost thisCost = 
 					fragmentBoxDFS(root, new HashSet<Fragment>(), new Rectangle(),
 							xStart,0, new HashSet<Fragment>(), new Cost(), false,
