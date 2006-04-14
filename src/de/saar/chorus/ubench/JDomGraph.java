@@ -30,6 +30,7 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 import org.jgraph.util.JGraphUtilities;
 
+import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
 
@@ -64,6 +65,12 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	private DefaultGraphCell activePopupCell;
 	
 	private Rectangle boundingBox;
+	
+	private DomGraph myDomGraph;
+	
+	private boolean hnc;
+	
+	private List<Set<DefaultGraphCell>> wccs;
 	
 	// This listener draws a popup menu when the right mouse button is ed.
 	private class PopupListener extends MouseAdapter {
@@ -119,9 +126,12 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	/**
 	 * Sets up an empty dominance graph.  
 	 */
-	public JDomGraph() {
+	public JDomGraph(DomGraph origin) {
 		super();
-		
+		hnc = origin.isHypernormallyConnected();
+	
+		wccs = new ArrayList< Set<DefaultGraphCell>>();
+		myDomGraph = origin;
 		boundingBox = new Rectangle();
 		
 		fragments = new HashSet<Fragment>();
@@ -289,13 +299,15 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-		/*if( (wccs().size() > 0)  ) {
+	/*	if( (wccs().size() > 0)  ) {
 			JGraphUtilities.applyLayout(this, new SugiyamaLayoutAlgorithm());
-		} else {*/
+		} else { */
 		if(isForest() && (wccs().size() == 1) ) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
+		
 			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
+			
 		}
 	//	}
 	}
@@ -360,6 +372,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		}
 		
 		computeAdjacency();
+		wccs = wccs();
 		removeRedundandEdges();
 	}
 	
@@ -611,7 +624,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	public JDomGraph clone() {
 		
 		// setting up a new graph
-		JDomGraph clone = new JDomGraph();
+		JDomGraph clone = new JDomGraph((DomGraph) myDomGraph.clone());
 		
 		// copy the nodes by creating new (equivalent)
 		// node data
@@ -704,4 +717,24 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
     	return frags;
     	
     }
+
+
+	public boolean isHnc() {
+		return hnc;
+	}
+
+
+	public void setHnc(boolean hnc) {
+		this.hnc = hnc;
+	}
+
+
+	public List<Set<DefaultGraphCell>> getWccs() {
+		return wccs;
+	}
+
+
+	public void setWccs(List<Set<DefaultGraphCell>> wccs) {
+		this.wccs = wccs;
+	}
 }

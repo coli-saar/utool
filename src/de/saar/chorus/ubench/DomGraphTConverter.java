@@ -48,7 +48,7 @@ public class DomGraphTConverter {
 	
 	public DomGraphTConverter(DomGraph graph, NodeLabels labels) {
 		domGraph = graph;
-		jDomGraph = new JDomGraph();
+		jDomGraph = new JDomGraph(graph);
 		
 		for(String node : domGraph.getAllNodes() ) {
 			NodeData cloneData;

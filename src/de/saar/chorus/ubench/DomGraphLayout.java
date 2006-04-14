@@ -92,6 +92,8 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	private Fragment movedRoot;
 	private int yOffset;
 	
+	private boolean hnc;
+	
 	/**
 	 * Initializes a new dominance graph layout
 	 * of a given dominanc graph.
@@ -104,6 +106,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		 * by getting them from the graph
 		 */
 		this.graph = gr;
+		hnc = gr.isHnc();
 		fragments = graph.getFragments();
 		
 		movedRoot = null;
@@ -967,6 +970,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                                 myDeactivatedChilrden.add(tf);
                             }
                         }
+                    } else {
+                    	if(! hnc) {
+                    		myDeactivatedChilrden.add(tf);
+                    	}
                     }
                 }
             }
@@ -1170,16 +1177,86 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 Rectangle dcBox = new Rectangle();
                 
 				
-				Cost dcCost = 
-                       fragmentBoxDFS(dc, visited, dcBox, 
-                               rightHandPartX, nextY, dfsDescendants, 
-                               cost, true, xStorage, yStorage);
+                Cost dcCost = 
+                	fragmentBoxDFS(dc, visited, dcBox, 
+                			rightHandPartX, nextY, dfsDescendants, 
+                			cost, true, xStorage, yStorage);
                 
                 nextY += dcBox.getHeight() + fragmentYDistance;
                 
                 updateBox(dc, box, dcBox);
             }
-			
+            
+            
+            if(!hnc) {
+      //      	System.out.println("not hnc!");
+            	boolean first = true;
+            	
+            	for( Fragment deactivated : myDeactivatedChilrden ) {
+            		if( ! visited.contains(deactivated) ) {
+            			
+            			if(first && myDominanceChildren.isEmpty()) {
+            				// the first arranged child is a deactivated one
+            				first = false;
+            				Rectangle topChildBox = new Rectangle();
+            				Set<Fragment> tcDescendants = new HashSet<Fragment>();
+            				Cost tcCost = 
+            					fragmentBoxDFS(deactivated, visited, topChildBox, 
+            							rightHandPartX, 
+            							nextY, tcDescendants, cost, true,
+            							xStorage, yStorage);
+            				
+            				// the minimal acceptable y-Position of my topmost
+            				// dominance child.
+            				int hMe = yStorage.get(fragment) 
+            				+ fragHeight.get(fragment) 
+            				+ fragmentYDistance;
+            				
+            				
+            				// y-position of topChild
+            				int posCh = yStorage.get(deactivated);
+            				for(Fragment frag : tcDescendants ) {
+            					if(myDeactivatedChilrden.contains(frag) ||
+            							myDominanceChildren.contains(frag)) {
+            						if(yStorage.get(frag) < posCh) {
+            							posCh = yStorage.get(frag);
+            						}
+            					}
+            				} 
+            				
+            				if( hMe > posCh ) {
+            					
+            					
+            					//the childbox is placed too far above;
+            					//move it down until it's placed far enough
+            					//under myself.
+            					translateFragments(tcDescendants, 0, hMe-posCh, xStorage, yStorage);
+            					
+            					topChildBox.translate(0, hMe-posCh);
+            				}
+            				
+            				
+            				dfsDescendants.addAll(tcDescendants);
+            				
+            				nextY = (int) topChildBox.getMaxY() + fragmentYDistance;
+            				updateBox(deactivated, box, topChildBox);
+            				
+            			}
+            			
+            			Rectangle dcBox = new Rectangle();
+            //			System.err.println("unseen deactivated child");
+            			
+            			Cost dcCost = 
+            				fragmentBoxDFS(deactivated, visited, dcBox, 
+            						rightHandPartX, nextY, dfsDescendants, 
+            						cost, true, xStorage, yStorage);
+            			
+            			nextY += dcBox.getHeight() + fragmentYDistance;
+            			
+            			updateBox(deactivated, box, dcBox);
+            		}
+            	}
+            }
 			// 10. update cost
 			
 			for( Fragment dp : myDominanceParents ) {
@@ -1405,7 +1482,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		Fragment bestRoot = null;
 		int xStart = 0;
 		
-		for(Set<DefaultGraphCell> wccs : graph.wccs() ) {
+		for(Set<DefaultGraphCell> wccs : graph.getWccs() ) {
 			
 			/*
 			 * the roots to perform the fragment DFS to 
@@ -1498,7 +1575,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				
 			}
 		} 
-		
+		//System.out.println(bestRoot);
 		graph.setBoundingBox(new Rectangle(absoluteCost.getMaxBoxWidth() - possibleOffset, absoluteCost.getMaxBoxHeight()));
 		
 		//boxdebugger.drawAll();
