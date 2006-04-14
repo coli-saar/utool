@@ -34,6 +34,8 @@ options {
   
   DEBUG_PARSER = false;
   DEBUG_TOKEN_MANAGER = false;
+  UNICODE_INPUT = true;
+  
 }
 
 PARSER_BEGIN(HolesemComsemInputCodec)

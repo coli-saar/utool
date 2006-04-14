@@ -63,7 +63,7 @@ class MrsCodec {
 	private void tell(String name, Type type) throws MalformedDomgraphException
 	{
 		if (sig.containsKey(name) && sig.get(name) != type)
-			throw new MalformedDomgraphException("Inconsistent use of " + name, ErrorCodes.NOT_WELLFORMED);
+			throw new MalformedDomgraphException("Inconsistent use of " + name + ".", ErrorCodes.NOT_WELLFORMED);
 		sig.put(name, type);
 	}
 	
@@ -117,14 +117,14 @@ class MrsCodec {
 			String node1 = binder.get(entry.getKey());
 			
 			if (node1 == null)
-				throw new MalformedDomgraphException("Free variable " + entry.getKey(), ErrorCodes.NOT_WELLFORMED);
+				throw new MalformedDomgraphException("Free variable " + entry.getKey() + ".", ErrorCodes.NOT_WELLFORMED);
 			
 			for (String node2 : entry.getValue()) {
 				if (! graph.reachable(node1, node2)) {
 					String root = graph.getRoot(node2);
 					
 					if (root == null)
-						throw new MalformedDomgraphException(ErrorCodes.NOT_WEAKLY_NORMAL);
+						throw new MalformedDomgraphException("The fragment containing " + node2 + " doesn't have a unique root.", ErrorCodes.NOT_WEAKLY_NORMAL);
 					
 					addDomEdge(node1, root);
 				}
@@ -144,7 +144,7 @@ class MrsCodec {
 			String var = attrs.remove("ARG0");
 			
 			if (binder.put(var, node) != null)
-				throw new MalformedDomgraphException("Variable " + var + " is used by distinct quantifiers", ErrorCodes.NOT_WELLFORMED);
+				throw new MalformedDomgraphException("Variable " + var + " is used by distinct quantifiers.", ErrorCodes.NOT_WELLFORMED);
 			
 			if (attrs.size() > 0) 
 				throw new MalformedDomgraphException("Illegal quantifier syntax", ErrorCodes.NOT_WELLFORMED);
@@ -236,7 +236,10 @@ class MrsCodec {
 					
 						if (! graph.isHypernormallyReachable(ni, nj, rootSet)) {
 							// XXX -- check error code
-							throw new MalformedDomgraphException(ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
+							throw new MalformedDomgraphException(
+                                    "The dominance children " + ni + " and " + nj
+                                    + " of the root " + root + " are not hypernormally connected with each other.",
+                                    ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
 						}
 					}
 				}
