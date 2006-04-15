@@ -10,6 +10,24 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.JDomGraph;
 
+
+/**
+ * A <code>JPanel</code> displaying a <code>JGraph</code>,
+ * either a dominance graph or a solved form, and
+ * providing several informations on the graph needed by other
+ * GUI-classes.
+ * Everything what can be set up independent from the kind of
+ * graph to display (dominance graph or solved form) is 
+ * initialised here.
+ * 
+ * @see JDomGraphTab
+ * @see JSolvedFormTab
+ * 
+ * @author Alexander Koller
+ * @author Michaela Regneri
+ *
+ */
+
 public abstract class JGraphTab extends JScrollableJGraph {
 	//	the grapb is initialized empty
 	protected JDomGraph graph;
@@ -46,6 +64,15 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	// the tabs have to define their clone-methods themselves
 	public abstract JGraphTab clone();
 
+	/**
+	 * A new <code>JGraphTab</code>
+	 * 
+	 * @param jdg the graph to display as <code>JDomGraph</code>
+	 * @param dg the underlying <code>DomGraph</code>
+	 * @param name the tab's name
+	 * @param lis the <code>ActionListener</code> for this tab
+	 * @param lab storage for the nodelables of the graph to display
+	 */
 	public JGraphTab(JDomGraph jdg, DomGraph dg, String name,
 			CommandListener lis, NodeLabels lab) {
 		super(jdg);
@@ -326,11 +353,20 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		}
 	}
 
+	
+	/**
+	 * 
+	 * @return true if the graph to display cannot be drawn
+	 */
 	public boolean isEmpty() {
 		return empty;
 	}
 
-	public void setEmpty(boolean empty) {
+	/**
+	 * 
+	 * @param empty
+	 */
+	private void setEmpty(boolean empty) {
 		this.empty = empty;
 	}
 

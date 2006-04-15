@@ -44,35 +44,10 @@ import de.saar.chorus.ubench.JDomGraph;
 import de.saar.getopt.ConvenientGetopt;
 
 /**
- * The main program for Leonardo.
+ * The main class of Ubench.
+ * This implements the "singleton pattern", so this class
+ * provides one (and only one) instance of Ubench. 
  * 
- * At the moment, this program can be run in three modes:
- * <ol>
- * <li><strong>Standalone mode </strong>: Expects the name of a file containing
- * a GXL description of a dominance graph on the command line. Parses the file
- * and displays the dominance graph.
- * <li><strong>Dummy mode </strong>: Without any command-line arguments, the
- * program will display a small sample graph.
- * <li><strong>Server mode </strong>: Accepts socket connections on the
- * specified port. If the client sends a GXL description of a graph (on a single
- * line), it will draw this graph. Clicks on popup menus are translated into
- * messages of the form
- * 
- * <blockquote><code>
- * &lt;popupClicked clickedOn="..." type="..." menulabel="..." /&gt;,
- * </code>
- * </blockquote>
- * 
- * which are sent back to the client. "clickedOn" is the name of the node or
- * edge that triggered the popup menu. "type" is either "node" or "edge",
- * depending on the type of the popup trigger. "menulabel" is the menu label
- * that was specified in the GXL description.
- * <p>
- * 
- * The client can also send a message <code>&lt;close /&gt;</code>, which
- * will instruct Leonardo to close the current socket (and window), and accept a
- * new socket connection.
- * </ol>
  * 
  * 
  * TODO Distinguish holes and roots, and draw holes differently (as circles?).
@@ -120,6 +95,10 @@ public class Ubench {
     // to fit the preferred size of this tab
     private boolean useNextTabToResizeFrame;
     
+    /**
+     * Setting up a new Ubench object. 
+     *
+     */
     private Ubench() {
 //      register codecs
         codecManager = new CodecManager();
@@ -351,6 +330,13 @@ public class Ubench {
     	
     }
     
+    /**
+     * (De-)Activates the menu-items only available for
+     * solvable dominance graphs (as opposed to unsolvable
+     * graphs and solved forms). 
+     * 
+     * @param b if false, solving becomes disabled. 
+     */
     public void setSolvingEnabled(boolean b) {
         menuBar.setSolvingEnabled(b);
     }
@@ -386,6 +372,11 @@ public class Ubench {
         
     }
     
+    /**
+     * 
+     * @param label
+     * @return
+     */
     private String normaliseTabLabel(String label) {
         String stripSlashes = new File(label).getName();
         
@@ -401,6 +392,17 @@ public class Ubench {
         }
     }
     
+    /**
+     * Allowes to set up a new Tab by submitting the 
+     * <code>DomGraph</code> to display and a <code>NodeLabels</code>
+     * object along with the graph's name.
+     * 
+     * @param label name of the graph (resp. the tab)
+     * @param graph the <code>DomGraph</code> to display
+     * @param labels the storage for the node labels
+     * @return true if the <code>DomGraph</code> was sucessfully 
+     * 		   translated into a <code>JDomGraph</code>
+     */
     public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
         
         DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
@@ -617,6 +619,12 @@ public class Ubench {
         this.listener = listener;
     }
     
+    /**
+     * Registers all utool-codecs to the given
+     * <code>CodecManager</code>. 
+     * 
+     * @param codecManager
+     */
     private void registerAllCodecs(CodecManager codecManager) {
         try {
             codecManager.registerCodec(GlueInputCodec.class);
@@ -643,7 +651,13 @@ public class Ubench {
     public CodecManager getCodecManager() {
         return codecManager;
     }
-    public void initialise() {
+    
+    /**
+     * Sets up a new window after having created 
+     * a ubench instance.
+     *
+     */
+    private void initialise() {
 //      set up the window
         window = makeWindow();
         
@@ -676,6 +690,14 @@ public class Ubench {
         window.validate();
     }
     
+    /**
+     * Returns the (only) instance of the <code>Ubench</code>
+     * class. Creates a new <code>Ubench</code> object if there
+     * was none created yet, returns the already created instance
+     * otherwise.
+     * 
+     * @return the single <code>Ubench</code> instance
+     */
     public static Ubench getInstance() {
         if( instance == null ) {
             instance = new Ubench();

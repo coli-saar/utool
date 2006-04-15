@@ -29,6 +29,9 @@ import de.saar.chorus.ubench.JDomGraph;
  * providing several informations on the graph needed by other
  * GUI-classes.
  * 
+ * @see JGraphTab
+ * @see JSolvedFormTab
+ * 
  * @author Alexander Koller
  * @author Michaela Regneri
  *
@@ -389,20 +392,38 @@ public class JDomGraphTab extends JGraphTab  {
 		return myClone;
 	}
 
-
+	/**
+	 * Creates a tab displaying the first solved form
+	 * of this dominance graph.
+	 * 
+	 * @return the complete tab with the first solved form.
+	 */
 	public JSolvedFormTab createFirstSolvedForm() {
+		
+		// solve if not solved yet
 		if(! isSolvedYet ) {
 			solve();
 		}
 	
 		if( isSolvedYet ) {
-		    DomGraph firstForm = (DomGraph) domGraph.clone();
 		    
+			// setting up the first solved form:
+			
+			// cloning the recent DomGraph
+			DomGraph firstForm = (DomGraph) domGraph.clone();
+		    
+			// solving and starting to enumerate
 		    solvedFormIterator = new SolvedFormIterator(chart,domGraph);
+		    
+		    // the first solved form is the recent graph
+		    // with the dominance edges of the first solved form...
 		    firstForm.setDominanceEdges(solvedFormIterator.next());
 		    
+		    // converting the graph into a JDomGraph
 		    DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
 		    JDomGraph domSolvedForm = conv.getJDomGraph();
+		    
+		    // setting up the tab
 		    JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
 		            defaultName  + "  SF #1", 
 		            solvedFormIterator, firstForm,

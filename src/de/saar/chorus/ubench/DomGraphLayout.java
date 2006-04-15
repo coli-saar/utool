@@ -970,11 +970,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                                 myDeactivatedChilrden.add(tf);
                             }
                         }
-                    } else {
-                    	if(! hnc) {
-                    		myDeactivatedChilrden.add(tf);
-                    	}
-                    }
+                    } 
                 }
             }
             
@@ -1051,28 +1047,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			if(! myDominanceChildren.isEmpty() ) {
 				topChild = myDominanceChildren.remove(0);
 			}  
-			else if(false) {
-				
-				for(Fragment deac : myDeactivatedChilrden ) {
-					if(! visited.contains(deac) ) {
-						
-						if(topChild == null) {
-							topChild = deac;
-							cost.raiseCrossings();
-							cost.add(cost);
-							cost.add(cost);
-							System.out.println("Deactivated top: " + topChild);
-							break;
-						} /* else {
-							myDominanceChildren.add(deac);
-						} */
-						
-					}
-				}
-				if( topChild != null ) {
-					myDeactivatedChilrden.remove(topChild);
-				}
-			}
+			
 			if( !myTowers.isEmpty() || !myDominanceParents.isEmpty() ) {
 				// have towers or dominance parents -> place myself
 				// below the towers or parents
@@ -1212,29 +1187,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
                 
                 updateBox(dc, box, dcBox);
             }
-            
-           if( false ) {
-            	for( Fragment dc : myDeactivatedChilrden ) {
-                    
-            		if(! visited.contains(dc)) {
-            			System.out.println("Placing deactivated frag: " + dc);
-            			Rectangle dcBox = new Rectangle();
-            			myDominanceChildren.add(dc);
-    				
-                    Cost dcCost = 
-                    	fragmentBoxDFS(dc, visited, dcBox, 
-                    			rightHandPartX, nextY, dfsDescendants, 
-                    			cost, true, xStorage, yStorage);
-                    
-                    nextY += dcBox.getHeight() + fragmentYDistance;
-                    
-                    updateBox(dc, box, dcBox);
-                   // cost.add(dcCost);
-                } 
-            		
-            	} 
-            }
-            
             
      
 			// 10. update cost
@@ -1499,14 +1451,31 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 							tempXpos, tempYpos);
 				
 				
+				/*
+				 * Especially for not hnc. graphs:
+				 * If there are fragments not visited 
+				 * by the DFS, we place them afterwards.
+				 * In general this disturbs the layout, so
+				 * this way of arrangement is declared as 
+				 * expensive. 
+				 */
 				for(Fragment frag : fragments ) {
+					// for each fragment not seen yet...
 					if(! visited.contains(frag) ) {
+						
+						// place it (the correct possition is not yet relevant
+						// (here, we are just computing costs)
 						Set<Fragment> deactivatedPlacements = new HashSet<Fragment>();
 						Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
 								xStart + thisCost.getMaxBoxWidth() + fragmentXDistance,
 								0, deactivatedPlacements, new Cost(), false, 
 								fragXpos, fragYpos);
+						
+						// add its cost to the total
 						thisCost.add(add);
+						
+						// and simulate a crossing for every DFS-descendant
+						// placed by this DFS pass.
 						for(int i = 0; i< deactivatedPlacements.size(); i++ ) {
 							thisCost.raiseCrossings();
 						}
@@ -1536,11 +1505,28 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 					xStart,0, new HashSet<Fragment>(), new Cost(), false,
 					fragXpos, fragYpos);
 			
+			
+			// the next fragment (wccs / unseen fragment)
+			// is placed to the right of the last box.
 			xStart += costBestRoot.getMaxBoxWidth() + DomGraphLayoutParameters.fragmentXDistance;
+			
+			// for each fragment...
 			for(Fragment frag : fragments ) {
+				
+				// check whether DFS has visited it.
 				if(! visited.contains(frag) ) {
+					// if not so, place it to the right
+					// of the box, and compute its y-position 
+					// according to its lowermost dominance parent
+				
 					int yStart = 0;
+					
+					// iterating over the dominance parents
 					for( DefaultEdge edge : graph.getInEdges(getFragRoot(frag))) {
+						
+						// place the unvisited fragment under its
+						// dominance parent with the biggest y-value
+						// (which is the lowermost arranged one here)
 						Fragment source = graph.getSourceFragment(edge);
 						int potentialY = fragYpos.get(source) 
 										 + fragHeight.get(source)
