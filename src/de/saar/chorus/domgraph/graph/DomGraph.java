@@ -913,8 +913,8 @@ public class DomGraph implements Cloneable {
 	 * This method checks whether the graph is solvable, and then
 	 * calls <code>isHypernormallyConnectedFast</code> (if it is)
 	 * or <code>isHypernormallyConnectedSlow</code> (if it isn't).
-	 * Its overall runtime is O(n(n+m)), i.e. it is marginally
-	 * slower in practice than <code>isHypernormallyConnectedFast</code>.
+	 * Its overall runtime is O(n(n+m)) for solvable graphs and
+     * O(n^2 (n+m)) for unsolvable ones.
 	 * 
 	 * @return true iff the graph is hnc
 	 */

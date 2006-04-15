@@ -27,7 +27,6 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
-import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -35,7 +34,7 @@ import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
 
 /**
- * A Swing component that represents a dominance graph.
+ * A Swing component that represents a labelled dominance graph.
  * 
  * @see ImprovedJGraph
  * 
@@ -122,7 +121,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	
 	/**
 	 * Sets up an empty dominance graph.
-	 * @param the <code>DomGraph</code> represented here.  
+     * 
+	 * @param origin the <code>DomGraph</code> represented here.  
 	 */
 	public JDomGraph(DomGraph origin) {
 		super();
@@ -666,7 +666,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * Determines whether a given node is a leaf
 	 * in its fragment.
 	 * 
-	 * @param node, the node
+	 * @param node the node
 	 * @return true if there are no outgoing solid edges
 	 */
 	public boolean isFragLeaf(DefaultGraphCell node) {
@@ -676,7 +676,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	/**
 	 * Determines wheter a given node is the root
 	 * of its fragment.
-	 * @param node, the node
+	 * @param node the node
 	 * @return true if there are no incoming solid edges
 	 */
 	public boolean isFragRoot(DefaultGraphCell node) {

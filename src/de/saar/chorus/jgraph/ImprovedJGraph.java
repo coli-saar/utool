@@ -552,7 +552,7 @@ abstract public class ImprovedJGraph<NodeType,
      * The returned list lists the complete edges (with types).
      * The list is sorted before returning by the <code> EdgeSortingComparator </code>
      * 
-     * @param node, the node to compute the outgoing edges for
+     * @param node the node to compute the outgoing edges for
      * @return the sorted list of out-edges
      */
     public List<DefaultEdge> getOutEdges(DefaultGraphCell node) {
@@ -570,7 +570,7 @@ abstract public class ImprovedJGraph<NodeType,
     
 
     /**
-     * Determines wheter or not this graph is a forest.
+     * Determines whether or not this graph is a forest.
      * TODO Consider possible cycles here!!
      * @return true if this graph is a forest.
      */

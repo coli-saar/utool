@@ -17,7 +17,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 
 
 /**
- * A solver for weakly normal dominance graphs. This solver computes
+ * A solver for compact weakly normal dominance graphs. This solver computes
  * a {@link Chart} as described in Koller & Thater (2005), "The evolution
  * of dominance constraint solvers", ACL-05 Workshop on Software. It
  * can be seen as an implementation of the Bodirsky et al. 2005 graph

@@ -16,7 +16,7 @@ import de.saar.chorus.treelayout.Shape;
 public abstract class ImprovedJGraphLayout extends JGraphLayoutAlgorithm {
     
     /**
-     * Strats the layout algorithm.
+     * Starts the layout algorithm.
      */
     public abstract void run(JGraph gr, Object[] cells, int arg2);
 
@@ -29,8 +29,9 @@ public abstract class ImprovedJGraphLayout extends JGraphLayoutAlgorithm {
     public abstract void addRelYpos(DefaultGraphCell node, Integer y);
 
     /**
-     * Returns the node with computed by the <code>JDomGraph</code>
-     * @param node, the node to compute the width for
+     * Returns the node with computed by the <code>JDomGraph</code>.
+     * 
+     * @param node the node to compute the width for
      * @return the width
      */
     public abstract int getNodeWidth(DefaultGraphCell node);

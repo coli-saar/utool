@@ -11,6 +11,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Provides methods for accessing global properties of the Domgraph
+ * system, such as the version number. This class reads from a properties
+ * file <code>domgraph.properties</code>, which must be located in the same
+ * place as the compiled class file. This is the case in the Jar distribution. 
+ * 
+ * @author Alexander Koller
+ *
+ */
 public class GlobalDomgraphProperties {
     private static Properties props = new Properties();
     
@@ -29,6 +38,11 @@ public class GlobalDomgraphProperties {
     }
     
     
+    /**
+     * Returns the version identifier of this Domgraph system.
+     * 
+     * @return the version number
+     */
     public static String getVersion() {
         return (String) props.get("domgraph.version");
     }
