@@ -38,7 +38,7 @@ import de.saar.chorus.ubench.JDomGraph;
  */
 public class JDomGraphTab extends JGraphTab  {
 	
-
+	
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet, compactifiable; 
 	Chart chart;
@@ -56,67 +56,80 @@ public class JDomGraphTab extends JGraphTab  {
 			boolean paintNow, CommandListener lis, NodeLabels labels) {
 		
 		super(theGraph, origin, name, lis, labels);
-	
-		// initializing
-		graphName = name;
 		
 		
 		
-		
-		solvable = true;
-		solvedForms = -1;
-		setBackground(Color.WHITE);
-		
-		if(Preferences.isAutoCount()) {
-			if(domGraph.isCompactifiable()) {
-				compactGraph = domGraph.compactify();
-				compactifiable = true;
-				solve();
-			} else {
-				solvable = false;
-				compactifiable = false;
-				Ubench.getInstance().setSolvingEnabled(false);
-			}
-		}
-		
-		try {
-			
-			// graph layout
-           // graph = theGraph;
-            
-            // comute fragments 
-            graph.computeFragments();
-			
-            // if it should be painted directly, the 
-            // graph is layoutet.
-			if(paintNow) {
-				JFrame f = new JFrame("JGraph Test");
-				f.add(graph);
-				f.pack();
-				repaintIfNecessary();
-			}
-
-           // add(graph);
-			scrollpane = new JScrollPane(graph);
-	        add(scrollpane, BorderLayout.CENTER);
-            
-            // error message if layout fails
-		} catch (Exception e) {
+		if(! (origin.isNormal() || origin.isWeaklyNormal())) {
 			empty = true;
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"An error occurred while laying out this graph.\n"
-					+ "Probably the graph is constructed in a very strange way,\n"
-					+ "so Ubench unfortunately cannot display it.",
-					"Error during layout",
+					"The graph Ubench you are trying to load is not weakly normal.\n"
+					+ "Unfortunately, we can neither solve nor display\n " +
+					"graphs that are not at least weakly normal.",
+					"Graph is not weakly normal",
 					JOptionPane.ERROR_MESSAGE);
+		} else {
+			
+			
+			// initializing
+			graphName = name;
+			
+			
+			
+			
+			solvable = true;
+			solvedForms = -1;
+			setBackground(Color.WHITE);
+			
+			if(Preferences.isAutoCount()) {
+				if(domGraph.isCompactifiable()) {
+					compactGraph = domGraph.compactify();
+					compactifiable = true;
+					solve();
+				} else {
+					solvable = false;
+					compactifiable = false;
+					Ubench.getInstance().setSolvingEnabled(false);
+				}
+			}
+			
+			try {
+				
+				// graph layout
+				// graph = theGraph;
+				
+				// comute fragments 
+				graph.computeFragments();
+				
+				// if it should be painted directly, the 
+				// graph is layoutet.
+				if(paintNow) {
+					JFrame f = new JFrame("JGraph Test");
+					f.add(graph);
+					f.pack();
+					repaintIfNecessary();
+				}
+				
+				// add(graph);
+				scrollpane = new JScrollPane(graph);
+				add(scrollpane, BorderLayout.CENTER);
+				
+				// error message if layout fails
+			} catch (Exception e) {
+				empty = true;
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"An error occurred while laying out this graph.\n"
+						+ "Probably the graph is constructed in a very strange way,\n"
+						+ "so Ubench unfortunately cannot display it.",
+						"Error during layout",
+						JOptionPane.ERROR_MESSAGE);
+			}
+			
+			statusBar = new DominanceGraphBar();
+			barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
+			graph.revalidate();
+			revalidate();
+			
 		}
-        
-		statusBar = new DominanceGraphBar();
-		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
-		graph.revalidate();
-		revalidate();
-		
-		
 	}
 	
 	/**
@@ -125,38 +138,38 @@ public class JDomGraphTab extends JGraphTab  {
 	 */
 	public void solve() {
 		if( ! isSolvedYet ) {
-            try {
-            	
-                chart = new Chart();
-                ChartSolver solver = new ChartSolver(compactGraph, chart);
-                
-                if(solver.solve())  {
-                    solvedForms = chart.countSolvedForms().longValue();
-                    isSolvedYet = true;
-                    Ubench.getInstance().setSolvingEnabled(true);
-                } else {
-                	solvable = false;
-                	Ubench.getInstance().setSolvingEnabled(false);
-                }
-                
-                statusBar = new DominanceGraphBar();
-                barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
-            } catch( OutOfMemoryError e ) {
-                chart = null;
-                isSolvedYet = false;
-                
-                JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-                        "The solver ran out of memory while solving this graph. "
-                        + "Try increasing the heap size with the -Xmx option.",
-                        "Out of memory",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+			try {
+				
+				chart = new Chart();
+				ChartSolver solver = new ChartSolver(compactGraph, chart);
+				
+				if(solver.solve())  {
+					solvedForms = chart.countSolvedForms().longValue();
+					isSolvedYet = true;
+					Ubench.getInstance().setSolvingEnabled(true);
+				} else {
+					solvable = false;
+					Ubench.getInstance().setSolvingEnabled(false);
+				}
+				
+				statusBar = new DominanceGraphBar();
+				barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
+			} catch( OutOfMemoryError e ) {
+				chart = null;
+				isSolvedYet = false;
+				
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"The solver ran out of memory while solving this graph. "
+						+ "Try increasing the heap size with the -Xmx option.",
+						"Out of memory",
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
-	
+		
 	}
 	
-
-
+	
+	
 	/**
 	 * @return true if the graph is solvable
 	 */
@@ -164,7 +177,7 @@ public class JDomGraphTab extends JGraphTab  {
 		return solvable;
 	}
 	
-
+	
 	/**
 	 * @param solvable The solvable to set.
 	 */
@@ -172,211 +185,211 @@ public class JDomGraphTab extends JGraphTab  {
 		this.solvable = solvable;
 	}
 	
-
+	
 	/**
 	 * @return true if the graph has been solved yet.
 	 */
 	public boolean isSolvedYet() {
 		return isSolvedYet;
 	}
-
+	
 	/**
 	 * @param isSolvedYet The isSolvedYet to set.
 	 */
 	public void setSolvedYet(boolean isSolvedYet) {
 		this.isSolvedYet = isSolvedYet;
 	}
-
-    
-    /**
-     * A <code>JPanel</code> representing a status bar for 
-     * a dominance graph, to be inserted into the <code>CardLayout</code>
-     * of <code>JDomGraphStatusBar</code>.
-     * 
-     * @author Michaela Regneri
-     *
-     */
-    private class DominanceGraphBar extends JPanel {
-    	private JPanel classified; // the panel for the classify symbols
-    	private JButton solve; 	// for solving 
-    	
-    	// the text labels
-    	private JLabel 	numberOfForms, 	// indicates how many solved forms there are
-    					norm, 		  	// indicates normality (graphs)
-    					comp, 		  	// indicates compactness (graphs)
-    					hn, 			// indicates hypernormality (graphs)
-    					ll; 		 	// indicates leaf labeling (graphs)
-    	
-    	
-    	private Set<JLabel> classifyLabels;
-    	
-    	private BorderLayout layout = new BorderLayout();
-    	
-    	/**
-    	  * Sets up a new <code>SolvedFormBar</code> by
-    	  * initalizing the fields and doing the layout.
-    	  * 
-    	  * TODO do the layout properly (that is 'more aesthetic')
-    	  */
-    	private DominanceGraphBar() {
-    		super(); 
-    		setLayout(layout);
-    		
-    		numberOfForms = new JLabel("");
-    		
-    		layout.setHgap(50);
-    		layout.setVgap(5);
-    		
-    		if( isSolvedYet ) {
-    			if(solvedForms > 1 ) {
-    				numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
-    			} else {
-    				numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
-    			}
-    		} else {
-    			if(compactifiable) {
-    			if(solvable) {
-    				numberOfForms.setText("This graph has an unknown number of solved forms."); 
-    			} else {
-    				numberOfForms.setText("This graph is unsolvable."); 
-    			}
-    			} else {
-    				numberOfForms.setText("This graph is not compactifiable, so we cannot determine solvability.");
-    			}
-    		}
-    		
-    		
-    		add(numberOfForms, BorderLayout.CENTER);
-    		layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
-    		
-    		// solve button
-    		solve = new JButton("SOLVE");
-    		solve.setActionCommand("solve");
-    		solve.addActionListener(listener);
-    		solve.setPreferredSize(new Dimension(80,25));
-    		
-    		add(solve, BorderLayout.WEST);
-    		if(! solvable) {
-    			solve.setEnabled(false);
-    		}
-    		
-    		layout.addLayoutComponent(solve, BorderLayout.WEST);
-    		/*
-    		 * Every label is set up with its "standard" character
-    		 * and the tooltip-text gets a new position (above the
-    		 * symbol itself).
-    		 */
-    		
-    		classified = new JPanel();
-    		classifyLabels = new HashSet<JLabel>();
-    		
-    		ll = new JLabel("L") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				
-    				Point p1 = ll.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		ll.setForeground(Color.RED);
-    		classifyLabels.add(ll);
-    		
-    		hn = new JLabel("H") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 =hn.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		hn.setForeground(Color.RED);
-    		classifyLabels.add(hn);
-    		
-    		norm = new JLabel("N") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 = norm.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		norm.setForeground(Color.RED);
-    		classifyLabels.add(norm);
-    		
-    		comp = new JLabel("C") {
-    			public Point getToolTipLocation(MouseEvent e) {
-    				Point p1 = comp.getLocation();
-    				Point toReturn = new Point(p1.x, p1.y-25);
-    				return toReturn;
-    			}
-    		};
-    		comp.setForeground(Color.RED);
-    		classifyLabels.add(comp);
-    		
-    		
-    			
-    			
-    			if(domGraph.isNormal()) {
-        			norm.setText("N");
-        			norm.setToolTipText("Normal");
-        			
-        		} else if (domGraph.isWeaklyNormal()) {
-        			norm.setText("n");
-        			norm.setToolTipText("Weakly Normal");
-        		} else {
-        			norm.setText("-");
-        			norm.setToolTipText("Not Normal");
-        		}
-        		
-        		
-        		if(domGraph.isCompact()) {
-        			comp.setText("C");
-        			comp.setToolTipText("Compact");
-        		} else if (domGraph.isCompactifiable()) {
-        			comp.setText("c");
-        			comp.setToolTipText("compactifiable");
-        		} else {
-        			comp.setText("-");
-        			comp.setToolTipText("Not Compactifiable");
-        		}
-        		
-        		
-        		if(domGraph.isHypernormallyConnected()) {
-        			hn.setText("H");
-        			hn.setToolTipText("Hypernormally Connected");
-        		} else {
-        			hn.setText("-");
-        			hn.setToolTipText("Not Hypernormally Connected");
-        		}
-        		
-        		if(domGraph.isLeafLabelled()) {
-        			ll.setText("L");
-        			ll.setToolTipText("Leaf-Labelled");
-        		} else {
-        			ll.setText("-");
-        			ll.setToolTipText("Not Leaf-Labelled");
-        		}
-        		
-    			classified.setAlignmentY(SwingConstants.HORIZONTAL);
-        		classified.add(new JLabel("Classify: "));
-        		classified.add(norm);
-        		classified.add(comp);
-        		
-        		classified.add(ll);
-        		classified.add(hn);
-        		
-        		classified.setForeground(Color.RED);
-        		classified.setAlignmentX(SwingConstants.LEFT);
-        		
-        		add(classified, BorderLayout.EAST);
-    			
-    		
-    		
-    	}
-    }
-
-
-
-
-
+	
+	
+	/**
+	 * A <code>JPanel</code> representing a status bar for 
+	 * a dominance graph, to be inserted into the <code>CardLayout</code>
+	 * of <code>JDomGraphStatusBar</code>.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
+	private class DominanceGraphBar extends JPanel {
+		private JPanel classified; // the panel for the classify symbols
+		private JButton solve; 	// for solving 
+		
+		// the text labels
+		private JLabel 	numberOfForms, 	// indicates how many solved forms there are
+		norm, 		  	// indicates normality (graphs)
+		comp, 		  	// indicates compactness (graphs)
+		hn, 			// indicates hypernormality (graphs)
+		ll; 		 	// indicates leaf labeling (graphs)
+		
+		
+		private Set<JLabel> classifyLabels;
+		
+		private BorderLayout layout = new BorderLayout();
+		
+		/**
+		 * Sets up a new <code>SolvedFormBar</code> by
+		 * initalizing the fields and doing the layout.
+		 * 
+		 * TODO do the layout properly (that is 'more aesthetic')
+		 */
+		private DominanceGraphBar() {
+			super(); 
+			setLayout(layout);
+			
+			numberOfForms = new JLabel("");
+			
+			layout.setHgap(50);
+			layout.setVgap(5);
+			
+			if( isSolvedYet ) {
+				if(solvedForms > 1 ) {
+					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
+				} else {
+					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
+				}
+			} else {
+				if(compactifiable) {
+					if(solvable) {
+						numberOfForms.setText("This graph has an unknown number of solved forms."); 
+					} else {
+						numberOfForms.setText("This graph is unsolvable."); 
+					}
+				} else {
+					numberOfForms.setText("This graph is not compactifiable, so we cannot determine solvability.");
+				}
+			}
+			
+			
+			add(numberOfForms, BorderLayout.CENTER);
+			layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
+			
+			// solve button
+			solve = new JButton("SOLVE");
+			solve.setActionCommand("solve");
+			solve.addActionListener(listener);
+			solve.setPreferredSize(new Dimension(80,25));
+			
+			add(solve, BorderLayout.WEST);
+			if(! solvable) {
+				solve.setEnabled(false);
+			}
+			
+			layout.addLayoutComponent(solve, BorderLayout.WEST);
+			/*
+			 * Every label is set up with its "standard" character
+			 * and the tooltip-text gets a new position (above the
+			 * symbol itself).
+			 */
+			
+			classified = new JPanel();
+			classifyLabels = new HashSet<JLabel>();
+			
+			ll = new JLabel("L") {
+				public Point getToolTipLocation(MouseEvent e) {
+					
+					Point p1 = ll.getLocation();
+					Point toReturn = new Point(p1.x, p1.y-25);
+					return toReturn;
+				}
+			};
+			ll.setForeground(Color.RED);
+			classifyLabels.add(ll);
+			
+			hn = new JLabel("H") {
+				public Point getToolTipLocation(MouseEvent e) {
+					Point p1 =hn.getLocation();
+					Point toReturn = new Point(p1.x, p1.y-25);
+					return toReturn;
+				}
+			};
+			hn.setForeground(Color.RED);
+			classifyLabels.add(hn);
+			
+			norm = new JLabel("N") {
+				public Point getToolTipLocation(MouseEvent e) {
+					Point p1 = norm.getLocation();
+					Point toReturn = new Point(p1.x, p1.y-25);
+					return toReturn;
+				}
+			};
+			norm.setForeground(Color.RED);
+			classifyLabels.add(norm);
+			
+			comp = new JLabel("C") {
+				public Point getToolTipLocation(MouseEvent e) {
+					Point p1 = comp.getLocation();
+					Point toReturn = new Point(p1.x, p1.y-25);
+					return toReturn;
+				}
+			};
+			comp.setForeground(Color.RED);
+			classifyLabels.add(comp);
+			
+			
+			
+			
+			if(domGraph.isNormal()) {
+				norm.setText("N");
+				norm.setToolTipText("Normal");
+				
+			} else if (domGraph.isWeaklyNormal()) {
+				norm.setText("n");
+				norm.setToolTipText("Weakly Normal");
+			} else {
+				norm.setText("-");
+				norm.setToolTipText("Not Normal");
+			}
+			
+			
+			if(domGraph.isCompact()) {
+				comp.setText("C");
+				comp.setToolTipText("Compact");
+			} else if (domGraph.isCompactifiable()) {
+				comp.setText("c");
+				comp.setToolTipText("compactifiable");
+			} else {
+				comp.setText("-");
+				comp.setToolTipText("Not Compactifiable");
+			}
+			
+			
+			if(domGraph.isHypernormallyConnected()) {
+				hn.setText("H");
+				hn.setToolTipText("Hypernormally Connected");
+			} else {
+				hn.setText("-");
+				hn.setToolTipText("Not Hypernormally Connected");
+			}
+			
+			if(domGraph.isLeafLabelled()) {
+				ll.setText("L");
+				ll.setToolTipText("Leaf-Labelled");
+			} else {
+				ll.setText("-");
+				ll.setToolTipText("Not Leaf-Labelled");
+			}
+			
+			classified.setAlignmentY(SwingConstants.HORIZONTAL);
+			classified.add(new JLabel("Classify: "));
+			classified.add(norm);
+			classified.add(comp);
+			
+			classified.add(ll);
+			classified.add(hn);
+			
+			classified.setForeground(Color.RED);
+			classified.setAlignmentX(SwingConstants.LEFT);
+			
+			add(classified, BorderLayout.EAST);
+			
+			
+			
+		}
+	}
+	
+	
+	
+	
+	
 	/**
 	 * Returns a <code>JGraphTab</code> identic to this one
 	 * but containing clones of the <code>DomGraph</code> and the 
@@ -391,7 +404,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		return myClone;
 	}
-
+	
 	/**
 	 * Creates a tab displaying the first solved form
 	 * of this dominance graph.
@@ -404,42 +417,42 @@ public class JDomGraphTab extends JGraphTab  {
 		if(! isSolvedYet ) {
 			solve();
 		}
-	
+		
 		if( isSolvedYet ) {
-		    
+			
 			// setting up the first solved form:
 			
 			// cloning the recent DomGraph
 			DomGraph firstForm = (DomGraph) domGraph.clone();
-		    
+			
 			// solving and starting to enumerate
-		    solvedFormIterator = new SolvedFormIterator(chart,domGraph);
-		    
-		    // the first solved form is the recent graph
-		    // with the dominance edges of the first solved form...
-		    firstForm.setDominanceEdges(solvedFormIterator.next());
-		    
-		    // converting the graph into a JDomGraph
-		    DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
-		    JDomGraph domSolvedForm = conv.getJDomGraph();
-		    
-		    // setting up the tab
-		    JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
-		            defaultName  + "  SF #1", 
-		            solvedFormIterator, firstForm,
-		            1, solvedForms, 
-		            graphName, 
-		            listener, nodeLabels);
-            
-            return sFTab;
-        } else {
-            return null;
-        }
-        
+			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
+			
+			// the first solved form is the recent graph
+			// with the dominance edges of the first solved form...
+			firstForm.setDominanceEdges(solvedFormIterator.next());
+			
+			// converting the graph into a JDomGraph
+			DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
+			JDomGraph domSolvedForm = conv.getJDomGraph();
+			
+			// setting up the tab
+			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
+					defaultName  + "  SF #1", 
+					solvedFormIterator, firstForm,
+					1, solvedForms, 
+					graphName, 
+					listener, nodeLabels);
+			
+			return sFTab;
+		} else {
+			return null;
+		}
+		
 		
 		
 	}
 	
 	
-    
+	
 }
