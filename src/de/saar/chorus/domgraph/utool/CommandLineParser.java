@@ -42,7 +42,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.getopt.ConvenientGetopt;
 
-public class CommandLineParser {
+class CommandLineParser {
     private static final char OPTION_VERSION = (char) 1;
     private static final char OPTION_HELP_OPTIONS = (char) 2;
     private static final char OPTION_DUMP_CHART = (char) 3;

@@ -17,7 +17,6 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.ToolTipManager;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -48,14 +47,6 @@ import de.saar.getopt.ConvenientGetopt;
  * This implements the "singleton pattern", so this class
  * provides one (and only one) instance of Ubench. 
  * 
- * 
- * 
- * TODO Distinguish holes and roots, and draw holes differently (as circles?).
- * <p>
- * 
- * TODO Extend GXL format so nodes and perhaps edges can be given visual
- * attributes, e.g. colours. This is used quite a bit in the CHORUS demo, and we
- * should support it.
  * 
  * @author Alexander Koller
  * @author Michaela Regneri
@@ -459,42 +450,20 @@ public class Ubench {
             return null;
     }
     
-    /**
-     * 
-     * @param filename
-     * @return
-     */
-    public JDomGraph genericLoadGraph(String filename, DomGraph graph,
-            NodeLabels nl) {
-        
-        return importGraph(filename, graph, nl);
-        
-    }
+    
     
     /**
+     * Loads a labelled dominance graph from a file.
      * 
-     * @deprecated
-     * @param fileName
-     * @return
-     * 
-     * public static JDomGraph loadGraph(String fileName) { JDomGraph
-     * loadedGraph = new JDomGraph(); try { File gxl = new File(fileName);
-     * Reader input = new FileReader(gxl); DomGraphGXLCodec.decode(input,
-     * loadedGraph); for( Fragment frag : loadedGraph.getFragments() ) {
-     * System.out.println(frag); } } catch (IOException e ) {
-     * System.err.println("File can't be found"); } catch (Exception e) {
-     * System.err.println("Error while parsing " + fileName + ":");
-     * e.printStackTrace(System.err); System.exit(1); }
-     * 
-     * return loadedGraph; }
+     * @param filename the file name
+     * @param graph a <code>DomGraph</code> which this method sets
+     * to the dominance graph part of the labelled graph
+     * @param nl a <code>NodeLabels</code> object which this method
+     * fills with the node labelling part of the labelled graph
+     * @return a new <code>JDomGraph</code> representation for the
+     * labelled graph
      */
-    
-    /**
-     * 
-     * @param filename
-     * @return
-     */
-    public JDomGraph importGraph(String filename, DomGraph graph, NodeLabels nl) {
+    public JDomGraph genericLoadGraph(String filename, DomGraph graph, NodeLabels nl) {
         InputCodec inputCodec = 
             codecManager.getInputCodecForFilename(filename, null);
         

@@ -223,7 +223,7 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
 	
 	
 	/**
-	 * Strats the layout algorithm.
+	 * Starts the layout algorithm.
 	 */
 	public void run(JGraph gr, Object[] cells, int arg2) {
 		computeNodePositions();
@@ -248,8 +248,9 @@ public class GecodeTreeLayout extends ImprovedJGraphLayout {
     }
 
 	/**
-	 * Returns the node with computed by the <code>JDomGraph</code>
-	 * @param node, the node to compute the width for
+	 * Returns the node width computed by the <code>JDomGraph</code>.
+     * 
+	 * @param node the node to compute the width for
 	 * @return the width
 	 */
 	public int getNodeWidth(DefaultGraphCell node) {

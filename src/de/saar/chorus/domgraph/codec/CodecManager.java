@@ -25,7 +25,9 @@ import java.util.zip.ZipEntry;
  * A registry for codecs. Objects of this class are intended as a
  * place where different codec classes can be registered. Then
  * it is possible to look up codecs via their names or their
- * filename extensions.
+ * filename extensions. The codec manager will also take care
+ * of the correct creation of codec objects; an application will
+ * typically never instantiate a codec class itself.
  * 
  * @author Alexander Koller
  *

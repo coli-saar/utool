@@ -264,7 +264,7 @@ public class FragmentTower {
      * placed at a specific screen position yet, the box will start at
      * (0,0).
      * 
-     * @return
+     * @return the bounding box
      */
     public Rectangle getBox() {
         if( placedAtX < 0 ) {
