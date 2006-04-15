@@ -3,7 +3,9 @@ package de.saar.chorus.ubench.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.Spring;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
@@ -129,7 +132,7 @@ public class JDomGraphTab extends JGraphTab  {
 			barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 			graph.revalidate();
 			revalidate();
-			
+			setMinimumSize(statusBar.getMinimumSize());
 		}
 	}
 	
@@ -235,6 +238,7 @@ public class JDomGraphTab extends JGraphTab  {
 			super(); 
 			setLayout(layout);
 			
+			
 			numberOfForms = new JLabel("");
 			
 		//	layout.setHgap(50);
@@ -254,12 +258,12 @@ public class JDomGraphTab extends JGraphTab  {
 						numberOfForms.setText("This graph is unsolvable."); 
 					}
 				} else {
-					numberOfForms.setText("This graph is not compactifiable, so we cannot determine solvability.");
+					numberOfForms.setText("This graph is not compactifiable,\n so we cannot determine solvability.");
 				}
 			}
 			
 			
-			add(numberOfForms);
+			add(numberOfForms, SpringLayout.NORTH);
 			
 			//layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
 			
@@ -269,6 +273,9 @@ public class JDomGraphTab extends JGraphTab  {
 			solve.addActionListener(listener);
 			solve.setPreferredSize(new Dimension(80,25));
 			
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			JDomGraphTab.this.setMaximumSize(
+					new Dimension((int) dim.getWidth(), 21));
 			add(solve, SpringLayout.WEST);
 			if(! solvable) {
 				solve.setEnabled(false);
@@ -381,15 +388,20 @@ public class JDomGraphTab extends JGraphTab  {
 			classified.setAlignmentX(SwingConstants.LEFT);
 			
 			add(classified, SpringLayout.EAST);
-
+			
+			
 			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 5, SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.NORTH, solve, 5, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.NORTH, solve, 10, SpringLayout.NORTH, this);
 			layout.putConstraint(SpringLayout.WEST, solve, 5, SpringLayout.WEST, this);
 			layout.putConstraint(SpringLayout.SOUTH, this, 10, SpringLayout.SOUTH, solve);
-			layout.putConstraint(SpringLayout.EAST, classified, -5, SpringLayout.EAST, this);
+	
 			layout.putConstraint(SpringLayout.NORTH, classified, 10, SpringLayout.NORTH, this);
 			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 15, SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.WEST, numberOfForms, 50,  SpringLayout.EAST, solve);
+			layout.putConstraint(SpringLayout.WEST, numberOfForms, layout.getConstraint(SpringLayout.EAST, solve),  SpringLayout.EAST, solve);
+			//layout.putConstraint(SpringLayout.WEST, classified, 100, SpringLayout.EAST, numberOfForms);
+			layout.putConstraint(SpringLayout.WEST, classified, Spring.constant(50,(graph.getWidth()/3), 500),  SpringLayout.EAST, numberOfForms);
+			layout.putConstraint(SpringLayout.WEST, numberOfForms, Spring.constant(5,graph.getWidth()/4,500),  SpringLayout.EAST, solve);
+			layout.putConstraint(SpringLayout.EAST, classified, -3, SpringLayout.EAST, this);
 		}
 	}
 	
