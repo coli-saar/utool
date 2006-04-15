@@ -1454,7 +1454,8 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				/*
 				 * Especially for not hnc. graphs:
 				 * If there are fragments not visited 
-				 * by the DFS, we place them afterwards.
+				 * by the DFS (and contained in the same wcc),
+				 * we place them afterwards.
 				 * In general this disturbs the layout, so
 				 * this way of arrangement is declared as 
 				 * expensive. 
