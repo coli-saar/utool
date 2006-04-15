@@ -18,8 +18,8 @@
 	<p/>
 	
 	The lifecycle of a chart is as follows. You can compute it from a
-	compact weakly normal dominance graph by creating a <code>ChartSolver</code>
-	for the graph and running its {@link de.saar.chorus.domgraph.chart.ChartSolver#solve()} method.
+	compact weakly normal dominance graph by calling a <code>solve</code>
+	method of the class <code>ChartSolver</code> for the graph.
 	You may then apply further operations to the chart, such as redundancy
 	elimination. Finally you can extract the solved forms from a chart
 	by creating a <code>SolvedFormIterator</code> for it.

@@ -48,16 +48,39 @@ public class ChartSolver {
     private Set<String> roots;
     private SplitSource splitSource;
     
+
+    
     /**
-     * A constructor which uses a {@link CompleteSplitSource} as
-     * the split source. 
+     * Solves the given dominance graph using a specific split source. 
+     * This method will determine whether the given dominance graph is
+     * solvable or not. It will also fill the given chart with the splits
+     * that are necessary to later enumerate solved forms of the
+     * dominance graph. It will use the given split source in order to
+     * compute the splits for each subgraph. 
      * 
-     * @param graph
-     * @param chart
+     * @param graph a weakly normal, compact dominance graph
+     * @param chart a chart which will be filled with the splits of this graph
+     * @param splitsource a split source
+     * @return true if the graph is solvable, false otherwise
      */
-    public ChartSolver(DomGraph graph, Chart chart) {
-        this(graph, chart, new CompleteSplitSource(graph));
+    public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) {
+        ChartSolver solver = new ChartSolver(graph, chart, splitsource);
+        return solver.solve();
     }
+
+    /**
+     * Solves the given dominance graph using a 
+     * {@link de.saar.chorus.domgraph.chart.CompleteSplitSource}.
+     * This method will create a new <code>CompleteSplitSource</code> object for
+     * the graph and then call {@link #solve(DomGraph, Chart, SplitSource)}.
+     * 
+     * @see #solve(DomGraph, Chart, SplitSource)
+     */
+    public static boolean solve(DomGraph graph, Chart chart) {
+        return solve(graph, chart, new CompleteSplitSource(graph));
+    }
+    
+
 
     /**
      * A constructor which allows you to specify a customised
@@ -67,7 +90,7 @@ public class ChartSolver {
      * @param chart
      * @param splitSource
      */
-    public ChartSolver(DomGraph graph, Chart chart, SplitSource splitSource) {
+    private ChartSolver(DomGraph graph, Chart chart, SplitSource splitSource) {
         this.splitSource = splitSource;
         this.graph = graph;
         this.chart = chart;
@@ -86,7 +109,7 @@ public class ChartSolver {
      * 
      * @return true iff the graph is solvable
      */
-    public boolean solve() {
+    private boolean solve() {
         List<Set<String>> wccs = graph.wccs();
       
         if( !graph.isWellFormed() ) {
