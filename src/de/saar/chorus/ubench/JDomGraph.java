@@ -36,11 +36,8 @@ import de.saar.chorus.jgraph.ImprovedJGraph;
 
 /**
  * A Swing component that represents a dominance graph.
- * <p>
  * 
- * TODO Eventually, this shouldn't be a subclass of JGraph, but rather it should
- * use a private JGraph field and then offer delegate methods to be a subclass
- * of JComponent.
+ * @see ImprovedJGraph
  * 
  * @author Alexander Koller
  * @author Michaela Regneri
@@ -124,7 +121,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	}
 	
 	/**
-	 * Sets up an empty dominance graph.  
+	 * Sets up an empty dominance graph.
+	 * @param the <code>DomGraph</code> represented here.  
 	 */
 	public JDomGraph(DomGraph origin) {
 		super();
@@ -698,7 +696,10 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
     }
     
    
-    
+    /**
+     * Removes all dominance edges from this graph.
+     *
+     */
     public void clearDominanceEdges() {
     	for(DefaultEdge edge : dominanceEdges) {
 			getModel().remove(new Object[]{ edge });
@@ -708,6 +709,16 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
     	dominanceEdges.clear();
     }
     
+    /**
+     * Computes the Fragments contained in a wcc.
+     * In principle, this works for an abitrary Set of
+     * nodes (not just for wccs); it will return a Set of
+     * all fragments of which at least one node was
+     * in the node set.
+     * 
+     * @param wcc a <Code>Set</Code> of nodes 
+     * @return the <Code>Set</Code> of fragments represented by the argument node set
+     */
     public Set<Fragment> getWccFragments(Set<DefaultGraphCell> wcc) {
     	
     	Set<Fragment> frags = new HashSet<Fragment>();
@@ -718,23 +729,35 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
     	
     }
 
-
+    /**
+     * 
+     * @return true if this graph is hypernormally connected
+     */
 	public boolean isHnc() {
 		return hnc;
 	}
 
-
-	public void setHnc(boolean hnc) {
+	/**
+	 * 
+	 * @param hnc
+	 */
+	private void setHnc(boolean hnc) {
 		this.hnc = hnc;
 	}
 
-
+	/**
+	 * 
+	 * @return the node sets representing this graph's weakly connected components
+	 */
 	public List<Set<DefaultGraphCell>> getWccs() {
 		return wccs;
 	}
 
-
-	public void setWccs(List<Set<DefaultGraphCell>> wccs) {
+	/**
+	 * 
+	 * @param wccs
+	 */
+	private void setWccs(List<Set<DefaultGraphCell>> wccs) {
 		this.wccs = wccs;
 	}
 }

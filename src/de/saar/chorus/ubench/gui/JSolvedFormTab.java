@@ -22,7 +22,18 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
 
-
+/**
+ * A <code>JPanel</code> displaying a <code>JDomGraph</code>
+ * which is in solved form and providing several informations on the graph needed by other
+ * GUI-classes.
+ * 
+ * @see JGraphTab
+ * @see JDomGraphTab
+ * 
+ * @author Alexander Koller
+ * @author Michaela Regneri
+ *
+ */
 public class JSolvedFormTab extends JGraphTab {
 
 	
