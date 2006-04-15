@@ -1459,7 +1459,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				 * this way of arrangement is declared as 
 				 * expensive. 
 				 */
-				for(Fragment frag : fragments ) {
+				for(Fragment frag : possibleRoots ) {
 					// for each fragment not seen yet...
 					if(! visited.contains(frag) ) {
 						
@@ -1511,7 +1511,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			xStart += costBestRoot.getMaxBoxWidth() + DomGraphLayoutParameters.fragmentXDistance;
 			
 			// for each fragment...
-			for(Fragment frag : fragments ) {
+			for(Fragment frag : possibleRoots ) {
 				
 				// check whether DFS has visited it.
 				if(! visited.contains(frag) ) {
