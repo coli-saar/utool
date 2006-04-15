@@ -1528,11 +1528,14 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 						// dominance parent with the biggest y-value
 						// (which is the lowermost arranged one here)
 						Fragment source = graph.getSourceFragment(edge);
-						int potentialY = fragYpos.get(source) 
-										 + fragHeight.get(source)
-										 + fragmentYDistance;
-						if(potentialY > yStart) {
-							yStart = potentialY;
+						if(fragYpos.containsKey(source)) {
+							int potentialY = fragYpos.get(source) 
+							+ fragHeight.get(source)
+							+ fragmentYDistance;
+							
+							if(potentialY > yStart) {
+								yStart = potentialY;
+							}
 						}
 					}
 					Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
