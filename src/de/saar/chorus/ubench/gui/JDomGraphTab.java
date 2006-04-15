@@ -142,9 +142,8 @@ public class JDomGraphTab extends JGraphTab  {
 			try {
 				
 				chart = new Chart();
-				ChartSolver solver = new ChartSolver(compactGraph, chart);
 				
-				if(solver.solve())  {
+				if(ChartSolver.solve(compactGraph, chart))  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);

@@ -156,20 +156,18 @@ class UtoolServer {
                 // compute chart
                 long start_solver = System.currentTimeMillis();
                 Chart chart = new Chart();
-                
-                ChartSolver solver;
-                
+                boolean solvable;
+
                 if( options.hasOptionEliminateEquivalence() ) {
-                    solver = new ChartSolver(compactGraph, chart, 
+                    solvable = ChartSolver.solve(compactGraph, chart, 
                             new RedundancyEliminationSplitSource(
                                     new IndividualRedundancyElimination(compactGraph, 
                                             options.getLabels(), options.getEquations()), compactGraph));
                 } else {
-                    solver = new ChartSolver(compactGraph, chart); 
+                    solvable = ChartSolver.solve(compactGraph, chart); 
                 }
                 
                 
-                boolean solvable = solver.solve();
                 long end_solver = System.currentTimeMillis();
                 long time_solver = end_solver - start_solver;
                 
