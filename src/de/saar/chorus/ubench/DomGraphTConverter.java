@@ -8,48 +8,35 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+
+/**
+ * This converts a <code>DomGraph</code> to a
+ * <code>JDomGraph</code>
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class DomGraphTConverter {
 	
 	DomGraph domGraph;
 	JDomGraph jDomGraph;
 	
-	public DomGraphTConverter(JDomGraph graph) {
-		jDomGraph = graph;
-		domGraph = new DomGraph();
-		
-		for(DefaultGraphCell node : jDomGraph.getNodes() ) {
-			
-			de.saar.chorus.domgraph.graph.NodeData data;
-			
-			if( jDomGraph.getNodeData(node).getType().equals(NodeType.LABELLED)){
-					data = new de.saar.chorus.domgraph.graph.NodeData(de.saar.chorus.domgraph.graph.NodeType.LABELLED);
-			} else {
-					data = new de.saar.chorus.domgraph.graph.NodeData(de.saar.chorus.domgraph.graph.NodeType.UNLABELLED); break;
-			}
-			
-			domGraph.addNode(jDomGraph.getNodeData(node).getName(), data);
-
-		}
-		
-		for( DefaultEdge edge : jDomGraph.getEdges() ) {
-			de.saar.chorus.domgraph.graph.EdgeData data;
-			
-			if( jDomGraph.getEdgeData(edge).getType().equals(EdgeType.dominance )) {
-				data = new de.saar.chorus.domgraph.graph.EdgeData(de.saar.chorus.domgraph.graph.EdgeType.DOMINANCE);
-			} else {
-				data = new de.saar.chorus.domgraph.graph.EdgeData(de.saar.chorus.domgraph.graph.EdgeType.TREE);
-			}
-			
-			domGraph.addEdge(jDomGraph.getNodeData(jDomGraph.getSourceNode(edge)).getName(),
-					jDomGraph.getNodeData(jDomGraph.getTargetNode(edge)).getName(),
-					data);
-		}
-	}
 	
+	/**
+	 * Setting up a new converter with the 
+	 * graph to convert and its labels.
+	 * 
+	 * @param graph the graph
+	 * @param labels the lables belonging to the graph nodes
+	 */
 	public DomGraphTConverter(DomGraph graph, NodeLabels labels) {
 		domGraph = graph;
+		
+		// create a new JDomGraph
 		jDomGraph = new JDomGraph(graph);
 		
+		
+		// insert all the nodes of the DomGraph
 		for(String node : domGraph.getAllNodes() ) {
 			NodeData cloneData;
 			if( domGraph.getData(node).getType().equals(NodeType.LABELLED) ) {
@@ -64,7 +51,7 @@ public class DomGraphTConverter {
 			jDomGraph.addNode(node, cloneData);
 		}
 		
-		
+		// insert all the edges
 		for(Edge edge :  domGraph.getAllEdges() ) {
 			EdgeData cloneData;
 			
@@ -80,11 +67,15 @@ public class DomGraphTConverter {
 		}
 	}
 	
+	/**
+	 * Returns the <code>JDomGraph</code> created by 
+	 * this converter.
+	 * 
+	 * @return the <code>JDomGraph</code>
+	 */
 	public JDomGraph getJDomGraph() {
 		return jDomGraph;
 	}
 	
-	public DomGraph getDomGraph() {
-		return domGraph;
-	}
+	
 }

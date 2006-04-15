@@ -613,6 +613,12 @@ public class CommandListener implements ActionListener, ItemListener {
             extensions = new HashSet<String>(ext);
         }
         
+        /**
+         * Add a file extension that shall be accepted
+         * by the filter
+         * 
+         * @param extension the new extension
+         */
         public void addExtension(String extension) {
             if( extension.startsWith(".") ) {
                 extensions.add(extension);
@@ -623,6 +629,8 @@ public class CommandListener implements ActionListener, ItemListener {
         
         /**
          * 
+         * @return true if the file has an extension
+         *        contained here or is a folder
          */
         public boolean accept(File f) {
             
