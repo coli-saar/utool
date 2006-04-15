@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -223,7 +224,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		private Set<JLabel> classifyLabels;
 		
-		private BorderLayout layout = new BorderLayout();
+		private SpringLayout layout = new SpringLayout();
 		
 		/**
 		 * Sets up a new <code>SolvedFormBar</code> by
@@ -237,8 +238,8 @@ public class JDomGraphTab extends JGraphTab  {
 			
 			numberOfForms = new JLabel("");
 			
-			layout.setHgap(50);
-			layout.setVgap(5);
+		//	layout.setHgap(50);
+		//	layout.setVgap(5);
 			
 			if( isSolvedYet ) {
 				if(solvedForms > 1 ) {
@@ -259,8 +260,9 @@ public class JDomGraphTab extends JGraphTab  {
 			}
 			
 			
-			add(numberOfForms, BorderLayout.CENTER);
-			layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
+			add(numberOfForms);
+			
+			//layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
 			
 			// solve button
 			solve = new JButton("SOLVE");
@@ -268,12 +270,12 @@ public class JDomGraphTab extends JGraphTab  {
 			solve.addActionListener(listener);
 			solve.setPreferredSize(new Dimension(80,25));
 			
-			add(solve, BorderLayout.WEST);
+			add(solve, SpringLayout.WEST);
 			if(! solvable) {
 				solve.setEnabled(false);
 			}
 			
-			layout.addLayoutComponent(solve, BorderLayout.WEST);
+			layout.addLayoutComponent(solve, SpringLayout.WEST);
 			/*
 			 * Every label is set up with its "standard" character
 			 * and the tooltip-text gets a new position (above the
@@ -379,10 +381,16 @@ public class JDomGraphTab extends JGraphTab  {
 			classified.setForeground(Color.RED);
 			classified.setAlignmentX(SwingConstants.LEFT);
 			
-			add(classified, BorderLayout.EAST);
-			
-			
-			
+			add(classified, SpringLayout.EAST);
+
+			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 5, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.NORTH, solve, 5, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.WEST, solve, 5, SpringLayout.WEST, this);
+			layout.putConstraint(SpringLayout.SOUTH, this, 10, SpringLayout.SOUTH, solve);
+			layout.putConstraint(SpringLayout.EAST, classified, -5, SpringLayout.EAST, this);
+			layout.putConstraint(SpringLayout.NORTH, classified, 10, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 15, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.WEST, numberOfForms, 50,  SpringLayout.EAST, solve);
 		}
 	}
 	
