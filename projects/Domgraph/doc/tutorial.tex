@@ -2,16 +2,8 @@
 \section{A tutorial walkthrough}
 \label{sec:tutorial}
 
-\todo{
-\begin{itemize}
-\item reference to utool.sf.net
-\end{itemize}
-}
-
 Welcome to the Utool tutorial! In this tutorial, we will walk you
 through some of the basic operations that Utool supports.
-
-
 
 \subsection{Installation}
 
@@ -23,7 +15,7 @@ of the system.}
 
 
 \begin{verbatim}
-$ java -jar Utool.jar
+$ java -jar Utool-3.0.jar
 Usage: java -jar Utool.jar <subcommand> [options] [args]
 Type `utool help <subcommand>' for help on a specific subcommand.
 Type `utool --help-options' for a list of global options.
@@ -34,11 +26,12 @@ Available subcommands:
     solvable     Check solvability without enumerating solutions.
     convert      Convert underspecified description from one format to another.
     classify     Check whether a description belongs to special classes.
+    display      Start the Underspecification Workbench GUI.
     server       Start Utool in server mode.
     help         Display help on a command.
 
-Utool/Java is the Swiss Army Knife of Underspecification (Java version).
-For more information, see http://www.coli.uni-sb.de/projects/chorus/utool/
+Utool is the Swiss Army Knife of Underspecification (Java version).
+For more information, see www.coli.uni-sb.de/projects/chorus/utool/
 \end{verbatim}
 %$
 
@@ -49,8 +42,8 @@ alias for calling Utool more conveniently if you like, e.g. as
 follows (on a bash shell):
 
 \begin{verbatim}
-$ alias jutool='java -jar /usr/local/Utool.jar'
-$ jutool
+$ alias utool='java -jar /usr/local/Utool-3.0.jar'
+$ utool
 Usage: java -jar Utool.jar <subcommand> [options] [args]
 Type `utool help <subcommand>' for help on a specific subcommand.
 Type `utool --help-options' for a list of global options.
@@ -58,14 +51,18 @@ Type `utool --display-codecs' for a list of supported codecs.
 ...
 \end{verbatim}
 
+For the rest of this tutorial, we will only write \verb?jutool? for
+the call to the Utool main program, for easier readability. You can
+either define the alias, or expand \verb?utool? to the appropriate
+\verb?java -jar Utool-3.0.jar? call yourself.
 
-Next to the compiled Java classes, the Jar contains the source code
-and a collection of example files that we will use in this
-tutorial. You don't usually need to unpack the Jar to use it, but for
-the purposes of this tutorial, start by running the following command:
+Next to the compiled Java classes, the Jar contains a collection of
+example files that we will use in this tutorial. You don't usually
+need to unpack the Jar to use it, but for the purposes of this
+tutorial, start by running the following command:
 
 \begin{verbatim}
-$ jar xf Utool.jar
+$ jar xf Utool-3.0.jar
 \end{verbatim}
 %$
 
@@ -79,11 +76,11 @@ will use below.
 
 \subsection{Checking whether an USR is solvable}
 
-First of all, let's use Utool to determine for a given dominance graph
-whether it is solvable. ``Solvable'' means that it is possible to
-configure the fragments of the graph (i.e.\ those subgraphs which are
-connected by solid ``tree'' edges) into a forest while realising the
-(dotted) dominance edges as reachability in the tree \todo{ref}.
+First of all, let's use Utool to determine whether a given dominance
+graph is solvable. ``Solvable'' means that it is possible to configure
+the fragments of the graph (i.e.\ those subgraphs which are connected
+by solid ``tree'' edges) into a forest while realising the (dotted)
+dominance edges as reachability in the tree \todo{ref}.
 
 \begin{figure}
 \todo{draw me}
@@ -102,7 +99,7 @@ The Utool command for checking solvability is called
 as follows:
 
 \begin{verbatim}
-$ java -jar Utool.jar solvable -s projects/Domgraph/examples/chain-3.clls
+$ utool solvable -s projects/Domgraph/examples/chain-3.clls
 The input graph is normal.
 The input graph is compact.
 
@@ -124,15 +121,16 @@ bash shell, you can display this exit code with the command
 
 As you can see, the Utool command line consists of four parts:
 \begin{itemize}
-\item \verb?java -jar Utool.jar?: This instructs Java to load the Jar
-file and run its main class. You can pass further arguments to the
-Java VM by putting them before the \verb?-jar? option.
+\item \verb?utool? (or \verb?java -jar Utool-3.0.jar?): This instructs
+Java to load the Jar file and run its main class. You can pass further
+arguments to the Java VM by putting them before the \verb?-jar?
+option.
 \item \verb?solvable?: Most of the time, a call to Utool will contain
-exactly one \emph{command}. There are six commands -- \verb?solvable?,
-\verb?solve?, \verb?convert?, \verb?classify?, \verb?server?, and
-\verb?help? -- which perform different tasks. We will walk you through
-all four commands here, and then describe them in more detail in
-Section~\ref{sec:operations}.
+exactly one \emph{command}. There are seven commands --
+\verb?solvable?, \verb?solve?, \verb?convert?, \verb?classify?,
+\verb?display?, \verb?server?, and \verb?help? -- which perform
+different tasks. We will walk you through all seven commands here, and
+then describe them in more detail in Section~\ref{sec:operations}.
 \item \verb?-s?: After the command, you can specify \emph{options}. In
 this case, we selected one option (\verb?-s? or
 \verb?--display-statistics?), which was responsible for printing all
@@ -153,11 +151,11 @@ automatically.
 \subsection{Enumerating solutions}
 
 Now that we know that the dominance graph is solvable, let's have
-Utool show us the five solutions. We do this using the \verb?solve?
-command, like so:
+Utool show us the five solved forms that it claimed exist. We do this
+using the \verb?solve?  command, like so:
 
 \begin{verbatim}
-$ java -jar Utool.jar solve -O term-prolog projects/Domgraph/examples/chain3.clls
+$ utool solve -O term-prolog projects/Domgraph/examples/chain3.clls
 f1(a0,f2(a1,f3(a2,a3)))
 f1(a0,f3(f2(a1,a2),a3))
 f2(f1(a0,a1),f3(a2,a3))
@@ -169,9 +167,9 @@ f3(f1(a0,f2(a1,a2)),a3)
 The five solved forms of the graph are displayed as terms in Prolog
 syntax: Utool transforms each solved form into a \emph{configuration}
 by identifying roots and holes as shown in Fig.~\ref{fig:chain3}, and
-then prints the resulting trees as ground terms. You should convince
-yourself at this point that the graph indeed has exactly five solved
-forms, and that the five terms shown above are such term
+then prints the resulting trees as ground terms. You may want to
+convince yourself at this point that the graph indeed has exactly five
+solved forms, and that the five terms shown above are such term
 representations of the configurations.
 
 We had to use a new command-line option in the \verb?solve? command:
@@ -205,8 +203,8 @@ Utool works with labelled dominance graphs internally; input codecs
 are used to translate from other formalisms into labelled dominance
 graphs, and output codecs are used to translate from labelled
 dominance graphs into other formalisms. These translations can be
-non-trivial, and we have proved them correct in several research
-papers \cite{KolNieTha03,mrs-dom}.
+non-trivial, and we have defined and proven them correct in several
+research papers \cite{KolNieTha03,mrs-dom}.
 
 A special case is if you make Utool read a USR in some formalism,
 which it translates into a labelled dominance graph, and then output
@@ -223,14 +221,13 @@ Minimal Recursion Semantics formalism \cite{CopFliSag97}. This MRS is
 computed by the English Resource Grammar
 \cite{Copestake&Flickinger:LKB} for the first sentence in the Rondane
 Treebank, which is distributed with the ERG. Its filename extension is
-\verb?.mrs.pl?, which instructs Utool to decode it using the
-\verb?mrs-prolog? codec appropriate for the MRSs produced by the
-LKB. Now let's convert this MRS into a labelled dominance graph in Oz
-syntax (output codec \verb?domcon-oz?).
+\verb?.mrs.pl?, which is associated with the \verb?mrs-prolog? input
+codec. Now let's convert this MRS into a labelled dominance graph in
+Oz syntax (output codec \verb?domcon-oz?).
 
 \begin{verbatim}
-$ java -jar Utool.jar convert projects/Domgraph/examples/rondane-1.mrs.pl -O domcon-oz
-%%  autogenerated by Domgraph/Java (see utool.sourceforge.net for details)
+$ utool convert projects/Domgraph/examples/rondane-1.mrs.pl -O domcon-oz
+%% autogenerated by Domgraph 3.0 (see www.coli.uni-sb.de/projects/chorus/utool for details)
 [label(h54 named) label(h51 proper_q(h52 h53)) label(h45 '_of_p&_part_n&_and_c'(
 h43 h47)) label(h47 '_western_a') label(h43 '_eastern_a') label(h40 '_the_q'(h42
  h41)) label(h36 '_between_p&_route_n&_main_a') label(h33 '_the_q'(h35 h34)) lab
@@ -250,7 +247,7 @@ graph it works with belongs to one of a number of important classes
 using the \verb?classify? command, like so:
 
 \begin{verbatim}
-$ java -jar Utool.jar classify -s projects/Domgraph/examples/rondane-1.mrs.pl
+$ utool classify -s projects/Domgraph/examples/rondane-1.mrs.pl
 The input graph is normal.
 The input graph is not compact, but I will compactify it for you.
 The graph is hypernormally connected.
@@ -297,13 +294,13 @@ functionality that is also available from the command-line tool.
 
 You can start Ubench as follows:
 \begin{verbatim}
-$ java -jar Utool.jar display
+$ utool display
 \end{verbatim}
 %$
 
 \begin{figure}
 \begin{center}
-\todo{ubench screenshot}
+\includegraphics[width=0.8\textwidth]{ubench}
 \end{center}
 \caption{The Underspecification Workbench. \label{fig:ubench}}
 \end{figure}
@@ -316,7 +313,7 @@ USRs. Alternatively, you can pass the name of an USR file to Ubench
 directly as follows:
 
 \begin{verbatim}
-$ java -jar Utool.jar display projects/Domgraph/examples/rondane-1.mrs.pl
+$ utool display projects/Domgraph/examples/rondane-1.mrs.pl
 \end{verbatim}
 %$
 
@@ -341,23 +338,40 @@ these commands, and sends the results back through the socket. You can
 start Utool in server mode as follows:
 
 \begin{verbatim}
-$ java -jar Utool.jar server
+$ utool server
 \end{verbatim}
 %$
 
 This will open a socket on port 2802 of your machine and listen to
-commands sent from this port. \todo{Stefan: Please document an example
-run of the demo client here.}
+commands sent from this port. If you have Perl installed on your
+system, you can test the Utool Server using the demo client we have
+included in the distribution. Keep the \verb?utool server? process
+running, and execute the following command:
+
+\begin{verbatim}
+$ cd projects/Domgraph
+$ perl tools/client/utool-client.pl solve -I domcon-oz -O term-prolog \
+         examples/chain3.clls
+f1(a0,f2(a1,f3(a2,a3)))
+f1(a0,f3(f2(a1,a2),a3))
+f2(f1(a0,a1),f3(a2,a3))
+f3(f2(f1(a0,a1),a2),a3)
+f3(f1(a0,f2(a1,a2)),a3)
+\end{verbatim}
 
 The server supports exactly the same commands as the command-line
-version, but it has the advantage that you need to run only a single
-process to execute any number of commands, whereas you must start a
-new Java process for each new command when you use the command-line
-tool. This saves runtime if you need to run a large number of
-successive commands, such as when classifying all USRs in a corpus:
-You don't have the overhead for starting Java, and the programme will
-also become faster over time because the Java system has the
-opportunity to just-in-time compile the Java bytecode.
+version (except that you can't use it to start another
+server). However, it has the advantage that you need to run only a
+single process to execute any number of commands, whereas you must
+start a new Java process for each new command when you use the
+command-line tool. This saves runtime if you need to run a large
+number of successive commands, such as when classifying all USRs in a
+corpus: You don't have the overhead for starting Java, and the
+programme will also become faster over time because the Java system
+has the opportunity to just-in-time compile the Java bytecode.
+
+The exact operation of the Utool Server is described in
+Section~\ref{sec:operations}.
 
 
 

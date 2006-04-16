@@ -1,12 +1,12 @@
 \section{Using Utool}  \label{sec:operations}
 
 In the current release, Utool supports six commands: \verb?solve?,
-\verb?solvable?, \verb?classify?, \verb?convert?, \verb?server?, and
+\verb?solvable?, \verb?classify?, \verb?convert?, \verb?server?,
 \verb?display?. Each of these commands can be used from the
 command-line or in the Utool Server (but running the \verb?server?
 command in the Utool Server doesn't do anything). In addition, Utool
-supports some auxiliary pseudo-commands for displaying help and for
-starting the Utool Server.
+supports several auxiliary pseudo-commands, which display help
+information. 
 
 In this section, we describe these commands in some detail.
 
@@ -18,7 +18,7 @@ the following call executes one \verb?solvable? command and outputs
 some information about it:
 
 \begin{verbatim}
-$ java -jar Utool.jar solvable -s chain-3.clls
+$ utool solvable -s chain-3.clls
 \end{verbatim}
 % $
 
@@ -27,9 +27,6 @@ filename \verb?chain-3.clls? of the USR that we want to solve), and
 accept certain \emph{options} (here, the \verb?-s? option, which
 instructs Utool to display statistical information). These arguments
 and options are written after the command on the command line.
-
-You can get help on using the different commands by running Utool with
-the \verb?help? command.
 
 
 \subsection{Server mode}
@@ -45,7 +42,7 @@ You start Utool in server mode by making Utool execute the
 \verb?server? command:
 
 \begin{verbatim}
-$ java -jar Utool.jar server
+$ utool server
 \end{verbatim}
 %$
 
@@ -56,27 +53,35 @@ information to standard error.
 
 By default, the server will listen for socket connections on port
 2802, but the port can be specified using the \verb?--port?
-option. You communicate with it by sending it XML queries and
-accepting the XML results. You start by sending a query of the
-following form:
+option. The protocol for communicating with the server is as follows:
 
+
+\begin{enumerate}
+\item The client sends a command in an XML element of the following
+form: 
 \begin{verbatim}
 <utool cmd="..." (more options)>
   (arguments of the command)
 </utool>
 \end{verbatim}
 
-Next, you shut down the half of the socket that is responsible for
-sending data to the server. Many socket libraries (e.g.\ the standard
-libraries for C and Perl) offer a \verb?shutdown? function, which you
-should use to shut down the socket for sending. The Utool Server will
-recognise this and start processing the command. Notice that
-\verb?shutdown? is different from \verb?close? because it only closes
-one direction of the socket; you can't close the socket yet because
-you still need to receive the response from the server.
+The command, options, and arguments in this XML element correspond to
+the command, options, and arguments of a single run of the
+command-line tool.
 
-If the command is executed successfully, the server will respond with
-a message of the following form:
+\item The client shuts down the half of the socket that is responsible
+for sending data to the server (i.e.\ the ``output'' direction). Many
+socket libraries (e.g.\ the standard libraries for C and Perl) offer a
+\verb?shutdown? function for this purpose. Notice that \verb?shutdown?
+is different from \verb?close? because it only closes one direction of
+the socket; you can't close the socket yet because you still need to
+receive the response from the server.
+
+\item Once the client-to-server socket is shut down, the Utool Server
+processes the command.
+
+\item If the command is executed successfully, the server will respond
+with a message of the following form:
 
 \begin{verbatim}
 <result .... />
@@ -94,6 +99,10 @@ Here the ``code'' attribute will be a numeric error code, and the
 ``explanation'' attribute will be a plain-text explanation of the
 error that occurred.
 
+\item The server closes the socket.
+\end{enumerate}
+
+
 If you just use Utool for a single call or experimentation, the
 command-line mode will typically be easier to use. However, if you
 need to process many Utool commands from a programme, it can be
@@ -101,9 +110,10 @@ dramatically more efficient to keep a single Utool Server process
 running and send the commands to the server. This is because running a
 Java process incurs an overhead for starting up the virtual machine
 and loading the libraries. In addition, the just-in-time compilation
-really starts to pay off only after a little while (say, after solving
-two or three graphs), i.e.\ you will only ever achieve an efficiency
-comparable to the C++ implementation in the server mode.
+really starts to pay off only after a few seconds. Using the Utool
+Server, you can achieve comparable runtime to the old C++
+implementation (see Fig.~\ref{fig:chains-server-client}); this is not
+possible using the command-line version.
 
 
 \subsection{Passing USRs}
@@ -121,12 +131,12 @@ string as the chain length and not as a filename.
 
 In server mode, you can't pass a filename because the server may run
 on a different machine than the client and may not have access to its
-filesystem. Instead, you pass the USR directly as an attribute of
+filesystem. Instead, you pass the USR directly as an attribute of a
 \verb?usr? element that is embedded into the \verb?utool? element,
 like so:
 
 \begin{verbatim}
-<utool command="solvable">
+<utool cmd="solvable">
   <usr codec="domcon-oz" string="[label(x f(y)) ...]" />
 </utool>
 \end{verbatim}
@@ -153,7 +163,7 @@ ranges with different meanings as follows:
 exit codes & meaning \\\hline
 0 -- 127 & command was executed successfully \\
 128 -- 191 & an error occurred in the main programme \\
-192 -- 223 & an error occurred in the input codec \\
+192 -- 223 & a semantic error occurred in the input codec \\
 224 -- 255 & an error occurred in the output codec
 \end{tabular}
 
@@ -163,8 +173,25 @@ documented with the codecs in Section~\ref{sec:codecs}. The exit codes
 for the main programme are as follows:
 
 \begin{tabular}{l|l}
-exit codes & meaning \\\hline
-128 & \todo{document this}
+exit code & meaning \\\hline
+128 & file I/O error \\
+129 & network I/O error \\
+130 & Ubench encountered an error while laying out a graph \\
+
+140 & error while configuring an (XML) parser \\
+141 & the command you specified was not recognised \\
+142 & error while registering a codec \\
+
+150 & you didn't specify a USR, but the command requires one \\
+151 & you didn't specify an input codec, and Utool cannot guess it \\
+152 & there is no input codec of the name you specified \\
+153 & a parsing error occurred while decoding the USR \\
+154 & the input graph is not weakly normal or not compactifiable \\
+
+160 & you didn't specify an output codec, and Utool cannot guess it \\
+161 & there is no output codec of the name you specified \\
+
+170 & error while parsing an equivalence specification
 \end{tabular}
 
 
@@ -172,7 +199,7 @@ exit codes & meaning \\\hline
 
 \subsection{The commands supported by Utool}
 
-We will now go through the six main commands and describe what each
+We will now go through the seven main commands and describe what each
 command does and what options it takes.
 
 
@@ -211,22 +238,23 @@ time in milliseconds it took to compute the chart.
 
 \paragraph{Options.}
 The \verb?solvable? command can take the following options:
-\begin{description}
-\item[input-codec:] You can specify an input codec for this
-command. By default, the command-line version will try to guess the
-appropriate input codec from the filename extension. If this is not
-possible (or in server mode), you must specify the input codec by name
-explicitly.
+\begin{itemize}
+\item \textbf{input-codec:} You can specify an input codec for this
+command. If you don't do this, the command-line version (but not the
+server) will try to guess the appropriate input codec from the
+filename extension if possible.
 
 In command-line mode, specify the input codec with the option
 \verb?--input-codec <codecname>? or \verb?-I <codecname>?. In server
 mode, specify it as the \verb?codec? attribute of the \verb?usr?
 element.
-\item[display-statistics:] You can make Utool display more detailed
+
+\item \textbf{display-statistics:} You can make Utool display more detailed
 statistics when you call it on the command-line by passing the
 \verb?--display-statistics? or \verb?-s? option. All such statistics
 information will be written to standard error.
-\end{description}
+\end{itemize}
+
 
 
 
@@ -263,37 +291,38 @@ attribute value strings.
 
 \paragraph{Options.}
 The \verb?solve? command can take the following options:
-\begin{description}
-\item[input-codec:] see the \verb?solvable? command
-\item[output-codec:] You must specify which output codec should be
-used to encode the solved forms. The command-line tool will try to
-guess the output codec from the output filename if you specify one. If
-this doesn't work, it will try to use the output codec with the same
-name as the input codec, if it exists. If this doesn't work either (or
-if you want to override the default, or if you use the server mode),
-you must specify the output codec explicitly by name with this option.
+\begin{itemize}
+\item \textbf{input-codec:} see \verb?solvable?
+\item \textbf{output-codec:} You can specify the output codec which
+should be used to encode the solved forms. If you don't specify the
+output codec explicitly, the command-line tool will first try to guess
+the output codec from the output filename if you specify one. If this
+doesn't work, it will try to use the output codec with the same name
+as the input codec, if it exists. The server will not make such
+guesses and expects you to specify the codec explicitly in any case.
 
 In command-line mode, specify the output codec with the option
 \verb?--output-codec <codecname>? or \verb?-O <codecname>?. In server
 mode, specify it by passing the codec name as the \verb?output-codec?
 attribute of the main \verb?utool? element.
 
-\item[output:] By default, the command-line tool will write the
-encoded solved forms to standard error. You can override this by
+\item \textbf{output:} By default, the command-line tool will write
+the encoded solved forms to standard output. You can override this by
 specifying an output file with the option \verb?--output <filename>?
-or \verb?-o <filename>?. This option is not applicable in server
-mode because it doesn't write into files anyway.
+or \verb?-o <filename>?. This option is not applicable in server mode
+because it doesn't write into files anyway.
 
-\item[no-output:] You can instruct Utool not to output the actual
-solved forms by specifying the ``no-output'' option. Utool will still
-\emph{compute} all solved forms in this case, it will simply not
+\item \textbf{no-output:} You can instruct Utool not to output the
+actual solved forms by specifying the ``no-output'' option. Utool will
+still \emph{compute} all solved forms in this case, it will simply not
 \emph{output} them. This can be useful for runtime
 measurements. Specify the option \verb?--no-output? or \verb?-n? on
 the command line. In server mode, you get this effect if you simply
 don't specify any output codec in the \verb?utool? element.
 
-\item[display-statistics:] see the \verb?solvable? command
-\end{description}
+\item \textbf{display-statistics:} see \verb?solvable? 
+\end{itemize}
+
 
 
 
@@ -323,13 +352,14 @@ the attribute value strings.
 
 \paragraph{Options.}
 The \verb?convert? command can take the following options:
-\begin{description}
-\item[input-codec:] see \verb?solvable? 
-\item[output-codec:] see \verb?solve? 
-\item[output:] see \verb?solve?
-\item[no-output:] see \verb?solve?
-\item[display-statistics:] see \verb?solvable?
-\end{description}
+\begin{itemize}
+\item \textbf{input-codec:} see \verb?solvable? 
+\item \textbf{output-codec:} see \verb?solve? 
+\item \textbf{output:} see \verb?solve?
+\item \textbf{no-output:} see \verb?solve?
+\item \textbf{display-statistics:} see \verb?solvable?
+\end{itemize}
+
 
 
 
@@ -406,10 +436,11 @@ attributes are either \verb?true? or \verb?false?.
 
 \paragraph{Options.}
 The \verb?classify? command can take the following options:
-\begin{description}
-\item[input-codec:] see \verb?solvable? 
-\item[display-statistics:] see \verb?solvable?
-\end{description}
+\begin{itemize}
+\item \textbf{input-codec:} see \verb?solvable? 
+\item \textbf{display-statistics:} see \verb?solvable?
+\end{itemize}
+
 
 
 \subsubsection{Server}
@@ -426,36 +457,55 @@ to shut down the server process by hand.
 \paragraph{Options.} The \verb?server? command can take the following
 options:
 
-\begin{description}
-\item[port:] By default, the server will listen on a socket on port
+\begin{itemize}
+\item \textbf{port:} By default, the server will listen on a socket on port
 2802. You can specify a different port using the option
 \verb?--port <number>? (or \verb?-p <number>?), where \verb?<number>?
 is the port number you want.
 
-\item[logging:] Using this option, you can make the server log
+\item \textbf{logging:} Using this option, you can make the server log
 information about incoming commands and its responses. If you specify
 the option \verb?--logging? (or \verb?-l?) by itself, the log messages
 will be written to standard error. Alternatively, you can log the
 messages into a file by specifying the filename:
 \verb?--logging <filename>? or \verb?-l <filename>?.
-\end{description}
+\end{itemize}
+
 
 
 
 \subsubsection{Display}
 
+The \verb?display? command instructs Utool to display the input USR in
+the Underspecification Workbench (Ubench). If the Utool process has
+opened a Ubench window before, it will display the USR in a new tab of
+the same window; otherwise it will open a new Ubench window first.
 
-\todo{Write this once we have integrated Ubench into Utool.}
+Unlike the previous commands which accept USRs as input, the input USR
+argument is \emph{optional} in the \verb?display? command. This means
+that you may specify an input USR (in which case it is displayed right
+away), or you can call \verb?display? without arguments. In this case,
+an empty Ubench window is displayed; you can still open USRs from the
+File/Open menu or by sending further \verb?display? commands to the
+Utool Server.
+
+Ubench offers a large subset of Utool's functionality from within a
+convenient GUI. However, some functions are not accessible from Ubench
+-- for example, Ubench doesn't support codec options yet, and you
+can't use it to write all solved forms of a USR to a file in one
+go. We plan to make this functionality available in Version 3.1.
+
 
 \paragraph{Result.} This command doesn't terminate by itself; you have
-to shut down the server process by hand.
+to quit Ubench by choosing the File/Quit menu entry.
 
-\paragraph{Options.} The \verb?server? command can take the following
+\paragraph{Options.} The \verb?display? command can take the following
 options:
 
-\begin{description}
-\item[foo:]
-\end{description}
+\begin{itemize}
+\item \textbf{input-codec:} see \verb?solvable? 
+\end{itemize}
+
 
 
 
@@ -467,11 +517,11 @@ information. If you call Utool with a pseudo-command, it executes the
 pseudo-command and terminates immediately. You cannot specify both a
 command and a pseudo-command at the same time.
 
-There are the following pseudo-commands:
+The following pseudo-commands exist:
 
 \begin{itemize}
 \item \verb?help [command]?: If you specify a command, this will
-display a brief help message for that command. Otherwise, this will
+display a brief help message for that command. Otherwise, it will
 display an overview over the possible commands.
 \item \verb?--version?: Displays the version of Utool.
 \item \verb?--display-codecs? or \verb?-d?: Displays the installed
@@ -547,10 +597,7 @@ as a child of the \texttt{utool} element}
 {\texttt{solvable}, \texttt{solve}}
 {Run a redundancy elimination algorithm on the chart
 \cite{koller06:_towar}. This is an 
-advanced option that is documented \todo{somewhere -- where should
-this go?}.}
-
-
+advanced option that is documented in Section~\ref{sec:advanced}.}
 \end{itemize}
 
 
