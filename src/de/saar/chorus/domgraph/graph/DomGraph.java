@@ -1315,6 +1315,7 @@ public class DomGraph implements Cloneable {
         public void exceptionTest() {
             String x = null;
             String y = x.toString();
+            x = y;
             
             assert false : "exception was not thrown";
             

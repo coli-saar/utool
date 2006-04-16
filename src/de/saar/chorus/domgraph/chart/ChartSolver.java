@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.testng.annotations.Test;
+
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 
@@ -179,5 +181,23 @@ public class ChartSolver {
             
             return true;
         }
+    }
+    
+    
+
+    
+    /**************************************************************
+     * UNIT TESTS
+     **************************************************************/
+    
+    @Test(groups = {"Domgraph"})
+    public class UnitTests {
+        /*
+         * Test chart size and correct readings for:
+         * - chain of length 3
+         * - thatwould.clls (dauert einige Sekunden)
+         * - not-hnc.clls
+         * - something unsolvable
+         */
     }
 }

@@ -228,12 +228,6 @@ class UtoolServer {
                 if( options.hasOptionNoOutput() ) {
                     out.println("<result />");
                 } else {
-                    if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
-                        sendError(out, ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE,  "Output codec must be a graph codec!");
-                        sock.close();
-                        continue;
-                    }
-                    
                     try {
                         XmlEncodingWriter enc = new XmlEncodingWriter(out);
                         out.print("<result usr='");
@@ -367,26 +361,12 @@ class UtoolServer {
         out.println("<error code='" + exitcode + "' explanation='" + string + "' />");
     }
 
-    // TODO - update the help info
     private static String helpString(Operation op) {
         StringBuffer ret = new StringBuffer();
         
         if( (op == null) || (op.longDescription == null) ) {
-            ret.append("Usage: java -jar Utool.jar <subcommand> [options] [args]\n");
-            ret.append("Type `utool help <subcommand>' for help on a specific subcommand.\n");
-            ret.append("Type `utool --help-options' for a list of global options.\n");
-            ret.append("Type `utool --display-codecs' for a list of supported codecs.\n\n");
-            
-            ret.append("Available subcommands:\n");
-            for( Operation _op : Operation.values() ) {
-                if( _op.shortDescription != null ) {
-                    ret.append(String.format("    %1$-12s %2$s.\n",
-                            _op, _op.shortDescription));
-                }
-            }
-
-            ret.append("\nUtool/Java is the Swiss Army Knife of Underspecification (Java version).\n");
-            ret.append("For more information, see http://www.coli.uni-sb.de/projects/chorus/utool/\n");
+            ret.append("\nUtool is the Swiss Army Knife of Underspecification (Java version).\n");
+            ret.append("For more information, see " + GlobalDomgraphProperties.getHomepage());
         } else {
             ret.append("utool " + op + ": " + op.shortDescription + ".\n");
             ret.append(op.longDescription + "\n");
@@ -396,7 +376,7 @@ class UtoolServer {
     }
     
     private static String versionString() {
-        return "Utool/Java (The Swiss Army Knife of Underspecification), version "
+        return "Utool (The Swiss Army Knife of Underspecification), version "
         + GlobalDomgraphProperties.getVersion() + "\n"
         + "(running in server mode)\n"
         + "Created by the CHORUS project, SFB 378, Saarland University\n\n";
