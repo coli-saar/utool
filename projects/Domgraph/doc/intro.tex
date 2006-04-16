@@ -17,31 +17,39 @@ has the potential to speed up processing of ambiguities.
 
 This document describes Utool (the Swiss Army Knife of
 Underspecification), a tool that is designed to perform a number of
-operations that arise when working with underspecified
-descriptions. Its main two functions are to \emph{solve} an
-underspecified description (i.e., to enumerate all readings from a
-description) and to \emph{convert} descriptions between different
-underspecification formalisms (such as dominance constraints, MRS, and
-Hole Semantics). In addition, it can perform a number of smaller
-tasks, such as deciding solvability, counting readings, and
-determining whether a description belongs to a class with specific
-useful properties.
+operations that arise when working with underspecified descriptions
+(or USRs, underspecified semantic representations). Its main two
+functions are to \emph{solve} an underspecified description (i.e., to
+enumerate all readings from a description) and to \emph{convert}
+descriptions between different underspecification formalisms (such as
+dominance constraints, MRS, and Hole Semantics). In addition, it can
+perform a number of smaller tasks, such as deciding solvability,
+counting readings, and determining whether a description belongs to a
+class with specific useful properties.
 
 Utool was developed in the context of the CHORUS project in the SFB
 (Collaborative Research Centre) 378, which was funded by the German
 Research Organisation (DFG). We developed a version in C++ in
 2004-05. Then we ported release 2.0.1 of the old utool to Java in
-2006. The Java version is superior to the C++ system in many respects:
-It is much cleaner, more portable, easier to distribute, has more
-functionality and better error handling, comes with an integrated GUI,
-and on some platforms it is even faster. We started counting at
-version 1.0 after the switch to Java again; so Utool/Java 1.0 is the
-successor of Utool/C++ 2.0.1. Utool/Java requires at least Java 1.4 to
-run and Java 5.0 to compile.
+2006. The Java version 3.0 is superior to the C++ system in many
+respects: It is much cleaner, more portable, easier to distribute, has
+more functionality and better error handling, comes with an integrated
+GUI, and on some platforms it is even faster. Utool requires Java SE
+5.0 or higher to run or compile.
+
+Technically, Utool is only a collection of front-ends to the Domgraph
+library, which can be used independently from other Java programs. The
+classical Utool front-end, which was also present in the C++ versions,
+accepts instructions as command-line arguments. Since Version 3.0,
+Utool can also run in ``server mode'', accepting instructions over a
+network socket. We also distribute as part of the main Utool
+distribution Ubench, the Underspecification Workbench, which offers
+access to almost all functionality of Utool from a convenient
+GUI. \todo{Licence issues}
 
 This document is not an introduction to underspecification. We and
-others have written many research papers about this, and we cannot do
-this justice in a system documentation. For an overview, we refer you
+others have written many research papers about this topic area, and we
+cannot do it justice in a system manual. For an overview, we refer you
 to the following literature:
 \begin{enumerate}
 \item \citeN{DeemterPetersBook} gave the first overview of the ideas

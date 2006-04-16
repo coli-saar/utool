@@ -15,27 +15,21 @@ dominance graphs and uses \emph{codecs} to translate between these
 graphs and the actual USRs that the user sees. An \emph{input codec}
 transforms a USR in a certain format into an equivalent labelled
 dominance graph, and an \emph{output codec} transforms a labelled
-dominance graph into a USR in a certain format. There are two
-different types of output codecs: \emph{graph output codecs} are
-capable of encoding arbitrary USRs, whereas \emph{plugging output
-codecs} can only encode solved forms. \todo{das ist nicht genau die
-richtige definition; die codectypen unterscheiden sich eigentlich nur
-in den eingabedaten, und das ist fuer den end-user eigentlich total
-egal}
+dominance graph into a USR in a certain format. 
 
 Some codecs are quite simple; for instance, the \verb?domcon-oz? and
-\verb?domcon-gxl? input and output codecs are simply deal with
-syntaxes for labelled dominance graphs. However, there are also input
-codecs for MRS and Hole Semantics that do quite a bit of work to
-compute correct dominance graphs, and rely on nontrivial formal
-results; and there are output codecs for reading the solutions as
-terms or translating them into graph file formats that can be
+\verb?domcon-gxl? input and output codecs simply deal with different
+concrete syntaxes for labelled dominance graphs. However, there are
+also input codecs for MRS and Hole Semantics that do quite a bit of
+work to compute correct dominance graphs, and rely on nontrivial
+formal results; and there are output codecs for reading the solutions
+as terms or translating them into graph file formats that can be
 displayed using external viewers.
 
 In addition, the Codec API is quite simple, and writing your own codec
 doesn't require a deep knowledge of the rest of the Utool system. As
-long as you observe certain rules about, say, the labelled dominance
-graph that your input codec computes for your own underspecification
+long as you observe certain rules about the labelled dominance graph
+that your input codec computes for your own underspecification
 formalism, the rest of the Utool system will simply cooperate with
 your new codec.
 
@@ -75,14 +69,11 @@ terms as labelling atoms, \verb?dom? terms as dominance atoms, and
 silently assume an inequality atom $x \neq y$ for any two symbols $x$
 and $y$ that appear as the first argument of a \verb?label? term.
 
-Both the input and the output codec require that the dominance graph
-is weakly normal. If it isn't, they raise a
-\verb?MalformedDomgraphException?.
-
 The \verb?domcon-oz? input codec considers lines that start with a
-percent symbol as comments and ignores them. The output codec is a
-graph output codec which will encode arbitrary graphs. These codecs
-are associated with the filename extension \verb?.clls?.
+percent symbol as comments and ignores them. Both the input and the
+output codec will deal with arbitrary labelled dominance graphs, even
+if they are not weakly normal. These codecs are associated with the
+filename extension \verb?.clls?.
 
 
 
@@ -127,14 +118,11 @@ an embedded \verb?attr? element which specifies its label. In
 addition, the USR specifies edges, which can have the types
 \verb?solid? or \verb?dominance?.
 
-Both the input and the output codec require that the dominance graph
-is weakly normal. If it isn't, they raise a
-\verb?MalformedDomgraphException?.
-
 The \verb?domcon-gxl? codecs are intended primarily as a portable
-exchange format for labelled dominance graphs. The output codec is a
-graph output codec which will encode arbitrary graphs. These codecs
-are associated with the filename extension \verb?.dc.xml?.
+exchange format for labelled dominance graphs. Both the input and the
+output codec will deal with arbitrary labelled dominance graphs, even
+if they are not weakly normal. These codecs are associated with the
+filename extension \verb?.dc.xml?.
 
 
 
@@ -169,13 +157,14 @@ and(label(C), and(some(A, X, B), and(pred1(C,man,X), leq(C,B))))))))))
 \end{verbatim}
 
 Here \verb?A? and \verb?C? are labels, \verb?B? is a hole, and
-\verb?X? is a object variable of the intended semantic representation,
-which will be bound by an existential quantifier. All four symbols are
-introduced by the outer \verb?some? terms. In addition, the term
-\verb?some(A,X,B)? expresses that \verb?A? is labelled with $\exists
-X. \verb?B?$, and the term \verb?pred1(C,man,X)? expresses that
-\verb?C? is labelled with $man(X)$. The term \verb?leq(C,B)? says that
-the label \verb?C? must be below the hole \verb?B?.
+\verb?X? is an object variable of the intended semantic
+representation, which will be bound by an existential quantifier. All
+four symbols are introduced by the outer \verb?some? terms. In
+addition, the term \verb?some(A,X,B)? expresses that the formula under
+the label \verb?A? is $\exists X. \verb?B?$, and the term
+\verb?pred1(C,man,X)? expresses that the formula under the label
+\verb?C? is $man(X)$. The term \verb?leq(C,B)? says that the label
+\verb?C? must be below the hole \verb?B?.
 
 This codec makes use of the theoretical result that Hole Semantics
 USRs that are hypernormally connected and leaf-labelled can be
@@ -183,8 +172,8 @@ translated into equivalent labelled dominance graphs
 \cite{KolNieTha03}. The translation itself is not that complicated,
 but the correctness proof is not trivial. The codec checks whether the
 resulting graph is normal, leaf-labelled, and hypernormally
-connected. If it isn't, it throws a \verb?MalformedDomgraphException?
-with one of the following error codes:
+connected. If it isn't, the codec reports this as a semantic error
+with one of the following exit codes:
 
 \begin{tabular}{lll}
 code & symbolic name & meaning \\ \hline
@@ -215,7 +204,7 @@ The input codec is associated with the filename extension \verb?.hs.pl?.
 
 
 
-\subsection{The domcon-udraw output codec}
+\subsection{The domcon-udraw and domgraph-dot output codec}
 
 \todo{Stefan}
 
@@ -226,9 +215,8 @@ The input codec is associated with the filename extension \verb?.hs.pl?.
 
 \subsection{The plugging output codecs}
 
-The \verb?plugging-oz? and \verb?plugging-lkb? output codecs are
-plugging output codecs which can be used to encode solved forms. Both
-codecs display the solved form as a list of pairs (hole, root) that
+The \verb?plugging-oz? and \verb?plugging-lkb? output codecs display a
+dominance graph in solved form as a list of pairs (hole, root) that
 specify the dominance edges in the solved form (in Hole Semantics
 terminology, this is a \emph{plugging}). They differ only in the
 concrete syntax:
@@ -263,33 +251,30 @@ codec and the \verb?plugging-lkb? output codec can be used as a
 drop-in replacement for the LKB's own MRS solver (see also
 Section~\ref{sec:integration-lkb}).
 
-Both codecs are plugging codecs; that is, they are only intended to be
-run on dominance graphs in solved form. Both codecs will also accept
-any other dominance graph and will then display its dominance edges,
-but it is less meaningful than displaying the dominance edges in a
-solved form. The \verb?plugging-oz? codec is associated with the
-filename extension \verb?.plug.oz?, and the \verb?plugging-lkb? codec
-is associated with the extension \verb?.lkbplug.lisp?.
+These two codecs are only intended to be run on dominance graphs in
+solved form. They will also accept any other dominance graph and will
+then display its dominance edges, but this is less meaningful than
+displaying the dominance edges in a solved form. The
+\verb?plugging-oz? codec is associated with the filename extension
+\verb?.plug.oz?, and the \verb?plugging-lkb? codec is associated with
+the extension \verb?.lkbplug.lisp?.
 
 
 
 \subsection{The term output codecs}
 
-The \verb?term-oz? and \verb?term-prolog? output codecs are plugging
-output codecs which can be used to encode labelled dominance graphs in
-simple solved form, i.e.\ trees in which each hole has exactly one
-outgoing dominance edge. They traverse these trees top-down and print
-the ground term that corresponds to the tree structure. Their output
-looks as follows:
+The \verb?term-oz? and \verb?term-prolog? output codecs can be used to
+encode labelled dominance graphs in simple solved form, i.e.\ trees in
+which each hole has exactly one outgoing dominance edge. They traverse
+these trees top-down and print the ground term that corresponds to the
+tree structure. Their output looks as follows:
 \begin{itemize}
-\item \verb?term-oz?: The codec computes a collection of Oz terms, one
-  for each solved form, separated by newlines:
+\item \verb?term-oz?: an Oz term of the form
 \begin{verbatim}
 f2(f1(a0 a1) a2)
 f1(a0 f2(a1 a2))
 \end{verbatim}
-\item \verb?term-prolog?: The codec computes a collection of Prolog
-  terms, one for each solved form, separated by newlines:
+\item \verb?term-prolog?:  a Prolog term of the form
 \begin{verbatim}
 f2(f1(a0,a1),a2)
 f1(a0,f2(a1,a2))
@@ -402,7 +387,7 @@ compile and when you run Utool. Then run \verb?java -jar Utool.jar -d?
 to check whether your codec was loaded by Utool.
 
 
-
+\todo{MalformedDomgraphException vs ParserException}
 
 
 

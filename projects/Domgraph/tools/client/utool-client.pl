@@ -41,7 +41,7 @@ foreach my $file (@ARGV) {
   $socket = IO::Socket::INET->new("localhost:2802")
     or die $!;
 
-  open(INPUT, $file) or die $!;
+  open(INPUT, $file) or die "Couldn't open $file: $!\n";
 
   # read input
   $input = join('', <INPUT>);
@@ -63,7 +63,7 @@ foreach my $file (@ARGV) {
   } else {
     print $socket "<utool cmd='$command'>";
   }
-  print $socket "<usr codec='$incodec' string='$input'/>";
+  print $socket "<usr name='$file' codec='$incodec' string='$input'/>";
   print $socket "</utool>";
 
   $socket->shutdown(1);

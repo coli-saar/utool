@@ -13,7 +13,8 @@ PREAMBLE = preamble.tex
 
 ## Components: texts, macros, pictures, bibtex databases
 TEXTS = intro.tex tutorial.tex operations.tex codecs.tex \
-	integration.tex further.tex conclusion.tex building.tex
+	integration.tex further.tex conclusion.tex building.tex \
+	advanced.tex
 
 MACROS =  tree-macros.sty local-macros.tex
 
@@ -25,7 +26,7 @@ BIBS = chorus.bib
 
 ## You shouldn't have to make any changes below this line.
 
-TEXSRC = ${START}.tex ${MACROS} ${TEXTS} ${TEXPICS} ${PICS}
+TEXSRC = ${START}.tex ${MACROS} ${TEXTS} ${TEXPICS} ${PICS} ${PREAMBLE}
 
 
 # Rules for compiling the main file (usually 0.tex)
