@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import de.saar.chorus.domgraph.chart.RootNotFreeException;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -39,11 +38,10 @@ public class RedundancyEliminationSplitSource extends SplitSource {
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
         for( String root : potentialFreeRoots ) {
-            try {
-                Split split = sc.computeSplit(root, subgraph);
+            Split split = sc.computeSplit(root, subgraph);
+            
+            if( split != null ) {
                 splits.add(split);
-            } catch (RootNotFreeException e) {
-                // if the root was not free, do nothing
             }
         }
         

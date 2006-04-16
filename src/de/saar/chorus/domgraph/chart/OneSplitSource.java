@@ -37,12 +37,11 @@ public class OneSplitSource extends SplitSource {
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
         for( String root : potentialFreeRoots ) {
-            try {
-                Split split = sc.computeSplit(root, subgraph);
+            Split split = sc.computeSplit(root, subgraph);
+            
+            if( split != null ) {
                 ret.add(split);
                 return ret.iterator();
-            } catch (RootNotFreeException e) {
-                // if the root was not free, do nothing
             }
         }
 

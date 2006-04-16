@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org._3pq.jgrapht.Edge;
+import org.testng.annotations.Test;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
@@ -101,35 +102,50 @@ public abstract class SplitSource {
         // node -> dom edge out of root frag by which this node is reached
         private Map<String,Edge> domEdgeForNodeWcc;
         
-        
-        // for dfs
+        // set of nodes already visited by DFS
+        // this set is implemented as a field of the class in order
+        // to save on object allocations
         private Set<String> visited;
-
         
+                
         public SplitComputer(DomGraph graph) {
             this.graph = graph;
             rootFragment = new HashSet<String>();
             domEdgeForNodeWcc = new HashMap<String,Edge>();
             splitmap = new HashMap<String,Map<Edge,Set<String>>>();
             
-            
             visited = new HashSet<String>();
         }
         
-        // ASSUMPTION: this method never visits a node in the root
-        // fragment coming from outside the root fragment
-        private void dfs(String node, Set<String> subgraph) throws RootNotFreeException {
-            //System.err.println("dfs tries to visit " + node);
-            
-            // ASSUMPTION: this method is only called on unvisited nodes
+        
+        
+        /**
+         * Performs a depth-first search through the graph which
+         * determines the wccs of the split for the given node
+         * and enters them into domEdgeForNodeWcc and splitmap.
+         * The method returns true if this was successful, and
+         * false if the given node was not the root of a free fragment.
+         * <p>
+         * INVARIANT: this method never visits a node in the root
+         * fragment coming from outside the root fragment
+         * <p>
+         *  INVARIANT: this method is only called on unvisited nodes
+         * 
+         * @param node the root of a fragment
+         * @param subgraph the subgraph for which we want to compute
+         * the split
+         * @param visited the set of nodes we already visited during 
+         * this DFS
+         * @return true iff the root was indeed free
+         */
+        private boolean dfs(String node, Set<String> subgraph, Set<String> visited) {
+            // INVARIANT: this method is only called on unvisited nodes
             assert !visited.contains(node) : "DFS visited node twice";
             
             if( !subgraph.contains(node) ) {
-                //System.err.println("not in subgraph!");
-                return;
+                return true;
             }
             
-            //System.err.println("visiting");
             visited.add(node);
             
             // If node is not in the root fragment, then determine
@@ -160,7 +176,7 @@ public abstract class SplitSource {
                     if( !neighbour.equals(theRoot)
                             && !neighbour.equals(domEdgeForNodeWcc.get(node).getSource()) ) {
                         // dom edge goes into a hole that is not the one we came from
-                        throw new RootNotFreeException();
+                        return false;
                     }
                 } else {
                     // any other edge -- let's explore it
@@ -170,10 +186,14 @@ public abstract class SplitSource {
                         //System.err.println("Explore edge: " + edge);
                         
                         // recurse into children
-                        dfs(neighbour, subgraph);
+                        if( !dfs(neighbour, subgraph, visited) ) {
+                            return false;
+                        }
                     }
                 }
             }
+            
+            return true;
         }
         
         private void updateDomEdge(String neighbour, String node, Edge edge) {
@@ -238,11 +258,10 @@ public abstract class SplitSource {
          * 
          * @param root a node without incoming edges
          * @param subgraph a subgraph 
-         * @return the split induced by this root
-         * @throws RootNotFreeException if the root is not free
+         * @return the split induced by this root, or null if the root
+         * is not the root of a free fragment
          */
         public Split computeSplit(String root, Set<String> subgraph)
-        throws RootNotFreeException
         {
             // initialise root fragment
             rootFragment.clear();
@@ -254,7 +273,10 @@ public abstract class SplitSource {
             domEdgeForNodeWcc.clear();
             splitmap.clear();
             visited.clear();
-            dfs(root,subgraph);
+            
+            if( !dfs(root,subgraph, visited) ) {
+                return null;
+            }
 
             // build Split object
             Split ret = new Split(root);
@@ -269,4 +291,19 @@ public abstract class SplitSource {
         }
     }
 
+    
+
+    /**************************************************************
+     * UNIT TESTS
+     **************************************************************/
+    
+    @Test(groups = {"Domgraph"})
+    public class UnitTests {
+        /*
+         * tests:
+         * 
+         * - check whether computeSplit computes correct splits
+         * - computeSplit returns null if root is not free
+         */
+    }
 }

@@ -33,16 +33,12 @@ public class CompleteSplitSource extends SplitSource {
         List<Split> splits = new ArrayList<Split>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
         
-        //System.err.println("graph has " + potentialFreeRoots.size() + " free roots");
-
         for( String root : potentialFreeRoots ) {
-          //  System.err.println("potential root: " + root);
-            try {
-                Split split = sc.computeSplit(root, subgraph);
+            Split split = sc.computeSplit(root, subgraph);
+
+            if( split != null ) {
+                // if the root was free, then add the split
                 splits.add(split);
-            } catch (RootNotFreeException e) {
-                // if the root was not free, do nothing
-            //    System.err.println("   - not free");
             }
         }
         

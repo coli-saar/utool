@@ -211,11 +211,6 @@ public class Utool {
         
         case convert:
             if( !options.hasOptionNoOutput() ) {
-                if( options.getOutputCodec().getType() != OutputCodec.Type.GRAPH ) {
-                    System.err.println("The output codec must be a graph codec!");
-                    System.exit(ExitCodes.OUTPUT_CODEC_NOT_APPLICABLE);
-                }
-                
                 try {
                     options.getOutputCodec().print_header(options.getOutput());
                     options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), options.getOutput());
@@ -355,8 +350,8 @@ public class Utool {
                 }
             }
 
-            System.err.println("\nUtool/Java is the Swiss Army Knife of Underspecification (Java version).");
-            System.err.println("For more information, see http://www.coli.uni-sb.de/projects/chorus/utool/");
+            System.err.println("\nUtool is the Swiss Army Knife of Underspecification (Java version).");
+            System.err.println("For more information, see " + GlobalDomgraphProperties.getHomepage());
         } else {
             System.err.println("utool " + op + ": " + op.shortDescription + ".");
             System.err.println(op.longDescription);
@@ -364,7 +359,7 @@ public class Utool {
     }
 
     private static void displayVersion() {
-        System.err.println("Utool/Java (The Swiss Army Knife of Underspecification), "
+        System.err.println("Utool (The Swiss Army Knife of Underspecification), "
                 + "version " + GlobalDomgraphProperties.getVersion());
         System.err.println("Created by the CHORUS project, SFB 378, Saarland University");
         System.err.println();
