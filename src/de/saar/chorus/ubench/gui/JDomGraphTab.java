@@ -258,7 +258,8 @@ public class JDomGraphTab extends JGraphTab  {
 						numberOfForms.setText("This graph is unsolvable."); 
 					}
 				} else {
-					numberOfForms.setText("This graph is not compactifiable,\n so we cannot determine solvability.");
+					numberOfForms.setText("<html>This graph is not compactifiable,<br>" +
+							"so we cannot determine solvability.</html>");
 				}
 			}
 			
@@ -273,9 +274,7 @@ public class JDomGraphTab extends JGraphTab  {
 			solve.addActionListener(listener);
 			solve.setPreferredSize(new Dimension(80,25));
 			
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			JDomGraphTab.this.setMaximumSize(
-					new Dimension((int) dim.getWidth(), 21));
+			
 			add(solve, SpringLayout.WEST);
 			if(! solvable) {
 				solve.setEnabled(false);
@@ -390,7 +389,8 @@ public class JDomGraphTab extends JGraphTab  {
 			add(classified, SpringLayout.EAST);
 			
 			
-			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 5, SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.NORTH, numberOfForms, Spring.constant(2,5,10), SpringLayout.NORTH, this);
+			layout.putConstraint(SpringLayout.SOUTH, this, Spring.constant(5,5,15), SpringLayout.SOUTH, numberOfForms);
 			layout.putConstraint(SpringLayout.NORTH, solve, 10, SpringLayout.NORTH, this);
 			layout.putConstraint(SpringLayout.WEST, solve, 5, SpringLayout.WEST, this);
 			layout.putConstraint(SpringLayout.SOUTH, this, 10, SpringLayout.SOUTH, solve);
@@ -399,9 +399,10 @@ public class JDomGraphTab extends JGraphTab  {
 			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 15, SpringLayout.NORTH, this);
 			layout.putConstraint(SpringLayout.WEST, numberOfForms, layout.getConstraint(SpringLayout.EAST, solve),  SpringLayout.EAST, solve);
 			//layout.putConstraint(SpringLayout.WEST, classified, 100, SpringLayout.EAST, numberOfForms);
-			layout.putConstraint(SpringLayout.WEST, classified, Spring.constant(50,(graph.getWidth()/3), 500),  SpringLayout.EAST, numberOfForms);
+			
 			layout.putConstraint(SpringLayout.WEST, numberOfForms, Spring.constant(5,graph.getWidth()/4,500),  SpringLayout.EAST, solve);
-			layout.putConstraint(SpringLayout.EAST, classified, -3, SpringLayout.EAST, this);
+			layout.putConstraint(SpringLayout.EAST, this, Spring.constant(3,3,5), SpringLayout.EAST, classified);
+			layout.putConstraint(SpringLayout.WEST, classified, Spring.constant(50,(graph.getWidth()/3), 500),  SpringLayout.EAST, numberOfForms);
 		}
 	}
 	
