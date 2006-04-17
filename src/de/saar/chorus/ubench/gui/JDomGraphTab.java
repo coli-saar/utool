@@ -225,13 +225,14 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		private Set<JLabel> classifyLabels;
 		
-		//private SpringLayout layout = new SpringLayout();
+		
 		private GridBagLayout layout = new GridBagLayout();
+		
+		
 		/**
 		 * Sets up a new <code>SolvedFormBar</code> by
 		 * initalizing the fields and doing the layout.
 		 * 
-		 * TODO do the layout properly (that is 'more aesthetic')
 		 */
 		private DominanceGraphBar() {
 			super(); 
@@ -262,9 +263,7 @@ public class JDomGraphTab extends JGraphTab  {
 			GridBagConstraints nofConstraint = new GridBagConstraints();
 			nofConstraint.fill = GridBagConstraints.HORIZONTAL;
 			
-		//	layout.setHgap(50);
-		//	layout.setVgap(5);
-			
+					
 			if( isSolvedYet ) {
 				if(solvedForms > 1 ) {
 					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
@@ -285,7 +284,6 @@ public class JDomGraphTab extends JGraphTab  {
 					nofConstraint.fill = GridBagConstraints.BOTH;
 				}
 			}
-			
 			
 	
 			nofConstraint.weightx = 1.0;
