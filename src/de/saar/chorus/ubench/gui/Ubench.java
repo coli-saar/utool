@@ -642,6 +642,7 @@ public class Ubench {
         ttm.setLightWeightPopupEnabled(false);
         
         window.add(tabbedPane, BorderLayout.CENTER);
+       
         window.add(statusBar, BorderLayout.SOUTH);
         
         // tabbedPane.copyShortcuts(slider);

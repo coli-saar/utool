@@ -2,10 +2,11 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,8 +17,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.Spring;
-import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -226,8 +225,8 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		private Set<JLabel> classifyLabels;
 		
-		private SpringLayout layout = new SpringLayout();
-		
+		//private SpringLayout layout = new SpringLayout();
+		private GridBagLayout layout = new GridBagLayout();
 		/**
 		 * Sets up a new <code>SolvedFormBar</code> by
 		 * initalizing the fields and doing the layout.
@@ -238,8 +237,30 @@ public class JDomGraphTab extends JGraphTab  {
 			super(); 
 			setLayout(layout);
 			
+//			 solve button
+			solve = new JButton("SOLVE");
+			solve.setActionCommand("solve");
+			solve.addActionListener(listener);
+			solve.setPreferredSize(new Dimension(80,25));
 			
-			numberOfForms = new JLabel("");
+			GridBagConstraints solveConstraints = new GridBagConstraints();
+			solveConstraints.weightx = 0;
+			solveConstraints.anchor = GridBagConstraints.WEST;
+	
+			
+			layout.setConstraints(solve, solveConstraints);
+			add(solve);
+			
+			
+			
+			if(! solvable) {
+				solve.setEnabled(false);
+			}
+			
+			numberOfForms = new JLabel("", SwingConstants.CENTER);
+			
+			GridBagConstraints nofConstraint = new GridBagConstraints();
+			nofConstraint.fill = GridBagConstraints.HORIZONTAL;
 			
 		//	layout.setHgap(50);
 		//	layout.setVgap(5);
@@ -260,27 +281,25 @@ public class JDomGraphTab extends JGraphTab  {
 				} else {
 					numberOfForms.setText("<html>This graph is not compactifiable,<br>" +
 							"so we cannot determine solvability.</html>");
+					
+					nofConstraint.fill = GridBagConstraints.BOTH;
 				}
 			}
 			
 			
-			add(numberOfForms, SpringLayout.NORTH);
+	
+			nofConstraint.weightx = 1.0;
+			nofConstraint.anchor = GridBagConstraints.CENTER;
+			System.out.println(layout.getConstraints(solve).gridwidth);
+			nofConstraint.gridx = layout.getConstraints(solve).gridwidth + 2;
 			
+			layout.setConstraints(numberOfForms, nofConstraint);
+			add(numberOfForms);
 			//layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
 			
-			// solve button
-			solve = new JButton("SOLVE");
-			solve.setActionCommand("solve");
-			solve.addActionListener(listener);
-			solve.setPreferredSize(new Dimension(80,25));
 			
 			
-			add(solve, SpringLayout.WEST);
-			if(! solvable) {
-				solve.setEnabled(false);
-			}
-			
-			layout.addLayoutComponent(solve, SpringLayout.WEST);
+			//layout.addLayoutComponent(solve, GridBagConstraints.WEST);
 			/*
 			 * Every label is set up with its "standard" character
 			 * and the tooltip-text gets a new position (above the
@@ -386,23 +405,14 @@ public class JDomGraphTab extends JGraphTab  {
 			classified.setForeground(Color.RED);
 			classified.setAlignmentX(SwingConstants.LEFT);
 			
-			add(classified, SpringLayout.EAST);
+			GridBagConstraints classConstraints = new GridBagConstraints();
+			classConstraints.anchor = GridBagConstraints.EAST;
+			classConstraints.weightx = 0;
+			
+			layout.setConstraints(classified,classConstraints);
+			add(classified);
 			
 			
-			layout.putConstraint(SpringLayout.NORTH, numberOfForms, Spring.constant(2,5,10), SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.SOUTH, this, Spring.constant(5,5,15), SpringLayout.SOUTH, numberOfForms);
-			layout.putConstraint(SpringLayout.NORTH, solve, 10, SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.WEST, solve, 5, SpringLayout.WEST, this);
-			layout.putConstraint(SpringLayout.SOUTH, this, 10, SpringLayout.SOUTH, solve);
-	
-			layout.putConstraint(SpringLayout.NORTH, classified, 10, SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.NORTH, numberOfForms, 15, SpringLayout.NORTH, this);
-			layout.putConstraint(SpringLayout.WEST, numberOfForms, layout.getConstraint(SpringLayout.EAST, solve),  SpringLayout.EAST, solve);
-			//layout.putConstraint(SpringLayout.WEST, classified, 100, SpringLayout.EAST, numberOfForms);
-			
-			layout.putConstraint(SpringLayout.WEST, numberOfForms, Spring.constant(5,graph.getWidth()/4,500),  SpringLayout.EAST, solve);
-			layout.putConstraint(SpringLayout.EAST, this, Spring.constant(3,3,5), SpringLayout.EAST, classified);
-			layout.putConstraint(SpringLayout.WEST, classified, Spring.constant(50,(graph.getWidth()/3), 500),  SpringLayout.EAST, numberOfForms);
 		}
 	}
 	
