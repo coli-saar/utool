@@ -279,10 +279,10 @@ public class JDomGraphTab extends JGraphTab  {
 						numberOfForms.setText("This graph is unsolvable."); 
 					}
 				} else {
-					numberOfForms.setText("<html>This graph is not compactifiable,<br>" +
-							"so we cannot determine solvability.</html>");
+					numberOfForms.setText("This graph is not compactifiable, " +
+							"so we cannot determine solvability.");
 					
-					nofConstraint.fill = GridBagConstraints.BOTH;
+					
 				}
 			}
 			
