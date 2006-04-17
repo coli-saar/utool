@@ -76,7 +76,7 @@ class XmlParser extends DefaultHandler {
             if( (e.getException() != null) && (e.getException() instanceof AbstractOptionsParsingException) ) {
                 throw (AbstractOptionsParsingException) e.getException();
             } else {
-                throw new AbstractOptionsParsingException("An error occurred while parsing the input!", e, ExitCodes.PARSING_ERROR);
+                throw new AbstractOptionsParsingException("An error occurred while parsing the input!", e, ExitCodes.PARSING_ERROR_INPUT_GRAPH);
             }
         } catch (IOException e) {
             throw new AbstractOptionsParsingException("An error occurred while reading the input!", e, ExitCodes.IO_ERROR);
@@ -168,7 +168,7 @@ class XmlParser extends DefaultHandler {
                         e, ExitCodes.IO_ERROR));
             } catch (ParserException e) {
                 throw new SAXException(new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
-                        e, ExitCodes.PARSING_ERROR));
+                        e, ExitCodes.PARSING_ERROR_INPUT_GRAPH));
             }
             
             if( attributes.getValue("name") != null ) {
@@ -198,7 +198,7 @@ class XmlParser extends DefaultHandler {
             return XmlEntities.decode(x);
         } catch (XmlDecodingException e) {
             throw new SAXException(new AbstractOptionsParsingException("An XML entity could not be resolved.",
-                    new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR));
+                    new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR_INPUT_GRAPH));
         }
     }
 

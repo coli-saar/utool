@@ -166,6 +166,16 @@ the label \verb?A? is $\exists X. \verb?B?$, and the term
 \verb?C? is $man(X)$. The term \verb?leq(C,B)? says that the label
 \verb?C? must be below the hole \verb?B?.
 
+The codec supports USRs built from the logical symbols \verb?hole?,
+\verb?label?, \verb?some?, \verb?and?, \verb?or?, \verb?imp?,
+\verb?not?, \verb?all?, \verb?leq?, \verb?que?, \verb?eq?,
+\verb?pred1?, \verb?pred2?, and arbitrary non-logical symbols. It does
+not support the symbols \verb?lam? and \verb?app? that are used in
+intermediate representations during semantics construction by
+Blackburn and Bos, as these symbols are beyond the scope of ordinary
+Hole Semantics USRs (they don't relate holes and labels, but entire
+Hole Semantics USRs).
+
 This codec makes use of the theoretical result that Hole Semantics
 USRs that are hypernormally connected and leaf-labelled can be
 translated into equivalent labelled dominance graphs

@@ -265,6 +265,8 @@ TOKEN :
  |  <NOT   : "not">
  |  <ALL   : "all">
  |  <LEQ   : "leq">
+ |  <QUE   : "que">
+ |  <EQ    : "eq">
  |  <PRED1 : "pred1">
  |  <PRED2 : "pred2">
  |  <PLATOM  : "\'" (~["\'"])* "\'"
@@ -349,7 +351,7 @@ void Term() :
     
     varlist.clear();
   }
-}
+ }
 
 
   
@@ -366,8 +368,9 @@ String LogicalConstant() : {
 | t=<NOT>   { return t.image; }
 | t=<ALL>   { return t.image; }
 | t=<SOME>  { return t.image; }
+| t=<QUE>  { return t.image; }
+| t=<EQ>  { return t.image; }
 }
-
 
 String PrologAtom() : { 
   Token t; 

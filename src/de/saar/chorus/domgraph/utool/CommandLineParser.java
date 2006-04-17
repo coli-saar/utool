@@ -174,7 +174,7 @@ class CommandLineParser {
                             e, ExitCodes.IO_ERROR);
                 } catch (ParserException e) {
                     throw new AbstractOptionsParsingException("A parsing error occurred while reading the input.",
-                            e, ExitCodes.PARSING_ERROR);
+                            e, ExitCodes.PARSING_ERROR_INPUT_GRAPH);
                 } 
             }
         }

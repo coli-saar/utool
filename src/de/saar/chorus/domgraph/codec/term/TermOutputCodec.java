@@ -46,6 +46,9 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *
  */
 public class TermOutputCodec extends GraphOutputCodec {
+    public static final int ERROR_NOT_SIMPLE_SOLVED_FORM = 1;
+    
+    
     protected String separator;
     
     /**
@@ -67,7 +70,8 @@ public class TermOutputCodec extends GraphOutputCodec {
         
         // check whether graph is in simple solved form
         if( !graph.isSimpleSolvedForm() || !graph.isLeafLabelled() || !graph.isNormal() ) {
-            throw new MalformedDomgraphException("Graph must be a leaf-labelled simple normal solved form");
+            throw new MalformedDomgraphException("Graph must be a leaf-labelled simple normal solved form",
+                    ERROR_NOT_SIMPLE_SOLVED_FORM);
         }
 
         // build dom-edge map

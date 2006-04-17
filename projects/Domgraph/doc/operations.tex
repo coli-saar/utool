@@ -163,14 +163,17 @@ ranges with different meanings as follows:
 exit codes & meaning \\\hline
 0 -- 127 & command was executed successfully \\
 128 -- 191 & an error occurred in the main programme \\
-192 -- 223 & a semantic error occurred in the input codec \\
+192 -- 223 & an error occurred in the input codec \\
 224 -- 255 & an error occurred in the output codec
 \end{tabular}
 
 The exit codes for successful termination of a command are documented
-with the commands below. The exit codes signifying codec errors are
-documented with the codecs in Section~\ref{sec:codecs}. The exit codes
-for the main programme are as follows:
+with the commands below. Among the codec error codes, the code 192 is
+special because it always signifies a parsing error in the input
+codec. The codes between 193 and 223 denote \emph{semantic errors} in
+the input codec; they and all output codec error codes are documented
+with the codecs in Section~\ref{sec:codecs}. The error codes for the
+main programme are as follows:
 
 \begin{tabular}{l|l}
 exit code & meaning \\\hline
@@ -185,8 +188,7 @@ exit code & meaning \\\hline
 150 & you didn't specify a USR, but the command requires one \\
 151 & you didn't specify an input codec, and Utool cannot guess it \\
 152 & there is no input codec of the name you specified \\
-153 & a parsing error occurred while decoding the USR \\
-154 & the input graph is not weakly normal or not compactifiable \\
+153 & the input graph is not weakly normal or not compactifiable \\
 
 160 & you didn't specify an output codec, and Utool cannot guess it \\
 161 & there is no output codec of the name you specified \\
