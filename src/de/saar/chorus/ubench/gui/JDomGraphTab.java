@@ -2,10 +2,10 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -247,7 +247,7 @@ public class JDomGraphTab extends JGraphTab  {
 			GridBagConstraints solveConstraints = new GridBagConstraints();
 			solveConstraints.weightx = 0;
 			solveConstraints.anchor = GridBagConstraints.WEST;
-	
+			solveConstraints.insets = new Insets(0,10,0,10);
 			
 			layout.setConstraints(solve, solveConstraints);
 			add(solve);
@@ -258,7 +258,7 @@ public class JDomGraphTab extends JGraphTab  {
 				solve.setEnabled(false);
 			}
 			
-			numberOfForms = new JLabel("", SwingConstants.CENTER);
+			numberOfForms = new JLabel("", SwingConstants.LEFT);
 			
 			GridBagConstraints nofConstraint = new GridBagConstraints();
 			nofConstraint.fill = GridBagConstraints.HORIZONTAL;
@@ -292,11 +292,7 @@ public class JDomGraphTab extends JGraphTab  {
 			
 			layout.setConstraints(numberOfForms, nofConstraint);
 			add(numberOfForms);
-			//layout.addLayoutComponent(numberOfForms,BorderLayout.CENTER);
 			
-			
-			
-			//layout.addLayoutComponent(solve, GridBagConstraints.WEST);
 			/*
 			 * Every label is set up with its "standard" character
 			 * and the tooltip-text gets a new position (above the
