@@ -4,10 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -111,9 +112,13 @@ public class JSolvedFormTab extends JGraphTab {
    	 * @param gN the name of the related dominance grap
    	 */
    	private SolvedFormBar(long numOfSolvForms, long form, String gN) {
-   		super(new BorderLayout());
+   		super();
+   		GridBagLayout layout = new GridBagLayout();
+   		setLayout(layout);
    		
-   		formScroll = new JPanel();
+   		GridBagLayout fSlayout = new GridBagLayout();
+   		formScroll = new JPanel(fSlayout);
+   		
    		
    		// button to go forward
    		sLeft = new JButton("<");
@@ -149,7 +154,14 @@ public class JSolvedFormTab extends JGraphTab {
    		
    		
    		solvedFormNo = new JLabel("Solved form ");
-   		formScroll.add(solvedFormNo, BorderLayout.WEST);
+   		formScroll.add(solvedFormNo);
+   		
+   		GridBagConstraints buttonConstraints = new GridBagConstraints();
+   		buttonConstraints.insets = new Insets(0,10,0,10);
+   		
+   		fSlayout.setConstraints(sLeft,buttonConstraints);
+   		fSlayout.setConstraints(sRight,buttonConstraints);
+   		
    		formScroll.add(sLeft);
    		formScroll.add(solvedForm);
    		formScroll.add(sRight);
@@ -158,8 +170,15 @@ public class JSolvedFormTab extends JGraphTab {
    		of = new JLabel("of " + String.valueOf(numOfSolvForms) + " (Graph: " + gN + ")");
    		
    		
-   		formScroll.add(of, BorderLayout.EAST);
-   		add(formScroll, BorderLayout.CENTER);
+   		formScroll.add(of);
+   		
+   		GridBagConstraints fSConstraints = new GridBagConstraints();
+   		fSConstraints.anchor = GridBagConstraints.CENTER;
+   		fSConstraints.weightx = 1.0;
+   		fSConstraints.gridx = 3;
+   		layout.setConstraints(formScroll, fSConstraints);
+   		
+   		add(formScroll);
    		
    		classified = new JPanel();
    		
@@ -262,7 +281,16 @@ public class JSolvedFormTab extends JGraphTab {
    		classified.setForeground(Color.RED);
    		classified.setAlignmentX(SwingConstants.LEFT);
    		
-   		add(classified, BorderLayout.EAST);
+   		GridBagConstraints classConstraints = new GridBagConstraints();
+		classConstraints.anchor = GridBagConstraints.EAST;
+		classConstraints.weightx = 0;
+		classConstraints.weighty = 0;
+		
+		
+		layout.setConstraints(classified,classConstraints);
+		add(classified);
+   		
+   		setMaximumSize(new Dimension(getMaximumSize().width, 21));
    	}
    	
    }

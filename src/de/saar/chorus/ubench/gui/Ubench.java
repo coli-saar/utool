@@ -5,6 +5,9 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -628,7 +631,11 @@ public class Ubench {
      */
     private void initialise() {
 //      set up the window
+    	
+    	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
+        window.setLayout(layout);
+       
         
         listener = new CommandListener();
         tabbedPane = new JDomTabbedPane(listener);
@@ -641,9 +648,28 @@ public class Ubench {
         ttm.setInitialDelay(100);
         ttm.setLightWeightPopupEnabled(false);
         
-        window.add(tabbedPane, BorderLayout.CENTER);
+        
+        GridBagConstraints tpConstraints = new GridBagConstraints();
+       // tpConstraints.anchor = GridBagConstraints.CENTER;
+        tpConstraints.fill = GridBagConstraints.BOTH;
+        tpConstraints.weighty = 5.0;
+        tpConstraints.weightx = 1.0;
+        
+        GridBagConstraints sBConstraints = new GridBagConstraints();
+        sBConstraints.gridy = GridBagConstraints.RELATIVE;
        
-        window.add(statusBar, BorderLayout.SOUTH);
+        sBConstraints.gridx = 0;
+        sBConstraints.fill = GridBagConstraints.BOTH;
+        sBConstraints.weighty = 0;
+        sBConstraints.weightx = 0;
+       
+        
+        layout.setConstraints(tabbedPane, tpConstraints);
+        layout.setConstraints(statusBar, sBConstraints);
+       
+        
+        window.add(tabbedPane);
+        window.add(statusBar);
         
         // tabbedPane.copyShortcuts(slider);
         tabbedPane.copyShortcuts(statusBar);
