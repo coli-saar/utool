@@ -64,7 +64,7 @@ public class JDomGraphStatusBar extends JPanel {
 		
 		// progress bar for solving
 		// TODO make that smaller...
-		progressPanel = new JPanel(new BorderLayout());
+		progressPanel = new JPanel();
 		progressBar = new JProgressBar(0, 1);
 		progressBar.setStringPainted(true); 
 		
@@ -72,8 +72,7 @@ public class JDomGraphStatusBar extends JPanel {
 		progressBar.setString("Loading...");
 		
 		progressBar.setIndeterminate(true);
-		progressBar.setPreferredSize(new Dimension(200,50));
-		progressPanel.add(progressBar, BorderLayout.CENTER);
+		progressPanel.add(progressBar);
 		
 		layout.addLayoutComponent(progressPanel,"progress");
 		add(progressPanel,"progress");

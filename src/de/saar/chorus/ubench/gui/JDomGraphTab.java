@@ -246,6 +246,7 @@ public class JDomGraphTab extends JGraphTab  {
 			
 			GridBagConstraints solveConstraints = new GridBagConstraints();
 			solveConstraints.weightx = 0;
+			solveConstraints.weighty = 0;
 			solveConstraints.anchor = GridBagConstraints.WEST;
 			solveConstraints.insets = new Insets(0,10,0,10);
 			
@@ -287,8 +288,9 @@ public class JDomGraphTab extends JGraphTab  {
 			
 	
 			nofConstraint.weightx = 1.0;
+			nofConstraint.weighty = 1.0;
 			nofConstraint.anchor = GridBagConstraints.CENTER;
-			nofConstraint.gridx = layout.getConstraints(solve).gridwidth + 2;
+		
 			
 			layout.setConstraints(numberOfForms, nofConstraint);
 			add(numberOfForms);
@@ -401,10 +403,13 @@ public class JDomGraphTab extends JGraphTab  {
 			GridBagConstraints classConstraints = new GridBagConstraints();
 			classConstraints.anchor = GridBagConstraints.EAST;
 			classConstraints.weightx = 0;
+			classConstraints.weighty = 0;
+			
 			
 			layout.setConstraints(classified,classConstraints);
 			add(classified);
 			
+	
 			
 		}
 	}
