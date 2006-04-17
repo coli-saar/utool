@@ -30,6 +30,8 @@ package de.saar.chorus.domgraph.utool;
  */
 public class ExitCodes {
     public static final int MALFORMED_DOMGRAPH_BASE_INPUT = 192;   // 11000000
+    public static final int PARSING_ERROR_INPUT_GRAPH = 192;
+
     public static final int MALFORMED_DOMGRAPH_BASE_OUTPUT = 224;  // 11100000
     
     // range of 10000000 ... 10111111 reserved for Utool main program
@@ -44,8 +46,7 @@ public class ExitCodes {
     public static final int NO_INPUT = 150;
     public static final int NO_INPUT_CODEC_SPECIFIED = 151;
     public static final int NO_SUCH_INPUT_CODEC = 152;
-    public static final int PARSING_ERROR = 153;
-    public static final int ILLFORMED_INPUT_GRAPH = 154;
+    public static final int ILLFORMED_INPUT_GRAPH = 153;
 
     public static final int NO_OUTPUT_CODEC_SPECIFIED = 160;
     public static final int NO_SUCH_OUTPUT_CODEC = 161;

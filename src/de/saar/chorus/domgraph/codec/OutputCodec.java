@@ -40,6 +40,7 @@ public abstract class OutputCodec {
         GRAPH, PLUGGING
     }
     
+    public static final int ERROR_NULL_PLUGGING = 30;
     
     /**
      * Encodes a dominance graph and a collection of <code>DomEdge</code>
@@ -70,7 +71,8 @@ public abstract class OutputCodec {
             
         case PLUGGING:
             if( domedges == null ) {
-                throw new MalformedDomgraphException("Can't output a null plugging");
+                throw new MalformedDomgraphException("Can't output a null plugging",
+                        ERROR_NULL_PLUGGING);
             }
             
             encode_plugging(graph, domedges, writer);

@@ -49,6 +49,8 @@ public class Chain extends InputCodec {
         return null;
     }
     
+    public static int ERROR_CHAIN_LENGTH = 1;
+    
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) 
     throws IOException, ParserException, MalformedDomgraphException {
         CharBuffer buf = CharBuffer.allocate(10);
@@ -68,7 +70,7 @@ public class Chain extends InputCodec {
         }
 
         if( chainLength < 1 ) {
-            throw new MalformedDomgraphException("You must specify a numeric chain length of at least 1!");
+            throw new MalformedDomgraphException("You must specify a numeric chain length of at least 1!", ERROR_CHAIN_LENGTH);
         }
         
         makeChain(chainLength, graph, labels);
