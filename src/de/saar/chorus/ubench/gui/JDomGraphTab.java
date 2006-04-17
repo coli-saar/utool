@@ -288,7 +288,6 @@ public class JDomGraphTab extends JGraphTab  {
 	
 			nofConstraint.weightx = 1.0;
 			nofConstraint.anchor = GridBagConstraints.CENTER;
-			System.out.println(layout.getConstraints(solve).gridwidth);
 			nofConstraint.gridx = layout.getConstraints(solve).gridwidth + 2;
 			
 			layout.setConstraints(numberOfForms, nofConstraint);
