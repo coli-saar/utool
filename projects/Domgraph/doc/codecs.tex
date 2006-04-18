@@ -1,6 +1,12 @@
 \section{Codecs}  \label{sec:codecs}
 
-\todo{document exit codes for all codecs}
+\todo{document exit codes for all codecs:
+\begin{itemize}
+\item plugging codecs: 223 = ERROR\_NULL\_PLUGGING
+\item chain: 193 = chain length $< 1$
+\item term: 193 = not simple solved form
+\end{itemize}
+}
 
 Utool is intended as a ``Swiss Army Knife'' for working with
 underspecified representations, and one of our design goals was
@@ -17,14 +23,13 @@ transforms a USR in a certain format into an equivalent labelled
 dominance graph, and an \emph{output codec} transforms a labelled
 dominance graph into a USR in a certain format. 
 
-Some codecs are quite simple; for instance, the \verb?domcon-oz? and
-\verb?domcon-gxl? input and output codecs simply deal with different
-concrete syntaxes for labelled dominance graphs. However, there are
-also input codecs for MRS and Hole Semantics that do quite a bit of
-work to compute correct dominance graphs, and rely on nontrivial
-formal results; and there are output codecs for reading the solutions
-as terms or translating them into graph file formats that can be
-displayed using external viewers.
+Some codecs are quite simple; for instance, the \verb?domcon-gxl?
+codec simply deals with one particular concrete syntax for labelled
+dominance graphs. However, there are also input codecs for MRS and
+Hole Semantics that do quite a bit of work to compute correct
+dominance graphs, and rely on nontrivial formal results; and there are
+output codecs for reading the solutions as terms or translating them
+into graph file formats that can be displayed using external viewers.
 
 In addition, the Codec API is quite simple, and writing your own codec
 doesn't require a deep knowledge of the rest of the Utool system. As
@@ -41,8 +46,8 @@ concrete syntax we assume, and discuss their limitations.
 
 \subsection{The domcon-oz codecs}
 
-The \verb?domcon-oz? codecs deal with string representations of
-labelled dominance graphs as lists of terms of the Oz programming
+The \verb?domcon-oz? codecs deal with representations of dominance
+constraints \cite{clls2000} as lists of terms of the Oz programming
 language. An example USR that these codecs can deal with looks as
 follows:
 
@@ -51,23 +56,26 @@ follows:
 \end{verbatim}
 
 As you can see, USRs are lists of terms whose head symbols are either
-\verb?label? or \verb?dom?. The term \verb?label(x f(x1 ... xn))?
-expresses that the node \verb?x? should have the label \verb?f? and
-its children (over tree edges) should be the nodes \verb?x1? to
-\verb?xn?, from left to right. The term \verb?dom(x y)? expresses that
-there should be a dominance edge from the node \verb?x? to the node
-\verb?y?. All labels and node names must be Oz atoms (essentially,
-this means that they must start with a lowercase letter).
+\verb?label? or \verb?dom?. Each such term stands for an \emph{atom}
+of a dominance constraint. The \emph{labelling atom}
+\verb?label(x f(x1 ... xn))?  (where $n \geq 0$) expresses that the
+node \verb?x? should have the label \verb?f? and its children in a
+tree that satisfies the constraint should be the nodes \verb?x1? to
+\verb?xn?, from left to right. The \emph{dominance atom}
+\verb?dom(x y)? expresses that the node \verb?x? should be above the
+node \verb?y? in a satisfying tree. In addition, the constraint
+contains an implicit inequality atom $x \neq y$ for any two symbols
+$x$ and $y$ that appear as the first argument of a \verb?label? term.
 
 This format was first used in the old CHORUS demo (in 1999 or so),
-which was written in Mozart Oz. At the time, it was used to represent
-dominance \emph{constraints} \cite{clls2000}, but as we know today,
-weakly normal dominance constraints can be seen as dominance graphs
-quite directly \cite{Koller04}. If we want to read a \verb?domcon-oz?
-USR as a weakly normal dominance constraints, we can read \verb?label?
-terms as labelling atoms, \verb?dom? terms as dominance atoms, and
-silently assume an inequality atom $x \neq y$ for any two symbols $x$
-and $y$ that appear as the first argument of a \verb?label? term.
+which was written in Mozart Oz. As we know today, weakly normal
+dominance constraints can be seen as dominance graphs quite directly
+\cite{Koller04}. If we want to read a \verb?domcon-oz?  USR as a
+weakly normal dominance graph, we can read the term
+\verb?label(x f(x1 ... xn))? as expressing that the node \verb?x? in
+the dominance graph has the label \verb?f? and the children \verb?x1?
+to \verb?xn? over tree edges. The term \verb?dom(x y)? then expresses
+that there is a dominance edge from \verb?x? to \verb?y?. 
 
 The \verb?domcon-oz? input codec considers lines that start with a
 percent symbol as comments and ignores them. Both the input and the
@@ -77,9 +85,9 @@ filename extension \verb?.clls?.
 
 
 
-\subsection{The domcon-gxl codecs}
+\subsection{The domgraph-gxl codecs}
 
-The \verb?domcon-gxl? codecs deal with representations of a labelled
+The \verb?domgraph-gxl? codecs deal with representations of a labelled
 dominance graph in the GXL graph representation language. GXL
 (\url{http://www.gupro.de/GXL/}) is a XML-based standard language for
 this purpose. A USR in this format looks as follows:
@@ -118,11 +126,11 @@ an embedded \verb?attr? element which specifies its label. In
 addition, the USR specifies edges, which can have the types
 \verb?solid? or \verb?dominance?.
 
-The \verb?domcon-gxl? codecs are intended primarily as a portable
+The \verb?domgraph-gxl? codecs are intended primarily as a portable
 exchange format for labelled dominance graphs. Both the input and the
 output codec will deal with arbitrary labelled dominance graphs, even
 if they are not weakly normal. These codecs are associated with the
-filename extension \verb?.dc.xml?.
+filename extension \verb?.dg.xml?.
 
 
 
@@ -214,7 +222,7 @@ The input codec is associated with the filename extension \verb?.hs.pl?.
 
 
 
-\subsection{The domcon-udraw and domgraph-dot output codec}
+\subsection{The domgraph-udraw and domgraph-dot output codecs}
 
 \todo{Stefan}
 

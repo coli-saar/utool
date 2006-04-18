@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.domgraph.codec.dot;
+package de.saar.chorus.domgraph.codec.domgraph;
 
 import java.io.IOException;
 import java.io.Writer;

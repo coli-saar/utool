@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.domgraph.codec.domcon;
+package de.saar.chorus.domgraph.codec.domgraph;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,33 +35,33 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * the File/Open menu. Alternatively, you can pass the string "pipe" to
  * it as a codec option. In this case, the codec will compute a uDraw
  * graph drawing command which can be fed to uDraw(Graph) via a pipe, e.g.
- * <blockquote><code>utool convert -O domcon-udraw --output-codec-options pipe | uDraw -pipe</code></blockquote>
+ * <blockquote><code>utool convert -O domgraph-udraw --output-codec-options pipe | uDraw -pipe</code></blockquote>
  * <p>
  * 
  * <strong>Note:</strong> This codec is not suitable for printing
  * a list of graphs, e.g. in the context of printing the solved
  * forms computed by the <code>solve</code> command.<p>
  * 
- * The name of this codec is <code>domcon-udraw</code>, and its associated
- * file extension is <code>.dc.udg</code>.
+ * The name of this codec is <code>domgraph-udraw</code>, and its associated
+ * file extension is <code>.dg.udg</code>.
  * 
  * @author Alexander Koller
  *
  */
-public class DomconUdrawOutputCodec extends GraphOutputCodec {
+public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
 	private boolean pipe = false;
 	
 	public static String getName()
 	{
-		return "domcon-udraw";
+		return "domgraph-udraw";
 	}
 	
 	public static String getExtension()
 	{
-		return ".dc.udg";
+		return ".dg.udg";
 	}
 	
-	public DomconUdrawOutputCodec(String options)
+	public DomgraphUdrawOutputCodec(String options)
 	{
 		pipe = "pipe".equals(options);
 	}

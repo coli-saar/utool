@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.domgraph.codec.domcon;
+package de.saar.chorus.domgraph.codec.domgraph;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -69,13 +69,13 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public class DomconGxlInputCodec extends InputCodec {
+public class DomgraphGxlInputCodec extends InputCodec {
     public static String getName() {
-        return "domcon-gxl";
+        return "domgraph-gxl";
     }
     
     public static String getExtension() {
-        return ".dc.xml";
+        return ".dg.xml";
     }
 
     
