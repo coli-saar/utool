@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.domgraph.codec.domcon;
+package de.saar.chorus.domgraph.codec.domgraph;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,18 +23,18 @@ import de.saar.chorus.domgraph.graph.NodeType;
 
 /**
  * An output codec for weakly normal dominance graphs in GXL syntax.
- * For further documentation of this format, see {@link de.saar.chorus.domgraph.codec.domcon.DomconGxlInputCodec}.
+ * For further documentation of this format, see {@link de.saar.chorus.domgraph.codec.domgraph.DomgraphGxlInputCodec}.
  * 
  * @author Alexander Koller
  *
  */
-public class DomconGxlOutputCodec extends GraphOutputCodec {
+public class DomgraphGxlOutputCodec extends GraphOutputCodec {
     public static String getName() {
-        return "domcon-gxl";
+        return "domgraph-gxl";
     }
     
     public static String getExtension() {
-        return ".dc.xml";
+        return ".dg.xml";
     }
 
 
