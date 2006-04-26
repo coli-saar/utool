@@ -599,25 +599,14 @@ public class Ubench {
      */
     private void registerAllCodecs(CodecManager codecManager) {
         try {
-            codecManager.registerCodec(GlueInputCodec.class);
-            codecManager.registerCodec(HolesemComsemInputCodec.class);
-            codecManager.registerCodec(MrsPrologInputCodec.class);
-            codecManager.registerCodec(DomconOzInputCodec.class);
-            codecManager.registerCodec(DomgraphGxlInputCodec.class);
-            
-            codecManager.registerCodec(DomconOzOutputCodec.class);
-            codecManager.registerCodec(DomgraphGxlOutputCodec.class);
-            codecManager.registerCodec(DomgraphUdrawOutputCodec.class);
-            codecManager.registerCodec(DomconOzPluggingOutputCodec.class);
-            codecManager.registerCodec(LkbPluggingOutputCodec.class);
-            codecManager.registerCodec(OzTermOutputCodec.class);
-            codecManager.registerCodec(PrologTermOutputCodec.class);
-        } catch (Exception e) {
+            codecManager.registerAllDeclaredCodecs();
+        } catch(Exception e) {
             System.err.println("An error occurred trying to register a codec.");
             System.err.println(e);
-            //e.printStackTrace(System.err);
+
             System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
+        
     }
     
     public CodecManager getCodecManager() {

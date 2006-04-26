@@ -9,14 +9,19 @@ package de.saar.chorus.domgraph.codec;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -47,85 +52,6 @@ public class CodecManager {
         //inputCodecs = new ArrayList<InputCodec>();
         outputCodecClasses = new ArrayList<Class>();
         inputCodecClasses = new ArrayList<Class>();
-    }
-    
-    public void registerAllVisibleCodecs() {
-        List<String> classnames = new ArrayList<String>();
-        Package[] pcks = Package.getPackages();
-        
-        for (int i = 0; i < pcks.length; i++) {
-            // normalise package name
-            String name = pcks[i].getName();
-            if (!name.startsWith("/")) {
-                name = "/" + name;
-            }
-            name = name.replace('.','/');
-            
-            // Get a File object for the package
-            URL url = CodecManager.class.getResource(name);
-            
-            if( url != null ) {
-                // TODO replace %... entities in a more general way
-                String urlname = url.getFile().replaceAll("%20", " ");
-                File directory = new File(urlname);
-                
-                if (directory.exists()) {
-                    // URL describes an existing package directory
-                    String[] files = directory.list();
-                    
-                    for (int j = 0; j < files.length; j++) {
-                        if (files[j].endsWith(".class")) {
-                            classnames.add(pcks[i].getName() + "." + files[j].substring(0,files[j].length()-6).replaceAll("/", "."));
-                        }
-                    }
-                } else {
-                    // URL describes an entry in a JAR file
-                    try {
-                        JarURLConnection conn = (JarURLConnection) url.openConnection();
-                        String starts = conn.getEntryName();
-                        JarFile jfile = conn.getJarFile();
-                        Enumeration e = jfile.entries();
-                        
-                        while (e.hasMoreElements()) {
-                            ZipEntry entry = (ZipEntry) e.nextElement();
-                            String entryname = entry.getName();
-                            
-                            if (entryname.startsWith(starts)
-                                    && (entryname.lastIndexOf('/')<=starts.length())
-                                    && entryname.endsWith(".class")) {
-                                classnames.add(entryname.substring(0,entryname.length()-6).replaceAll("/", "."));
-                            }
-                        }
-                    } catch(IOException e) {
-                        // i.e. had problems reading from the JAR file
-                        // -- just ignore this
-                        System.err.println(e);
-                    }
-                }
-            }   
-        }
-        
-        // go through class names and register the codec classes
-        for( String classname : classnames ) {
-            try {
-                Class c = Class.forName(classname);
-                
-                //System.err.println("\nclass: " + c);
-                if( InputCodec.class.isAssignableFrom(c) || OutputCodec.class.isAssignableFrom(c)) {
-                  //  System.err.println("try to register " + c);
-                    registerCodec(c);
-                   // System.err.println("  - success!");
-                }
-            } catch(ClassNotFoundException e) {
-                // i.e. couldn't reconstruct a valid class name from
-                // the .class filename -- just ignore it
-            } catch (CodecRegistrationException e) {
-                // i.e. the class was not a valid codec class after all
-                // (in particular because it was abstract) -- just ignore it
-                //System.err.println("  - but caught CRE");
-            }
-        }
-        
     }
     
     public static String getCodecName(Class codecClass) {
@@ -201,9 +127,14 @@ public class CodecManager {
      * 
      * @param codecClass a codec class
      * @throws CodecRegistrationException if the class is neither a subclass
-     * of <code>InputCodec</code> nor of <code>OutputCodec</code>.
+     * of <code>InputCodec</code> nor of <code>OutputCodec</code>, or if the
+     * codec doesn't have a name.
      */
     public void registerCodec(Class codecClass) throws CodecRegistrationException {
+        if( getCodecName(codecClass) == null ) {
+            throw new CodecRegistrationException("Codec " + codecClass + " has a null name.");
+        }
+        
         if( OutputCodec.class.isAssignableFrom(codecClass) ) {
             if( constructOutputCodec(codecClass, null) == null ) {
                 throw new CodecRegistrationException("Input codec " + codecClass + " has no appropriate constructor");
@@ -219,25 +150,6 @@ public class CodecManager {
         } else  {
             throw new CodecRegistrationException("Given codec " + codecClass + " is neither input nor output codec");
         }
-        
-        
-/*         
-        try {
-            if( OutputCodec.class.isAssignableFrom(codecClass) ) {
-                Constructor constr;
-                constr = codecClass.getConstructor(new Class[] { });
-                OutputCodec codec = (OutputCodec) constr.newInstance(new Object[] { });
-                outputCodecs.add(codec);
-            } else if( InputCodec.class.isAssignableFrom(codecClass)) {
-                Constructor constr;
-                constr = codecClass.getConstructor(new Class[] { });
-                InputCodec codec = (InputCodec) constr.newInstance(new Object[] { });
-                inputCodecs.add(codec);
-            }
-        } catch (Exception e) {
-            throw new CodecRegistrationException(e);
-        }
-        */ 
     }
     
     /**
@@ -330,27 +242,39 @@ public class CodecManager {
         int max_strlen = 0;
         String formatString, formatStringNoExt;
         
+        List<String> inputCodecNames = new ArrayList<String>();
+        List<String> outputCodecNames = new ArrayList<String>();
+        Map<String,Class> inputCodecClassMap = new HashMap<String,Class>();
+        Map<String,Class> outputCodecClassMap = new HashMap<String,Class>();
+        
         for( Class codec : inputCodecClasses ) {
             max_strlen = Math.max(max_strlen, getCodecName(codec).length());
+            inputCodecNames.add(getCodecName(codec));
+            inputCodecClassMap.put(getCodecName(codec), codec);
         }
 
         for( Class codec : outputCodecClasses ) {
             max_strlen = Math.max(max_strlen, getCodecName(codec).length());
+            outputCodecNames.add(getCodecName(codec));
+            outputCodecClassMap.put(getCodecName(codec), codec);
         }
         
         formatString = "    %1$-" + max_strlen + "s             (%2$s)";
         formatStringNoExt = "    %1$s";
         
-
+        
+        Collections.sort(inputCodecNames);
+        Collections.sort(outputCodecNames);
+        
         
         out.println("Installed input codecs:");
-        for( Class codec : inputCodecClasses ) {
-            displayOneCodec(codec, formatString, formatStringNoExt, out);
+        for( String inputCodecName : inputCodecNames ) {
+            displayOneCodec(inputCodecClassMap.get(inputCodecName), formatString, formatStringNoExt, out);
         }
         
         out.println("\nInstalled output codecs:");
-        for( Class codec : outputCodecClasses ) {
-            displayOneCodec(codec, formatString, formatStringNoExt, out);
+        for( String outputCodecName : outputCodecNames ) {
+            displayOneCodec(outputCodecClassMap.get(outputCodecName), formatString, formatStringNoExt, out);
         }
     }
 
@@ -384,5 +308,57 @@ public class CodecManager {
     public List<Class> getAllOutputCodecs() {
         return outputCodecClasses;
     }
+    
+    
+    
+    /**
+     * Registers all codecs which are declared in a <code>codecclasses.properties</code>
+     * file. This file is assumed to contain the names of codec
+     * classes, one per line; all these classes will be registered
+     * as codecs in this codec manager.<p> 
+     * 
+     * The method looks for the codecclasses file in the directory
+     * <code>de/saar/chorus/domgraph/codec</code> below the classpath.
+     * If there is more than one file with this pathname on the
+     * class path, this method will process each of these files
+     * in turn, i.e. the codecs of all files will be registered.
+     * This is designed to make it easy to codec developers to write
+     * their own codecs and use them from utool/domgraph without having
+     * to recompile the domgraph code.
+     * 
+     * @throws CodecRegistrationException if an error occurred while trying
+     * to register any of the listed codec classes. This happens when
+     * either an I/O error occurred, one of the class names could not
+     * be resolved to a class, or one of the classes is not a codec. 
+     * 
+     */
+    public void registerAllDeclaredCodecs() throws CodecRegistrationException {
+        try {
+            ClassLoader loader = getClass().getClassLoader();
+            Enumeration<URL> urls = loader.getResources("de/saar/chorus/domgraph/codec/codecclasses.properties");
 
+            while( urls.hasMoreElements() ) {
+                URL url = urls.nextElement();
+                InputStream is = url.openStream();
+
+                Properties props = new Properties();
+                props.load(is);
+                
+                for( Object name : props.keySet() ) {
+                    registerCodec(Class.forName((String) name));
+                }
+            }
+        } catch(Exception e) {
+            throw new CodecRegistrationException("An error occurred while registering codecs from codecclass.properties", e);
+        }
+    }
+        
+
+    /*
+     * Unit tests:
+     *  - exception when trying to register a class which isn't a codec
+     *  - exception when trying to register a nameless codec (getName = null)
+     */
+    
+    
 }

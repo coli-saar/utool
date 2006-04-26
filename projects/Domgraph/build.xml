@@ -99,8 +99,9 @@
 			</classpath>
 		</javac>
 
-		<copy file="${domgraph.properties}" todir="${build.classes}/${chorus}/domgraph/" />
-
+		<copy todir="${build.classes}">
+			<fileset dir="${source}" includes="${chorus}/**/*.properties" />
+		</copy>
 	</target>
 
 
