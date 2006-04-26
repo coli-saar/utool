@@ -24,7 +24,6 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;

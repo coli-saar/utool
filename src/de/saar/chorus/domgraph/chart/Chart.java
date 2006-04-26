@@ -227,6 +227,7 @@ public class Chart {
         
         return ret.toString();
     }
+    
 
     /**
      * Returns the list of all top-level subgraphs.

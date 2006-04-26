@@ -12,10 +12,10 @@ import java.util.List;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -140,7 +140,7 @@ public class Utool {
             if( solvable ) {
                 if( options.hasOptionStatistics() ) {
                     System.err.println("it is solvable.");
-                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart());
+                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), compactGraph);
                 }
                 
                 // TODO runtime prediction (see ticket #11)
@@ -318,10 +318,11 @@ public class Utool {
 
 
 
-    private static void printChartStatistics(Chart chart, long time, boolean dumpChart) {
+    private static void printChartStatistics(Chart chart, long time, boolean dumpChart, DomGraph compactGraph) {
         System.err.println("Splits in chart: " + chart.size());
         if( dumpChart ) {
-            System.err.println(chart);
+            //System.err.println(chart);
+            System.err.println(ChartPresenter.chartOnlyRoots(chart, compactGraph));
         }
         
         if( time != -1 ) {
