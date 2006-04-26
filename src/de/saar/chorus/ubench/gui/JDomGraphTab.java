@@ -132,6 +132,7 @@ public class JDomGraphTab extends JGraphTab  {
 			graph.revalidate();
 			revalidate();
 			setMinimumSize(statusBar.getMinimumSize());
+	
 		}
 	}
 	

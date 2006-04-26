@@ -124,7 +124,8 @@
 
 		<jar jarfile="${domgraph-dist.jar}"
              basedir="${build.classes}"
-             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},${itext.unpacked.classes}"
+             includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},
+			${itext.unpacked.classes},${jgraph.unpacked.classes}"
 					excludes="**/*$UnitTests.class">
 
 			<manifest>
