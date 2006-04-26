@@ -42,6 +42,11 @@
 		<quantifier label="some_q_indiv" hole="1"/>
 	</equivalencegroup>
 
+	<equivalencegroup>
+	        <quantifier label="every_q" hole="1" />
+		<quantifier label="each_q" hole="1" />
+	</equivalencegroup>
+
 	
 	<permutesWithEverything label="proper_q" hole="1" />
 	<permutesWithEverything label="pronoun_q" hole="1" />
