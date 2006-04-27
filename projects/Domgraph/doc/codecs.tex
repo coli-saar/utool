@@ -36,7 +36,9 @@ doesn't require a deep knowledge of the rest of the Utool system. As
 long as you observe certain rules about the labelled dominance graph
 that your input codec computes for your own underspecification
 formalism, the rest of the Utool system will simply cooperate with
-your new codec.
+your new codec. In fact, you don't even have to recompile Utool to
+make your new codec available to it -- you can simply package your own
+codec into a Jar file and add it to the classpath when running Utool.
 
 Below, we will go through the input and output codecs in the current
 Utool distribution one by one, explain the formal background and the
@@ -383,26 +385,33 @@ to the argumentless constructor if it doesn't.
 
 In addition, your codec class is expected to implement public static
 methods \verb?getName()? and \verb?getExtension()?, both with return
-type \verb?String?. These methods should return the codec name and the
-filename extension that you want to associate with your codec.
+type \verb?String?.  These methods should return the codec name and
+the filename extension that you want to associate with your
+codec. \verb?getName? must generally return a non-null value.
 
-Finally, in order to inform Utool of your codec's existence, you must
-\emph{register} the codec. In the current release, this task is a bit
-of a nuisance, as you must add a call to \verb?registerCodec? for your
-codec class in each of the following places of the Utool source code:
-\begin{itemize}
-\item method \verb?registerAllCodecs? in
-  \url{de.saar.chorus.domgraph.utool.CommandLineParser};
-\item method \verb?registerAllCodecs? in
-  \url{de.saar.chorus.domgraph.utool.XmlParser};
-\item method \verb?registerAllCodecs? in
-  \url{de.saar.chorus.ubench.gui.Main}. 
-\end{itemize}
+The final step of the story is to make Utool aware of your new
+codec. This is handled by creating a file
+\url{de/saar/chorus/domgraph/codec/codecclasses.properties} somewhere
+in your classpath. In this file, you list the fully qualified
+classname(s) of your new codec(s), one per line. Utool will then
+automatically read this file and load your codecs.
 
-You must then recompile Utool as described in \todo{where?}. Make sure
-that your compiled codec class is in your classpath both when you
-compile and when you run Utool. Then run \verb?java -jar Utool.jar -d?
-to check whether your codec was loaded by Utool.
+For instance, let's say that you have implemented and compiled a codec
+class \url{foo.bar.MyCodec}. You would then create a
+\url{codecclasses.properties} file that contains just one line that
+reads ``\url{foo.bar.MyCodec}'', and start a MyCodec-enhanced version
+of Utool as follows:
+
+
+\begin{verbatim}
+$ jar cf mycodec.jar foo/bar/MyCodec.class \
+    de/saar/chorus/domgraph/codec/codecclasses.properties
+$ java -cp Utool.jar:mycodec.jar de.saar.chorus.domgraph.utool.Utool -d
+\end{verbatim}
+%$
+
+This will display your new codec along with the standard Utool ones.
+
 
 
 \todo{MalformedDomgraphException vs ParserException}
