@@ -138,13 +138,139 @@ filename extension \verb?.dg.xml?.
 
 \subsection{The mrs-prolog input codec}
 
-\cite{mrs-dom}
+The \verb|mrs-prolog| codec deals with underspecified representations
+of Minimal Recursion Semantics (MRS; \citeNP{CopFliSag97}), the
+standard scope underspecification formalism used in current HPSG grammars. The concrete syntax uses a Prolog style term
+representation as used in the LKB system \cite{Copestake:LKB-Book}.
 
-\todo{Stefan}
+A concrete example of an MRS expression looks as follows:
+
+\begin{verbatim}
+psoa(h1,e2,
+  [ rel('prop-or-ques_m',h1,
+        [ attrval('ARG0',e2),
+          attrval('MARG',h3),
+          attrval('PSV',u4),
+          attrval('TPC',u5) ]),
+    rel('_every_q',h6,
+        [ attrval('ARG0',x7),
+          attrval('RSTR',h9),
+          attrval('BODY',h8) ]),
+    rel('_dog_n_1',h10,
+        [ attrval('ARG0',x7) ]),
+    rel('_bark_v_1',h11,
+        [ attrval('ARG0',e2),
+          attrval('ARG1',x7) ]) ],
+  hcons([ qeq(h3,h11), qeq(h9,h10) ]))
+\end{verbatim}
+
+Here, \verb|h1| is the top handle, and \verb|e2| an event variable. 
+Terms of the form
+\begin{verbatim}
+rel(L, H, [attrval(F, V), ...])
+\end{verbatim}
+represent elementary predications, which pair a quoted string \verb|L|,
+a handle \verb|H|, and a list of feature-value pairs. Features are
+represented by quoted strings, and values can be either handles,
+object language individual or event variables, ``unspecified'' values
+(see below) and quoted strings. Finally, terms of the form \verb|qeq(H, H')| represent handle constraints. Terms of the form \verb|geq(H, H')| can also be used to express handle constraints. 
+
+The codec makes the following assumptions:
+\begin{itemize}
+\item Handles start with a lowercase \verb|h| followed by a sequence
+  of digits.
+\item Individual variables start with a lowercase \verb|x| followed by
+  a sequence of digits.
+\item Event variables start with a lowercase \verb|e| followed by a
+  sequence of digits.
+\end{itemize}
+The codec also accepts terms starting with lowercase \verb|u| or
+\verb|i|, which correspond to values left unspecified by the
+syntax-semantics interface of the grammar used to derive the MRS
+expression.
+
+The codec implements a slightly extended version of the translation of
+MRS into normal dominance graphs defined by \citeN{mrs-dom}. The translation
+itself is relatively straightforward, but the correctness proof is quite 
+complicated and requires that MRS expressions satisfy certain structural restrictions (see also below). 
+
+For the translation to be correct, some implicit constraints built
+into the MRS formalisms must be made explicit in the corresponding
+dominance graph. Most importantly, the translation must add additional
+dominance edges to the dominance graph to model variable binding. To
+this end, the codec must find out which elementary predications
+correspond to quantifiers, and which individual variables occur bound:
+The codec assumes that elementary predications which contain exactly
+the features \verb|ARG0|, \verb|RSTR| and \verb|BODY| are quantifies.
+If an individual variable occurs as value of some other feature, it it
+treated as bound.\footnote{The features PSV and TPC are treated
+  specially, and individual variables occurring as value of these
+  features are ignored by the codec.}
+
+Note that the translation is restricted in two ways: First, the
+\verb|qeq| constraints are modelled as more general dominance
+constraints. This is a conceptional simplification, which however is
+compatible with the way modern grammars make use of \verb|qeq|
+constraints \cite{mrs-eval}. Second, the translation is restricted to
+MRS expressions whose graph satisfies certain structural restrictions.
+The codec checks for these restrictions: The MRS must be a \emph{net}, which is equivalent to the corresponding dominance graph to be normal, hypernormally connected and leaf-labelled. The codec reports an error is the MRS cannot be translated into a dominance graph that satisfies these restrictions:
+
+\begin{tabular}{lll}
+code & symbolic name & meaning \\ \hline
+XXX &  \verb?NOT_NORMAL? & resulting graph is not normal \\
+XXX &  \verb?NOT_WEAKLY_NORMAL? & resulting graph is not weakly normal \\
+XXX &  \verb?NOT_HYPERNORMALLY_CONNECTED? & resulting graph is not hypernormally connected \\
+XXX &  \verb?NOT_LEAF_LABELLED? & resulting graph is not leaf-labelled \\
+XXX &  \verb?NOT_WELLFORMED? & the input MRS is not wellformed
+\end{tabular}
+
+The input codec is associated with the filename extension \verb|.mrs.pl|.
 
 \subsection{The mrs-xml input codec}
 
-\todo{Stefan}
+In addition to the Prolog style term representation, utool also supports an XML style syntax. For instance, the Prolog style MRS expressions shown above is represented in XML as follows:
+
+\begin{verbatim}
+<?xml version="1.0"?>
+<mrs>
+  <var vid="h1"/>
+  <ep>
+    <pred>prop-or-ques_m_rel</pred>
+    <var vid="h1"/>
+    <fvpair><rargname>ARG0</rargname><var vid="e2"/></fvpair>
+    <fvpair><rargname>MARG</rargname><var vid="h3"/></fvpair>
+    <fvpair><rargname>PSV</rargname><var vid="u4"/></fvpair>
+    <fvpair><rargname>TPC</rargname><var vid="u5"/></fvpair>
+  </ep>
+  <ep>
+    <pred>_every_q_rel</pred>
+    <var vid="h6"/>
+    <fvpair><rargname>ARG0</rargname><var vid="x7"/></fvpair>
+    <fvpair><rargname>RSTR</rargname><var vid="h9"/></fvpair>
+    <fvpair><rargname>BODY</rargname><var vid="h8"/></fvpair>
+  </ep>
+  <ep>
+    <pred>_dog_n_1_rel</pred>
+    <var vid="h10"/>
+    <fvpair><rargname>ARG0</rargname><var vid="x7"/></fvpair>
+  </ep>
+  <ep>
+    <pred>_bark_v_1_rel</pred>
+    <var vid="h11"/>
+    <fvpair><rargname>ARG0</rargname><var vid="e2"/></fvpair>
+    <fvpair><rargname>ARG1</rargname><var vid="x7"/></fvpair>
+  </ep>
+  <hcons hreln="qeq">
+    <hi><var vid="h3"/></hi>
+    <lo><var vid="h11"/></lo>
+  </hcons>
+  <hcons hreln="qeq">
+    <hi><var vid="h9"/></hi>
+    <lo><var vid="h10"/></lo>
+  </hcons>
+</mrs>
+\end{verbatim}
+
 
 
 
@@ -226,9 +352,13 @@ The input codec is associated with the filename extension \verb?.hs.pl?.
 
 \subsection{The domgraph-udraw and domgraph-dot output codecs}
 
-\todo{Stefan}
+As an alternative to the \verb|display| command, one can use utool to 
+convert underspecified representations into formats which can be further processed by other graph viewers: The \verb|domgraph-udraw| output-codec outputs a dominance graph in a format that can be used to display the graph with \verb|uDraw(Graph)|, and the \verb|domgraph-dot| display dominance graphs in the .dot-format, which for instance can be displayed using \verb|graphviz|. 
 
-\todo{discuss option}
+The \verb|domgraph-udraw| accepts the codec opttion \verb|pipe|. This option must be specified if the output graph is to be send to uDrawGraph by a pipe, because the formats differ slightly depending on whether uDrawGraph reads its input from a file or from standard input/pipe. For instance:
+\begin{verbatim}
+java -jar Utool.jar convert -O domgraph-udraw --output-codec-options pipe foo.clls | uDrawGraph -pipe
+\end{verbatim}
 
 
 
@@ -251,14 +381,7 @@ concrete syntax:
 Each list consists of terms of the form \verb?plug(x y)? which encode
 the dominance edges (here: from \verb?x? to \verb?y?) in the solved
 form.
-\item \verb?plugging-lkb?: The output is a Lisp list of lists of lists
-  that looks as follows:
-\begin{verbatim}
-( ( (r2 r2 2) (2 r2 2) (l2 l2 1) (1 l2 1) (l1 l1 0) (0 l1 0) (r1 r1 1) (1 r1 1))
-  ( (l1 l1 0) (0 l1 0) (r1 r1 2) (2 r1 2) (r2 r2 2) (2 r2 2) (l2 l2 1) (1 l2 1)) )
-\end{verbatim}
-
-\todo{Stefan}
+\item \verb?plugging-lkb?: This output codec is intended to be used for the integration of utool into the LKB system. \todo{see somewhere else}
 
 \end{itemize}
 
