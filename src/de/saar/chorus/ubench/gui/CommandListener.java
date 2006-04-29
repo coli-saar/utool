@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +100,11 @@ public class CommandListener implements ActionListener, ItemListener {
                 ffOutputCodecs.add(new GenericFileFilter(CodecManager.getCodecExtension(codec), CodecManager.getCodecName(codec)));
             }
         }
+        
+        Collections.sort(ffInputCodecs);
+        Collections.reverse(ffInputCodecs);
+        Collections.sort(ffOutputCodecs);
+        Collections.reverse(ffInputCodecs);
     }
     
     /**
@@ -665,7 +671,7 @@ public class CommandListener implements ActionListener, ItemListener {
      * @author Alexander Koller
      *
      */
-    private class GenericFileFilter extends FileFilter {
+    private class GenericFileFilter extends FileFilter implements Comparable {
         private String extension;
         private String desc;
         
@@ -712,6 +718,11 @@ public class CommandListener implements ActionListener, ItemListener {
         public String getExtension() {
             return extension;
         }
+
+		public int compareTo(Object o) {
+			return extension.compareTo( 
+			((GenericFileFilter)o).getExtension());
+		}
         
     }
     
