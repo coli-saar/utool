@@ -62,6 +62,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		
 		
+		
 		if(! (origin.isNormal() || origin.isWeaklyNormal())) {
 			empty = true;
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
