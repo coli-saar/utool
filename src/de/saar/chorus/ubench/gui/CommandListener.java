@@ -720,8 +720,8 @@ public class CommandListener implements ActionListener, ItemListener {
         }
 
 		public int compareTo(Object o) {
-			return extension.compareTo( 
-			((GenericFileFilter)o).getExtension());
+			return desc.compareTo( 
+			((GenericFileFilter)o).desc);
 		}
         
     }

@@ -4,8 +4,6 @@
  */
 package de.saar.chorus.ubench.gui;
 
-import java.awt.BorderLayout;
-import java.awt.ComponentOrientation;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -26,18 +24,6 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
-import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
-import de.saar.chorus.domgraph.codec.domgraph.DomgraphUdrawOutputCodec;
-import de.saar.chorus.domgraph.codec.domgraph.DomgraphGxlInputCodec;
-import de.saar.chorus.domgraph.codec.domgraph.DomgraphGxlOutputCodec;
-import de.saar.chorus.domgraph.codec.glue.GlueInputCodec;
-import de.saar.chorus.domgraph.codec.holesem.HolesemComsemInputCodec;
-import de.saar.chorus.domgraph.codec.mrs.MrsPrologInputCodec;
-import de.saar.chorus.domgraph.codec.plugging.DomconOzPluggingOutputCodec;
-import de.saar.chorus.domgraph.codec.plugging.LkbPluggingOutputCodec;
-import de.saar.chorus.domgraph.codec.term.OzTermOutputCodec;
-import de.saar.chorus.domgraph.codec.term.PrologTermOutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
