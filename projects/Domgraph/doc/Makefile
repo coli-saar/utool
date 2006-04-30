@@ -187,8 +187,8 @@ SCP=scp
 index.html: ${START}.html
 	${HACHA} $<
 
-${START}.html: ${TEXSRC} ${START}.bbl
-	${HEVEA} png.hva -fix $<
+${START}.html: ${TEXSRC} ${START}.bbl macros.hva
+	${HEVEA} png.hva -fix $< 
 
 distribute-html: index.html
 	${SCP} *.html *.png *.gif *.css koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/manual
