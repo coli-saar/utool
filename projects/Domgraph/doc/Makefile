@@ -187,7 +187,7 @@ SCP=scp
 index.html: ${START}.html
 	${HACHA} $<
 
-${START}.html: ${TEXSRC} ${START}.bbl macros.hva
+${START}.html: ${TEXSRC} ${START}.bbl 
 	${HEVEA} png.hva -fix $< 
 
 distribute-html: index.html
