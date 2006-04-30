@@ -151,7 +151,7 @@ ${START}.ind: ${START}.idx
 # various utilities
 
 clean:
-	rm -f *.aux *.log *.bbl *.blg *.dvi *.ps *.toc *.fmt *.pdf
+	rm -f *.aux *.log *.bbl *.blg *.dvi *.ps *.toc *.fmt *.pdf *.html *.css
 
 pack:
 	tar czf ${PROJECT}.tar.gz ${TEXSRC} ${BIBS} Makefile
@@ -175,3 +175,20 @@ count:
 
 
 
+
+
+############### HEVEA support #####################
+
+HEVEAHOME=c:/Programme/hevea
+HEVEA=${HEVEAHOME}/hevea.exe
+HACHA=${HEVEAHOME}/hacha.exe
+SCP=scp
+
+index.html: ${START}.html
+	${HACHA} $<
+
+${START}.html: ${TEXSRC} ${START}.bbl
+	${HEVEA} png.hva -fix $<
+
+distribute-html: index.html
+	${SCP} *.html *.png *.gif *.css koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/manual
