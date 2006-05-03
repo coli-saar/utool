@@ -75,7 +75,43 @@ encode this newline character as the character entity \verb?&#xA;?.
 
 \subsection{Batch processing a treebank with Utool}
 
-\todo{Stefan}
+The English Resource Grammar (ERG; \citeNP{someone}) is distributed together
+with a collection of hand-annotated ``Redwoods-style'' corpora that pair for
+each sentence from the corpus the preferred syntactic analysis, together with
+a corresponding semantic representation based upon MRS.
+
+The individual MRS expressions can be extracted from the corpora using the
+\verb|extract-gold.lisp| script, which can be found \todo{(wo?)}. After
+loading the script into a running LKB session, you can use the
+\verb|extract-prolog| function (or \verb|extract-xml|) to extract the
+individual MRS extractpressions.\footnote{Note that the script is not
+compatible with the Redwoods corpus \cite{something}, which uses a slighty
+different internal format. You can use the \texttt{itdsb} (REF) environment
+instead.} For instance, to extract all MRS expressions from the Rondane
+treebank.
+
+\begin{verbatim}
+(load "extract-gold")
+(extract-prolog "erg/gold/rondane/result" "target-directory" :solve t)
+\end{verbatim}
+
+The file "result" refers to the file in the treebank that contains the actual
+annotations, and must possibly be unzipped first. The script saves all MRS
+expressions in the target directory, each MRS as an individual file. If you
+specify \verb|:solve t|, then the MRS constraint solver is applied to each
+MRS expressions, and the number of fully scoped MRS expressions is stored in
+a file \verb|log| in the target directory. This can be usefull to compare the
+results of the MRS solver and Utool, but can take quite a while. If
+\verb|:solve t| is omitted, then only the MRS expressions are extracted.
+
+After the MRS expressions have been extracted into individual files, one can
+use Utool for instance to classify the MRS expressions as follows:
+\begin{verbatim}
+	perl utool-client.pl classify -I mrs-prolog target-directory/*.mrs.pl 
+\end{verbatim} 
+
+This script prints a table that shows for each MRS expression the result of
+the \verb|classify| command, encoded as a bit vector.
 
 \todo{add some benchmark results here: Utool/C++ vs. Java 1.5 vs. Java
 1.6, on Linux vs. on Windows, on e.g.\ Rondane or whatever corpus is
