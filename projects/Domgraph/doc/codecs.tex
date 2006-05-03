@@ -128,22 +128,29 @@ an embedded \verb?attr? element which specifies its label. In
 addition, the USR specifies edges, which can have the types
 \verb?solid? or \verb?dominance?.
 
-The \verb?domgraph-gxl? codecs are intended primarily as a portable
-exchange format for labelled dominance graphs. Both the input and the
-output codec will deal with arbitrary labelled dominance graphs, even
-if they are not weakly normal. These codecs are associated with the
-filename extension \verb?.dg.xml?.
+The \verb?domgraph-gxl? codecs are intended primarily as a portable exchange
+format for labelled dominance graphs. Both the input and the output codec
+will deal with arbitrary labelled dominance graphs, even if they are not
+weakly normal. These codecs are associated with the filename extension
+\verb?.dg.xml?.
 
 
 
-\subsection{The mrs-prolog input codec}
+\subsection{MRS input codecs}
 
-The \verb|mrs-prolog| codec deals with underspecified representations
-of Minimal Recursion Semantics (MRS; \citeNP{CopFliSag97}), the
-standard scope underspecification formalism used in current HPSG grammars. The concrete syntax uses a Prolog style term
-representation as used in the LKB system \cite{Copestake:LKB-Book}.
+Utool supports two input codecs that deal with underspecified representations
+based upon Minimal Recursion Semantics (MRS; \citeNP{CopFliSag97}), the
+standard scope underspecification formalism used in current HPSG grammars.
+The \verb|mrs-prolog| codec deals with MRS expressions in a Prolog style term
+representation. Alternatively, the \verb|mrs-xml| codec can be used for MRS
+expressions based upon an XML-style syntax. Both codecs are compatible with
+the LKB system \cite{Copestake:LKB-Book}.
 
-A concrete example of an MRS expression looks as follows:
+At the moment, utool does not support output codecs to display fully specified (scope resolved) MRS expressions.
+
+\paragraph{The mrs-prolog input codec.}
+
+A concrete example of a Prolog style MRS expression looks as follows:
 
 \begin{verbatim}
 psoa(h1,e2,
@@ -164,16 +171,15 @@ psoa(h1,e2,
   hcons([ qeq(h3,h11), qeq(h9,h10) ]))
 \end{verbatim}
 
-Here, \verb|h1| is the top handle, and \verb|e2| an event variable. 
-Terms of the form
-\begin{verbatim}
-rel(L, H, [attrval(F, V), ...])
-\end{verbatim}
-represent elementary predications, which pair a quoted string \verb|L|,
-a handle \verb|H|, and a list of feature-value pairs. Features are
-represented by quoted strings, and values can be either handles,
-object language individual or event variables, ``unspecified'' values
-(see below) and quoted strings. Finally, terms of the form \verb|qeq(H, H')| represent handle constraints. Terms of the form \verb|geq(H, H')| can also be used to express handle constraints. 
+Here, \verb|h1| is the top handle, and \verb|e2| an event variable. Terms of
+the form \begin{verbatim} rel(L, H, [attrval(F, V), ...]) \end{verbatim}
+represent elementary predications, which pair a quoted string \verb|L|, a
+handle \verb|H|, and a list of feature-value pairs. Features are represented
+by quoted strings, and values can be either handles, object language
+individual or event variables, ``unspecified'' values (see below) and quoted
+strings. Finally, terms of the form \verb|qeq(H, H')| represent handle
+constraints. Terms of the form \verb|geq(H, H')| can also be used to express
+handle constraints.
 
 The codec makes the following assumptions:
 \begin{itemize}
@@ -189,31 +195,34 @@ The codec also accepts terms starting with lowercase \verb|u| or
 syntax-semantics interface of the grammar used to derive the MRS
 expression.
 
-The codec implements a slightly extended version of the translation of
-MRS into normal dominance graphs defined by \citeN{mrs-dom}. The translation
-itself is relatively straightforward, but the correctness proof is quite 
-complicated and requires that MRS expressions satisfy certain structural restrictions (see also below). 
+The codec implements a slightly extended version of the translation of MRS
+into normal dominance graphs defined by \citeN{mrs-dom}. The translation
+itself is relatively straightforward, but the correctness proof is quite
+complicated and requires that MRS expressions satisfy certain structural
+restrictions (see also below).
 
-For the translation to be correct, some implicit constraints built
-into the MRS formalisms must be made explicit in the corresponding
-dominance graph. Most importantly, the translation must add additional
-dominance edges to the dominance graph to model variable binding. To
-this end, the codec must find out which elementary predications
-correspond to quantifiers, and which individual variables occur bound:
-The codec assumes that elementary predications which contain exactly
-the features \verb|ARG0|, \verb|RSTR| and \verb|BODY| are quantifies.
-If an individual variable occurs as value of some other feature, it it
-treated as bound.\footnote{The features PSV and TPC are treated
-  specially, and individual variables occurring as value of these
-  features are ignored by the codec.}
+For the translation to be correct, some implicit constraints built into the
+MRS formalisms must be made explicit in the corresponding dominance graph.
+Most importantly, the translation must add additional dominance edges to the
+dominance graph to model variable binding. To this end, the codec must find
+out which elementary predications correspond to quantifiers, and which
+individual variables occur bound: The codec assumes that elementary
+predications which contain exactly the features \verb|ARG0|, \verb|RSTR| and
+\verb|BODY| are quantifies. If an individual variable occurs as value of some
+other feature, it it treated as bound.\footnote{The features PSV and TPC are
+treated specially, and individual variables occurring as value of these
+features are ignored by the codec.}
 
-Note that the translation is restricted in two ways: First, the
-\verb|qeq| constraints are modelled as more general dominance
-constraints. This is a conceptional simplification, which however is
-compatible with the way modern grammars make use of \verb|qeq|
-constraints \cite{mrs-eval}. Second, the translation is restricted to
-MRS expressions whose graph satisfies certain structural restrictions.
-The codec checks for these restrictions: The MRS must be a \emph{net}, which is equivalent to the corresponding dominance graph to be normal, hypernormally connected and leaf-labelled. The codec reports an error is the MRS cannot be translated into a dominance graph that satisfies these restrictions:
+Note that the translation is restricted in two ways: First, the \verb|qeq|
+constraints are modelled as more general dominance constraints. This is a
+conceptional simplification, which however is compatible with the way modern
+grammars make use of \verb|qeq| constraints \cite{mrs-eval}. Second, the
+translation is restricted to MRS expressions whose graph satisfies certain
+structural restrictions. The codec checks for these restrictions: The MRS
+must be a \emph{net}, which is equivalent to the corresponding dominance
+graph to be normal, hypernormally connected and leaf-labelled. The codec
+reports an error is the MRS cannot be translated into a dominance graph that
+satisfies these restrictions:
 
 \begin{tabular}{lll}
 code & symbolic name & meaning \\ \hline
@@ -226,9 +235,9 @@ XXX &  \verb?NOT_WELLFORMED? & the input MRS is not wellformed
 
 The input codec is associated with the filename extension \verb|.mrs.pl|.
 
-\subsection{The mrs-xml input codec}
+\paragraph{The mrs-xml input codec.}
 
-In addition to the Prolog style term representation, utool also supports an XML style syntax. For instance, the Prolog style MRS expressions shown above is represented in XML as follows:
+In addition to the Prolog style term representation, utool also supports an XML style syntax. The Prolog style MRS expressions shown above is represented in XML as follows:
 
 \begin{verbatim}
 <?xml version="1.0"?>
@@ -271,7 +280,7 @@ In addition to the Prolog style term representation, utool also supports an XML 
 </mrs>
 \end{verbatim}
 
-
+The input codec is associated with the filename extension \verb|.mrs.xml|.
 
 
 \subsection{The holesem-comsem input codec}
