@@ -23,7 +23,7 @@
   (let ((solutions (solve mrs)))
     (if (< solutions -1)
 	(format ostream "~A ill-formed~%" mrs-id)
-      (format ostream "~A well-formed (~A solutions)~%" mrs-id))))
+      (format ostream "~A well-formed (~A solutions)~%" mrs-id solutions))))
 
 
 
