@@ -78,7 +78,7 @@ encode this newline character as the character entity \verb?&#xA;?.
 The English Resource Grammar (ERG; \citeNP{someone}) is distributed together
 with a collection of hand-annotated ``Redwoods-style'' corpora that pair for
 each sentence from the corpus the preferred syntactic analysis, together with
-a corresponding semantic representation based upon MRS.
+a corresponding semantic representation based upon MRS. 
 
 The individual MRS expressions can be extracted from the corpora using the
 \verb|extract-gold.lisp| script, which can be found \todo{(wo?)}. After
@@ -92,7 +92,7 @@ treebank.
 
 \begin{verbatim}
 (load "extract-gold")
-(extract-prolog "erg/gold/rondane/result" "target-directory" :solve t)
+(utool::extract-prolog "erg/gold/rondane/result" "target-directory" :solve t)
 \end{verbatim}
 
 The file "result" refers to the file in the treebank that contains the actual
