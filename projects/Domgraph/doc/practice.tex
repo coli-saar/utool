@@ -8,7 +8,7 @@ lot in our papers \cite{FucKolNieTha04,FliKolTha05,KolTha05b}: running
 Utool on all MRS descriptions from a HPSG treebank. This second point
 will also contain a runtime comparison between Utool and other
 underspecification solvers (including the older C++ version of
-Utool).
+Utool). \todo{update this}
 
 \subsection{Some practical tips}
 
@@ -72,50 +72,212 @@ encode this newline character as the character entity \verb?&#xA;?.
 
 
 
+\subsection{Integration with the LKB Workbench}
+\label{sec:integration-lkb}
 
-\subsection{Batch processing a treebank with Utool}
+\begin{figure}
+\includegraphics[width=\textwidth]{lkb-integration}
+\caption{Calling Utool from an LKB context menu.
+\label{fig:lkb-integration}}
+\end{figure}
 
-The English Resource Grammar (ERG; \citeNP{someone}) is distributed together
-with a collection of hand-annotated ``Redwoods-style'' corpora that pair for
-each sentence from the corpus the preferred syntactic analysis, together with
-a corresponding semantic representation based upon MRS. 
+Utool can be used as a drop in replacement for the MRS constraint
+solver built into the LKB system. The distribution contains a Lisp
+file \verb|lkb-utool.lisp| that can be simply loaded into a running
+LKB session and replaces the internal constraint solver.
 
-The individual MRS expressions can be extracted from the corpora using the
-\verb|extract-gold.lisp| script, which can be found \todo{(wo?)}. After
-loading the script into a running LKB session, you can use the
-\verb|extract-prolog| function (or \verb|extract-xml|) to extract the
-individual MRS extractpressions.\footnote{Note that the script is not
-compatible with the Redwoods corpus \cite{something}, which uses a slighty
-different internal format. You can use the \texttt{itdsb} (REF) environment
-instead.} For instance, to extract all MRS expressions from the Rondane
-treebank.
+Alternatively, the file \verb|lkb-utool-menu.lisp| can be loaded into
+a running LKB session, which extends the context menu which shows up
+when clicking on a parse tree with two commands:
 
+In both cases, utool has to run in server mode listening in the
+standard port 2802.
+
+\subsection{Writing your own client for the Utool Server}
+
+The following perl script illustrates how to implement a utool client.
+The script assumes that an utool process runs in server mode on the
+local machine listening on the standard port 2802.
+
+\begin{verbatim}
+use IO::Socket;
+
+# read a dominance constraint
+$message = join('', <>);
+
+# open connection
+$socket = IO::Socket::INET->new("localhost:2802") or die $!;
+
+# and send it to the server
+print $socket <<EOF;
+<utool cmd='solve' output-codec='term-oz'>
+  <usr codec='domcon-oz' string='$message'/>
+</utool>
+EOF
+
+# shutdown connection
+$socket->shutdown(1);
+
+# print the answer 
+while (<$socket>) { print }
+\end{verbatim}
+%$
+
+The script reads a dominance constraint from standard input, opens a
+connection to the server and sends the dominance constraint to the
+server. The answer -- in this case a list of solved forms -- is then
+printed to the standard output.
+
+A slightly extended version of the above script can be found
+\todo{wo?}.
+
+
+
+
+
+\subsection{Extracting USRs from a HPSG treebank}
+\label{sec:treebank}
+
+The English Resource Grammar (ERG; \citeNP{Copestake&Flickinger:LKB})
+is distributed together with a collection of hand-annotated
+``Redwoods-style'' corpora that pair for each sentence from the corpus
+the preferred syntactic analysis, together with a corresponding
+semantic representation based upon MRS. These corpora are extremely
+valuable resources because corpora with deep semantic information are
+so very rare, and we have occasionally used them in experiments
+\cite{FucKolNieTha04,FliKolTha05}.
+
+In order to use the MRSs in these treebanks from within Utool, it is
+necessary to extract them from the treebank and save them in
+individual files. This can be done by using the script
+\verb|extract-gold.lisp|, which can be found in the directory
+\url{projects/Domgraph/tools/lkb} in the Utool jar file. Proceed as
+follows:
+
+\begin{enumerate}
+\item Start the LKB system, which is freely available at \todo{URL}.
+\item Locate the treebank file on your filesystem. Here we will assume
+that we are working with the Rondane treebank, which is in
+\url{erg/gold/rondane/result} under the main LKB directory. You may
+have to unzip the file \verb?result.gz? that comes with the original
+ERG distribution first.
+\item Run the following commands in the LKB's Lisp console:
 \begin{verbatim}
 (load "extract-gold")
-(utool::extract-prolog "erg/gold/rondane/result" "target-directory" :solve t)
+(utool::extract-prolog "erg/gold/rondane/result" "target-directory")
 \end{verbatim}
+You need to replace \verb?target-directory? with the name of the
+directory in which you want the individual MRSs stored. This will
+create a number of files with the extension \verb?.mrs.pl?, one for
+each sentence in the treebank. These files are suitable for reading
+with the \verb?mrs-prolog? input codec.
+\item If you want MRSs in XML format instead, call
+\verb?utool::extract-xml? rather than
+\verb?utool::extract-prolog?. The arguments of both calls are the
+same. 
+\item If you pass the additional argument \verb?:solve t? to the
+\verb?extract-prolog? call, the MRS constraint solver is applied to
+each MRS expression, and the number of fully scoped MRS expressions is
+stored in a file \verb|log| in the target directory. This can be
+useful to compare the results of the MRS solver and Utool, but can
+take quite a while.
+\end{enumerate}
 
-The file "result" refers to the file in the treebank that contains the actual
-annotations, and must possibly be unzipped first. The script saves all MRS
-expressions in the target directory, each MRS as an individual file. If you
-specify \verb|:solve t|, then the MRS constraint solver is applied to each
-MRS expressions, and the number of fully scoped MRS expressions is stored in
-a file \verb|log| in the target directory. This can be usefull to compare the
-results of the MRS solver and Utool, but can take quite a while. If
-\verb|:solve t| is omitted, then only the MRS expressions are extracted.
+The \verb?extract? functions that we distribute will work with the
+Rondane treebank \todo{and others}. They will not work directly with
+the Redwoods corpus \cite{Oepen&al:Redwoods} because it uses a
+slightly different internal format. Use the \texttt{itdsb} (REF)
+environment instead.
 
-After the MRS expressions have been extracted into individual files, one can
-use Utool for instance to classify the MRS expressions as follows:
-\begin{verbatim}
-	perl utool-client.pl classify -I mrs-prolog target-directory/*.mrs.pl 
-\end{verbatim} 
+\todo{This is not very clear yet:
+\begin{itemize}
+\item What corpora exactly can we convert with the tool in the
+distribution?  Only Rondane, or does JH work too? What do I have to do
+in order to get these corpora? 
+\item What do I have to do to extract the MRSs in the Redwoods corpus?
+Where do I get Redwoods? Why are Rondane etc.\ called
+``Redwoods-style'' if their internal formats are not compatible?
+\end{itemize}
+}
 
-This script prints a table that shows for each MRS expression the result of
-the \verb|classify| command, encoded as a bit vector.
 
-\todo{add some benchmark results here: Utool/C++ vs. Java 1.5 vs. Java
-1.6, on Linux vs. on Windows, on e.g.\ Rondane or whatever corpus is
-convenient for this}
+
+\subsection{Benchmarks}
+
+Utool is the fastest solver for underspecified descriptions in the
+formalisms of dominance constraints, dominance graphs, Hole Semantics,
+and MRS that exists today. This is supported by theoretical complexity
+results
+\cite{Althaus-J.Algo.,bodirsky-weakly-normal-constraints,KolTha05b},
+and we have previously claimed practical efficiency in various
+publications.
+
+We will now sketch how such claims of practical efficiency can be
+substantiated. In doing so, we will also establish the fact that the
+Java implementation of Utool 3.0 is not slower than the earlier C++
+implementations of Utool under Linux and Windows, and is in fact a
+little faster on Windows. (The same is not currently true on current
+Macs, because the PowerPC implementation of Java seems to be very
+slow. We hope to obtain comparable runtimes on the new Intel Macs.)
+
+\begin{figure}
+\begin{tabular}{cc}
+\includegraphics[width=0.4\textwidth]{jh-extraction-mean}
+&
+\includegraphics[width=0.4\textwidth]{jh-chart-mean}
+\end{tabular}
+\caption{Runtimes for the commands \texttt{solvable} and \texttt{solve -n}
+of Utool 2.0.1 (C++) and 3.0 (Java) on Windows and Linux. \label{fig:runtimes}}
+\end{figure}
+
+As our benchmark example, we chose the Jotenheimen corpus, which is
+\todo{what exactly? how many sentences?}. We extracted the MRS
+descriptions for each sentence with at most one million solved forms
+as described in Section~\ref{sec:treebank}. Then we ran the commands
+\verb?utool solvable? (measuring how long it takes to compute the
+chart and count all solved forms) and \verb?utool solve -n? (measuring
+how long it takes to compute the chart and then extract all solved
+forms, without actually encoding or displaying them). We did this
+using both Utool 2.0.1 (the last C++ version) and Utool 3.0 (the new
+Java version) on all sentences. We ran Utool 3.0 in server mode (using
+the \verb?utool server?) to eliminate the overhead for starting up the
+JVM.
+
+We performed the benchmarks using a machine with a Pentium M processer
+at 1.6 GHz, both on Windows XP Professional and on Linux 2.6.10. Utool
+2.0.1 was compiled with Gnu C++ 4.0 under Linux and with the C++
+compiler from the Microsoft Visual C++ Toolkit 2003. We ran Utool 3.0
+both using Java SE 5.0 and using a beta version of Java SE 6.0; in
+both cases, we ran the JVM both in client and in server mode (with the
+\verb?-server? JVM flag).
+
+The results of these benchmarks are shown in
+Fig.~\ref{fig:runtimes}. Both charts plot the size of the
+underspecified description (number of fragments in the dominance
+graph) on the X axis and the mean runtime for USRs of this size on the
+Y axis. The Y axis is logarithmic in both cases. Looking at the
+charts, we can make the following observations:
+\begin{itemize}
+\item The mean time for computing a chart is dramatically lower than
+the time for enumerating all solved forms. This is unsurprising, as
+the larger USRs can have hundreds of thousands of solved forms,
+whereas the charts remain much smaller.
+\item Running Java in server mode is generally much faster than
+running it in client mode.
+\item Even the beta version of Java 6.0 is noticeably more efficient
+than Java 5.0.
+\item The difference in performance between Utool 2.0.1 and Utool 3.0
+running on Java 6.0 in server mode is negligible under Linux. Under
+Windows, the Java version is more efficient (perhaps because we didn't
+switch on all the right optimisations in the Visual C++ compiler).
+\end{itemize}
+
+
+
+
+
+\todo{number of sfs vs. chart sizes}
+
 
 
 
