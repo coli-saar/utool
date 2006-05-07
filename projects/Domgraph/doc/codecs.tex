@@ -1,13 +1,5 @@
 \section{Codecs}  \label{sec:codecs}
 
-\todo{document exit codes for all codecs:
-\begin{itemize}
-\item plugging codecs: 223 = ERROR\_NULL\_PLUGGING
-\item chain: 193 = chain length $< 1$
-\item term: 193 = not simple solved form
-\end{itemize}
-}
-
 Utool is intended as a ``Swiss Army Knife'' for working with
 underspecified representations, and one of our design goals was
 therefore to make it compatible with as many current
@@ -136,17 +128,23 @@ weakly normal. These codecs are associated with the filename extension
 
 
 
-\subsection{MRS input codecs}
+\subsection{The MRS input codecs}
 
-Utool supports two input codecs that deal with underspecified representations
-based upon Minimal Recursion Semantics (MRS; \citeNP{CopFliSag97}), the
-standard scope underspecification formalism used in current HPSG grammars.
-The \verb|mrs-prolog| codec deals with MRS expressions in a Prolog style term
-representation. Alternatively, the \verb|mrs-xml| codec can be used for MRS
-expressions based upon an XML-style syntax. Both codecs are compatible with
-the LKB system \cite{Copestake:LKB-Book}.
+Utool supports two input codecs that deal with underspecified
+representations based upon Minimal Recursion Semantics (MRS;
+\citeNP{CopFliSag97}), the standard scope underspecification formalism
+used in current HPSG grammars.  The \verb|mrs-prolog| codec deals with
+MRS expressions in a Prolog style term representation. Alternatively,
+the \verb|mrs-xml| codec can be used for MRS expressions based upon an
+XML-style syntax. Both codecs are compatible with the concrete syntax
+that is used in the LKB system \cite{Copestake:LKB-Book}.
 
-At the moment, utool does not support output codecs to display fully specified (scope resolved) MRS expressions.
+Utool doesn't contain any MRS output codecs, as it is not clear that a
+useful class of labelled dominance graphs can indeed be correctly
+translated into MRS.
+
+
+
 
 \paragraph{The mrs-prolog input codec.}
 
@@ -171,15 +169,21 @@ psoa(h1,e2,
   hcons([ qeq(h3,h11), qeq(h9,h10) ]))
 \end{verbatim}
 
-Here, \verb|h1| is the top handle, and \verb|e2| an event variable. Terms of
-the form \begin{verbatim} rel(L, H, [attrval(F, V), ...]) \end{verbatim}
-represent elementary predications, which pair a quoted string \verb|L|, a
-handle \verb|H|, and a list of feature-value pairs. Features are represented
-by quoted strings, and values can be either handles, object language
-individual or event variables, ``unspecified'' values (see below) and quoted
-strings. Finally, terms of the form \verb|qeq(H, H')| represent handle
-constraints. Terms of the form \verb|geq(H, H')| can also be used to express
-handle constraints.
+Here, \verb|h1| is the top handle, and \verb|e2| an event
+variable. Terms of the form 
+
+\begin{verbatim} 
+rel(L, H, [attrval(F, V), ...]) 
+\end{verbatim} 
+
+represent elementary predications, which pair a quoted string
+\verb|L|, a handle \verb|H|, and a list of feature-value
+pairs. Features are represented by quoted strings \todo{(atoms?)}, and
+values can be either handles, object language individual or event
+variables, ``unspecified'' values (see below) and quoted
+strings. Finally, terms of the form \verb|qeq(H1, H2)| represent handle
+constraints. Terms of the form \verb|geq(H1, H2)| can also be used to
+express handle constraints.
 
 The codec makes the following assumptions:
 \begin{itemize}
@@ -193,51 +197,57 @@ The codec makes the following assumptions:
 The codec also accepts terms starting with lowercase \verb|u| or
 \verb|i|, which correspond to values left unspecified by the
 syntax-semantics interface of the grammar used to derive the MRS
-expression.
+expression. \todo{(und was machen wir mit denen?)}
 
-The codec implements a slightly extended version of the translation of MRS
-into normal dominance graphs defined by \citeN{mrs-dom}. The translation
-itself is relatively straightforward, but the correctness proof is quite
-complicated and requires that MRS expressions satisfy certain structural
-restrictions (see also below).
+The codec implements an extended version of the translation of MRS
+into normal dominance graphs defined by \citeN{mrs-dom}. During the
+translation, the codec makes certain constraints that are implicit in
+the MRS description explicit by adding dominance edges. Most
+importantly, it adds a dominance edge from each quantifier to its
+bound variables. We assume that quantifiers are elementary
+predications which contain exactly the features \verb|ARG0|,
+\verb|RSTR| and \verb|BODY|. An individual variable is treated as
+bound if it occurs as the value of some other feature.\footnote{The
+features PSV and TPC are treated specially, and individual variables
+occurring as value of these features are ignored by the codec.}
 
-For the translation to be correct, some implicit constraints built into the
-MRS formalisms must be made explicit in the corresponding dominance graph.
-Most importantly, the translation must add additional dominance edges to the
-dominance graph to model variable binding. To this end, the codec must find
-out which elementary predications correspond to quantifiers, and which
-individual variables occur bound: The codec assumes that elementary
-predications which contain exactly the features \verb|ARG0|, \verb|RSTR| and
-\verb|BODY| are quantifies. If an individual variable occurs as value of some
-other feature, it it treated as bound.\footnote{The features PSV and TPC are
-treated specially, and individual variables occurring as value of these
-features are ignored by the codec.}
+In order to guarantee correctness of the translation, the codec makes
+two important assumptions about the MRSs is processes. First, the
+\verb|qeq| constraints translate simply into dominance edges. This is
+a conceptional simplification, which however seems to be compatible
+with the way modern grammars make use of \verb|qeq| constraints
+\cite{FucKolNieTha04}. Second, the translation is restricted to MRS
+expressions whose graph satisfies certain structural restrictions. The
+codec checks for these restrictions: The MRS must be a \emph{net}, or
+equivalently, the resulting dominance graph must be normal,
+hypernormally connected and leaf-labelled. 
 
-Note that the translation is restricted in two ways: First, the \verb|qeq|
-constraints are modelled as more general dominance constraints. This is a
-conceptional simplification, which however is compatible with the way modern
-grammars make use of \verb|qeq| constraints \cite{mrs-eval}. Second, the
-translation is restricted to MRS expressions whose graph satisfies certain
-structural restrictions. The codec checks for these restrictions: The MRS
-must be a \emph{net}, which is equivalent to the corresponding dominance
-graph to be normal, hypernormally connected and leaf-labelled. The codec
-reports an error is the MRS cannot be translated into a dominance graph that
-satisfies these restrictions:
+If the input MRS is not well-formed or not a net, the codec reports an
+error. The error code is obtained by forming the bitwise OR of 192 and
+the relevant bits in the following table. The codec is able to report
+multiple errors at once, so e.g.\ if the input MRS translates into a
+graph that is neither normal nor leaf-labelled, the error code would
+be 201.
 
 \begin{tabular}{lll}
 code & symbolic name & meaning \\ \hline
-XXX &  \verb?NOT_NORMAL? & resulting graph is not normal \\
-XXX &  \verb?NOT_WEAKLY_NORMAL? & resulting graph is not weakly normal \\
-XXX &  \verb?NOT_HYPERNORMALLY_CONNECTED? & resulting graph is not hypernormally connected \\
-XXX &  \verb?NOT_LEAF_LABELLED? & resulting graph is not leaf-labelled \\
-XXX &  \verb?NOT_WELLFORMED? & the input MRS is not wellformed
+1 &  \verb?NOT_NORMAL? & resulting graph is not normal \\
+2 &  \verb?NOT_WEAKLY_NORMAL? & resulting graph is not weakly normal \\
+4 &  \verb?NOT_HYPERNORMALLY_CONNECTED? & resulting graph is not hypernormally connected \\
+8 &  \verb?NOT_LEAF_LABELLED? & resulting graph is not leaf-labelled \\
+16 &  \verb?NOT_WELLFORMED? & the input MRS is not wellformed \todo{???}
 \end{tabular}
+
 
 The input codec is associated with the filename extension \verb|.mrs.pl|.
 
 \paragraph{The mrs-xml input codec.}
 
-In addition to the Prolog style term representation, utool also supports an XML style syntax. The Prolog style MRS expressions shown above is represented in XML as follows:
+In addition to the Prolog style term representation, Utool also
+supports an XML style syntax. Apart from the concrete syntax (XML as
+opposed to Prolog terms), the two codecs are exactly the same. The
+Prolog-style MRS expressions shown above is represented in XML as
+follows:
 
 \begin{verbatim}
 <?xml version="1.0"?>
@@ -361,14 +371,43 @@ The input codec is associated with the filename extension \verb?.hs.pl?.
 
 \subsection{The domgraph-udraw and domgraph-dot output codecs}
 
-As an alternative to the \verb|display| command, one can use utool to 
-convert underspecified representations into formats which can be further processed by other graph viewers: The \verb|domgraph-udraw| output-codec outputs a dominance graph in a format that can be used to display the graph with \verb|uDraw(Graph)|, and the \verb|domgraph-dot| display dominance graphs in the .dot-format, which for instance can be displayed using \verb|graphviz|. 
+As an alternative to the \verb|display| command, one can use utool to
+convert underspecified representations into formats which can be
+further processed by other graph viewers:
 
-The \verb|domgraph-udraw| accepts the codec opttion \verb|pipe|. This option must be specified if the output graph is to be send to uDrawGraph by a pipe, because the formats differ slightly depending on whether uDrawGraph reads its input from a file or from standard input/pipe. For instance:
+\begin{enumerate}
+\item The \verb|domgraph-udraw| output-codec outputs a dominance graph
+in a format that can be used to display the graph with the
+uDraw(Graph) tool (formerly daVinci) from the University of Bremen
+\todo{cite davinci paper / url};
+\item the \verb|domgraph-dot| codec outputs a dominance graph in the
+``dot'' format supported by many graph drawing tools, such as 
+\verb|graphviz| \todo{cite url}.
+\end{enumerate}
+
+We don't describe these output formats in detail here, but you can
+write the output into a file and then load it from the respective
+graph viewers. Note that these commands will only produce meaningful
+output if you use them from the \verb|convert| command, rather than
+the \verb|solve| command, as neither graph format supports the
+representation of multiple graphs (i.e.\ the multiple solved forms
+computed by \verb|solve|) at once.
+
+As a further convenience, the \verb|domgraph-udraw| accepts the codec
+option \verb|pipe|. If you use this codec option, you can directly
+feed Utool's output to uDraw(Graph) via a pipe instead of writing the
+graph to a file and then opening this file from uDraw(Graph), like so:
+
 \begin{verbatim}
-java -jar Utool.jar convert -O domgraph-udraw --output-codec-options pipe foo.clls | uDrawGraph -pipe
+utool convert foo.clls -O domgraph-udraw --output-codec-options pipe \
+   | uDrawGraph -pipe
 \end{verbatim}
 
+Both codecs are able to encode any labelled dominance graph, even if
+it is not weakly normal, thus they never report any semantic
+errors. The \verb|domgraph-udraw| codec is associated with the
+filename extension \verb|.dg.udg|, and the \verb|domgraph-dot| codec
+is associated with the extension \verb|.dg.dot|.
 
 
 
@@ -390,8 +429,9 @@ concrete syntax:
 Each list consists of terms of the form \verb?plug(x y)? which encode
 the dominance edges (here: from \verb?x? to \verb?y?) in the solved
 form.
-\item \verb?plugging-lkb?: This output codec is intended to be used for the integration of utool into the LKB system. \todo{see somewhere else}
-
+\item \verb?plugging-lkb?: The output is a complex Lisp list that
+mimicks the output of the MRS solver in the LKB system. We don't
+describe this concrete syntax here.
 \end{itemize}
 
 \verb?plugging-oz? is intended as a convenient output format if you
@@ -439,11 +479,9 @@ separates them with whitespace. These two codecs are intended as
 human-readable representations of solved forms.
 
 Both codecs assume that the solved form they encode is simple and
-leaf-labelled, and will throw a \verb?MalformedDomgraphException? if
-it isn't.
-
-\verb?term-oz? is associated with the filename extension \verb?.t.oz?, and
-\verb?term-prolog? with \verb?.t.pl?.
+leaf-labelled, and will report an error code of 193 if it
+isn't. \verb?term-oz? is associated with the filename extension
+\verb?.t.oz?, and \verb?term-prolog? with \verb?.t.pl?.
 
 
 
@@ -459,23 +497,23 @@ Fig.~\ref{fig:chain3}. Chains appear frequently as parts of
 linguistically motivated USRs, and are therefore a nice basis for
 benchmarking (e.g.\ in \cite{bodirsky-weakly-normal-constraints}).
 
-The ``USRs'' that can be processed by this codec are simply string
-representations of numbers (such as the string \verb?3?). The codec
-will then generate the pure chain of this length. When used with the
-command-line version of Utool, \verb?chain? behaves differently than
-all other codecs discussed so far in that it doesn't interpret its
-argument as a filename, but again directly as the chain length. This
-means that you can use a Utool call as follows:
+The ``underspecified descriptions'' that this codec expects in server
+mode are simply string representations of numbers (such as the string
+\verb?3?). The codec will then generate the pure chain of this
+length. When used with the command-line version of Utool, \verb?chain?
+behaves differently than all other codecs discussed so far in that it
+doesn't interpret its argument as a filename, but again directly as
+the chain length. This means that you can use a Utool call as follows:
 
 \begin{verbatim}
-$ java -jar Utool.jar convert -I chain 3 -O domcon-oz
+$ utool convert -I chain 3 -O domcon-oz
 \end{verbatim}
 %$
 
-The codec will throw a \verb?ParserException? if the length string
-isn't a number, and a \verb?MalformedDomgraphException? if the number
-isn't positive. Because \verb?chain? doesn't read its USRs from files,
-it is not associated with any filename extension.
+The codec will report a parsing error (code 192) if the chain length
+specification isn't a number, and a semantic error with code 193 if
+the number isn't positive. Because \verb?chain? doesn't read its USRs
+from files, it is not associated with any filename extension.
 
 
 
@@ -484,7 +522,7 @@ it is not associated with any filename extension.
 
 \subsection{Writing your own codecs}
 
-Although Utool comes with a collection of codecs that cover most
+Although Utool comes with a collection of codecs that cover many
 existing popular underspecification formalisms, there are some
 formalisms we don't support (yet), and we can expect that other
 formalisms will be developed in the future. To this end, it may be
@@ -493,9 +531,12 @@ helpful for you to write your own codec.
 A codec is a class that is derived from one of the abstract base
 classes \verb?InputCodec?, \verb?GraphOutputCodec?, or
 \verb?PluggingOutputCodec?, all of which are in the package
-\verb?de.saar.chorus.domgraph.codec?. Your own codec can be in any
-package you like. You never need to create objects of your codec
-class; Utool creates objects of your class as needed.
+\verb?de.saar.chorus.domgraph.codec?.\footnote{Notice that we will
+likely deprecate \texttt{PluggingOutputCodec} in the near future, so we
+recommend that you derive output codecs from \texttt{GraphOutputCodec}.}
+Your own codec can be in any package you like. You never need to
+create objects of your codec class; Utool creates objects of your
+class as needed.
 
 Your codec class has the task of writing a representation of a
 dominance graph to a Java \verb?Writer? (if it is an output codec) or
@@ -521,6 +562,16 @@ type \verb?String?.  These methods should return the codec name and
 the filename extension that you want to associate with your
 codec. \verb?getName? must generally return a non-null value.
 
+Your (input) codec can report a parsing error by throwing an exception
+of type \url{de.saar.chorus.domgraph.codec.ParserException}. Utool
+will generally report an error code of 192 in this case. Both input
+and output codecs can also report semantic errors by throwing a
+\url{de.saar.chorus.domgraph.codec.MalformedDomgraphException}. You
+can (and should) pass a local error code $N$ between 1 and 31,
+inclusively, in this case. Utool will then report an error code of
+$192 + N$. You can also encapsulate detailed error messages and
+original exceptions in both types of exceptions.
+
 The final step of the story is to make Utool aware of your new
 codec. This is handled by creating a file
 \url{de/saar/chorus/domgraph/codec/codecclasses.properties} somewhere
@@ -544,9 +595,6 @@ $ java -cp Utool.jar:mycodec.jar de.saar.chorus.domgraph.utool.Utool -d
 
 This will display your new codec along with the standard Utool ones.
 
-
-
-\todo{MalformedDomgraphException vs ParserException}
 
 
 
