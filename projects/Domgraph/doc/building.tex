@@ -1,59 +1,54 @@
 \section{Building Utool} \label{sec:building}
 
 So far, we have focused on how to use the complete Utool system as you
-download it, unchanged. Even if you want to use the Domgraph library
-that constitutes the main part of Utool from your own Java program,
-you can simply add the Jar file to your classpath and use it. But
-there may be a point at which you want to recompile Utool, e.g.\
-because you make Utool aware of a new codec, or you have a better idea
-for how to solve dominance graph. For such cases, we will now document
-how to unpack the Utool source distribution and recompile it.
-
-
-
-\subsection{The Utool source distribution}
+download it, unchanged. This is sufficient in many scenarios -- you
+can access Utool from the command line, you can connect to it as a
+server, and you can even implement your own Java classes that use our
+classes directly, as long as you simply add \verb?Utool.jar? to your
+classpath. But there may be a point at which you want to recompile
+Utool. For such cases, we will now document how to unpack the Utool
+source distribution and recompile it.
 
 The Jar file \verb?Utool-<version>.jar? which you probably downloaded
 from the website only contains the compiled class files that are
 necessary for running the programme. This is the standard distribution
-because it is only 200k in size, and thus downloads and loads quickly.
+because it is pretty small, and thus downloads and loads quickly.
 
 If you want to recompile (parts of) Utool, you will need to download
 the source distribution. The source distribution has a filename of the
-form \verb?Utool-src-<version>.jar?, and is about 2 megabytes in
+form \verb?Utool-src-<version>.jar?, and is some 4 megabytes in
 size. In addition to the Utool classes, it contains the source code of
 Utool/Domgraph, all classes of the iText, JGraphT, JGraph, and Getopt
 libraries that we use, and the javacc and testng Jars that are used in
 compiling Utool. The files in the source distribution Jar are in
 exactly the same locations as in the ordinary Jar, so in particular
 you can use the command \verb?java -jar Utool-src-<version>.jar? to
-run Utool.
+run Utool. In addition, you need the Java SDK 5.0 or higher, and you
+need Apache Ant 1.6 or higher.
 
-In addition, you need the Java SDK 5.0 or higher, and you need Apache
-Ant 1.6 or higher.
+Recompilation of Utool from the source distribution proceeds as
+follows:
 
-If you want to recompile the source distribution, the first step is to
-unpack the Jar file in a new directory:
-
+\begin{enumerate}
+\item Unpack the Jar file in a new directory:
 \begin{verbatim}
 $ jar xf Utool-src-<version>.jar
 \end{verbatim}
 %$
 
-This will write the contents of the Jar into the current
-directory. The second step is then to prepare for compiling by moving
-all files to the directories where the build script expects them:
-
+\item Prepare for compiling by moving all files to the directories
+where the build script expects them:
 \begin{verbatim}
 $ ant -f projects/Domgraph/build.xml prepare
 \end{verbatim}
 %$
 
-At this point, you can add new Java files or edit existing ones. The
-build file expects that new Java files are put into the subdirectories
-of the \verb?src? directory that correspond to their packages. You can
-then recompile the entire system as follows:
+\item Change or add classes as you like. The source code of all
+classes is under the directory \verb?src?. If you add new classes, you
+may have to edit the Ant build script in
+\url{projects/Domgraph/build.xml}.
 
+\item Recompile as follows:
 \begin{verbatim}
 $ ant -f projects/Domgraph/build.xml 
 \end{verbatim}
@@ -61,7 +56,9 @@ $ ant -f projects/Domgraph/build.xml
 
 This will create the file \verb?Utool-full-<version>.jar? in the
 directory \verb?build/lib?, which you can run using \verb?java -jar?
-as before. If you have access to the Jakarta BCEL library (we use
+as before. 
+
+\item If you have access to the Jakarta BCEL library (we use
 version 5.1), you can add this library to your classpath and run
 
 \begin{verbatim}
@@ -69,40 +66,10 @@ $ ant -f projects/Domgraph/build.xml utool-compact
 \end{verbatim}
 %$
 
-to build the (much smaller) file \verb?build/lib/Utool-<version>.jar?
+to build the (smaller) file \verb?build/lib/Utool-<version>.jar?
 which constitutes the main Utool distribution.
+\end{enumerate}
 
-
-
-
-\subsection{The package structure and the apidocs}
-
-The Domgraph library (which we distribute under an LGPL licence)
-consists of the following packages:
-
-\begin{tabular}{l|l}
-package & description \\\hline
-\verb?de.saar.chorus.domgraph? & metadata (e.g.\ Utool version) \\
-\verb?de.saar.chorus.domgraph.graph? & labelled dominance graphs \\
-\verb?de.saar.chorus.domgraph.chart? & dominance charts and the solver
-\\
-\verb?de.saar.chorus.domgraph.codec? & the abstract base classes for
-codecs \\
-\verb?de.saar.chorus.domgraph.codec.*? & the individual codec classes
-\\
-\verb?de.saar.chorus.domgraph.equivalence? & redundancy elimination
-algorithms
-\end{tabular}
-
-In addition, the main Utool program (which we distribute under a GPL
-licence because it depends on Gnu Getopt) is defined in the package
-\url{de.saar.chorus.domgraph.utool}. The classes for Ubench
-\todo{licence?} are defined in \url{de.saar.chorus.ubench} and its
-subpackages.
-
-The apidocs of all classes can be found on the Utool website
-\todo{url}. If anything about them is unclear, we would appreciate
-your feedback to help improve the documentation.
 
 
 

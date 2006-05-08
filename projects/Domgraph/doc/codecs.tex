@@ -526,54 +526,63 @@ Although Utool comes with a collection of codecs that cover many
 existing popular underspecification formalisms, there are some
 formalisms we don't support (yet), and we can expect that other
 formalisms will be developed in the future. To this end, it may be
-helpful for you to write your own codec.
+helpful for you to write your own codec. You can do this -- without
+even touching the original Utool source code -- as follows.
 
-A codec is a class that is derived from one of the abstract base
-classes \verb?InputCodec?, \verb?GraphOutputCodec?, or
-\verb?PluggingOutputCodec?, all of which are in the package
+\begin{enumerate}
+\item \emph{Derive from base classes.} A codec is a class that is
+derived from one of the abstract base classes \verb?InputCodec?,
+\verb?GraphOutputCodec?, or \verb?PluggingOutputCodec?, all of which
+are in the package
 \verb?de.saar.chorus.domgraph.codec?.\footnote{Notice that we will
-likely deprecate \texttt{PluggingOutputCodec} in the near future, so we
-recommend that you derive output codecs from \texttt{GraphOutputCodec}.}
-Your own codec can be in any package you like. You never need to
-create objects of your codec class; Utool creates objects of your
-class as needed.
+likely deprecate \texttt{PluggingOutputCodec} in the near future, so
+we recommend that you derive output codecs from
+\texttt{GraphOutputCodec}.}  Your own codec can be in any package you
+like. You never need to create objects of your codec class; Utool
+creates objects of your class as needed.
 
-Your codec class has the task of writing a representation of a
-dominance graph to a Java \verb?Writer? (if it is an output codec) or
-of reading such a representation from a Java \verb?Reader? and
-initialising a labelled dominance graph (if it is an input codec). In
-order to do this, you must implement certain abstract methods that
-depend on the respective base class. This is documented in more detail
-in the API documentation of the codec base classes on the website,
-which is also distributed with the Utool package.
+\item \emph{Implement methods.} Your codec class has the task of
+writing a representation of a labelled dominance graph to a Java
+\verb?Writer?  (if it is an output codec) or of reading such a
+representation from a Java \verb?Reader? and initialising a labelled
+dominance graph (if it is an input codec). In order to do this, you
+must implement certain abstract methods that depend on the respective
+base class. This is documented in more detail in the API documentation
+of the codec base classes on the website, which is also distributed
+with the Utool package.
 
-Your class must also have either a public constructor that takes no
-arguments, or a public constructor that takes a single argument of
-type \verb?String?. If it defines the second type of constructor,
-Utool will pass the codec options string to your constructor if any
-were specified on the command line or in the XML command. If no codec
-options were specified, it will pass the value \verb?null?. Utool will
-always call the \verb?String? constructor if it exists, and fall back
-to the argumentless constructor if it doesn't.
-
-In addition, your codec class is expected to implement public static
-methods \verb?getName()? and \verb?getExtension()?, both with return
-type \verb?String?.  These methods should return the codec name and
-the filename extension that you want to associate with your
-codec. \verb?getName? must generally return a non-null value.
-
-Your (input) codec can report a parsing error by throwing an exception
-of type \url{de.saar.chorus.domgraph.codec.ParserException}. Utool
-will generally report an error code of 192 in this case. Both input
-and output codecs can also report semantic errors by throwing a
+\item \emph{Reporting errors.} Your (input) codec can report a parsing
+error by throwing an exception of type
+\url{de.saar.chorus.domgraph.codec.ParserException}. Utool will
+generally report an error code of 192 in this case. Both input and
+output codecs can also report semantic errors by throwing a
 \url{de.saar.chorus.domgraph.codec.MalformedDomgraphException}. You
 can (and should) pass a local error code $N$ between 1 and 31,
 inclusively, in this case. Utool will then report an error code of
-$192 + N$. You can also encapsulate detailed error messages and
-original exceptions in both types of exceptions.
+$192 + N$ for input codecs and $224 + N$ for output codecs. You can
+also encapsulate detailed error messages and original exceptions in
+both types of exceptions.
 
-The final step of the story is to make Utool aware of your new
-codec. This is handled by creating a file
+\item \emph{Constructors.} Your class must have either a public
+constructor that takes no arguments, or a public constructor that
+takes a single argument of type \verb?String?. If it defines the
+second type of constructor, Utool will pass the codec options string
+to your constructor if any were specified on the command line or in
+the XML command. If no codec options were specified, it will pass the
+value \verb?null?. Utool will always call the \verb?String?
+constructor if it exists, and fall back to the argumentless
+constructor if it doesn't.
+
+\item \emph{Codec identification methods.} Your codec class is
+expected to implement the public static methods \verb?getName()?  and
+\verb?getExtension()?, both with return type \verb?String?.  These
+methods should return the codec name and the filename extension that
+you want to associate with your codec. \verb?getName? must generally
+return a non-null value.
+
+\item \emph{Making Utool aware of your codec.}  The final step of the
+story is to make Utool aware of your new codec. This is handled by
+creating a file
 \url{de/saar/chorus/domgraph/codec/codecclasses.properties} somewhere
 in your classpath. In this file, you list the fully qualified
 classname(s) of your new codec(s), one per line. Utool will then
@@ -594,6 +603,7 @@ $ java -cp Utool.jar:mycodec.jar de.saar.chorus.domgraph.utool.Utool -d
 %$
 
 This will display your new codec along with the standard Utool ones.
+\end{enumerate}
 
 
 

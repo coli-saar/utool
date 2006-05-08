@@ -29,7 +29,7 @@ instructs Utool to display statistical information). These arguments
 and options are written after the command on the command line.
 
 
-\subsection{Server mode}
+\subsection{Server mode} \label{sec:operations-server}
 
 Alternatively, you can run Utool in server mode. In this mode, it will
 not execute any commands at first. Instead, it will accept network
@@ -107,13 +107,9 @@ If you just use Utool for a single call or experimentation, the
 command-line mode will typically be easier to use. However, if you
 need to process many Utool commands from a programme, it can be
 dramatically more efficient to keep a single Utool Server process
-running and send the commands to the server. This is because running a
-Java process incurs an overhead for starting up the virtual machine
-and loading the libraries. In addition, the just-in-time compilation
-really starts to pay off only after a few seconds. Using the Utool
-Server, you can achieve comparable runtime to the old C++
-implementation (see Fig.~\ref{fig:chains-server-client}); this is not
-possible using the command-line version.
+running and send the commands to the server (see
+Section~\ref{sec:practice-some-practical-tips}). We present a demo
+client for the Utool Server in Section~\ref{sec:practice-client}.
 
 
 \subsection{Passing USRs}
