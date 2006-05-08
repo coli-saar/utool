@@ -10,10 +10,13 @@ will also contain a runtime comparison between Utool and other
 underspecification solvers (including the older C++ version of
 Utool). \todo{update this}
 
-\subsection{Some practical tips}
+\subsection{Some practical tips} \label{sec:practice-some-practical-tips}
 
 \begin{enumerate}
-\item \textit{Increasing performance.} The Sun implementation of the
+\item \textit{Running Utool in server mode.} \todo{write me}
+
+
+\item \textit{Running Java in server mode.} The Sun implementation of the
 Java VM can run in either ``client'' or ``server'' mode. The client
 mode is the default, but if you have a long-running process, the
 server mode can be significantly more efficient because it
@@ -57,7 +60,7 @@ space by calling it with the \verb?-Xmx512m? option.
 \item \textit{XML character entities.} The Utool Server takes commands
 as well-formed XML strings, so it expects you to encode special
 characters in the USR as XML character entities. You are probably
-familiar with having to replace the \" character by \verb?&quot;?
+familiar with having to replace the \"\ character by \verb?&quot;?
 etc., and performing the inverse replacement when decoding the
 server's responses.
 
@@ -72,32 +75,21 @@ encode this newline character as the character entity \verb?&#xA;?.
 
 
 
-\subsection{Integration with the LKB Workbench}
-\label{sec:integration-lkb}
-
-\begin{figure}
-\includegraphics[width=\textwidth]{lkb-integration}
-\caption{Calling Utool from an LKB context menu.
-\label{fig:lkb-integration}}
-\end{figure}
-
-Utool can be used as a drop in replacement for the MRS constraint
-solver built into the LKB system. The distribution contains a Lisp
-file \verb|lkb-utool.lisp| that can be simply loaded into a running
-LKB session and replaces the internal constraint solver.
-
-Alternatively, the file \verb|lkb-utool-menu.lisp| can be loaded into
-a running LKB session, which extends the context menu which shows up
-when clicking on a parse tree with two commands:
-
-In both cases, utool has to run in server mode listening in the
-standard port 2802.
 
 \subsection{Writing your own client for the Utool Server}
+\label{sec:practice-client}
 
-The following perl script illustrates how to implement a utool client.
-The script assumes that an utool process runs in server mode on the
-local machine listening on the standard port 2802.
+It often makes sense to run Utool in server mode. In these cases, you
+will probably want to implement a client in your own application that
+communicates with the server. This is documented in
+Section~\ref{sec:operations-server}, but here we give you the source
+code of a minimal client written in Perl. This script assumes that a
+Utool Server is running on the local machine on the standard port
+2802. It will read a USR in \verb?domcon-oz? format from standard
+input or a file and send it to the server as the argument of a
+\verb?solve? command. It will then wait for an answer from the server
+(i.e., a list of solved forms in \verb?term-oz? format) and print it
+to standard out.
 
 \begin{verbatim}
 use IO::Socket;
@@ -115,7 +107,7 @@ print $socket <<EOF;
 </utool>
 EOF
 
-# shutdown connection
+# shutdown output side of the socket
 $socket->shutdown(1);
 
 # print the answer 
@@ -123,16 +115,56 @@ while (<$socket>) { print }
 \end{verbatim}
 %$
 
-The script reads a dominance constraint from standard input, opens a
-connection to the server and sends the dominance constraint to the
-server. The answer -- in this case a list of solved forms -- is then
-printed to the standard output.
+The key point here is that the client shuts down the side of the
+socket that is used to send data from the client to the server. This
+tells the server that the input is now complete and it should start
+processing it.
 
-A slightly extended version of the above script can be found
-\todo{wo?}.
+An extended version of this script (also in Perl) is part of the
+standard Utool distribution and can be found in the directory
+\url{projects/Domgraph/tools/client}. 
 
 
 
+
+\subsection{Integration with the LKB Workbench}
+\label{sec:integration-lkb}
+
+
+Utool can be used as a drop-in replacement for the MRS solver built
+into the LKB grammar development system \cite{Copestake:LKB-Book},
+which is freely available at \todo{URL}. This means that users of the
+LKB now have easy access to our solver, which is considerably faster
+than the original MRS solver. The integration between LKB and Utool is
+achieved via two Lisp source files that we distribute in the directory
+\url{projects/Domgraph/tools/lkb}.
+
+If you load the file \verb|lkb-utool.lisp| into the Lisp console
+of a running LKB system, the internal MRS solver is replaced by
+Utool. Technically, this file defines a function that sends the MRS
+(in \verb?mrs-prolog? syntax) to a Utool Server running on the local
+machine on port 2802. It will then receive the solved forms from the
+server, in \verb?plugging-lkb? syntax, and pass them back to LKB.
+
+ Alternatively, if you load the file \verb|lkb-utool-menu.lisp|
+into the Lisp console, two new commands are added to the context menu
+for parse trees (see Fig.~\ref{fig:lkb-integration}). The command
+``Scoped MRS (utool solve)'' calls Utool to compute all scopings of
+the MRS for this parse tree, in the same way as just described. On the
+other hand, the ``Display MRS'' command will ask the Utool Server to
+perform a \verb?display? command for the given MRS. You can then solve
+and further manipulate the USR from the GUI. As before, these commands
+also make the assumption that a Utool Server is running on the local
+machine, port 2802.
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8 \textwidth]{lkb-integration}
+\end{center}
+\caption{Calling Utool from an LKB context menu.
+\label{fig:lkb-integration}}
+\end{figure}
 
 
 \subsection{Extracting USRs from a HPSG treebank}
@@ -155,7 +187,7 @@ individual files. This can be done by using the script
 follows:
 
 \begin{enumerate}
-\item Start the LKB system, which is freely available at \todo{URL}.
+\item Start the LKB system.
 \item Locate the treebank file on your filesystem. Here we will assume
 that we are working with the Rondane treebank, which is in
 \url{erg/gold/rondane/result} under the main LKB directory. You may
