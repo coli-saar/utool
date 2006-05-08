@@ -54,27 +54,26 @@ public abstract class OutputCodec {
      * <code>writer</code>
      * @throws MalformedDomgraphException if the graph or plugging cannot 
      * be encoded by this codec
+     * @throws NullPointerException if the <code>domedge</code>
+     * argument is <code>null</code>.
      */
     public void encode(DomGraph graph, Collection<DomEdge> domedges,
                         NodeLabels labels, Writer writer)
     throws IOException, MalformedDomgraphException {
+        if( domedges == null ) {
+            // This shouldn't happen if we are called properly. 
+            throw new NullPointerException();
+        }
+        
         switch(getType()) {
         case GRAPH:
             DomGraph copy = (DomGraph) graph.clone();
-            
-            if( domedges != null ) {
-                copy.setDominanceEdges(domedges);
-            }
+            copy.setDominanceEdges(domedges);
             
             encode_graph(copy, labels, writer);
             break;
             
         case PLUGGING:
-            if( domedges == null ) {
-                throw new MalformedDomgraphException("Can't output a null plugging",
-                        ERROR_NULL_PLUGGING);
-            }
-            
             encode_plugging(graph, domedges, writer);
             break;
         }
