@@ -1,0 +1,63 @@
+/**
+ * JavaCC file
+ */
+ 
+options {
+	LOOKAHEAD = 2;
+	STATIC = false;
+  JDK_VERSION = "1.5";
+}
+PARSER_BEGIN(TermParser)
+package de.saar.chorus.term.parser;
+
+import de.saar.chorus.term.*;
+import java.util.*;
+import java.io.*;
+
+public class TermParser {
+	
+}
+PARSER_END(TermParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|	"\n"
+}
+
+TOKEN :
+{
+	<ATOM : ["a"-"z"] (["a"-"z", "A"-"Z", "_", "0"-"9"])*>
+|   <VARIABLE : ["A"-"Z", "_"] (["a"-"z", "A"-"Z", "_", "0"-"9"])*>
+}
+
+
+Term term() :
+{
+	Token label;
+	List<Term> subterms;
+	Term subterm;
+}
+{
+	{ subterms = new ArrayList<Term>(); }
+	
+	label = <ATOM> "(" 
+               (subterm = term() { subterms.add(subterm); })
+               ("," subterm = term() { subterms.add(subterm); })*
+        	 ")" {
+		return new Compound(label.image, subterms);
+	}
+	
+  | label = <ATOM> {
+	  return new Constant(label.image);
+  }
+
+  | label = <VARIABLE> {
+  	  return new Variable(label.image);
+  }
+}
+
+
+

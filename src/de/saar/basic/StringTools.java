@@ -26,18 +26,18 @@ public class StringTools {
      * @param separator a string that is inserted between any two members of the list
      * @return the joined string
      */
-    public static String join(Collection<String> strings, String separator) {
+    public static <E> String join(Collection<E> strings, String separator) {
         boolean first = true;
         StringBuffer sb = new StringBuffer();
         
-        for( String s : strings ) {
+        for( Object s : strings ) {
             if( first ) {
                 first = false;
             } else {
                 sb.append(separator);
             } 
             
-            sb.append(s);
+            sb.append(s.toString());
         }
         
         return sb.toString();
