@@ -16,7 +16,10 @@ import org.testng.annotations.Test;
 
 
 public class Substitution implements Cloneable {
+    // subst maps variables to terms. INVARIANT: Variables on the LHS
+    // of any mapping never occur on the RHS of any mapping.
     private Map<Variable,Term> subst;
+    
     private boolean valid;
     
     public Substitution() {
@@ -101,17 +104,12 @@ public class Substitution implements Cloneable {
     }
     
     public Substitution concatenate(Substitution other) {
-        Substitution ret = new Substitution();
+        Substitution ret = (Substitution) clone();
         
         // concatenation inherits invalidity from both sides
         if( !isValid() || !other.isValid() ) {
             ret.valid = false;
             return ret;
-        }
-        
-        // copy myself into ret
-        for( Map.Entry<Variable,Term> entry : subst.entrySet() ) {
-            ret.subst.put(entry.getKey(), entry.getValue());
         }
         
         // copy other substitution into ret, piece by piece
@@ -258,6 +256,43 @@ public class Substitution implements Cloneable {
             
             assert !subst.isValid() : "substitution is " + subst;
         }
+        
+        
+        /** concatenate **/
+        public void concat() {
+            Substitution subst1 = new Substitution(new Variable("X"), Term.parse("f(Y)"));
+            subst1.addSubstitution(new Variable("Z"), Term.parse("g(Y,Y)"));
+            
+            Substitution subst2 = new Substitution(new Variable("Y"), Term.parse("h(a)"));
+            subst2.addSubstitution(new Variable("W"), Term.parse("k(X,Z)"));
+            
+            Substitution concat = subst1.concatenate(subst2);
+
+            assert concat != null;
+            assert concat != subst1;
+            assert concat != subst2;
+            
+            Substitution target = new Substitution();
+            target.addSubstitution(new Variable("X"), Term.parse("f(h(a))"));
+            target.addSubstitution(new Variable("Y"), Term.parse("h(a)"));
+            target.addSubstitution(new Variable("Z"), Term.parse("g(h(a),h(a))"));
+            target.addSubstitution(new Variable("W"), Term.parse("k(f(h(a)),g(h(a),h(a)))"));
+            
+            assert concat.equals(target);
+            
+            assert concat.equals(subst2.concatenate(subst1));
+        }
+        
+        public void concatInvalid() {
+            Substitution subst1 = new Substitution(new Variable("X"), Term.parse("f(Y)"));
+            
+            Substitution subst2 = new Substitution(new Variable("Y"), Term.parse("a"));
+            subst2.addSubstitution(new Variable("Y"), Term.parse("b")); // invalid
+            
+            assert !subst1.concatenate(subst2).isValid();
+            assert !subst2.concatenate(subst1).isValid();
+        }
+        
     }
 
 }
