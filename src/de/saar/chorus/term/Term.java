@@ -103,6 +103,9 @@ public abstract class Term {
             Compound c = (Compound) comp;
             assert c.getLabel().equals("f");
             assert c.getSubterms().size() == 2;
+            assert c.equals(new Compound("f", new Term[] {
+                    new Variable("X"), new Constant("a")
+            }));
         }
         
         /** toString **/
