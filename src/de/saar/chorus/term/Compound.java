@@ -8,7 +8,9 @@
 package de.saar.chorus.term;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import de.saar.basic.StringTools;
 
@@ -127,6 +129,16 @@ public class Compound extends Term {
         
         // unreachable
         return null;
+    }
+
+    public Set<Variable> getVariables() {
+        Set<Variable> ret = new HashSet<Variable>();
+        
+        for( Term subterm : subterms ) {
+            ret.addAll(subterm.getVariables());
+        }
+        
+        return ret;
     }
     
 }
