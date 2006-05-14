@@ -8,6 +8,7 @@
 package de.saar.chorus.term;
 
 import java.io.StringReader;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 
@@ -43,6 +44,14 @@ public abstract class Term {
     
     public abstract Substitution getUnifier(Term other);
     
+    public boolean isUnifiableWith(Term other) {
+        Substitution subst = getUnifier(other);
+        
+        return (subst != null) && subst.isValid();
+    }
+    
+    public abstract Set<Variable> getVariables();
+    
     public Term unify(Term other) {
         Substitution mgu = getUnifier(other);
         
@@ -56,6 +65,14 @@ public abstract class Term {
     // TODO this is a hack
     public int hashCode() {
         return toString().hashCode();
+    }
+    
+    public Substitution substFor(Variable x) {
+        return new Substitution(x, this);
+    }
+    
+    public Substitution substFor(String varname) {
+        return substFor(new Variable(varname));
     }
     
     
@@ -170,5 +187,13 @@ public abstract class Term {
             
             assert (a.getUnifier(b) == null) : "unifier is " + a.getUnifier(b);
         }
+        
+        
+        
+        
+        /*
+         * TODO:
+         *  - getVariables
+         */
     }
 }

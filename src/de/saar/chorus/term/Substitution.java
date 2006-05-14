@@ -9,8 +9,10 @@ package de.saar.chorus.term;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.testng.annotations.Test;
 
@@ -38,39 +40,7 @@ public class Substitution implements Cloneable {
     }
 
     public void addSubstitution(Variable v, Term t) {
-        // 1. apply substitution to t to eliminate variables that occur on
-        // the LHS of the substitution
-        t = apply(t);
-        
-        if( t.hasSubterm(v)) {
-            valid = false;
-        } else {
-            
-            if( subst.containsKey(v)) {
-                // 2a. If the LHS occurs in the substitution, then unify
-                // the RHSs. It isn't necessary to apply (v -> unified) to
-                // any other mapping in the substitution because v can't
-                // occur both on the LHS and the RHS.
-                Term unified = t.unify(subst.get(v));
-                
-                if( (unified == null) || unified.hasSubterm(v) ) {
-                    valid = false;
-                } else {
-                    subst.put(v, unified);
-                }
-            } else {
-                // 2b. If the LHS doesn't occur in the substitution, then
-                // apply (v -> t) to all RHSs (to eliminate v) and add
-                // (v -> t) to the substitution.
-                Substitution newSubst = new Substitution(v,t);
-                
-                for( Map.Entry<Variable,Term> entry : subst.entrySet() ) {
-                    subst.put(entry.getKey(), newSubst.apply(entry.getValue()));
-                }
-                
-                subst.put(v,t);
-            }
-        }
+        copy(concatenate(new Substitution(v,t)), this);
     }
     
     
@@ -103,20 +73,79 @@ public class Substitution implements Cloneable {
         return null;
     }
     
+    public List<Term> apply(List<Term> terms) {
+        List<Term> ret = new ArrayList<Term>(terms.size());
+        
+        for( Term term : terms ) {
+            ret.add(apply(term));
+        }
+        
+        return ret;
+    }
+    
+    
     public Substitution concatenate(Substitution other) {
         Substitution ret = (Substitution) clone();
+        Queue<Map.Entry<Variable,Term>> addQueue = new LinkedList<Map.Entry<Variable,Term>>(other.subst.entrySet());
         
         // concatenation inherits invalidity from both sides
         if( !isValid() || !other.isValid() ) {
             ret.valid = false;
             return ret;
         }
-        
-        // copy other substitution into ret, piece by piece
-        for( Map.Entry<Variable,Term> entry : other.subst.entrySet() ) {
-            ret.addSubstitution(entry.getKey(), entry.getValue());
-        }
 
+        while( !addQueue.isEmpty() ) {
+            Map.Entry<Variable,Term> el = addQueue.remove();
+            Variable v = el.getKey();
+            Term t = el.getValue();
+            
+            // 1. apply substitution to t to eliminate variables that occur on
+            // the LHS of the substitution
+            t = ret.apply(t);
+            
+            if( t.hasSubterm(v)) {
+                ret.valid = false;
+                break;
+            } else {
+                if( ret.subst.containsKey(v)) {
+                    // 2a. If the LHS occurs in the substitution, then unify
+                    // the RHSs. It isn't necessary to apply (v -> unified) to
+                    // any other mapping in the substitution because v can't
+                    // occur both on the LHS and the RHS.
+                    Substitution unifier = t.getUnifier(ret.subst.get(v));
+                    
+                    if( unifier != null ) {
+                        Term unified = unifier.apply(t);
+                        
+                        if( !unified.hasSubterm(v) ) {
+                            ret.subst.put(v, unified);
+                            
+                            for( Map.Entry<Variable,Term> pair : unifier.subst.entrySet() ) {
+                                addQueue.offer(pair);
+                            }
+                        } else {
+                            ret.valid = false;
+                            break;
+                        }
+                    } else {
+                        ret.valid = false;
+                        break;
+                    }
+                } else {
+                    // 2b. If the LHS doesn't occur in the substitution, then
+                    // apply (v -> t) to all RHSs (to eliminate v) and add
+                    // (v -> t) to the substitution.
+                    Substitution newSubst = new Substitution(v,t);
+                    
+                    for( Map.Entry<Variable,Term> entry : ret.subst.entrySet() ) {
+                        ret.subst.put(entry.getKey(), newSubst.apply(entry.getValue()));
+                    }
+                    
+                    ret.subst.put(v,t);
+                }
+            }
+            
+       }
         
         return ret;
     }
@@ -143,10 +172,16 @@ public class Substitution implements Cloneable {
     public Object clone()  {
         Substitution ret = new Substitution();
         
-        ret.valid = valid;
-        ret.subst.putAll(subst);
+        copy(this,ret);
 
         return ret;
+    }
+    
+    private static void copy(Substitution from, Substitution to) {
+        to.valid = from.valid;
+        
+        to.subst.clear();
+        to.subst.putAll(from.subst);
     }
 
     
@@ -160,22 +195,28 @@ public class Substitution implements Cloneable {
 
     @Test(groups = {"Term"})
     public static class UnitTests {
-        private Variable x = new Variable("X"), y = new Variable("Y");
+        private Variable x = new Variable("X"), y = new Variable("Y"), z = new Variable("Z");
         
 
         public void constructors() {
-            Substitution subst1 = new Substitution();
-            subst1.addSubstitution(new Variable("X"), Term.parse("f(a)"));
+            Substitution subst1 = new Substitution(new Variable("X"), Term.parse("f(a)"));
+
+            Substitution subst2 = new Substitution();
+            subst2.addSubstitution(new Variable("X"), Term.parse("f(a)"));
             
-            Substitution subst2 = new Substitution(new Variable("X"), Term.parse("f(a)"));
+            assert subst1.equals(subst2) : "subst2 is " + subst2;
             
-            assert subst1.equals(subst2);
+            Substitution subst3 = Term.parse("f(a)").substFor(new Variable("X"));
+            assert subst1.equals(subst3) : "subst3 is " + subst3;
+            
+            Substitution subst4 = Term.parse("f(a)").substFor("X");
+            assert subst1.equals(subst4) : "subst4 is " + subst4;
         }
         
         
         public void fx() {
             Term fx = Term.parse("f(X)");
-            Substitution subst = new Substitution(new Variable("X"), Term.parse("g(b,c(d))"));
+            Substitution subst = Term.parse("g(b,c(d))").substFor("X");
             
             assert subst.apply(fx) != fx;
             assert subst.apply(fx) != null;
@@ -184,7 +225,7 @@ public class Substitution implements Cloneable {
         
         public void fxy1() {
             Term fxy = Term.parse("f(X,Y)");
-            Substitution subst = new Substitution(new Variable("X"), Term.parse("g(b,c(d))"));
+            Substitution subst = Term.parse("g(b,c(d))").substFor("X");
             
             assert subst.apply(fxy) != fxy;
             assert subst.apply(fxy) != null;
@@ -193,7 +234,7 @@ public class Substitution implements Cloneable {
         
         public void fxy2() {
             Term fxy = Term.parse("f(X,Y)");
-            Substitution subst = new Substitution(new Variable("X"), Term.parse("g(b,c(d))"));
+            Substitution subst = Term.parse("g(b,c(d))").substFor("X");
             
             subst.addSubstitution(new Variable("Y"), Term.parse("e(f)"));
             
@@ -204,7 +245,7 @@ public class Substitution implements Cloneable {
         
         public void fxx() {
             Term fxx = Term.parse("f(X,X)");
-            Substitution subst = new Substitution(new Variable("X"), Term.parse("g(b,c(d))"));
+            Substitution subst = Term.parse("g(b,c(d))").substFor("X");
             
             assert subst.apply(fxx) != fxx;
             assert subst.apply(fxx) != null;
@@ -239,15 +280,18 @@ public class Substitution implements Cloneable {
             subst.addSubstitution(new Variable("X"), Term.parse("f(a,Z)"));
             
             assert subst.isValid();
-            assert subst.subst.size() == 1;
+            
+            assert subst.subst.size() == 3 : "size is " + subst.subst.size();
             assert subst.subst.get(x).equals(Term.parse("f(a,b)")) : "X is " + subst.subst.get(x);
+            assert subst.subst.get(y).equals(Term.parse("a")) : "Y is " + subst.subst.get(x);
+            assert subst.subst.get(z).equals(Term.parse("b")) : "Z is " + subst.subst.get(x);
         }
-
+        
         public void addsubst_nonUnifiableDuplicateEntries() {
             Substitution subst = new Substitution(new Variable("X"), Term.parse("f(Y,b)"));
             subst.addSubstitution(new Variable("X"), Term.parse("g(a,Z)"));
             
-            assert !subst.isValid();
+            assert !subst.isValid() : "subst is valid: " + subst;
         }
         
         public void addsubst_nonUnifiableDuplicateEntries2() {
@@ -257,6 +301,7 @@ public class Substitution implements Cloneable {
             assert !subst.isValid() : "substitution is " + subst;
         }
         
+              
         
         /** concatenate **/
         public void concat() {

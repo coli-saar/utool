@@ -7,6 +7,9 @@
 
 package de.saar.chorus.term;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Variable extends Term {
     private String name;
 
@@ -46,6 +49,13 @@ public class Variable extends Term {
             return null;
         }
     }
+
+    public Set<Variable> getVariables() {
+        Set<Variable> ret = new HashSet<Variable>();
+        ret.add(this);
+        return ret;
+    }
     
 
+    
 }
