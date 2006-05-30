@@ -179,7 +179,12 @@ count:
 
 ############### HEVEA support #####################
 
+# also type: export HEVEADIR=c:/Programme/hevea
+
+
 HEVEAHOME=c:/Programme/hevea
+HEVEADIR=${HEVEAHOME}
+
 HEVEA=${HEVEAHOME}/hevea.exe
 HACHA=${HEVEAHOME}/hacha.exe
 SCP=scp
@@ -188,7 +193,7 @@ index.html: ${START}.html
 	${HACHA} $<
 
 ${START}.html: ${TEXSRC} ${START}.bbl 
-	${HEVEA} png.hva -fix $< 
+	${HEVEA} png.hva $< 
 
 distribute-html: index.html
 	${SCP} *.html *.png *.gif *.css koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/manual
