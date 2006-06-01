@@ -40,6 +40,10 @@ class FragmentWithHole {
     }
     
     public boolean equals(Object o) {
+        if( o == null ) {
+            return false;
+        }
+        
         try {
             FragmentWithHole other = (FragmentWithHole) o;
             return rootlabel.equals(other.rootlabel) && (holeindex == other.holeindex);

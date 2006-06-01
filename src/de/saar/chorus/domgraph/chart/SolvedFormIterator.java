@@ -38,7 +38,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
-	private String nullNode;
+
     //private Map<Set<String>, String> fragmentTable;
     private Set<String> roots;
     private String rootForThisFragset;
@@ -62,7 +62,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     private SolvedFormIterator(Chart ch, DomGraph graph, boolean makeIteratorForGet) {
         chart = ch;
         agenda = new Agenda();
-        nullNode = null; 
         stack = new Stack<EnumerationStackEntry>();
         solvedForms = new ArrayList< List<DomEdge> >();
         
@@ -78,12 +77,12 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
         
         for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
             if( fragset.size() > 0 ) {
-                agenda.add(new AgendaEntry(nullNode, fragset));
+                agenda.add(new AgendaEntry(null, fragset));
             }
         }
         
         //Null-Element on Stack
-        stack.push( new EnumerationStackEntry(nullNode, new ArrayList<Split>(), null));
+        stack.push( new EnumerationStackEntry(null, new ArrayList<Split>(), null));
         
         updateNextSolvedForm();
     }

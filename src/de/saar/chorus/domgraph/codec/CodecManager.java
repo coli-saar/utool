@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -74,19 +75,27 @@ public class CodecManager {
         }
     }
     
+    private Object constructCodecArgumentless(Class codecClass) {
+        try {
+            return codecClass.newInstance();
+        } catch (InstantiationException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
+    
     private InputCodec constructInputCodec(Class codecClass, String options)  {
         Object ret = null;
         
         try {
             Constructor con = codecClass.getConstructor(String.class);
             ret = con.newInstance(options);
+        } catch(RuntimeException e) {
+            ret = constructCodecArgumentless(codecClass);
         } catch(Exception e) {
-            // couldn't call the Constructor(String).
-            try {
-                ret = codecClass.newInstance();
-            } catch(Exception f) {
-            }
-        }
+            ret = constructCodecArgumentless(codecClass);
+        } 
         
         try {
             return (InputCodec) ret;
@@ -101,13 +110,10 @@ public class CodecManager {
         try {
             Constructor con = codecClass.getConstructor(String.class);
             ret = con.newInstance(options);
+        } catch(RuntimeException e) {
+            ret = constructCodecArgumentless(codecClass);
         } catch(Exception e) {
-            // couldn't call the Constructor(String).
-            try {
-                Constructor con = codecClass.getConstructor();
-                ret = con.newInstance();
-            } catch(Exception f) {
-           }
+            ret = constructCodecArgumentless(codecClass);
         }
         
         try {

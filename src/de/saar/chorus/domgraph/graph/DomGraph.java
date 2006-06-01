@@ -1289,7 +1289,7 @@ public class DomGraph implements Cloneable {
     }
     
     private boolean cacheResult(String key, boolean value) {
-        setCachedResult(key, new Boolean(value));
+        setCachedResult(key, Boolean.valueOf(value));
         return value;
     }
     
