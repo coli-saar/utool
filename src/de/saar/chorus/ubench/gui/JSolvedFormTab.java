@@ -38,6 +38,11 @@ import de.saar.chorus.ubench.JDomGraph;
 public class JSolvedFormTab extends JGraphTab {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8144093325748384465L;
+
 	long currentForm; // current solved form
 	   
     //  shows the number of the recent solved form
@@ -89,7 +94,11 @@ public class JSolvedFormTab extends JGraphTab {
     *
     */
    private class SolvedFormBar extends JPanel {
-   	private JPanel classified,
+   	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3995240911677086695L;
+	private JPanel classified,
    	formScroll;
    	private JButton sLeft, 	// for showing the next solved form
    					sRight; // for showing the previous solved form
@@ -189,7 +198,12 @@ public class JSolvedFormTab extends JGraphTab {
    		 */
    		
    		ll = new JLabel("L") {
-   			public Point getToolTipLocation(MouseEvent e) {
+   			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 8577612771757000214L;
+
+			public Point getToolTipLocation(MouseEvent e) {
    				
    				Point p1 = ll.getLocation();
    				Point toReturn = new Point(p1.x, p1.y-25);
@@ -199,7 +213,12 @@ public class JSolvedFormTab extends JGraphTab {
    		ll.setForeground(Color.RED);
    		
    		hn = new JLabel("H") {
-   			public Point getToolTipLocation(MouseEvent e) {
+   			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 4662083424900606811L;
+
+			public Point getToolTipLocation(MouseEvent e) {
    				Point p1 =hn.getLocation();
    				Point toReturn = new Point(p1.x, p1.y-25);
    				return toReturn;
@@ -208,7 +227,12 @@ public class JSolvedFormTab extends JGraphTab {
    		hn.setForeground(Color.RED);
    		
    		norm = new JLabel("N") {
-   			public Point getToolTipLocation(MouseEvent e) {
+   			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1253480187037359978L;
+
+			public Point getToolTipLocation(MouseEvent e) {
    				Point p1 = norm.getLocation();
    				Point toReturn = new Point(p1.x, p1.y-25);
    				return toReturn;
@@ -218,7 +242,12 @@ public class JSolvedFormTab extends JGraphTab {
    		
    		
    		comp = new JLabel("C") {
-   			public Point getToolTipLocation(MouseEvent e) {
+   			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 733976281657651308L;
+
+			public Point getToolTipLocation(MouseEvent e) {
    				Point p1 = comp.getLocation();
    				Point toReturn = new Point(p1.x, p1.y-25);
    				return toReturn;

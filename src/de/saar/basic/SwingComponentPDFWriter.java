@@ -51,7 +51,7 @@ public class SwingComponentPDFWriter  {
 		Document document;
 		
 		// to choose between portrait and landscape
-		double boxRatio = boundingBox.height/boundingBox.width;
+		double boxRatio = (double) boundingBox.height/boundingBox.width;
 		
 		
 		if( boxRatio >= 1.0 ) {

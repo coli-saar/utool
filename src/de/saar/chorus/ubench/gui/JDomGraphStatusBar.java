@@ -2,12 +2,10 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JTextField;
 
 /**
  * The status bar of the workbench window, a
@@ -21,6 +19,13 @@ import javax.swing.JTextField;
  */
 public class JDomGraphStatusBar extends JPanel {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 357657081130185650L;
+
+
+
 	// several panels
 	private JPanel progressPanel,	// showed while solving
 				   emptyPanel;  	// showed if there is no graph.
@@ -28,10 +33,6 @@ public class JDomGraphStatusBar extends JPanel {
 	
 	
 	private JLabel emptyLabel;
-	
-	// shows the number of the recent solved form
-	private JTextField solvedForm;
-	
 	
 	// layout of the "root" JPanel
 	private CardLayout layout;

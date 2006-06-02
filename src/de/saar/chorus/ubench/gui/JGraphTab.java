@@ -363,12 +363,4 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		return empty;
 	}
 
-	/**
-	 * 
-	 * @param empty
-	 */
-	private void setEmpty(boolean empty) {
-		this.empty = empty;
-	}
-
 }

@@ -24,6 +24,10 @@ import javax.swing.event.ChangeListener;
 
 public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
     
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1123628090923260178L;
 	Action browse, browseBack;
 	
 	/**
@@ -41,6 +45,11 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 		 * TODO find out why this doesn't work at all...
 		 */
 		browse = new AbstractAction("browse") {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -9044721476670631615L;
+
 			public void actionPerformed(ActionEvent e) {
 				int i = getSelectedIndex();
 				if(i < (getComponentCount() - 1)) {
@@ -56,6 +65,11 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 		getInputMap().getParent().put(KeyStroke.getKeyStroke("ctrl LESS"), browse.getValue(Action.NAME));
 		
 		browseBack = new AbstractAction("back") {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -8001425669225741039L;
+
 			public void actionPerformed(ActionEvent e) {
 				int i = getSelectedIndex();
 				if(i > 0) {
