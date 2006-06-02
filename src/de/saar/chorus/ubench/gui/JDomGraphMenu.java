@@ -8,7 +8,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 
@@ -23,9 +22,13 @@ import javax.swing.KeyStroke;
  */
 public class JDomGraphMenu extends JMenuBar {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5896778846575447247L;
+
 	// the upper menus
 	private JMenu fileMenu,   // operating on files
-				  graphMenu,  // operating on the visible graph	
 				  viewMenu,   // (general) view preferences 
 				  utoolMenu,  // solving
 				  helpMenu;	  // Help / About	 

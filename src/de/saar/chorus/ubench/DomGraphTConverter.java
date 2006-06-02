@@ -1,8 +1,6 @@
 package de.saar.chorus.ubench;
 
 import org._3pq.jgrapht.Edge;
-import org.jgraph.graph.DefaultEdge;
-import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
