@@ -16,6 +16,11 @@ import javax.swing.KeyStroke;
 public class JDomTabPopup extends JPopupMenu {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3971251434089241635L;
+
+	/**
 	 * Sets up the menu and ads the listener
 	 * 
 	 * @param listener the listener for the menu items

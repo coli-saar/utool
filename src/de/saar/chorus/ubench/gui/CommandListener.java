@@ -136,7 +136,7 @@ public class CommandListener implements ActionListener, ItemListener {
             
             // file chooser with PDF-filter 
             JFileChooser fc = new JFileChooser();
-            fc.setFileFilter(new pdfFilter());
+            fc.setFileFilter(new PDFFilter());
             
             // if there was any path chosen before, the
             // file chooser will start in the related directory
@@ -733,7 +733,7 @@ public class CommandListener implements ActionListener, ItemListener {
      * @author Michaela Regneri
      *
      */
-    public class xmlFilter extends FileFilter {
+    public class XMLFilter extends FileFilter {
         
         /**
          * Overwrites the <code>accept</code> method
@@ -771,7 +771,7 @@ public class CommandListener implements ActionListener, ItemListener {
      * @author Michaela Regneri
      *
      */
-    public class pdfFilter extends FileFilter {
+    public class PDFFilter extends FileFilter {
         
         /**
          * Overwrites the <code>accept</code> method
@@ -809,7 +809,7 @@ public class CommandListener implements ActionListener, ItemListener {
      * @author Michaela Regneri
      *
      */
-    public class pdfView extends FileView {
+    public class PDFView extends FileView {
         
         /**
          * Overwrites the <code>getDescription</code>
