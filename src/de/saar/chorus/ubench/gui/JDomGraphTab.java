@@ -42,6 +42,10 @@ import de.saar.chorus.ubench.JDomGraph;
 public class JDomGraphTab extends JGraphTab  {
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet, compactifiable; 
 	Chart chart;
@@ -214,6 +218,10 @@ public class JDomGraphTab extends JGraphTab  {
 	 *
 	 */
 	private class DominanceGraphBar extends JPanel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private JPanel classified; // the panel for the classify symbols
 		private JButton solve; 	// for solving 
 		
@@ -307,6 +315,11 @@ public class JDomGraphTab extends JGraphTab  {
 			classifyLabels = new HashSet<JLabel>();
 			
 			ll = new JLabel("L") {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
 				public Point getToolTipLocation(MouseEvent e) {
 					
 					Point p1 = ll.getLocation();
@@ -318,6 +331,11 @@ public class JDomGraphTab extends JGraphTab  {
 			classifyLabels.add(ll);
 			
 			hn = new JLabel("H") {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 4038867197509964748L;
+
 				public Point getToolTipLocation(MouseEvent e) {
 					Point p1 =hn.getLocation();
 					Point toReturn = new Point(p1.x, p1.y-25);
@@ -328,6 +346,11 @@ public class JDomGraphTab extends JGraphTab  {
 			classifyLabels.add(hn);
 			
 			norm = new JLabel("N") {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = -4917910242640525112L;
+
 				public Point getToolTipLocation(MouseEvent e) {
 					Point p1 = norm.getLocation();
 					Point toReturn = new Point(p1.x, p1.y-25);
@@ -338,6 +361,11 @@ public class JDomGraphTab extends JGraphTab  {
 			classifyLabels.add(norm);
 			
 			comp = new JLabel("C") {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1727521902555287883L;
+
 				public Point getToolTipLocation(MouseEvent e) {
 					Point p1 = comp.getLocation();
 					Point toReturn = new Point(p1.x, p1.y-25);

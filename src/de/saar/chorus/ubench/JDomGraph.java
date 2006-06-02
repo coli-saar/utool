@@ -43,6 +43,11 @@ import de.saar.chorus.jgraph.ImprovedJGraph;
  * 
  */
 public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeData> implements Cloneable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3205330183133471528L;
+
 	// The fragments of the graph. This only makes sense after computeFragments
 	// has been called.
 	private Set<Fragment> fragments;
@@ -734,25 +739,9 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 
 	/**
 	 * 
-	 * @param hnc
-	 */
-	private void setHnc(boolean hnc) {
-		this.hnc = hnc;
-	}
-
-	/**
-	 * 
 	 * @return the node sets representing this graph's weakly connected components
 	 */
 	public List<Set<DefaultGraphCell>> getWccs() {
 		return wccs;
-	}
-
-	/**
-	 * 
-	 * @param wccs
-	 */
-	private void setWccs(List<Set<DefaultGraphCell>> wccs) {
-		this.wccs = wccs;
 	}
 }

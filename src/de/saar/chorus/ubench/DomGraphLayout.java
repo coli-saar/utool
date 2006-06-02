@@ -86,13 +86,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	private Map<DefaultGraphCell,Integer> xPos;
 	private Map<DefaultGraphCell,Integer> yPos;
 
-    // box debugging
-    private boolean drawBoxes;
-
-	private Fragment movedRoot;
+    private Fragment movedRoot;
 	private int yOffset;
 	
-	private boolean hnc;
+
 	
 	/**
 	 * Initializes a new dominance graph layout
@@ -106,7 +103,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		 * by getting them from the graph
 		 */
 		this.graph = gr;
-		hnc = gr.isHnc();
 		fragments = graph.getFragments();
 		
 		movedRoot = null;
@@ -132,8 +128,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		nodesToDepth = new HashMap<DefaultGraphCell,Integer>();
 		fragmentToTowers = new HashMap<Fragment, List<FragmentTower>>();
         relXtoRoot = new HashMap<DefaultGraphCell, Integer>();
-		
-        drawBoxes = false;
+       
 	}
 	
 	
@@ -471,13 +466,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		}
 		
 		/**
-		 * @param averageTowerHeight The averageTowerHeight to set.
-		 */
-		private void setAverageTowerHeight(int averageTowerHeight) {
-			this.averageTowerHeight = averageTowerHeight;
-		}
-		
-		/**
 		 * 
 		 * @return the number of boxes
 		 */
@@ -544,6 +532,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			}
 			
 			boxRatio = (float) maxBoxHeight / maxBoxWidth;
+		}
+		
+		public int hashCode() {
+			return maxBoxWidth * maxBoxHeight * boxes * averageTowerHeight;
 		}
 	}
 	
@@ -1372,10 +1364,10 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
         tower.addBackboneFragment(frag, fragWidth.get(frag), fragHeight.get(frag));
         
         // add my leaf children to the tower
-        for( Fragment childFrag : leafXOffsets.keySet() ) {
-            tower.addLeafFragment(childFrag, frag, leafXOffsets.get(childFrag),
-                        fragWidth.get(childFrag), fragHeight.get(childFrag));
-            visited.add(childFrag);
+        for( Map.Entry<Fragment,Integer> childFrag : leafXOffsets.entrySet() ) {
+            tower.addLeafFragment(childFrag.getKey(), frag, childFrag.getValue(),
+                        fragWidth.get(childFrag.getKey()), fragHeight.get(childFrag.getKey()));
+            visited.add(childFrag.getKey());
         }
         
         // deal with my dominance parents
@@ -1438,9 +1430,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			Map<Fragment, Integer> tempYpos = 
 				new HashMap<Fragment,Integer>();
 			
-			// performing undirected DFS for with every possible root
-			drawBoxes = false;
-	
 			for(Fragment root : possibleRoots) {
 			//	System.out.println("New DFS with Root: " + root);
 				
@@ -1496,10 +1485,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				fragmentToTowers.clear();
 			}
 			
-			// repeat the DFS a last time for the optimal root
-			// to set the fields
-			drawBoxes = true;
-		//	System.err.println("Best Root: " + bestRoot);
+			//	System.err.println("Best Root: " + bestRoot);
 		//	System.err.println("Crossings: " + costBestRoot.getCrossings());
 			Set<Fragment> visited = new HashSet<Fragment>();
 			Cost lastCost = fragmentBoxDFS(bestRoot,visited, new Rectangle(), 
@@ -1773,15 +1759,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	}
 	
 
-	/**
-	 * @param nodesToShape The nodesToShape to set.
-	 */
-	private void setNodesToShape(Map<DefaultGraphCell, Shape> nodesToShape) {
-		this.nodesToShape = nodesToShape;
-	}
-	
-
-    public Integer getRelXtoParent(DefaultGraphCell node) {
+	public Integer getRelXtoParent(DefaultGraphCell node) {
         return relXtoParent.get(node);
     }
     
@@ -1816,15 +1794,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	public Map<DefaultGraphCell, Integer> getRelXtoRoot() {
 		return relXtoRoot;
 	}
-	
 
-	/**
-	 * @param relXtoRoot The relXtoRoot to set.
-	 */
-	private void setRelXtoRoot(Map<DefaultGraphCell, Integer> relXtoRoot) {
-		this.relXtoRoot = relXtoRoot;
-	}
-	
 	
 }
 
