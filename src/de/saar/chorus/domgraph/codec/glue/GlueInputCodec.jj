@@ -270,21 +270,27 @@ public class GlueInputCodec extends InputCodec {
 								// 1. check type of root and hole
 								// 2. add dominance edge
 								String root = graph.getRoot(rootj);// extracts the root of Fj from the root of Fj...
-								for( String hole : graph.getHoles(Fi) )
-									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
+								for( String hole : graph.getHoles(Fi) ) {
+									String holeParent = hole.substring(0, hole.length()-1);
+									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) &&
+										i_res.equals(varToFormula.get(holeParent).getSubformulas().get(0))) {
 										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
 										graph.addEdge(hole, root, edge);
 										break;
 									}
+								}
 							} else if (m.get(i_res).intValue() > n.get(j_res).intValue()) {
 								// idem...
 								String root = graph.getRoot(rooti);
-								for( String hole : graph.getHoles(Fj) )
-									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) ) {
+								for( String hole : graph.getHoles(Fj) ) {
+									String holeParent = hole.substring(0, hole.length()-1);
+									if( varToFormula.get(hole).subsumes(varToFormula.get(root)) &&
+										j_res.equals(varToFormula.get(holeParent).getSubformulas().get(0))) {
 										EdgeData edge = new EdgeData(EdgeType.DOMINANCE);
 										graph.addEdge(hole, root, edge);
 										break;
 									}
+								}
 							}
 						// no else: nothing happens if two fragments exhibit the same behavior w.r.t. the same resource
 						}
