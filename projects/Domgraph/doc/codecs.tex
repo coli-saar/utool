@@ -133,18 +133,16 @@ weakly normal. These codecs are associated with the filename extension
 Utool supports two input codecs that deal with underspecified
 representations based upon Minimal Recursion Semantics (MRS;
 \citeNP{CopFliSag97}), the standard scope underspecification formalism
-used in current HPSG grammars.  The \verb|mrs-prolog| codec deals with
+used in current HPSG grammars. The \verb|mrs-prolog| codec deals with
 MRS expressions in a Prolog style term representation. Alternatively,
-the \verb|mrs-xml| codec can be used for MRS expressions based upon an
+the \verb|mrs-xml| codec deals with MRS expressions based upon an
 XML-style syntax. Both codecs are compatible with the concrete syntax
 that is used in the LKB system \cite{Copestake:LKB-Book}.
 
-Utool doesn't contain any MRS output codecs, as it is not clear that a
-useful class of labelled dominance graphs can indeed be correctly
-translated into MRS.
-
-
-
+Utool doesn't contain any MRS output codecs, because MRS makes some
+specific assumptions about the underlying object language, and it is
+not clear that a useful class of labelled dominance graphs can indeed
+be correctly translated into MRS.
 
 \paragraph{The mrs-prolog input codec.}
 
@@ -177,13 +175,13 @@ rel(L, H, [attrval(F, V), ...])
 \end{verbatim} 
 
 represent elementary predications, which pair a quoted string
-\verb|L|, a handle \verb|H|, and a list of feature-value
-pairs. Features are represented by quoted strings \todo{(atoms?)}, and
-values can be either handles, object language individual or event
-variables, ``unspecified'' values (see below) and quoted
-strings. Finally, terms of the form \verb|qeq(H1, H2)| represent handle
-constraints. Terms of the form \verb|geq(H1, H2)| can also be used to
-express handle constraints.
+\verb|L|, a handle \verb|H|, and a list of feature-value pairs.
+Features are represented by (quoted) atoms, and values can be either
+handles, object language individual or event variables,
+``unspecified'' values (see below) and quoted strings. Finally, terms
+of the form \verb|qeq(H1, H2)| represent handle constraints. Terms of
+the form \verb|geq(H1, H2)| can also be used to express handle
+constraints.
 
 The codec makes the following assumptions:
 \begin{itemize}
@@ -197,7 +195,7 @@ The codec makes the following assumptions:
 The codec also accepts terms starting with lowercase \verb|u| or
 \verb|i|, which correspond to values left unspecified by the
 syntax-semantics interface of the grammar used to derive the MRS
-expression. \todo{(und was machen wir mit denen?)}
+expression. These terms are ignored by the input codec.
 
 The codec implements an extended version of the translation of MRS
 into normal dominance graphs defined by \citeN{mrs-dom}. During the
@@ -208,26 +206,26 @@ bound variables. We assume that quantifiers are elementary
 predications which contain exactly the features \verb|ARG0|,
 \verb|RSTR| and \verb|BODY|. An individual variable is treated as
 bound if it occurs as the value of some other feature.\footnote{The
-features PSV and TPC are treated specially, and individual variables
-occurring as value of these features are ignored by the codec.}
+  features PSV and TPC are treated specially, and individual variables
+  occurring as value of these features are ignored by the codec.}
 
 In order to guarantee correctness of the translation, the codec makes
-two important assumptions about the MRSs is processes. First, the
-\verb|qeq| constraints translate simply into dominance edges. This is
-a conceptional simplification, which however seems to be compatible
-with the way modern grammars make use of \verb|qeq| constraints
-\cite{FucKolNieTha04}. Second, the translation is restricted to MRS
-expressions whose graph satisfies certain structural restrictions. The
-codec checks for these restrictions: The MRS must be a \emph{net}, or
+two important assumptions about the MRS structures is processes.
+First, the \verb|qeq| (and \verb|geq|) constraints translate simply
+into dominance edges. This is a conceptional simplification, which
+however seems to be compatible with the way modern grammars make use
+of \verb|qeq| constraints \cite{FucKolNieTha04}. Second, the
+translation is restricted to MRS expressions whose graph satisfies
+certain structural restrictions: The MRS must be a \emph{net}, or
 equivalently, the resulting dominance graph must be normal,
-hypernormally connected and leaf-labelled. 
+hypernormally connected and leaf-labelled.
 
-If the input MRS is not well-formed or not a net, the codec reports an
-error. The error code is obtained by forming the bitwise OR of 192 and
-the relevant bits in the following table. The codec is able to report
-multiple errors at once, so e.g.\ if the input MRS translates into a
-graph that is neither normal nor leaf-labelled, the error code would
-be 201.
+If the input MRS is not well-formed (see below) or not a net, the
+codec reports an error. The error code is obtained by forming the
+bitwise OR of 192 and the relevant bits in the following table. The
+codec is able to report multiple errors at once, so e.g.\ if the input
+MRS translates into a graph that is neither normal nor leaf-labelled,
+the error code would be 201.
 
 \begin{tabular}{lll}
 code & symbolic name & meaning \\ \hline
@@ -235,8 +233,14 @@ code & symbolic name & meaning \\ \hline
 2 &  \verb?NOT_WEAKLY_NORMAL? & resulting graph is not weakly normal \\
 4 &  \verb?NOT_HYPERNORMALLY_CONNECTED? & resulting graph is not hypernormally connected \\
 8 &  \verb?NOT_LEAF_LABELLED? & resulting graph is not leaf-labelled \\
-16 &  \verb?NOT_WELLFORMED? & the input MRS is not wellformed \todo{???}
+16 &  \verb?NOT_WELLFORMED? & the input MRS is not well-formed 
 \end{tabular}
+
+An MRS is not well-formed if it violates some (in the widest sense)
+syntactic constraints, for instance, if it contains a variable
+\verb|x| but no quantifier that binds \verb|x|. We should note that
+this terminology departs from \cite{CopFliSag97}'s terminology: in
+that paper, a well-formed MRS must additionally be solvable.
 
 
 The input codec is associated with the filename extension \verb|.mrs.pl|.

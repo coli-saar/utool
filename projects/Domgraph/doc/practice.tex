@@ -133,7 +133,7 @@ standard Utool distribution and can be found in the directory
 
 Utool can be used as a drop-in replacement for the MRS solver built
 into the LKB grammar development system \cite{Copestake:LKB-Book},
-which is freely available at \todo{URL}. This means that users of the
+which is freely available at \url{http://www.delph-in.net/lkb}. This means that users of the
 LKB now have easy access to our solver, which is considerably faster
 than the original MRS solver. The integration between LKB and Utool is
 achieved via two Lisp source files that we distribute in the directory
@@ -174,15 +174,14 @@ machine, port 2802.
 \label{sec:treebank}
 
 The English Resource Grammar (ERG; \citeNP{Copestake&Flickinger:LKB})
-is distributed together with a collection of hand-annotated
-``Redwoods-style'' corpora that pair for each sentence from the corpus
+is distributed together with a collection of hand-annotated corpora that pair for each sentence from the corpus
 the preferred syntactic analysis, together with a corresponding
 semantic representation based upon MRS. These corpora are extremely
 valuable resources because corpora with deep semantic information are
 so very rare, and we have occasionally used them in experiments
 \cite{FucKolNieTha04,FliKolTha05}.
 
-In order to use the MRSs in these treebanks from within Utool, it is
+In order to use the MRS structures in these treebanks from within Utool, it is
 necessary to extract them from the treebank and save them in
 individual files. This can be done by using the script
 \verb|extract-gold.lisp|, which can be found in the directory
@@ -192,10 +191,11 @@ follows:
 \begin{enumerate}
 \item Start the LKB system.
 \item Locate the treebank file on your filesystem. Here we will assume
-that we are working with the Rondane treebank, which is in
-\url{erg/gold/rondane/result} under the main LKB directory. You may
-have to unzip the file \verb?result.gz? that comes with the original
-ERG distribution first.
+that we are working with the Rondane treebank, which is located in
+\url{erg/gold/rondane} under the main ERG directory. The \verb|rondane| directory contains a file \verb|result.gz|, which contains the actual annotations and has to be unzipped first.
+%You may
+%have to unzip the file \verb?result.gz? that comes with the original
+%ERG distribution first.
 \item Run the following commands in the LKB's Lisp console:
 \begin{verbatim}
 (load "extract-gold")
@@ -218,11 +218,13 @@ useful to compare the results of the MRS solver and Utool, but can
 take quite a while.
 \end{enumerate}
 
-The \verb?extract? functions that we distribute will work with the
-Rondane treebank \todo{and others}. They will not work directly with
-the Redwoods corpus \cite{Oepen&al:Redwoods} because it uses a
-slightly different internal format. Use the \texttt{itdsb} (REF)
-environment instead.
+The \verb?extract? functions will work with the treebanks that are
+distributed together with the ERG under the \verb|erg/gold| directory,
+but they will not work directly with the Redwoods corpus
+\cite{Oepen&al:Redwoods}, which is distributed separately and uses a
+slightly different internal format. See e.g.
+\url{http://wiki.delph-in.net/moin/RedwoodsTop} for more information
+about the Redwoods corpus, and how MRS structures can be extracted.
 
 \todo{This is not very clear yet:
 \begin{itemize}
