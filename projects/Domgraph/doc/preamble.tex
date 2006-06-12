@@ -27,7 +27,18 @@
 %% %\usepackage{epsfig}
 %% %\usepackage{german}
 
-\usepackage{covington}
+%\usepackage{covington}
+\makeatletter
+\newcounter{@@equationsave}
+\newenvironment{examples}{%
+  \begin{list}{(\theequation)}{%
+      \setcounter{@@equationsave}{\arabic{equation}}%
+      \usecounter{equation}%
+      \setcounter{equation}{\arabic{@@equationsave}}% 
+      \def\makelabel##1{##1\hfil}}}{
+  \end{list}}
+%\newenvironment{example}{\begin{examples}\item}{\end{examples}}
+\makeatother
 
 
 
