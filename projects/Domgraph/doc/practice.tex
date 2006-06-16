@@ -226,16 +226,16 @@ slightly different internal format. See e.g.
 \url{http://wiki.delph-in.net/moin/RedwoodsTop} for more information
 about the Redwoods corpus, and how MRS structures can be extracted.
 
-\todo{This is not very clear yet:
-\begin{itemize}
-\item What corpora exactly can we convert with the tool in the
-distribution?  Only Rondane, or does JH work too? What do I have to do
-in order to get these corpora? 
-\item What do I have to do to extract the MRSs in the Redwoods corpus?
-Where do I get Redwoods? Why are Rondane etc.\ called
-``Redwoods-style'' if their internal formats are not compatible?
-\end{itemize}
-}
+%\todo{This is not very clear yet:
+%\begin{itemize}
+%\item What corpora exactly can we convert with the tool in the
+%distribution?  Only Rondane, or does JH work too? What do I have to do
+%in order to get these corpora? 
+%\item What do I have to do to extract the MRSs in the Redwoods corpus?
+%Where do I get Redwoods? Why are Rondane etc.\ called
+%``Redwoods-style'' if their internal formats are not compatible?
+%\end{itemize}
+%}
 
 
 
@@ -259,10 +259,11 @@ slow. We hope to obtain comparable runtimes on the new Intel Macs.)
 
 \begin{figure}
 %HEVEA \begin{latexonly}
+\centering
 \begin{tabular}{cc}
-\includegraphics[width=0.4\textwidth]{jh-extraction-mean}
+\includegraphics[width=0.48\textwidth]{jh-extraction-mean}
 &
-\includegraphics[width=0.4\textwidth]{jh-chart-mean}
+\includegraphics[width=0.48\textwidth]{jh-chart-mean}
 \end{tabular}
 %HEVEA \end{latexonly}
 %HEVEA \imgsrc{jh-extraction-mean.png}
@@ -271,14 +272,14 @@ slow. We hope to obtain comparable runtimes on the new Intel Macs.)
 of Utool 2.0.1 (C++) and 3.0 (Java) on Windows and Linux. \label{fig:runtimes}}
 \end{figure}
 
-As our benchmark example, we chose the Jotenheimen corpus, which is
-\todo{what exactly? how many sentences?}. We extracted the MRS
-descriptions for each sentence with at most one million solved forms
-as described in Section~\ref{sec:treebank}. Then we ran the commands
+As our benchmark example, we chose the Jotenheimen corpus, which like the Rondane corpus (cf. Section \ref{sec:treebank} above) is distributed together with the English Resource Grammar. The corpus contains analyses for 5135 sentences together with corresponding semantic representations based upon MRS. We extracted the MRS
+structures as described in Section~\ref{sec:treebank} above and translated them into dominance graphs. Of the 5135 MRS structures in the corpus, 441 could not be translated, so we base the evaluation of 4694 dominance graphs.
+
+Then we ran the commands
 \verb?utool solvable? (measuring how long it takes to compute the
 chart and count all solved forms) and \verb?utool solve -n? (measuring
 how long it takes to compute the chart and then extract all solved
-forms, without actually encoding or displaying them). We did this
+forms, without actually encoding or displaying them) on all dominance graphs with at most one million solved forms. We did this
 using both Utool 2.0.1 (the last C++ version) and Utool 3.0 (the new
 Java version) on all sentences. We ran Utool 3.0 in server mode (using
 the \verb?utool server?) to eliminate the overhead for starting up the
@@ -315,9 +316,16 @@ switch on all the right optimisations in the Visual C++ compiler).
 
 
 
+\begin{figure}
+%HEVEA \begin{latexonly}
+\centering
+\includegraphics[width=10cm]{chart-vs-solutions}
+%HEVEA \end{latexonly}
+%HEVEA \imgsrc{chart-vs-solutions.png}
+\caption{The size of the chart as compared to the number of solved forms described by the chart, for all dominance graphs in the Jotenheimen corpus with up to 25 fragments}
 
+\end{figure}
 
-\todo{number of sfs vs. chart sizes}
 
 
 
