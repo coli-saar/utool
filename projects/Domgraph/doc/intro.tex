@@ -28,24 +28,26 @@ counting readings, and determining whether a description belongs to a
 class with specific useful properties.
 
 Utool was developed in the context of the CHORUS project in the SFB
-(Collaborative Research Centre) 378, which was funded by the German
-Research Organisation (DFG). We developed a version in C++ in
-2004-05. Then we ported release 2.0.1 of the old utool to Java in
-2006. The Java version 3.0 is superior to the C++ system in many
-respects: It is much cleaner, more portable, easier to distribute, has
-more functionality and better error handling, comes with an integrated
-GUI, and on some platforms it is even faster. Utool requires Java SE
-5.0 or higher to run or compile.
+(Collaborative Research Centre) 378 ``Ressource-adaptive cognitive
+processes'', which was funded by the German Research Organisation
+(DFG). We developed a version in C++ in 2004-05. Then we ported
+release 2.0.1 of the old utool to Java in 2006. The Java version 3.0
+is superior to the C++ system in many respects: It is much cleaner,
+more portable, easier to distribute, has more functionality and better
+error handling, comes with an integrated GUI, and on some platforms it
+is even faster. Utool requires Java SE 5.0 or higher to run or
+compile.
 
-Technically, Utool is only a collection of front-ends to the Domgraph
-library, which can be used independently from other Java programs. The
-classical Utool front-end, which was also present in the C++ versions,
-accepts instructions as command-line arguments. Since Version 3.0,
-Utool can also run in ``server mode'', accepting instructions over a
-network socket. We also distribute as part of the main Utool
-distribution Ubench, the Underspecification Workbench, which offers
-access to almost all functionality of Utool from a convenient
-GUI. \todo{Licence issues}
+Technically, Utool is a collection of front-ends to a common
+underlying library for working with labelled dominance graphs, which
+can be used independently in other Java programs. The classical Utool
+front-end, which was also present in the C++ versions, accepts
+instructions as command-line arguments. Since Version 3.0, Utool can
+also run in ``server mode'', accepting instructions over a network
+socket, and it comes with Ubench, the Underspecification Workbench,
+which offers access to almost all functionality of Utool from a
+convenient GUI. We distribute Utool 3.0 under the Gnu Public Licence
+(GPL), although this might change in a future release.
 
 This document is not an introduction to underspecification. We and
 others have written many research papers about this topic area, and we
@@ -81,8 +83,10 @@ Section~\ref{sec:operations}. Section~\ref{sec:codecs} is devoted to
 the \emph{codecs} which make it possible for utool to read and write
 underspecified descriptions from different formalisms; it also hints
 at the theory behind the conversions and provides pointers to the
-literature. Section~\ref{sec:integration} talks about how to use Utool
-from other programs. Finally, Section~\ref{sec:conclusion} concludes.
+literature. Section~\ref{sec:practice} contains some tips and tricks
+for using Utool in practice. Finally, Section~\ref{sec:building}
+explains how to recompile a modified version of Utool, and
+Section~\ref{sec:conclusion} concludes.
 
 %%% Local Variables: 
 %%% mode: latex

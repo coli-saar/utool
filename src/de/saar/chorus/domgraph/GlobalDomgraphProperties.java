@@ -47,6 +47,10 @@ public class GlobalDomgraphProperties {
         return (String) props.get("domgraph.version");
     }
     
+    public static String getSystemName() {
+        return "Utool " + getVersion();
+    }
+    
     /**
      * Returns the URL of the Utool homepage.
      * 

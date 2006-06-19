@@ -43,8 +43,19 @@ public abstract class OutputCodec {
     public static final int ERROR_NULL_PLUGGING = 30;
     
     /**
-     * Encodes a dominance graph and a collection of <code>DomEdge</code>
-     * into an USR representation. The USR is written to the <code>writer</code>.<p>
+     * Encodes a dominance graph into a string representation for
+     * this output codec. The dominance graph is defined by the
+     * arguments <code>graph</code> and <code>labels</code>. If 
+     * the codec is a graph codec and a non-<code>null</code> 
+     * value is passed in the <code>domedges</code> argument,
+     * then the dominance edges in the graph are replaced by
+     * the given dominance edges before the graph is output.
+     * If the codec is a plugging codec, then the codec simply
+     * outputs the dominance edges; passing <code>null</code>
+     * as the <code>domedges</code> argument is illegal in
+     * this case.<p>
+     * 
+     * The USR is written to the <code>writer</code>.<p>
      * 
      * @param graph the dominance graph
      * @param domedges a collection of <code>DomEdge</code> objects
@@ -55,25 +66,29 @@ public abstract class OutputCodec {
      * @throws MalformedDomgraphException if the graph or plugging cannot 
      * be encoded by this codec
      * @throws NullPointerException if the <code>domedge</code>
-     * argument is <code>null</code>.
+     * argument is <code>null</code> and the codec is a plugging codec.
      */
     public void encode(DomGraph graph, Collection<DomEdge> domedges,
                         NodeLabels labels, Writer writer)
     throws IOException, MalformedDomgraphException {
-        if( domedges == null ) {
-            // This shouldn't happen if we are called properly. 
-            throw new NullPointerException();
-        }
+        
         
         switch(getType()) {
         case GRAPH:
             DomGraph copy = (DomGraph) graph.clone();
-            copy.setDominanceEdges(domedges);
+            
+            if( domedges != null ) {
+                copy.setDominanceEdges(domedges);
+            }
             
             encode_graph(copy, labels, writer);
             break;
             
         case PLUGGING:
+            if( domedges == null ) { 
+                throw new NullPointerException();
+            }
+            
             encode_plugging(graph, domedges, writer);
             break;
         }
@@ -182,4 +197,9 @@ public abstract class OutputCodec {
         return type;
     }
 
+    
+    /****************
+     * UNIT TESTS:
+     *  - null domedges argument for encode()
+     */
 }
