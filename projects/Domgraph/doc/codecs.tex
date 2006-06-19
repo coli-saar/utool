@@ -383,10 +383,10 @@ further processed by other graph viewers:
 \item The \verb|domgraph-udraw| output-codec outputs a dominance graph
 in a format that can be used to display the graph with the
 uDraw(Graph) tool (formerly daVinci) from the University of Bremen
-\todo{cite davinci paper / url};
+(\url{http://www.informatik.uni-bremen.de/uDrawGraph/en/index.html}); 
 \item the \verb|domgraph-dot| codec outputs a dominance graph in the
 ``dot'' format supported by many graph drawing tools, such as 
-\verb|graphviz| \todo{cite url}.
+\verb|graphviz| (\url{http://graphviz.org/}).
 \end{enumerate}
 
 We don't describe these output formats in detail here, but you can
@@ -460,10 +460,11 @@ the extension \verb?.lkbplug.lisp?.
 \subsection{The term output codecs}
 
 The \verb?term-oz? and \verb?term-prolog? output codecs can be used to
-encode labelled dominance graphs in simple solved form, i.e.\ trees in
-which each hole has exactly one outgoing dominance edge. They traverse
-these trees top-down and print the ground term that corresponds to the
-tree structure. Their output looks as follows:
+encode labelled dominance graphs in simple solved form, i.e.\ solved
+forms which are trees and in which each hole has exactly one outgoing
+dominance edge. They traverse these trees top-down and print the
+ground term that corresponds to the tree structure. Their output looks
+as follows:
 \begin{itemize}
 \item \verb?term-oz?: an Oz term of the form
 \begin{verbatim}

@@ -40,8 +40,8 @@
 
 
 	<!-- file sets -->
-	<property name="domgraph.jar" value="${build.lib}/Utool-full-${domgraph.version}.jar" />
-	<property name="domgraph-compact.jar" value="${build.lib}/Utool-${domgraph.version}.jar" />
+	<property name="domgraph.jar" value="${build.lib}/Utool-${domgraph.version}.jar" />
+	<property name="domgraph-compact.jar" value="${build.lib}/Utool-compact-${domgraph.version}.jar" />
 	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*, ${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/jgraph/*" />
 	<property name="domgraph.allsourcefiles" value="${chorus}/domgraph/**/*.java, ${chorus}/domgraph/**/*.jj, ${chorus}/domgraph/**/*.properties, ${coli}/basic/*.java, ${coli}/getopt/*.java,${chorus}/ubench/*.java,${chorus}/treelayout/*.java,${chorus}/ubench/gui/*.java,${chorus}/jgraph/*.java" />
 
@@ -105,23 +105,36 @@
 	</target>
 
 
+	<!-- distributing -->
 
-	<target name="dist" depends="compile-all">
+	<target name="source-dist" depends="compile-all,javadoc">
+		<!-- source files -->
 		<copy todir="tmp_Domgraph/src">
 			<fileset dir="${source}" includes="${domgraph.allsourcefiles}" excludes="${distribution.exclude}" />
 			<fileset dir="${source}" includes="${prefix}/*.properties" excludes="${distribution.exclude}" />
 		</copy>
 
-
-		<copy todir="tmp_Domgraph/projects/Domgraph">
-			<fileset dir="${prefix}/projects/Domgraph/" includes="**/*" excludes="tmp_Domgraph/**,${distribution.exclude}" />
+		<!-- buildfile, rootfiles, apidoc -->
+		<copy todir="tmp_Domgraph">
+			<fileset dir="${prefix}/projects/Domgraph/" includes="build.xml,examples/**/*,tools/**/*" excludes="*~" />
+			<fileset dir="${prefix}/projects/Domgraph/rootfiles" includes="*" excludes="*~" />
+			<fileset dir="${prefix}" includes="docs/**/*" />
 		</copy>
 		
+		<replace file="tmp_Domgraph/build.xml" 
+			token="&lt;property name=&quot;prefix&quot; location=&quot;../..&quot; /&gt;"
+			value="&lt;property name=&quot;prefix&quot; location=&quot;.&quot; /&gt;"
+		/>
+
+		<!-- manual -->
+		<copy tofile="tmp_Domgraph/docs/manual.pdf" file="${prefix}/projects/Domgraph/doc/0.pdf" />
+		
+		<!-- packages -->
 		<copy todir="tmp_Domgraph">
 			<fileset dir="${prefix}" includes="packages/javacc-4.0/**, packages/testng-4.6.1/**" />
 		</copy>
 
-
+		
 		<jar jarfile="${domgraph-dist.jar}"
              basedir="${build.classes}"
              includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},
@@ -137,6 +150,20 @@
 
 		<delete dir="tmp_Domgraph/" />
 	</target>
+	
+	<target name="deploy" depends="source-dist,utool">
+		<input message="Enter ssh password: " addproperty="deploy.ssh.password" />
+		
+		<scp todir="koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/download"
+			password="${deploy.ssh.password}">
+			<fileset dir="${prefix}" includes="${domgraph.jar},${domgraph-dist.jar}" />
+		</scp>
+
+		<scp todir="koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/docs/${domgraph.version}/api"
+			password="${deploy.ssh.password}">
+			<fileset dir="${prefix}/${doc.api}" includes="**/*" />
+		</scp>
+</target>
 
 
 	
@@ -266,11 +293,15 @@
 	
 	<target name="prepare" depends="init">
 		<copy todir="${build.classes}">
-			<fileset dir="${prefix}" excludes="projects/**,META-INF/**,*.jar, build/**, src/**, packages/**"/>
+			<fileset dir="${prefix}" includes="com/**, de/**, gnu/**, org/**" />
 		</copy>
 		
-		<delete>
-			<fileset dir="${prefix}" excludes="projects/**, *.jar, build/**, src/**, packages/**"/>
+		<delete includeemptydirs="true">
+			<fileset dir="com" />
+			<fileset dir="de" />
+			<fileset dir="gnu" />
+			<fileset dir="org" />
+			<fileset dir="META-INF" />
 		</delete>
 		
 		<antcall target="clean" />

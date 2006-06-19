@@ -2,26 +2,23 @@
 \section{Utool in Practice} \label{sec:practice}
 
 We conclude this documentation with some examples for using Utool in
-practice. We will start with some tips on how to use Utool
-efficiently. Then we will describe a scenario which we have applied a
-lot in our papers \cite{FucKolNieTha04,FliKolTha05,KolTha05b}: running
-Utool on all MRS descriptions from a HPSG treebank. This second point
-will also contain a runtime comparison between Utool and other
-underspecification solvers (including the older C++ version of
-Utool). \todo{update this}
+practice.
 
 \subsection{Some practical tips} \label{sec:practice-some-practical-tips}
 
 \begin{enumerate}
-\item \textit{Running Utool in server mode.} \todo{write me}
+\item \textit{Running Utool in server mode.} Whenever you want to
+process a large number of USRs in batch mode, you should seriously
+consider running Utool in server mode by invoking the \verb?server?
+command. This will save the considerable startup time for new Java
+processes, and allow the Java virtual machine to just-in-time compile
+the bytecode for further efficiency.
 
-
-\item \textit{Running Java in server mode.} The Sun implementation of the
-Java VM can run in either ``client'' or ``server'' mode. The client
-mode is the default, but if you have a long-running process, the
-server mode can be significantly more efficient because it
-just-in-time compiles and optimises the Java bytecode more
-aggressively.
+\item \textit{Running Java in server mode.} The Sun implementation of
+the Java VM can run in either ``client'' or ``server'' mode. The
+client mode is the default, but if you have a long-running process,
+the server mode can be significantly more efficient because it invests
+more time into just-in-time compilation and optimisations.
 
 For optimum performance of Utool, we recommend that you run the JVM in
 server mode by calling it as follows:
@@ -32,18 +29,17 @@ $ java -server -jar Utool.jar ...
 
 Because of the increased time for startup and compilation, this works
 best if you also run Utool in server mode and send it commands via a
-socket, because this gives you the most profit out of the JIT
-compilation (Utool needs to solve 3--4 USRs to ``warm up'' until it
-achieves optimal performance) and eliminates the startup time.
+socket. From our experience, Utool needs to solve 3--4 USRs to ``warm
+up'' until it achieves optimal performance.
 
-\begin{figure}
-\begin{center}
-\todo{runtimes for solving chains using server mode and client mode}
-\end{center}
-\caption{Runtimes for the command \texttt{solve -n -s -I chain
-<length>}, running the Java VM in client and server
-mode. \label{fig:chains-server-client}}
-\end{figure}
+%\begin{figure}
+%\begin{center}
+%\todo{runtimes for solving chains using server mode and client mode}
+%\end{center}
+%\caption{Runtimes for the command \texttt{solve -n -s -I chain
+%<length>}, running the Java VM in client and server
+%mode. \label{fig:chains-server-client}}
+%\end{figure}
 
 
 \item \textit{Memory consumption.} The chart that Utool computes for
@@ -122,7 +118,7 @@ processing it.
 
 An extended version of this script (also in Perl) is part of the
 standard Utool distribution and can be found in the directory
-\url{projects/Domgraph/tools/client}. 
+\url{tools/client}. 
 
 
 
@@ -137,7 +133,7 @@ which is freely available at \url{http://www.delph-in.net/lkb}. This means that 
 LKB now have easy access to our solver, which is considerably faster
 than the original MRS solver. The integration between LKB and Utool is
 achieved via two Lisp source files that we distribute in the directory
-\url{projects/Domgraph/tools/lkb}.
+\url{tools/lkb}.
 
 If you load the file \verb|lkb-utool.lisp| into the Lisp console
 of a running LKB system, the internal MRS solver is replaced by
@@ -181,12 +177,11 @@ valuable resources because corpora with deep semantic information are
 so very rare, and we have occasionally used them in experiments
 \cite{FucKolNieTha04,FliKolTha05}.
 
-In order to use the MRS structures in these treebanks from within Utool, it is
-necessary to extract them from the treebank and save them in
-individual files. This can be done by using the script
+In order to use the MRS structures in these treebanks from within
+Utool, it is necessary to extract them from the treebank and save them
+in individual files. This can be done by using the script
 \verb|extract-gold.lisp|, which can be found in the directory
-\url{projects/Domgraph/tools/lkb} in the Utool jar file. Proceed as
-follows:
+\url{tools/lkb} in the Utool jar file. Proceed as follows:
 
 \begin{enumerate}
 \item Start the LKB system.
@@ -222,7 +217,7 @@ The \verb?extract? functions will work with the treebanks that are
 distributed together with the ERG under the \verb|erg/gold| directory,
 but they will not work directly with the Redwoods corpus
 \cite{Oepen&al:Redwoods}, which is distributed separately and uses a
-slightly different internal format. See e.g.
+ different internal format. See e.g.
 \url{http://wiki.delph-in.net/moin/RedwoodsTop} for more information
 about the Redwoods corpus, and how MRS structures can be extracted.
 
@@ -253,9 +248,9 @@ We will now sketch how such claims of practical efficiency can be
 substantiated. In doing so, we will also establish the fact that the
 Java implementation of Utool 3.0 is not slower than the earlier C++
 implementations of Utool under Linux and Windows, and is in fact a
-little faster on Windows. (The same is not currently true on current
-Macs, because the PowerPC implementation of Java seems to be very
-slow. We hope to obtain comparable runtimes on the new Intel Macs.)
+little faster on Windows. (The same is not currently true on Macs,
+because the PowerPC implementation of Java seems to be very slow. We
+hope to obtain comparable runtimes on the new Intel Macs.)
 
 \begin{figure}
 %HEVEA \begin{latexonly}
@@ -272,8 +267,15 @@ slow. We hope to obtain comparable runtimes on the new Intel Macs.)
 of Utool 2.0.1 (C++) and 3.0 (Java) on Windows and Linux. \label{fig:runtimes}}
 \end{figure}
 
-As our benchmark example, we chose the Jotenheimen corpus, which like the Rondane corpus (cf. Section \ref{sec:treebank} above) is distributed together with the English Resource Grammar. The corpus contains analyses for 5135 sentences together with corresponding semantic representations based upon MRS. We extracted the MRS
-structures as described in Section~\ref{sec:treebank} above and translated them into dominance graphs. Of the 5135 MRS structures in the corpus, 441 could not be translated, so we base the evaluation of 4694 dominance graphs.
+As our benchmark example, we chose the Jotenheimen corpus, which like
+the Rondane corpus (cf. Section \ref{sec:treebank} above) is
+distributed together with the English Resource Grammar. The corpus
+contains analyses for 5135 sentences together with corresponding
+semantic representations based upon MRS. We extracted the MRS
+structures as described in Section~\ref{sec:treebank} above and
+translated them into dominance graphs. Of the 5135 MRS structures in
+the corpus, 441 could not be translated, so we base the evaluation on
+a dataset of 4694 dominance graphs.
 
 Then we ran the commands
 \verb?utool solvable? (measuring how long it takes to compute the
@@ -285,7 +287,7 @@ Java version) on all sentences. We ran Utool 3.0 in server mode (using
 the \verb?utool server?) to eliminate the overhead for starting up the
 JVM.
 
-We performed the benchmarks using a machine with a Pentium M processer
+We performed the benchmarks using a machine with a Pentium M processor
 at 1.6 GHz, both on Windows XP Professional and on Linux 2.6.10. Utool
 2.0.1 was compiled with Gnu C++ 4.0 under Linux and with the C++
 compiler from the Microsoft Visual C++ Toolkit 2003. We ran Utool 3.0
@@ -302,16 +304,18 @@ charts, we can make the following observations:
 \begin{itemize}
 \item The mean time for computing a chart is dramatically lower than
 the time for enumerating all solved forms. This is unsurprising, as
-the larger USRs can have hundreds of thousands of solved forms,
-whereas the charts remain much smaller.
+the number of solved forms of a graph is typically much higher (and
+grows much faster with the graph size) than the number of splits in
+its chart (Fig.~\ref{fig:chart-vs-solutions}).
 \item Running Java in server mode is generally much faster than
 running it in client mode.
 \item Even the beta version of Java 6.0 is noticeably more efficient
 than Java 5.0.
 \item The difference in performance between Utool 2.0.1 and Utool 3.0
 running on Java 6.0 in server mode is negligible under Linux. Under
-Windows, the Java version is more efficient (perhaps because we didn't
-switch on all the right optimisations in the Visual C++ compiler).
+Windows, the Java version is more efficient (although it is
+conceivable that the Visual C++ compiler supports optimisations that
+we weren't aware of).
 \end{itemize}
 
 
@@ -322,7 +326,9 @@ switch on all the right optimisations in the Visual C++ compiler).
 \includegraphics[width=10cm]{chart-vs-solutions}
 %HEVEA \end{latexonly}
 %HEVEA \imgsrc{chart-vs-solutions.png}
-\caption{The size of the chart as compared to the number of solved forms described by the chart, for all dominance graphs in the Jotenheimen corpus with up to 25 fragments}
+\caption{The size of the chart as compared to the number of solved
+forms described by the chart, for all dominance graphs in the
+Jotenheimen corpus with up to 25 fragments. \label{fig:chart-vs-solutions}}
 
 \end{figure}
 

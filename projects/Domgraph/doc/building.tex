@@ -18,13 +18,13 @@ If you want to recompile (parts of) Utool, you will need to download
 the source distribution. The source distribution has a filename of the
 form \verb?Utool-src-<version>.jar?, and is some 4 megabytes in
 size. In addition to the Utool classes, it contains the source code of
-Utool/Domgraph, all classes of the iText, JGraphT, JGraph, and Getopt
-libraries that we use, and the javacc and testng Jars that are used in
-compiling Utool. The files in the source distribution Jar are in
-exactly the same locations as in the ordinary Jar, so in particular
-you can use the command \verb?java -jar Utool-src-<version>.jar? to
-run Utool. In addition, you need the Java SDK 5.0 or higher, and you
-need Apache Ant 1.6 or higher.
+Utool, all classes of the iText, JGraphT, JGraph, and Getopt libraries
+that we use, and the javacc and testng Jars that are used in compiling
+Utool. The files in the source distribution Jar are in exactly the
+same locations as in the ordinary Jar, so in particular you can use
+the command \verb?java -jar Utool-src-<version>.jar? to run Utool. In
+addition, you need the Java JDK 5.0 or higher, and you need Apache Ant
+1.6 or higher.
 
 Recompilation of Utool from the source distribution proceeds as
 follows:
@@ -39,35 +39,33 @@ $ jar xf Utool-src-<version>.jar
 \item Prepare for compiling by moving all files to the directories
 where the build script expects them:
 \begin{verbatim}
-$ ant -f projects/Domgraph/build.xml prepare
+$ ant prepare
 \end{verbatim}
 %$
 
 \item Change or add classes as you like. The source code of all
 classes is under the directory \verb?src?. If you add new classes, you
-may have to edit the Ant build script in
-\url{projects/Domgraph/build.xml}.
+may have to edit the Ant build script in \url{build.xml}.
 
 \item Recompile as follows:
 \begin{verbatim}
-$ ant -f projects/Domgraph/build.xml 
+$ ant
 \end{verbatim}
 %$
 
-This will create the file \verb?Utool-full-<version>.jar? in the
-directory \verb?build/lib?, which you can run using \verb?java -jar?
-as before. 
+This will create the file \verb?Utool-<version>.jar? in the directory
+\verb?build/lib?, which you can run using \verb?java -jar?  as before.
 
-\item If you have access to the Jakarta BCEL library (we use
-version 5.1), you can add this library to your classpath and run
+%\item If you have access to the Jakarta BCEL library (we use
+%version 5.1), you can add this library to your classpath and run
 
-\begin{verbatim}
-$ ant -f projects/Domgraph/build.xml utool-compact
-\end{verbatim}
+%\begin{verbatim}
+%$ ant utool-compact
+%\end{verbatim}
 %$
 
-to build the (smaller) file \verb?build/lib/Utool-<version>.jar?
-which constitutes the main Utool distribution.
+%to build the (smaller) file \verb?build/lib/Utool-<version>.jar?
+%which constitutes the main Utool distribution.
 \end{enumerate}
 
 
