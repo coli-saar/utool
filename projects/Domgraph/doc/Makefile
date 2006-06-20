@@ -151,7 +151,7 @@ ${START}.ind: ${START}.idx
 # various utilities
 
 clean:
-	rm -f *.aux *.log *.bbl *.blg *.dvi *.ps *.toc *.fmt *.pdf *.html *.css
+	rm -f *.aux *.log *.bbl *.blg *.dvi *.ps *.toc *.fmt *.html *.css
 
 pack:
 	tar czf ${PROJECT}.tar.gz ${TEXSRC} ${BIBS} Makefile
