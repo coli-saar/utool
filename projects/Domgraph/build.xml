@@ -74,17 +74,17 @@
 	</target>
 	
 	<target name="utool" depends="compile-all">
-		<jar jarfile="${domgraph.jar}"
-		             basedir="${build.classes}"
-	         includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
+		<jar jarfile="${domgraph.jar}">
+			<fileset dir="${build.classes}"
+		         includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
 								   ${getopt.unpacked.classes},${itext.unpacked.classes}"
-					excludes="**/*$UnitTests.class"
-			>
-					<manifest>
-						<attribute name="Main-Class"
-		                           value="de.saar.chorus.domgraph.utool.Utool" />
-					</manifest>
-				</jar>
+					excludes="**/*$UnitTests.class" />
+			<fileset dir="." includes="examples/**/*" />
+			<manifest>
+				<attribute name="Main-Class"
+                           value="de.saar.chorus.domgraph.utool.Utool" />
+			</manifest>
+		</jar>
 	</target>
 	
 	
@@ -180,7 +180,7 @@
 			trust="yes"
 			command="mkdir -p ${deploy.dir}/docs/${domgraph.version}/manual" />
 		
-		<scp remoteTofile="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/manual.pdf"
+		<scp remoteTofile="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/utool-manual-${domgraph.version}.pdf"
 			localFile="doc/0.pdf"
 			trust="true" password="${deploy.password}"/>
 		<scp todir="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/manual"
