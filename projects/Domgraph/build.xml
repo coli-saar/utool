@@ -49,6 +49,9 @@
 	<property name="domgraph-dist.jar" value="${build.lib}/Utool-src-${domgraph.version}.jar" />
 	<property name="distribution.exclude" value="" />
 	
+	<!-- deployment -->
+	<property name="${deploy.dir}" value="/web/www.coli.uni-saarland.de/html/projects/chorus/utool" />
+	<property name="${deploy.hostname}" value="httpd.coli.uni-saarland.de" />
 	
 
 
@@ -107,7 +110,7 @@
 
 	<!-- distributing -->
 
-	<target name="source-dist" depends="compile-all,javadoc">
+	<target name="source-dist" depends="compile-all,javadoc,make-manual">
 		<!-- source files -->
 		<copy todir="tmp_Domgraph/src">
 			<fileset dir="${source}" includes="${domgraph.allsourcefiles}" excludes="${distribution.exclude}" />
@@ -150,20 +153,57 @@
 
 		<delete dir="tmp_Domgraph/" />
 	</target>
+
 	
+	<!-- deploy a new distribution as follows:
+	
+	     ant -Dusername=... -Dpassword=... deploy
+
+     -->
 	<target name="deploy" depends="source-dist,utool">
-		<input message="Enter ssh password: " addproperty="deploy.ssh.password" />
-		
-		<scp todir="koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/download"
-			password="${deploy.ssh.password}">
-			<fileset dir="${prefix}" includes="${domgraph.jar},${domgraph-dist.jar}" />
+		<!-- deploy Jars -->
+		<sshexec host="${deploy.hostname}" username="${deploy.username}" password="${deploy.password}"
+			trust="yes"
+			command="mkdir -p ${deploy.dir}/download" />
+		<scp todir="${deploy.username}@${deploy.hostname}:${deploy.dir}/download"
+			trust="true" 
+			password="${deploy.password}">
+			<fileset file="${domgraph.jar}" />
+			<fileset file="${domgraph-dist.jar}" />
 		</scp>
 
-		<scp todir="koller@httpd.coli.uni-saarland.de:/web/www.coli.uni-saarland.de/html/projects/chorus/utool/docs/${domgraph.version}/api"
-			password="${deploy.ssh.password}">
-			<fileset dir="${prefix}/${doc.api}" includes="**/*" />
+		<!-- deploy documentation -->
+		<sshexec host="${deploy.hostname}" username="${deploy.username}" password="${deploy.password}"
+			trust="yes"
+			command="mkdir -p ${deploy.dir}/docs/${domgraph.version}/api" />
+		<sshexec host="${deploy.hostname}" username="${deploy.username}" password="${deploy.password}"
+			trust="yes"
+			command="mkdir -p ${deploy.dir}/docs/${domgraph.version}/manual" />
+		
+		<scp remoteTofile="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/manual.pdf"
+			localFile="doc/0.pdf"
+			trust="true" password="${deploy.password}"/>
+		<scp todir="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/manual"
+			trust="true" password="${deploy.password}">
+			<fileset dir="doc" includes="*.html,*.png,*.gif,*.css" />
 		</scp>
-</target>
+		<scp todir="${deploy.username}@${deploy.hostname}:${deploy.dir}/docs/${domgraph.version}/api"
+			trust="true" 
+			password="${deploy.password}">
+			<fileset dir="${doc.api}" includes="**/*" />
+		</scp>
+	</target>
+	
+	
+	<target name="make-manual">
+		<exec executable="make" dir="doc">
+			<arg line="0.pdf" />
+		</exec>
+
+		<exec executable="make" dir="doc">
+			<arg line="index.html" />
+		</exec>
+	</target>
 
 
 	
