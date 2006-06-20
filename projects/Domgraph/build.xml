@@ -157,7 +157,7 @@
 	
 	<!-- deploy a new distribution as follows:
 	
-	     ant -Dusername=... -Dpassword=... deploy
+	     ant -Ddeploy.username=... -Ddeploy.password=... deploy
 
      -->
 	<target name="deploy" depends="source-dist,utool">
