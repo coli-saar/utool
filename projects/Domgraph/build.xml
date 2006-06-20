@@ -201,6 +201,7 @@
 		</exec>
 
 		<exec executable="make" dir="doc">
+			<env key="HEVEADIR" value='c:/Programme/hevea/' />
 			<arg line="index.html" />
 		</exec>
 	</target>
