@@ -8,10 +8,17 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
@@ -130,7 +138,126 @@ public class CommandListener implements ActionListener, ItemListener {
         
         /* Handling the known actions by identifying their command */
         
-        
+        // picture export
+        if(command.equals("pic")) {
+        	
+            JFileChooser fc = new JFileChooser();
+            
+            List<GenericFileFilter> pictureFilters = 
+            	new ArrayList<GenericFileFilter>();
+            
+            
+            GenericFileFilter bmpFilter = 
+            	new GenericFileFilter("bmp", "*.bmp pictures");
+            
+            fc.addChoosableFileFilter(bmpFilter);   
+            fc.addChoosableFileFilter(new GenericFileFilter("jpeg", "*.jpeg pictures"));
+            fc.addChoosableFileFilter(new GenericFileFilter("png", "*.png pictures"));
+            fc.addChoosableFileFilter(new GenericFileFilter("wbmp", "*.wbmp pictures"));
+            
+            fc.setFileFilter(bmpFilter);
+            
+            
+            if(! (lastPath == null) ) {
+                fc.setCurrentDirectory(lastPath);
+            }
+            
+            int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Export Picture");
+         
+            
+//          proceed with a chosen file
+            if (fcVal == JFileChooser.APPROVE_OPTION) {
+                
+                // resolving the selected file's path
+                File file = fc.getSelectedFile();
+                final String dir = file.getAbsolutePath();
+                
+                // updating the last chosen path
+                lastPath = file.getParentFile();
+                
+                final String picDesc = ((GenericFileFilter) fc.getFileFilter()).getExtension();
+              
+                // a new thread for printing the pdf.
+                // a progress bar will be visible while this
+                // thread runs.
+                new Thread() {
+                    public void run() {
+                        
+                        // that's just a guess...
+                        int taskLength = Ubench.getInstance().getVisibleTab().numGraphNodes();
+                        
+                        // the progress bar and the panel containing it.
+                        JDialog progress = new JDialog(Ubench.getInstance().getWindow(), false);
+                        JPanel dialogPane = new JPanel();
+                        JProgressBar progressBar = new JProgressBar(0, taskLength);
+                        
+                        // the OK-Button to press after printing is done
+                        // (it will close the dialog)
+                        JButton ok = new JButton("OK");
+                        ok.setActionCommand("ok");
+                        
+                        // text visible while printing
+                        JLabel export = new JLabel("Printing Picture...",SwingConstants.CENTER);
+                        export.setHorizontalAlignment(SwingConstants.CENTER);
+                        
+                        // listener for the button 
+                        ok.addActionListener(new JDialogListener(progress));
+                        
+                        // first configuration: indeterminate bar, OK is
+                        // disabeld
+                        progressBar.setStringPainted(true); 
+                        progressBar.setString(""); 
+                        progressBar.setIndeterminate(true);
+                        ok.setEnabled(false);
+                        
+                        // layouting the panel with the progress bar
+                        dialogPane.add(export, BorderLayout.NORTH);
+                        dialogPane.add(progressBar,BorderLayout.CENTER);
+                        dialogPane.add(ok,BorderLayout.SOUTH);
+                        dialogPane.doLayout();
+                        progress.add(dialogPane);
+                        progress.pack();
+                        progress.validate();
+                        
+                        // locating the panel centered
+                        progress.setLocation((Ubench.getInstance().getWindow().getWidth() - progress.getWidth())/2,
+                                (Ubench.getInstance().getWindow().getHeight() - progress.getHeight())/2); 
+                        
+                        progress.setVisible(true);
+               try {
+            	   GraphPicture.makePicture(
+               			Ubench.getInstance().getVisibleTab().getGraph().clone(),
+               			dir, picDesc);
+             
+               } catch (IOException exc) {
+            	   JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                           "The output file can't be opened.",
+                           "Error while creating image",
+                           JOptionPane.ERROR_MESSAGE);
+               }
+//              after finishing, the progress bar becomes
+                // determined and fixated at maximum value (100%)
+                progressBar.setMaximum(100);
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(100);
+                progressBar.setString("100%");
+                
+                // new text
+                export.setText("Done!");
+                export.setHorizontalTextPosition(SwingConstants.CENTER);
+                
+                dialogPane.validate();
+                
+                // enabling the button that closes
+                // the dialog pane.
+                ok.setEnabled(true);
+                
+            }
+        }.start();
+                
+            }
+            
+        } else {
         // PDF-Printing
         if(command.equals("pdf")) {
             
@@ -245,7 +372,9 @@ public class CommandListener implements ActionListener, ItemListener {
                 }.start();
             }
             
-        } else 
+        } else if(command.equals("print")) {
+        	new PrintUtilities(Ubench.getInstance().getVisibleTab().getGraph()).print();
+        } else {
             // loading any graph file
             if( command.equals("loadGXL") ) {
                 JFileChooser fc = new JFileChooser(recentPath);
@@ -493,6 +622,8 @@ public class CommandListener implements ActionListener, ItemListener {
                             "About the Underspecification Workbench", 
                             JOptionPane.INFORMATION_MESSAGE);
                 }
+        }
+        }
     }
     
     
@@ -883,4 +1014,60 @@ public class CommandListener implements ActionListener, ItemListener {
         
     }
     
+    private static class PrintUtilities implements Printable {
+    	private Component componentToBePrinted;
+		/* (non-Javadoc)
+		 * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+		 */
+    	 public PrintUtilities(Component componentToBePrinted) {
+    		    this.componentToBePrinted = componentToBePrinted;
+    		  }
+    	
+    	 public static void printComponent(Component c) {
+    		    new PrintUtilities(c).print();
+    		  }
+    	
+    	public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
+			if (pageIndex > 0) {
+			      return(NO_SUCH_PAGE);
+			    } else {
+			      Graphics2D g2d = (Graphics2D)g;
+			      
+			      disableDoubleBuffering(componentToBePrinted);
+			     
+			     
+			      double scale = Math.min(pageFormat.getImageableWidth()/(double) componentToBePrinted.getWidth(), 
+			    		  pageFormat.getImageableHeight()/ (double) componentToBePrinted.getHeight());
+			     
+			      g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+			      g2d.scale(scale,scale);
+			      componentToBePrinted.paint(g2d);
+			     g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY() );
+			      enableDoubleBuffering(componentToBePrinted);
+			      return(PAGE_EXISTS);
+			    }
+		}
+    	
+    	public void print() {
+    	    PrinterJob printJob = PrinterJob.getPrinterJob();
+    	    printJob.setPrintable(this);
+    	    if (printJob.printDialog())
+    	      try {
+    	        printJob.print();
+    	      } catch(PrinterException pe) {
+    	        System.out.println("Error printing: " + pe);
+    	      }
+    	  }
+    	
+    	 public static void disableDoubleBuffering(Component c) {
+    		    RepaintManager currentManager = RepaintManager.currentManager(c);
+    		    currentManager.setDoubleBufferingEnabled(false);
+    		  }
+
+    		  public static void enableDoubleBuffering(Component c) {
+    		    RepaintManager currentManager = RepaintManager.currentManager(c);
+    		    currentManager.setDoubleBufferingEnabled(true);
+    		  }
+    	
+    }
 }

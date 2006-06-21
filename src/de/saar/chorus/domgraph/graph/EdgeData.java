@@ -46,4 +46,24 @@ public class EdgeData {
     public String toString() {
         return "[E:" + type + "]";
     }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof EdgeData) {
+            EdgeData objAsEd = (EdgeData) obj;
+            
+            return type.equals(objAsEd.type);
+        } else {
+            return false;
+        }
+    }
+
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+    
+    
 }

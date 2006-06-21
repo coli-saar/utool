@@ -49,4 +49,25 @@ public class NodeData {
     public void setType(NodeType type) {
         this.type = type;
     }
+
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NodeData) {
+            NodeData objAsNd = (NodeData) obj;
+            return type.equals(objAsNd.type);
+        } else {
+            return false;
+        }
+    }
+
+
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+    
+    
 }

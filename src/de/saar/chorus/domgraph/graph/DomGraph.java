@@ -1258,6 +1258,43 @@ public class DomGraph implements Cloneable {
 		}
 	}
     
+
+    public static boolean isEqual(DomGraph graph1, NodeLabels labels1, DomGraph graph2, NodeLabels labels2) {
+        if( !graph1.getAllNodes().equals(graph2.getAllNodes()) ) {
+            return false;
+        }
+        
+        if( !labels1.equals(labels2)) {
+            return false;
+        }
+        
+        for( String node : graph1.getAllNodes() ) {
+            List<Edge> out1 = graph1.getOutEdges(node, null);
+            List<Edge> out2 = graph2.getOutEdges(node, null);
+            
+            if( out1.size() != out2.size() ) {
+                return false;
+            }
+            
+            for( int i = 0; i < out1.size(); i++ ) {
+                Edge e1 = out1.get(i);
+                Edge e2 = out2.get(i);
+                
+                if( ! graph1.getData(e1).equals(graph2.getData(e2)) ) {
+                    return false;
+                }
+                
+                if( ! e1.getTarget().equals(e2.getTarget()) ) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    
+    
     
     
     /*
@@ -1299,12 +1336,15 @@ public class DomGraph implements Cloneable {
     
     
     
-    
-    
     /**************************************************************
      * UNIT TESTS
      **************************************************************/
 	
+    /*
+     * todo:
+     *  - isEqual
+     *  - result caching (also obsoleting by modifying the graph)
+     */
     @Test(groups = {"Domgraph"})
     public class UnitTests {
         public void demoTest() {
