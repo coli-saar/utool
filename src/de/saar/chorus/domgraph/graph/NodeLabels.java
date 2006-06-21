@@ -57,4 +57,21 @@ public class NodeLabels {
     public String toString() {
         return labels.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NodeLabels) {
+            NodeLabels l = (NodeLabels) obj;
+            return labels.equals(l.labels);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return labels.hashCode();
+    }
+    
+    
 }

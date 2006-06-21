@@ -56,7 +56,9 @@ public class JDomGraphMenu extends JMenuBar {
 					  about,
 					  solve,
 					  next,
-					  previous;
+					  previous,
+					  pictureExport,
+					  print;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -109,7 +111,18 @@ public class JDomGraphMenu extends JMenuBar {
 		pdfPrint.addActionListener(listener);
 		graphSpecificItems.add(pdfPrint);
 		fileMenu.add(pdfPrint);
+		 // item for pdf-export
+		pictureExport = new JMenuItem("Export as Picture...");
+		pictureExport.setActionCommand("pic");
+		pictureExport.addActionListener(listener);
+		graphSpecificItems.add(pictureExport);
+		fileMenu.add(pictureExport);
         
+		print = new JMenuItem("Print...");
+		print.setActionCommand("print");
+		print.addActionListener(listener);
+		graphSpecificItems.add(print);
+		fileMenu.add(print);
         
         fileMenu.addSeparator();
         
