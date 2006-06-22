@@ -42,9 +42,6 @@ public class SwingComponentPDFWriter  {
 		Rectangle boundingBox = component.getBounds();
 		
 		
-		// a4Paper - size
-		float a4Width = PageSize.A4.width();
-		float a4Height = PageSize.A4.height();
 		
 		
 		// the document to write in
