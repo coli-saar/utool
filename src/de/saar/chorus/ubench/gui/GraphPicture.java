@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.RepaintManager;
 
 import de.saar.chorus.ubench.JDomGraph;
 
@@ -27,8 +28,9 @@ public class GraphPicture {
 		BufferedImage bi = new BufferedImage(graph.getWidth(), graph.getHeight(), 
 				BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphCont = bi.createGraphics();
-		graph.paint(graphCont);
 		
+		//RepaintManager currentManager = RepaintManager.currentManager(graph);
+		//currentManager.setDoubleBufferingEnabled(false);
 		graph.paint(graphCont);
 		
 		String pointedExtension = ext;
@@ -48,6 +50,7 @@ public class GraphPicture {
 		
 		
 		ImageIO.write(bi, picExt, file);
+		//currentManager.setDoubleBufferingEnabled(true);
 		//System.out.println("File: " + filename + " Ext: " + pointedExtension +" picext:" + picExt);
 	}
 

@@ -32,6 +32,7 @@ import org.jgraph.util.JGraphUtilities;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
+import de.saar.chorus.ubench.gui.Preferences;
 
 /**
  * A Swing component that represents a labelled dominance graph.
@@ -658,7 +659,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		// setting the scale
 		clone.setScale(getScale());
-		
+		clone.setShowLabels(Preferences.getInstance().isShowLabels());
 		return clone;
 	}
 	
