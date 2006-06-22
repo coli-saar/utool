@@ -153,7 +153,6 @@ public class CommandListener implements ActionListener, ItemListener {
             fc.addChoosableFileFilter(bmpFilter);   
             fc.addChoosableFileFilter(new GenericFileFilter("jpeg", "*.jpeg pictures"));
             fc.addChoosableFileFilter(new GenericFileFilter("png", "*.png pictures"));
-            fc.addChoosableFileFilter(new GenericFileFilter("wbmp", "*.wbmp pictures"));
             
             fc.setFileFilter(bmpFilter);
             
