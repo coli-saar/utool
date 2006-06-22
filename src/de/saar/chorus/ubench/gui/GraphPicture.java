@@ -29,8 +29,8 @@ public class GraphPicture {
 				BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphCont = bi.createGraphics();
 		
-		//RepaintManager currentManager = RepaintManager.currentManager(graph);
-		//currentManager.setDoubleBufferingEnabled(false);
+		RepaintManager currentManager = RepaintManager.currentManager(graph);
+		currentManager.setDoubleBufferingEnabled(false);
 		graph.paint(graphCont);
 		
 		String pointedExtension = ext;
@@ -50,7 +50,7 @@ public class GraphPicture {
 		
 		
 		ImageIO.write(bi, picExt, file);
-		//currentManager.setDoubleBufferingEnabled(true);
+		currentManager.setDoubleBufferingEnabled(true);
 		//System.out.println("File: " + filename + " Ext: " + pointedExtension +" picext:" + picExt);
 	}
 
