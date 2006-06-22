@@ -224,7 +224,7 @@ public class CommandListener implements ActionListener, ItemListener {
                         
                         progress.setVisible(true);
                try {
-            	   JDomGraph toDraw = Ubench.getInstance().getVisibleTab().getGraph().clone();
+            	   JDomGraph toDraw = Ubench.getInstance().getVisibleTab().getGraph();
             	 
             	 
             	   GraphPicture.makePicture(
