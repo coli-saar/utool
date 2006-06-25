@@ -7,7 +7,9 @@
 
 package de.saar.chorus.domgraph.graph;
 
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,10 +25,15 @@ import org._3pq.jgrapht.event.TraversalListenerAdapter;
 import org._3pq.jgrapht.event.VertexTraversalEvent;
 import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.testng.annotations.Configuration;
 import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
 
+import de.saar.basic.TestTools;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
+import de.saar.chorus.domgraph.codec.InputCodec;
+import de.saar.chorus.domgraph.codec.basic.Chain;
+import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 
 /**
  * A dominance graph. Dominance graphs are directed
@@ -642,36 +649,36 @@ public class DomGraph implements Cloneable {
 	 * @param nodes the subgraph whose wccs we want
 	 * @return the list of wccs; each wcc is a set of nodes.
 	 */
-	public List<Set<String>> wccs(Set<String> nodes) {
-		final List<Set<String>> components = new ArrayList<Set<String>>();
-		RestrictedDepthFirstIterator it = 
-			new RestrictedDepthFirstIterator(new AsUndirectedGraph(graph), null, nodes);
-		
-		it.addTraversalListener(new TraversalListenerAdapter() {
-			Set<String> thisComponent;
-			
-			public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {
-				thisComponent = new HashSet<String>();
-			}
-			
-			public void vertexTraversed(VertexTraversalEvent e) {
-				String node = (String) e.getVertex();
-				thisComponent.add(node);
-			}
-			
-			public void connectedComponentFinished(ConnectedComponentTraversalEvent e) {
-				components.add(thisComponent);
-			}
-		});
-		
-		// run DFS
-		while( it.hasNext() ) {
-			it.next();
-		}
-		
-		return components;
-	}
-	
+    public List<Set<String>> wccs(Set<String> nodes) {
+        List<Set<String>> ret = new ArrayList<Set<String>>();
+        Set<String> visited = new HashSet<String>(getAllNodes());
+        visited.removeAll(nodes);
+        
+        for( String node : getAllNodes() ) {
+            if( !visited.contains(node)) {
+                Set<String> thisWcc = new HashSet<String>();
+                wccsDfs(node, thisWcc, visited);
+                ret.add(thisWcc);
+            }
+        }
+        
+        return ret;
+    }
+    
+    private void wccsDfs(String node, Set<String> thisWcc, Set<String> visited) {
+        thisWcc.add(node);
+        visited.add(node);
+        
+        for( Edge edge : getAdjacentEdges(node) ) {
+            String neighbour = (String) edge.oppositeVertex(node);
+            
+            if( !visited.contains(neighbour) ) {
+                wccsDfs(neighbour, thisWcc, visited);
+            }
+        }
+    }
+    
+    
 	/**
 	 * Computes a mapping of nodes to wcc indices from a list of
 	 * wccs. Such a mapping assigns to each node in any of the wccs
@@ -1345,21 +1352,100 @@ public class DomGraph implements Cloneable {
      *  - isEqual
      *  - result caching (also obsoleting by modifying the graph)
      */
+    @SuppressWarnings("unchecked")
     @Test(groups = {"Domgraph"})
     public class UnitTests {
-        public void demoTest() {
-            assert true : "test failed";
-        }
+        private DomGraph graph;
+        private NodeLabels labels;
+        private InputCodec ozcodec;
         
-        @ExpectedExceptions(NullPointerException.class)
-        public void exceptionTest() {
-            String x = null;
-            String y = x.toString();
-            x = y;
-            
-            assert false : "exception was not thrown";
-            
+        @Configuration(beforeTestMethod = true)
+        public void setup() {
+            ozcodec = new DomconOzInputCodec();
+            graph = new DomGraph();
+            labels = new NodeLabels();
         }
+
+        // unrestricted wccs, 1 wcc
+        public void wccsTest1() throws Exception {
+             ozcodec.decode(
+                     new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
+                             + "dom(f g) dom(h g)]"),
+                     graph, labels);
+             Set<Set<String>> result = new HashSet<Set<String>>(graph.wccs());
+             
+             Set<String> goldWcc = 
+                 TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f", "g", "h" });
+             Set<Set<String>> gold = new HashSet<Set<String>>(1);
+             gold.add(goldWcc);
+             
+             assert result.equals(gold);
+        }
+
+        // unrestricted wccs, 2 wccs
+        public void wccsTest2() throws Exception {
+            ozcodec.decode(
+                    new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
+                            + " dom(h g)]"),
+                    graph, labels);
+            Set<Set<String>> result = new HashSet<Set<String>>(graph.wccs());
+            
+            Set gold = //(Set<Set<String>>)
+                TestTools.makeSet(new Set[] {
+                        TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" }),
+                        TestTools.makeSet(new String[] { "g", "h" })
+                });
+            
+            assert result.equals(gold);
+       }
+        
+        // restricted wccs, 2 wccs
+        public void restrictedWccs2() throws Exception {
+           ozcodec.decode(
+                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
+                           + " dom(f g) dom(h g)]"),
+                   graph, labels);
+           Set<Set<String>> result = 
+               new HashSet<Set<String>>(graph.wccs(TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "g", "h" })));
+           
+           Set gold = // (Set<Set<String>>)
+           TestTools.makeSet(new Set[] {
+                   TestTools.makeSet(new String[] { "a", "b", "c", "d", "e" }),
+                   TestTools.makeSet(new String[] { "g", "h" })
+           });
+       
+           assert result.equals(gold);
+       }
+       
+        // restricted wccs (deletes second wcc -> 1 wcc left)
+        public void restrictedWccs1() throws Exception {
+           ozcodec.decode(
+                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
+                           + " dom(h g)]"),
+                   graph, labels);
+           Set<Set<String>> result = 
+               new HashSet<Set<String>>(graph.wccs(TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" })));
+           
+           Set gold =  // (Set<Set<String>>)
+           TestTools.makeSet(new Set[] {
+                   TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" }),
+           });
+       
+           assert result.equals(gold);
+       }
+
+        // wccs restricted to empty node set -> empty wcc set
+        public void restrictedWccs0() throws Exception {
+           ozcodec.decode(
+                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
+                           + " dom(h g)]"),
+                   graph, labels);
+           Set<Set<String>> result = 
+               new HashSet<Set<String>>(graph.wccs(new HashSet<String>()));
+           
+           assert result.isEmpty();
+       }
+
     }
 	
 }

@@ -9,6 +9,8 @@ package de.saar.chorus.domgraph.codec;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -49,7 +51,11 @@ public abstract class InputCodec {
      * Determines a <code>Reader</code> from which the USR specified
      * by the <code>spec</code> will be read. In this default implementation,
      * <code>spec</code> is a filename, and the reader will be a
-     * <code>FileReader</code> for this file. 
+     * <code>FileReader</code> for this file. In the special case where
+     * <code>spec</code> starts with the prefix <code>ex:</code>, the rest
+     * of the string is interpreted as a filename relative to the directories
+     * <code>projects/Domgraph/examples</code> and <code>examples</code>, which
+     * may be anywhere on the classpath (or in the Jar). 
      * 
      * @param spec a filename
      * @return a reader for reading from this file
@@ -57,6 +63,23 @@ public abstract class InputCodec {
      */
     public Reader getReaderForSpecification(String spec)
     throws IOException {
-        return new FileReader(spec);
+        if( spec.startsWith("ex:")) {
+            // load an example input file that was packaged with the Jar
+            String filename = spec.substring(3);
+            ClassLoader loader = getClass().getClassLoader();
+            InputStream istream = loader.getResourceAsStream("projects/Domgraph/examples/" + filename);
+            
+            if( istream == null ) {
+                istream = loader.getResourceAsStream("examples/" + filename);
+            }
+            
+            if( istream == null ) {
+                throw new IOException("Couldn't find an example file with name " + filename);
+            } else {
+                return new InputStreamReader(istream);
+            }
+        } else {
+            return new FileReader(spec);
+        }
     }
 }
