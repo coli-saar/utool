@@ -161,6 +161,8 @@ class AbstractOptions {
     private boolean optionNoOutput;
     private boolean optionEliminateEquivalence;
     private boolean optionDumpChart;
+    private boolean optionWarmup;
+    private boolean optionNochart;
     
     private InputCodec inputCodec;
     private OutputCodec outputCodec;
@@ -192,6 +194,8 @@ class AbstractOptions {
         setOptionNoOutput(false);
         setOptionEliminateEquivalence(false);
         setOptionDumpChart(false);
+        setOptionWarmup(false);
+        setOptionNochart(false);
         
         port = 2802;
         logWriter = null;
@@ -352,6 +356,30 @@ class AbstractOptions {
 
     public void setInputName(String inputName) {
         this.inputName = inputName;
+    }
+
+
+
+    public boolean hasOptionNochart() {
+        return optionNochart;
+    }
+
+
+
+    public void setOptionNochart(boolean optionNochart) {
+        this.optionNochart = optionNochart;
+    }
+
+
+
+    public boolean hasOptionWarmup() {
+        return optionWarmup;
+    }
+
+
+
+    public void setOptionWarmup(boolean optionWarmup) {
+        this.optionWarmup = optionWarmup;
     }
 
 

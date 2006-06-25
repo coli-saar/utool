@@ -14,6 +14,7 @@ import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
@@ -93,8 +94,38 @@ public class Utool {
         
         // now do something, depending on the specified operation
         switch(options.getOperation()) {
-        case solve:
         case solvable:
+            if( options.hasOptionNochart() ) {
+                if( options.hasOptionStatistics() ) {
+                    System.err.print("Checking graph for solvability (without chart) ... ");
+                }
+                
+                long start_solver = System.currentTimeMillis();
+                boolean solvable = OneSplitSource.isGraphSolvable(options.getGraph());
+                long end_solver = System.currentTimeMillis();
+                long time_solver = end_solver - start_solver;
+
+                if( solvable ) {
+                    if( options.hasOptionStatistics() ) {
+                        System.err.println("it is solvable.");
+                        System.err.println("Time to determine solvability: " + time_solver + " ms");
+                    }
+                    
+                    System.exit(1);
+                } else {
+                    if( options.hasOptionStatistics() ) {
+                        System.err.println("it is unsolvable.");
+                        System.err.println("Time to determine unsolvability: " + time_solver + " ms");
+                    }
+                    
+                    System.exit(0);
+                }
+            }
+                
+            // intentional fall-through for the non-"nochart" case
+            
+            
+        case solve:
             DomGraph compactGraph = null;
 
             if( options.hasOptionStatistics() ) {

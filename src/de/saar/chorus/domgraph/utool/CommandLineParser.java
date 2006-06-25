@@ -33,6 +33,9 @@ class CommandLineParser {
     private static final char OPTION_DUMP_CHART = (char) 3;
     private static final char OPTION_INPUT_CODEC_OPTIONS = (char) 4;
     private static final char OPTION_OUTPUT_CODEC_OPTIONS = (char) 5;
+    private static final char OPTION_WARMUP = (char) 6;
+    private static final char OPTION_NOCHART = (char) 7;
+    
 
     private CodecManager codecManager;
     
@@ -207,6 +210,14 @@ class CommandLineParser {
             ret.setOptionDumpChart(true);
         }
         
+        if( getopt.hasOption(OPTION_WARMUP)) {
+            ret.setOptionWarmup(true);
+        }
+        
+        if( getopt.hasOption(OPTION_NOCHART)) {
+            ret.setOptionNochart(true);
+        }
+        
         if( getopt.hasOption('l')) {
             String val = getopt.getValue('l');
             
@@ -265,6 +276,8 @@ class CommandLineParser {
                         "Display help information", null);
         getopt.addOption('s', "display-statistics", ConvenientGetopt.NO_ARGUMENT,
                         "Display runtime statistics", null);
+        getopt.addOption(OPTION_NOCHART, "nochart", ConvenientGetopt.NO_ARGUMENT,
+                        "Don't compute chart for 'solvable'", null);
         getopt.addOption(OPTION_VERSION, "version", ConvenientGetopt.NO_ARGUMENT,
                         "Display version information", null);
         getopt.addOption('d', "display-codecs", ConvenientGetopt.NO_ARGUMENT,
@@ -275,6 +288,8 @@ class CommandLineParser {
                         "Write server log to file or stderr", null);
         getopt.addOption('p', "port", ConvenientGetopt.REQUIRED_ARGUMENT,
                         "Accept connections at this port", "2802");
+        getopt.addOption(OPTION_WARMUP, "warmup", ConvenientGetopt.NO_ARGUMENT,
+                        "Warm up server after start", null);
         getopt.addOption(OPTION_HELP_OPTIONS, "help-options", ConvenientGetopt.NO_ARGUMENT,
                         "Display help on options", null);
         getopt.addOption(OPTION_DUMP_CHART, "dump-chart", ConvenientGetopt.NO_ARGUMENT,

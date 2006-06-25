@@ -111,6 +111,10 @@ class XmlParser extends DefaultHandler {
                     }
                 }
                 
+                if( "true".equalsIgnoreCase(attributes.getValue("nochart")) ) {
+                    options.setOptionNochart(true);
+                }
+                
                 if( op == Operation.help ) {
                     options.setHelpArgument(resolveOperation(attributes.getValue("on")));
                 }
