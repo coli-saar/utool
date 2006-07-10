@@ -624,6 +624,16 @@ public class CommandListener implements ActionListener, ItemListener {
                             
                             "About the Underspecification Workbench", 
                             JOptionPane.INFORMATION_MESSAGE);
+                } else if (command.equals("loadExample")) {
+                	try{
+                	ExampleViewer exview = new ExampleViewer();
+                	exview.setVisible(true);
+                	} catch(IOException ex) {
+                		 JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                 ex.getMessage(),
+                                 "Error during example loading",
+                                 JOptionPane.ERROR_MESSAGE);
+                	}
                 }
         }
         }

@@ -58,7 +58,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  next,
 					  previous,
 					  pictureExport,
-					  print;
+					  print,
+					  loadExample;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -96,6 +97,12 @@ public class JDomGraphMenu extends JMenuBar {
 		loadGraph.addActionListener(listener);
 		fileMenu.add(loadGraph);
 
+		loadExample = new JMenuItem("Open Example...");
+		loadExample.setActionCommand("loadExample");
+		loadExample.addActionListener(listener);
+		fileMenu.add(loadExample);
+		
+		
         // item for utool-export
         saveUtool = new JMenuItem("Export...");
         saveUtool.setActionCommand("saveUtool");

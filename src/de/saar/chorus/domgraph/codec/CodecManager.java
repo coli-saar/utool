@@ -305,6 +305,34 @@ public class CodecManager {
     public List<Class> getAllInputCodecs() {
         return inputCodecClasses;
     }
+    
+    public List<String> getAllInputCodecExtensions() {
+    	List<String> extensions = new ArrayList<String>();
+    	
+    	for(Class codecClass : inputCodecClasses ) {
+    		String lastExt = CodecManager.getCodecExtension(codecClass);
+    		
+    		if(lastExt != null ) {
+    			extensions.add(lastExt);
+    		}
+    	}
+    	
+    	return extensions;
+    }
+    
+    public List<String> getAllOutputCodecExtensions() {
+    	List<String> extensions = new ArrayList<String>();
+    	
+    	for(Class codecClass : outputCodecClasses ) {
+    		String lastExt = CodecManager.getCodecExtension(codecClass);
+    		
+    		if(lastExt != null ) {
+    			extensions.add(lastExt);
+    		}
+    	}
+    	
+    	return extensions;
+    }
 
     /**
      * Returns the list of all registered output codecs.
@@ -358,6 +386,8 @@ public class CodecManager {
             throw new CodecRegistrationException("An error occurred while registering codecs from codecclass.properties", e);
         }
     }
+    
+   
         
 
     /*
