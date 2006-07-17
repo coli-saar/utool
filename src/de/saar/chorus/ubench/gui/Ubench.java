@@ -10,8 +10,10 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -458,7 +460,11 @@ public class Ubench {
         
         if(inputCodec != null ) {
             try {
-                inputCodec.decode(new FileReader(filename), graph, nl);
+                inputCodec.decode(
+                		new InputStreamReader(
+                				new FileInputStream(filename),
+                				Charset.forName("UTF-8"))
+                		, graph, nl);
                 
             } catch (IOException e) {
                 JOptionPane

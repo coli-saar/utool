@@ -7,7 +7,7 @@
 
 package de.saar.chorus.domgraph.codec;
 
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,11 +77,11 @@ public abstract class InputCodec {
             if( istream == null ) {
                 throw new IOException("Couldn't find an example file with name " + filename);
             } else {
-                return new InputStreamReader(istream);
+                return new InputStreamReader(istream, Charset.forName("UTF-8"));
             }
         } else {
-            return new FileReader(spec);
-        	//return new InputStreamReader(new FileInputStream(spec), Charset.forName("UTF-8"));
+            //return new FileReader(spec);
+        	return new InputStreamReader(new FileInputStream(spec), Charset.forName("UTF-8"));
         }
     }
 }

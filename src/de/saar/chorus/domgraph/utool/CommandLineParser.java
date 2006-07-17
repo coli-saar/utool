@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -143,12 +144,14 @@ class CommandLineParser {
                     Reader reader = null;
                     
                     if( "-".equals(argument)) {
-                        reader = new InputStreamReader(System.in);
+                        reader = new InputStreamReader(System.in, Charset.forName("UTF-8"));
                         ret.setInputName("(standard input)");
                     } else {
                         reader = inputCodec.getReaderForSpecification(argument);
                         ret.setInputName(argument);
                     }
+                    
+                    
                     
                     inputCodec.decode(reader, graph, labels);
                     

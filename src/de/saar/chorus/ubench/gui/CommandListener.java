@@ -57,7 +57,7 @@ import de.saar.chorus.ubench.JDomGraph;
 
 /**
  * The main <code>ActionListener</code> and <code>ItemListener</code> 
- * of Leonardo's GUI. 
+ * of Ubench's GUI. 
  * For file choosers, it provides some file filters and stores the 
  * last chosen path. 
  * 
