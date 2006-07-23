@@ -465,8 +465,7 @@ public class Ubench {
             try {
                 inputCodec.decode(
                 		new InputStreamReader(
-                				new FileInputStream(filename),
-                				Charset.forName("UTF-8"))
+                				new FileInputStream(filename))
                 		, graph, nl);
                 
             } catch (IOException e) {
