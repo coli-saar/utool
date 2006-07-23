@@ -173,11 +173,14 @@ public class Ubench {
             getVisibleTab().repaintIfNecessary();
             if(getVisibleTab().getClass() == JSolvedFormTab.class ) {
                 setSolvingEnabled(false);
+                menuBar.setSaveAllEnables(false);
             } else {
                 if( ((JDomGraphTab) getVisibleTab()).isSolvable()) {
                     setSolvingEnabled(true);
+                    menuBar.setSaveAllEnables(true);
                 } else {
                     setSolvingEnabled(false);
+                    menuBar.setSaveAllEnables(false);
                 }
                 menuBar.setPlusMinusEnabled(false,false);
             }

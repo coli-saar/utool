@@ -32,12 +32,16 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
@@ -45,6 +49,8 @@ import javax.swing.filechooser.FileView;
 
 import de.saar.basic.SwingComponentPDFWriter;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -66,7 +72,7 @@ import de.saar.chorus.ubench.JDomGraph;
  *
  */
 public class CommandListener implements ActionListener, ItemListener {
-    private File lastPath = null;
+    private File lastPath = new File(System.getProperty("user.dir"));
     private String recentPath = ".", recentFile="";
     
     //private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
@@ -634,6 +640,10 @@ public class CommandListener implements ActionListener, ItemListener {
                                  "Error during example loading",
                                  JOptionPane.ERROR_MESSAGE);
                 	}
+                } else if (command.equals("saveAll")) {
+                	JChooseFrame frame = new JChooseFrame();
+                	
+                	
                 }
         }
         }
@@ -708,7 +718,7 @@ public class CommandListener implements ActionListener, ItemListener {
                             Preferences.setFitToWindow(false);
                         }
                         
-                    }
+                    } 
     }
     
     /**
@@ -1081,6 +1091,214 @@ public class CommandListener implements ActionListener, ItemListener {
     		    RepaintManager currentManager = RepaintManager.currentManager(c);
     		    currentManager.setDoubleBufferingEnabled(true);
     		  }
+    	
+    }
+    
+    private class JChooseFrame extends JFrame implements ActionListener {
+    	
+    	private JTextField fileLine;
+    	private File outputFile;
+    	private JComboBox codecBox;
+
+    	
+    	JChooseFrame() {
+    		super("Write all solutions to file...");
+    		JPanel codecPanel = new JPanel();
+        
+        	String[] ocod = new String[ffOutputCodecs.size()];
+        	for(int i = 0; i < ocod.length; i++) {
+        		ocod[i] = ffOutputCodecs.get(i).desc;
+        	}
+        	
+        	codecBox = new JComboBox(ocod);
+        	codecPanel.add(new JLabel("Select Codec:  "));
+        	codecPanel.add(codecBox);
+        	JButton ok2 = new JButton("OK");
+        	ok2.setActionCommand("writeNow");
+        	ok2.addActionListener(this);
+        	codecPanel.add(ok2);
+        	
+        	JPanel filePanel = new JPanel();
+        	filePanel.add(new JLabel("File:  "));
+        	fileLine = new JTextField(lastPath.getAbsolutePath() + 
+        			Ubench.getInstance().getVisibleTab().getDefaultName() + 
+        			"_solvedForms");
+        	
+        	
+        	filePanel.add(fileLine);
+        	JButton browse = new JButton("Browse...");
+        	browse.setActionCommand("browse");
+        	browse.addActionListener(this);
+        	
+        	filePanel.add(browse);
+        	add(filePanel, BorderLayout.NORTH);
+        	add(codecPanel, BorderLayout.SOUTH);
+        	
+        	pack();
+        	validate();
+        	setVisible(true);
+    	}
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			if(e.getActionCommand().equals("browse")) {
+				JFileChooser fc = new JFileChooser(recentPath);
+				fc.setSelectedFile(new File(fileLine.getText()));
+				int fcVal = fc.showDialog(this, "Select Output File");
+				   if (fcVal == JFileChooser.APPROVE_OPTION) {
+		                
+		                // resolving the selected file's path
+		                File file = fc.getSelectedFile();
+		                final String dir = file.getAbsolutePath();
+		                
+		                // updating the last chosen path
+		                lastPath = file.getParentFile();
+		                fileLine.setText(dir);
+				   }
+			} else if ( e.getActionCommand().equals("writeNow")) {
+				setVisible(false);
+				
+				outputFile = new File(fileLine.getText());
+				 new Thread() {
+	                    public void run() {
+	                        
+	                        // that's just a guess...
+	                        int taskLength = Ubench.getInstance().getVisibleTab().numGraphNodes();
+	                        
+	                        // the progress bar and the panel containing it.
+	                        JDialog progress = new JDialog(Ubench.getInstance().getWindow(), false);
+	                        JPanel dialogPane = new JPanel();
+	                        JProgressBar progressBar = new JProgressBar(0, taskLength);
+	                        
+	                        // the OK-Button to press after printing is done
+	                        // (it will close the dialog)
+	                        JButton ok = new JButton("OK");
+	                        ok.setActionCommand("ok");
+	                        
+	                        // text visible while printing
+	                        JLabel export = new JLabel("Printing Solutions...",SwingConstants.CENTER);
+	                        export.setHorizontalAlignment(SwingConstants.CENTER);
+	                        
+	                        // listener for the button 
+	                        ok.addActionListener(new JDialogListener(progress));
+				
+	                        progressBar.setStringPainted(true); 
+	                        progressBar.setString(""); 
+	                        progressBar.setIndeterminate(true);
+	                        ok.setEnabled(false);
+	                        
+	                        // layouting the panel with the progress bar
+	                        dialogPane.add(export, BorderLayout.NORTH);
+	                        dialogPane.add(progressBar,BorderLayout.CENTER);
+	                        dialogPane.add(ok,BorderLayout.SOUTH);
+	                        dialogPane.doLayout();
+	                        progress.add(dialogPane);
+	                        progress.pack();
+	                        progress.validate();
+	                        
+	                        // locating the panel centered
+	                        progress.setLocation((Ubench.getInstance().getWindow().getWidth() - progress.getWidth())/2,
+	                                (Ubench.getInstance().getWindow().getHeight() - progress.getHeight())/2); 
+	                        progress.setVisible(true);
+	                        
+	                       
+	                        OutputCodec oc= Ubench.getInstance().getCodecManager().
+	                        	getOutputCodecForName((String) codecBox.getSelectedItem(), null);
+	                        
+	                        Chart chart = new Chart();
+	                        DomGraph cgraph = Ubench.getInstance().
+	                        			getVisibleTab().getDomGraph().compactify();
+	                        
+	                        DomGraph graph = Ubench.getInstance().
+                						getVisibleTab().getDomGraph();
+	                        long start_solver = System.currentTimeMillis();
+	                        ChartSolver.solve(cgraph, chart);
+	                        long end_solver = System.currentTimeMillis();
+	                        long time_solver = end_solver - start_solver;
+	                        
+	                    
+	                        
+	                      if(oc != null) {
+	                        try {
+	                        	 FileWriter writer = new FileWriter(outputFile);
+	                        	   long start_extraction = System.currentTimeMillis();
+	                               long count = 0;
+	                               SolvedFormIterator it = new SolvedFormIterator(chart,graph);
+	                        	 
+	                        	 oc.print_header(writer);
+	                        	 oc.print_start_list(writer);
+	                        	 while( it.hasNext() ) {
+	                                 List<DomEdge> domedges = it.next();
+	                                 count++;
+	                                 
+	                                
+	                                     if( count > 1 ) {
+	                                         oc.print_list_separator(writer);
+	                                     }
+	                                     oc.encode(graph, domedges, 
+	                                    		 Ubench.getInstance().getVisibleTab().getNodeLabels(), 
+	                                    		 writer);
+	                                 
+	                             }
+	                             long end_extraction = System.currentTimeMillis();
+	                             long time_extraction = end_extraction - start_extraction;
+	                             oc.print_end_list(writer);
+	                             oc.print_footer(writer);
+	                             
+	                           
+	                       
+	                        
+	                      
+                            
+	                        // after finishing, the progress bar becomes
+	                        // determined and fixated at maximum value (100%)
+	                        progressBar.setMaximum(100);
+	                        progressBar.setIndeterminate(false);
+	                        progressBar.setValue(100);
+	                        progress.setVisible(false);
+	                        // new text
+	                        long total_time = time_extraction + time_solver;
+	                        String interTime = null;
+	                        if( total_time > 0 ) {
+                                 interTime = (int) Math.floor(count * 1000.0 / total_time) + " sfs/sec; ";
+                            }
+	                        JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+	                        		"Found " + count + " solved forms." 
+	                        		+ System.getProperty("line.separator") + 
+	                        		"Time spent on extraction: " + time_extraction + " ms" + 
+	                        		System.getProperty("line.separator") +
+	                        		"Total runtime: " + total_time + " ms (" + interTime + 
+	                        		1000 * total_time / count + " microsecs/sf)",
+	                        		"Solver Statistics",
+	                        		JOptionPane.INFORMATION_MESSAGE);
+	                       
+	                        
+	                        } catch (IOException ex) {
+                                JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                        "The specified file cannot be created.",
+                                        "Error during output",
+                                        JOptionPane.ERROR_MESSAGE);
+                            } catch (MalformedDomgraphException md) {
+                                JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                        "The output codec doesn't support output of this graph:\n" + md,
+                                        "Error during output",
+                                        JOptionPane.ERROR_MESSAGE);
+                            } catch (UnsupportedOperationException uE) {
+                                JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                        uE.getMessage(),
+                                        "Error during output",
+                                        JOptionPane.ERROR_MESSAGE);
+                            }
+	                      }
+                            
+	                    }}.run();
+				 }
+			}
+		
+		
+    	
+    	
     	
     }
 }
