@@ -77,11 +77,11 @@ public abstract class InputCodec {
             if( istream == null ) {
                 throw new IOException("Couldn't find an example file with name " + filename);
             } else {
-                return new InputStreamReader(istream, Charset.forName("UTF-8"));
+                return new InputStreamReader(istream);
             }
         } else {
             //return new FileReader(spec);
-        	return new InputStreamReader(new FileInputStream(spec), Charset.forName("UTF-8"));
+        	return new InputStreamReader(new FileInputStream(spec));
         }
     }
 }
