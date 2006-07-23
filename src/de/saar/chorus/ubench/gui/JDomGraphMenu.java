@@ -59,7 +59,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  previous,
 					  pictureExport,
 					  print,
-					  loadExample;
+					  loadExample,
+					  saveAll;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -256,6 +257,14 @@ public class JDomGraphMenu extends JMenuBar {
         utoolMenu.add(next);
         utoolMenu.add(previous);
         
+        saveAll = new JMenuItem("Write all solutions to file...");
+        saveAll.setActionCommand("saveAll");
+        saveAll.addActionListener(listener);
+        graphSpecificItems.add(saveAll);
+        
+        utoolMenu.add(saveAll);
+        
+        
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
         
@@ -312,4 +321,7 @@ public class JDomGraphMenu extends JMenuBar {
 		previous.setEnabled(minus);
 	}
 	
+	public void setSaveAllEnables(boolean b) {
+		saveAll.setEnabled(b);
+	}
 }
