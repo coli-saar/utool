@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -35,31 +36,23 @@ public class ExampleViewer extends JFrame implements
 	private JLabel desc;
 	private JLabel prev;
 	private JList files;
-	private File[] exampleFiles;
 	private String[] exampleNames;
+	private List<File> exampleFiles;
 	private JButton load;
+	private JButton cancel;
 	public ExampleViewer() throws IOException {
 		super();
 		setLayout(layout);
+		setAlwaysOnTop(true);
 		
+	    exampleFiles = Ubench.getInstance().getCodecManager().getExampleFiles();
+		exampleNames = new String[exampleFiles.size()];
 		
-		exampleFolder = new File("projects/Domgraph/examples/");
-		if(! exampleFolder.isDirectory()) {
-			exampleFolder = new File("examples/");
-			if(! exampleFolder.isDirectory()) {
-				throw new IOException("Couldn't find an example files."); 
-			}
+		for( int i = 0; i < exampleNames.length; i++) {
+			exampleNames[i] = exampleFiles.get(i).getName();
 		}
+			
 		
-		FileFilter exFilter = new ExampleFilter();
-		
-		
-		exampleFiles = exampleFolder.listFiles(exFilter);
-		exampleNames = new String[exampleFiles.length];
-		
-		for( int i = 0; i < exampleNames.length; i++ ) {
-			exampleNames[i] = exampleFiles[i].getName();
-		}
 		
 		files = new JList(exampleNames);
 		files.addListSelectionListener(this);
@@ -73,59 +66,47 @@ public class ExampleViewer extends JFrame implements
 		listContents.add(listPane, BorderLayout.WEST);
 		
 		JPanel preview = new JPanel();
+		preview.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		//preview.setPreferredSize(listPane.getSize());
-		prev  = new JLabel();
-		preview.add(prev);
+	//	prev  = new JLabel();
+	//	preview.add(prev);
 		
 		load = new JButton("Load!");
 		load.addActionListener(this);
 		load.setActionCommand("loEx");
-		preview.add(load, BorderLayout.SOUTH);
+		preview.add(load);
 		
-		listContents.add(preview, BorderLayout.EAST);
+		cancel = new JButton ("Cancel");
+		cancel.addActionListener(this);
+		cancel.setActionCommand("cancel");
+		preview.add(cancel);
+		
+		
+	
+		listContents.add(preview, BorderLayout.SOUTH);
 		listContents.validate();
 		add(listPane,BorderLayout.WEST);
-		add(preview, BorderLayout.EAST);
+		add(preview, BorderLayout.SOUTH);
 		JPanel description = new JPanel();
 		desc = new JLabel("No example selected.");
 		description.add(desc);
 		
-		add(description, BorderLayout.SOUTH); 
+		add(description, BorderLayout.EAST); 
 		
 		pack();
 		validate();
 		//setVisible(true);
 	}
 	
-	private class ExampleFilter implements FileFilter {
-
-		/* (non-Javadoc)
-		 * @see java.io.FileFilter#accept(java.io.File)
-		 */
-		public boolean accept(File pathname) {
-			
-		
-				String name = pathname.getName();
-				
-				for(String ext : Ubench.getInstance().getCodecManager().getAllInputCodecExtensions() ) {
-					if(name.endsWith(ext)) {
-						return true;
-					}
-				}
-				
-			
-			return false;
-		}
-		
-	}
+	
 
 	/* (non-Javadoc)
 	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
 	 */
 	public void valueChanged(ListSelectionEvent e) {
 	
-		File selectedFile = exampleFiles[files.getSelectedIndex()];
-		String selected = selectedFile.getName();
+		
+		String selected = exampleNames[files.getSelectedIndex()];
 			
 			pack();
 			validate();
@@ -138,12 +119,14 @@ public class ExampleViewer extends JFrame implements
 	 */
 	public void actionPerformed(ActionEvent e) {
 		
-		File selectedFile = exampleFiles[files.getSelectedIndex()];
-		final String selected = selectedFile.getAbsolutePath();
+		
+		
 		
 		
 		
 		if(e.getActionCommand().equals("loEx")) {
+		final String selected = exampleFiles.get(
+					files.getSelectedIndex()).getAbsolutePath();
 		setVisible(false);
 		Ubench.getInstance().getStatusBar().showProgressBar();
 			new Thread(){
@@ -166,7 +149,10 @@ public class ExampleViewer extends JFrame implements
                     }
                 }
             }.start();
-		} 
+		} else if (e.getActionCommand().equals("cancel")) {
+			setVisible(false);
+			dispose();
+		}
 		
 	}
     

@@ -8,13 +8,15 @@
 package de.saar.chorus.domgraph.codec;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,9 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
+import de.saar.chorus.ubench.gui.Ubench;
 
 /**
  * A registry for codecs. Objects of this class are intended as a
@@ -46,13 +47,14 @@ public class CodecManager {
     
     private List<Class> outputCodecClasses;
     private List<Class> inputCodecClasses;
-    
+    private Map<String,File> exampleNameToPath;
     
     public CodecManager() {
         //outputCodecs = new ArrayList<OutputCodec>();
         //inputCodecs = new ArrayList<InputCodec>();
         outputCodecClasses = new ArrayList<Class>();
         inputCodecClasses = new ArrayList<Class>();
+        exampleNameToPath = new HashMap<String,File>();
     }
     
     public static String getCodecName(Class codecClass) {
@@ -387,8 +389,64 @@ public class CodecManager {
         }
     }
     
+    
+    public List<File> getExampleFiles() {
+    	List<File> ret = new ArrayList<File>();
+    	
+    	File exampleFolder = new File("projects/Domgraph/examples/");
+    	if(! exampleFolder.isDirectory()) {
+    		exampleFolder = new File("examples/");
+    		if(! exampleFolder.isDirectory()) {
+			return ret;
+    		}
+    	}
+    	
+    	FileFilter exFilter = new InputCodecFilter();
+		File[] exampleFiles = exampleFolder.listFiles(exFilter);
+    	
+		for( int i = 0; i< exampleFiles.length; i++ ) {
+			exampleNameToPath.put(exampleFiles[i].getName(), 
+					exampleFiles[i]);
+			ret.add(exampleFiles[i]);
+		}
+    	
+    	return ret;
+    }
    
-        
+    
+    private class InputCodecFilter implements FileFilter {
+
+		/* (non-Javadoc)
+		 * @see java.io.FileFilter#accept(java.io.File)
+		 */
+		public boolean accept(File pathname) {
+			
+		
+				String name = pathname.getName();
+				
+				for(String ext : Ubench.getInstance().getCodecManager().getAllInputCodecExtensions() ) {
+					if(name.endsWith(ext)) {
+						return true;
+					}
+				}
+				
+			
+			return false;
+		}
+		
+	}
+    
+    public Reader getExampleReader(String exampleName) throws IOException {
+    	
+    	List<File> examples = getExampleFiles();
+    	if(exampleNameToPath.containsKey(exampleName)){
+    		InputStream exstream = new FileInputStream(exampleNameToPath.get(exampleName));
+    		return new InputStreamReader(exstream);
+    		
+    	} else {
+    		return null;
+    	}
+    } 
 
     /*
      * Unit tests:

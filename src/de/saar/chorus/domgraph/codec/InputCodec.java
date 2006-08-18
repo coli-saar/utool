@@ -57,6 +57,7 @@ public abstract class InputCodec {
      * of the string is interpreted as a filename relative to the directories
      * <code>projects/Domgraph/examples</code> and <code>examples</code>, which
      * may be anywhere on the classpath (or in the Jar). 
+     * TODO perhaps removing this to another class (CodecManager?)
      * 
      * @param spec a filename
      * @return a reader for reading from this file
@@ -68,6 +69,8 @@ public abstract class InputCodec {
             // load an example input file that was packaged with the Jar
             String filename = spec.substring(3);
             ClassLoader loader = getClass().getClassLoader();
+            
+            
             InputStream istream = loader.getResourceAsStream("projects/Domgraph/examples/" + filename);
             
             if( istream == null ) {
@@ -79,6 +82,9 @@ public abstract class InputCodec {
             } else {
                 return new InputStreamReader(istream);
             }
+            
+           // InputStreamReader ret = 
+            
         } else {
             //return new FileReader(spec);
         	return new InputStreamReader(new FileInputStream(spec));
