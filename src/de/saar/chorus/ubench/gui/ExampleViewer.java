@@ -4,11 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,7 +25,8 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
 
-public class ExampleViewer extends JFrame implements ListSelectionListener, ActionListener {
+public class ExampleViewer extends JFrame implements 
+              ListSelectionListener, ActionListener {
 	
 
 	private BorderLayout layout = new BorderLayout();
@@ -33,6 +37,7 @@ public class ExampleViewer extends JFrame implements ListSelectionListener, Acti
 	private JList files;
 	private File[] exampleFiles;
 	private String[] exampleNames;
+	private JButton load;
 	public ExampleViewer() throws IOException {
 		super();
 		setLayout(layout);
@@ -58,6 +63,9 @@ public class ExampleViewer extends JFrame implements ListSelectionListener, Acti
 		
 		files = new JList(exampleNames);
 		files.addListSelectionListener(this);
+		files.addMouseListener(new DoubleClickAdapter());
+		files.addKeyListener(new EnterAdapter());
+		
 		JScrollPane listPane = new JScrollPane(files);
 		
 		listContents = new JPanel();
@@ -69,7 +77,7 @@ public class ExampleViewer extends JFrame implements ListSelectionListener, Acti
 		prev  = new JLabel();
 		preview.add(prev);
 		
-		JButton load = new JButton("Load!");
+		load = new JButton("Load!");
 		load.addActionListener(this);
 		load.setActionCommand("loEx");
 		preview.add(load, BorderLayout.SOUTH);
@@ -122,7 +130,8 @@ public class ExampleViewer extends JFrame implements ListSelectionListener, Acti
 			pack();
 			validate();
 			desc.setText("Example " + selected);
-        }
+			
+	}
 
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -157,10 +166,35 @@ public class ExampleViewer extends JFrame implements ListSelectionListener, Acti
                     }
                 }
             }.start();
-		}
+		} 
 		
 	}
     
+	private class DoubleClickAdapter extends MouseAdapter {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if(e.getClickCount() == 2) {
+				actionPerformed(new ActionEvent
+						(load, ActionEvent.ACTION_PERFORMED, "loEx"));
+			}
+		}
 		
+	}
+	
+	private class EnterAdapter extends KeyAdapter {
+		public void keyReleased(KeyEvent ke) {
+		if( ke.getKeyCode() == KeyEvent.VK_ENTER) {
+			actionPerformed(new ActionEvent
+					(load, ActionEvent.ACTION_PERFORMED, "loEx"));
+		}
+		
+		
+		}
+		
+	}
 	
 }
+		
+	
+
