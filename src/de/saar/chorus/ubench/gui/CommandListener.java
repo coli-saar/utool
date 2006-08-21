@@ -641,10 +641,179 @@ public class CommandListener implements ActionListener, ItemListener {
                                  JOptionPane.ERROR_MESSAGE);
                 	}
                 } else if (command.equals("saveAll")) {
-                	JChooseFrame frame = new JChooseFrame();
-                	
+                	//JChooseFrame frame = new JChooseFrame();
+                	JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
+                    
+                    if( graph != null) {
+                        JFileChooser fc = new JFileChooser(recentPath);
+                        for( FileFilter ff : ffOutputCodecs ) {
+                            fc.addChoosableFileFilter(ff);
+                        }
+                        fc.setAcceptAllFileFilterUsed(false);
+                        fc.setSelectedFile(new File(Ubench.getInstance().
+                        		getVisibleTab().getDefaultName() + 
+                        						"_solvedForms"));
+                        
+                        int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
+                        if( fcVal == JFileChooser.APPROVE_OPTION ) {
+                            
+                            File file = fc.getSelectedFile();
+                            lastPath = file.getParentFile();
+                            String targetFile = file.getAbsolutePath();
+                            String defaultExtension = ((GenericFileFilter) 
+                                    fc.getFileFilter()).getExtension();
+                            
+                            if(! targetFile.endsWith(defaultExtension) ) {
+                                targetFile += defaultExtension;
+                               
+                            } 
+                            
+                            final File outputfile = new File(targetFile);
+                            System.err.println(outputfile.get)
+                            recentPath = outputfile.getAbsolutePath();
+                            
+                   		 new Thread() {
+     	                    public void run() {
+     	                        
+     	                        // that's just a guess...
+     	                        int taskLength = Ubench.getInstance().getVisibleTab().numGraphNodes();
+     	                        
+     	                        // the progress bar and the panel containing it.
+     	                        JDialog progress = new JDialog(Ubench.getInstance().getWindow(), false);
+     	                        JPanel dialogPane = new JPanel();
+     	                        JProgressBar progressBar = new JProgressBar(0, taskLength);
+     	                        
+     	                        // the OK-Button to press after printing is done
+     	                        // (it will close the dialog)
+     	                        JButton ok = new JButton("OK");
+     	                        ok.setActionCommand("ok");
+     	                        
+     	                        // text visible while printing
+     	                        JLabel export = new JLabel("Printing Solutions...",SwingConstants.CENTER);
+     	                        export.setHorizontalAlignment(SwingConstants.CENTER);
+     	                        
+     	                        // listener for the button 
+     	                        ok.addActionListener(new JDialogListener(progress));
+     				
+     	                        progressBar.setStringPainted(true); 
+     	                        progressBar.setString(""); 
+     	                        progressBar.setIndeterminate(true);
+     	                        ok.setEnabled(false);
+     	                        
+     	                        // layouting the panel with the progress bar
+     	                        dialogPane.add(export, BorderLayout.NORTH);
+     	                        dialogPane.add(progressBar,BorderLayout.CENTER);
+     	                        dialogPane.add(ok,BorderLayout.SOUTH);
+     	                        dialogPane.doLayout();
+     	                        progress.add(dialogPane);
+     	                        progress.pack();
+     	                        progress.validate();
+     	                        
+     	                        // locating the panel centered
+     	                        progress.setLocation((Ubench.getInstance().getWindow().getWidth() - progress.getWidth())/2,
+     	                                (Ubench.getInstance().getWindow().getHeight() - progress.getHeight())/2); 
+     	                        progress.setVisible(true);
+     	                        
+     	                       
+     	                        OutputCodec oc= Ubench.getInstance().getCodecManager().
+     	                        	getOutputCodecForName(outputfile.getName(), null);
+     	                        
+     	                        Chart chart = new Chart();
+     	                        DomGraph cgraph = Ubench.getInstance().
+     	                        			getVisibleTab().getDomGraph().compactify();
+     	                        
+     	                        DomGraph graph = Ubench.getInstance().
+                     						getVisibleTab().getDomGraph();
+     	                        long start_solver = System.currentTimeMillis();
+     	                        ChartSolver.solve(cgraph, chart);
+     	                        long end_solver = System.currentTimeMillis();
+     	                        long time_solver = end_solver - start_solver;
+     	                        
+     	                    
+     	                        
+     	                      if(oc != null) {
+     	                    	  System.err.println("lala.");
+     	                        try {
+     	                        	 FileWriter writer = new FileWriter(outputfile);
+     	                        	   long start_extraction = System.currentTimeMillis();
+     	                               long count = 0;
+     	                               SolvedFormIterator it = new SolvedFormIterator(chart,graph);
+     	                        	 
+     	                        	 oc.print_header(writer);
+     	                        	 oc.print_start_list(writer);
+     	                        	 while( it.hasNext() ) {
+     	                                 List<DomEdge> domedges = it.next();
+     	                                 count++;
+     	                                 
+     	                                
+     	                                     if( count > 1 ) {
+     	                                         oc.print_list_separator(writer);
+     	                                     }
+     	                                     oc.encode(graph, domedges, 
+     	                                    		 Ubench.getInstance().getVisibleTab().getNodeLabels(), 
+     	                                    		 writer);
+     	                                 
+     	                             }
+     	                             long end_extraction = System.currentTimeMillis();
+     	                             long time_extraction = end_extraction - start_extraction;
+     	                             oc.print_end_list(writer);
+     	                             oc.print_footer(writer);
+     	                             
+     	                           
+     	                       
+     	                        
+     	                      
+                                 
+     	                        // after finishing, the progress bar becomes
+     	                        // determined and fixated at maximum value (100%)
+     	                        progressBar.setMaximum(100);
+     	                        progressBar.setIndeterminate(false);
+     	                        progressBar.setValue(100);
+     	                        progress.setVisible(false);
+     	                        // new text
+     	                        long total_time = time_extraction + time_solver;
+     	                        String interTime = null;
+     	                        if( total_time > 0 ) {
+                                      interTime = (int) Math.floor(count * 1000.0 / total_time) + " sfs/sec; ";
+                                 }
+     	                        JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+     	                        		"Found " + count + " solved forms." 
+     	                        		+ System.getProperty("line.separator") + 
+     	                        		"Time spent on extraction: " + time_extraction + " ms" + 
+     	                        		System.getProperty("line.separator") +
+     	                        		"Total runtime: " + total_time + " ms (" + interTime + 
+     	                        		1000 * total_time / count + " microsecs/sf)",
+     	                        		"Solver Statistics",
+     	                        		JOptionPane.INFORMATION_MESSAGE);
+     	                       
+     	                        
+     	                        } catch (IOException ex) {
+                                     JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                             "The specified file cannot be created.",
+                                             "Error during output",
+                                             JOptionPane.ERROR_MESSAGE);
+                                 } catch (MalformedDomgraphException md) {
+                                     JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                             "The output codec doesn't support output of this graph:\n" + md,
+                                             "Error during output",
+                                             JOptionPane.ERROR_MESSAGE);
+                                 } catch (UnsupportedOperationException uE) {
+                                     JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+                                             uE.getMessage(),
+                                             "Error during output",
+                                             JOptionPane.ERROR_MESSAGE);
+                                 }
+     	                      }
+                                 
+     	                    }}.run();
+                            
+                        
+                    }
+                        
+                        
                 	
                 }
+        }
         }
         }
     }
