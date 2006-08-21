@@ -28,6 +28,15 @@ public class JDomTabPopup extends JPopupMenu {
 	public JDomTabPopup(CommandListener listener) {
 		super();
 		
+		JMenuItem chartView = new JMenuItem("Display Chart");
+		chartView.setMnemonic(KeyEvent.VK_C);
+		chartView.setAccelerator(KeyStroke.getKeyStroke("alt C"));
+		chartView.setActionCommand("chartView");
+		chartView.addActionListener(listener);
+		add(chartView);
+		
+		addSeparator();
+		
 		// item to duplicate the graph
 		JMenuItem duplicate = new JMenuItem("Duplicate");
 		duplicate.setMnemonic(KeyEvent.VK_D);
