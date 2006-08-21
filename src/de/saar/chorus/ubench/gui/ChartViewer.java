@@ -1,6 +1,7 @@
 package de.saar.chorus.ubench.gui;
 
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -20,8 +21,10 @@ public class ChartViewer extends JFrame {
 		prettyprint = new JTextPane();
 		String textchart = ChartPresenter.chartOnlyRoots(c,g);
 		prettyprint.setText(textchart);
+		prettyprint.setEditable(false);
+		add(new JScrollPane(prettyprint));
 		
-		add(prettyprint);
+		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
 		pack();
 		validate();
