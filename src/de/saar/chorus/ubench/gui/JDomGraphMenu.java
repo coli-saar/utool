@@ -113,6 +113,14 @@ public class JDomGraphMenu extends JMenuBar {
         fileMenu.add(saveUtool);
         graphSpecificItems.add(saveUtool);
         
+        saveAll = new JMenuItem("Export Solved Forms...");
+        saveAll.setActionCommand("saveAll");
+        saveAll.addActionListener(listener);
+        graphSpecificItems.add(saveAll);
+        
+        fileMenu.add(saveAll);
+        
+        
         // item for pdf-export
 		pdfPrint = new JMenuItem("Export as PDF...");
 		pdfPrint.setActionCommand("pdf");
@@ -257,12 +265,7 @@ public class JDomGraphMenu extends JMenuBar {
         utoolMenu.add(next);
         utoolMenu.add(previous);
         
-        saveAll = new JMenuItem("Write all solutions to file...");
-        saveAll.setActionCommand("saveAll");
-        saveAll.addActionListener(listener);
-        graphSpecificItems.add(saveAll);
-        
-        utoolMenu.add(saveAll);
+       
         
         
 		add(utoolMenu);
