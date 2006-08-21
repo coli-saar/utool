@@ -60,7 +60,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  pictureExport,
 					  print,
 					  loadExample,
-					  saveAll;
+					  saveAll,
+					  displayChart;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -207,6 +208,14 @@ public class JDomGraphMenu extends JMenuBar {
 		resetLayout.addActionListener(listener);
 		viewMenu.add(resetLayout);	
 		graphSpecificItems.add(resetLayout);
+		
+		displayChart = new JMenuItem("Display Chart");
+		displayChart.setMnemonic(KeyEvent.VK_C);
+		displayChart.setAccelerator(KeyStroke.getKeyStroke("alt C"));
+		displayChart.setActionCommand("chartView");
+		displayChart.addActionListener(listener);
+		viewMenu.add(displayChart);
+		
 		viewMenu.validate();
 		add(viewMenu);
 		

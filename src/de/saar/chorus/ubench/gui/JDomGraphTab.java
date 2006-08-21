@@ -66,11 +66,10 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		
 		
-		
 		if(! (origin.isNormal() || origin.isWeaklyNormal())) {
 			empty = true;
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"The graph Ubench you are trying to load is not weakly normal.\n"
+					"The graph you are trying to load is not weakly normal.\n"
 					+ "Unfortunately, we can neither solve nor display\n " +
 					"graphs that are not at least weakly normal.",
 					"Graph is not weakly normal",

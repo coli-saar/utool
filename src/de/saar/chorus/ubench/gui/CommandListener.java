@@ -819,6 +819,8 @@ public class CommandListener implements ActionListener, ItemListener {
 							
 							
 						}
+					} else if(command.equals(("chartView"))) {
+						Ubench.getInstance().getVisibleTab().displayChart();
 					}
 			}
 		}

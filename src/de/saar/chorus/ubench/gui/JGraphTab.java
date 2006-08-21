@@ -4,6 +4,8 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -354,6 +356,13 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		}
 	}
 
+	
+	public void displayChart() {
+		Chart c = new Chart();
+		ChartSolver.solve(domGraph.compactify(),c);
+		ChartViewer cv = new ChartViewer(c, domGraph,
+				defaultName);
+	}
 	
 	/**
 	 * 
