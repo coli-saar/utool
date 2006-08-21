@@ -669,7 +669,7 @@ public class CommandListener implements ActionListener, ItemListener {
                             } 
                             
                             final File outputfile = new File(targetFile);
-                            System.err.println(outputfile.get)
+                            System.err.println(outputfile.getName());
                             recentPath = outputfile.getAbsolutePath();
                             
                    		 new Thread() {
