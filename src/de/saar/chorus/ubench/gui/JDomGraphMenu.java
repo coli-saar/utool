@@ -61,7 +61,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  print,
 					  loadExample,
 					  saveAll,
-					  displayChart;
+					  displayChart,
+					  displayCodecs;
     
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -284,6 +285,12 @@ public class JDomGraphMenu extends JMenuBar {
         helpMenu.setActionCommand("help");
         helpMenu.addActionListener(listener);
         helpMenu.setMnemonic(KeyEvent.VK_H);
+        
+        displayCodecs = new JMenuItem("Show all codecs...");
+        displayCodecs.setActionCommand("showcodecs");
+        displayCodecs.addActionListener(listener);
+        
+        helpMenu.add(displayCodecs);
         
         about = new JMenuItem("About...");
         about.setActionCommand("about");

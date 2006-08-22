@@ -9,6 +9,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -40,8 +41,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
@@ -821,6 +820,37 @@ public class CommandListener implements ActionListener, ItemListener {
 						}
 					} else if(command.equals(("chartView"))) {
 						Ubench.getInstance().getVisibleTab().displayChart();
+					} else if(command.equals("showcodecs")) {
+						JFrame cf = new JFrame("Codecs in Utool");
+						JLabel cp = new JLabel();
+						
+						StringBuffer codecList = new StringBuffer();
+						codecList.append("<html>Input Codecs:<br><br>" + 
+								"<table border=\"0\">");
+						for( GenericFileFilter filter : ffInputCodecs ) {
+							codecList.append("<tr><td>" + filter.desc+ "</td><td> ("
+									+ filter.getExtension() +
+									")</td></tr>");
+						}
+						codecList.append("</table><br><br><br>Output Codecs:<br><br>" + 
+								"<table border=\"0\">");
+						for( GenericFileFilter filter : ffOutputCodecs ) {
+							codecList.append("<tr><td>" + filter.desc+ "</td><td> ("
+									+ filter.getExtension() +
+									")</td></tr>");
+						}
+						
+						codecList.append("</ul></html>");
+						cp.setText(codecList.toString());
+						cp.setBorder(
+								BorderFactory.createEmptyBorder(
+										25,25,25,50));
+						cf.add(cp);
+						
+						cf.setAlwaysOnTop(true);
+						cf.pack();
+						cf.validate();
+						cf.setVisible(true);
 					}
 			}
 		}
