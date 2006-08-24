@@ -34,12 +34,14 @@ public class ChartViewer extends JFrame implements CaretListener {
 	private DomGraph dg;
 	private boolean splitMarked;
 	private Color myGreen;
+	private Color purple;
 	
 	ChartViewer(Chart c, DomGraph g, String title) {
 		super("Chart of " + title);
 		chart = c;
 		splitMarked = false;
 		myGreen = new Color(0,204,51);
+		purple = new Color(163,0,163);
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
@@ -182,13 +184,16 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    				
 		    			
 		    			for(DefaultEdge edg : graph.getOutEdges(gc)) {
-		    				graph.markEdge(edg, Color.blue);
+		    				
 		    				if(graph.getEdgeData(edg).getType() == 
 		    					EdgeType.dominance) {
+		    					graph.markEdge(edg, purple);
 		    					Fragment tgt = graph.getTargetFragment(edg);
 		    					if(tgt != null ) {
 		    						toMark.add(tgt);
 		    					}
+		    				} else {
+		    					graph.markEdge(edg, Color.blue);
 		    				}
 		    				
 		    			}
@@ -199,7 +204,13 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    					graph.markNode(gc
 			    					, Color.blue);
 	    					for(DefaultEdge edg : graph.getOutEdges(gc)) {
-	    						graph.markEdge(edg, Color.blue);
+	    						if(graph.getEdgeData(edg).getType() == 
+			    					EdgeType.dominance) {
+			    					graph.markEdge(edg, purple);
+			    					
+	    						} else {
+			    					graph.markEdge(edg, Color.blue);
+			    				}
 	    					}
 	    				}
 	    				
