@@ -220,8 +220,21 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    			splitMarked = false;
 	    		}
 	    	}
+	    	
+	    	
 
 	    }
+
+
+		@Override
+		public void setVisible(boolean b) {
+			super.setVisible(b);
+			Ubench.getInstance().
+			getVisibleTab().getGraph().setMarked(false);
+		}
+
+
+	
 
 
 
