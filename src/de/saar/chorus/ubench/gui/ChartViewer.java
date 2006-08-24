@@ -1,32 +1,45 @@
 package de.saar.chorus.ubench.gui;
 
-import java.awt.Font;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+
+import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.ubench.EdgeType;
+import de.saar.chorus.ubench.Fragment;
+import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.NodeType;
 
-public class ChartViewer extends JFrame {
+public class ChartViewer extends JFrame implements CaretListener {
 
+	
 	private JTextPane prettyprint;
 	private Chart chart;
 	private DomGraph dg;
-	
+	private boolean splitMarked;
 	
 	ChartViewer(Chart c, DomGraph g, String title) {
 		super("Chart of " + title);
 		chart = c;
+		splitMarked = false;
 		prettyprint = new JTextPane();
+		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
 		String textchart = chartOnlyRootsHTML(c,g);
 		StringBuffer htmlprint = new StringBuffer();
@@ -124,5 +137,93 @@ public class ChartViewer extends JFrame {
 	        return ret.toString();
 	    }
 	
+	    
+	    public void caretUpdate(CaretEvent e) {
+	    	String marked = prettyprint.getSelectedText();
+	    	if((marked != null ) && marked.matches("<.*>")) {
+	    		Ubench.getInstance().
+				getVisibleTab().getGraph().setMarked(false);
+	    		splitMarked = true;
+	    		System.err.println("Split marked.");
+	    		StringTokenizer tok = new StringTokenizer(marked," {},=<>");
+	    		String root;
+	    		List<String> remainingNodes = new ArrayList<String>();
+	    		if( tok.countTokens() > 0 ) {
+	    			root = tok.nextToken();
+	    			while(tok.hasMoreTokens()) {
+	    				remainingNodes.add(tok.nextToken());
+	    			}
+	    			
+	    			// TODO move that anywhere else (Tab?)
+	    			JDomGraph graph = Ubench.getInstance().
+	    					getVisibleTab().getGraph();
+	    			
+	    			DefaultGraphCell rootNode = graph.getNodeForName(root);
+	    			graph.markNode(rootNode
+	    					, Color.green);
+	    			System.err.println("Root node: " +root);
+	    			for(DefaultEdge edg : graph.getOutEdges(rootNode)) {
+	    				graph.markEdge(edg, Color.green);
+	    				
+	    			}
+	    			
+	    			Set<Fragment> toMark = new HashSet<Fragment>();
+	    			
+	    			for(String otherNode : remainingNodes) {
+	    				System.err.println("Node: " + otherNode);
+	    				DefaultGraphCell gc = graph.getNodeForName(otherNode);
+	    				System.err.println(gc);
+	    				if(graph.getNodeData(gc).getType() != NodeType.unlabelled) {
+	    					Fragment frag  = graph.findFragment(gc);
+	    					toMark.add(frag);
+	    				} else {
+	    					graph.markNode(gc, Color.blue);
+	    				}
+	    				
+		    			
+		    			for(DefaultEdge edg : graph.getOutEdges(gc)) {
+		    				graph.markEdge(edg, Color.blue);
+		    				if(graph.getEdgeData(edg).getType() == 
+		    					EdgeType.dominance) {
+		    					Fragment tgt = graph.getTargetFragment(edg);
+		    					if(tgt != null ) {
+		    						toMark.add(tgt);
+		    					}
+		    				}
+		    				
+		    			}
+	    			}
+	    			
+	    			for( Fragment frag : toMark ) {
+	    				for( DefaultGraphCell gc : frag.getNodes() ) {
+	    					graph.markNode(gc
+			    					, Color.blue);
+	    					for(DefaultEdge edg : graph.getOutEdges(gc)) {
+	    						graph.markEdge(edg, Color.blue);
+	    					}
+	    				}
+	    				
+	    				
+	    			}
+	    			
+	    			
+	    			
+	    			graph.computeLayout();
+	    			graph.adjustNodeWidths();
+	    			graph.setMarked(true);
+	    			
+	    		}
+	    	} else {
+	    		if( splitMarked ) {
+	    			Ubench.getInstance().
+						getVisibleTab().getGraph().setMarked(false);
+	    			splitMarked = false;
+	    		}
+	    	}
+
+	    }
+
+
+
 
 }
