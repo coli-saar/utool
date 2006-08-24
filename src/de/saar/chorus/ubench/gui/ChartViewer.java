@@ -173,9 +173,10 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    					getVisibleTab().getGraph();
 	    			
 	    			DefaultGraphCell rootNode = graph.getNodeForName(root);
-	    			graph.markNode(rootNode
-	    					, myGreen);
-	    			
+	    			for( DefaultGraphCell rfn : graph.findFragment(rootNode).getNodes() ) {
+	    				graph.markNode(rfn
+	    							, myGreen);
+	    			}
 	    			for(DefaultEdge edg : graph.getOutEdges(rootNode)) {
 	    				graph.markEdge(edg, myGreen);
 	    				
