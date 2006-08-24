@@ -29,10 +29,6 @@ import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.NodeType;
 
-
-
-
-
 /**
  * A <code>JFrame</code> containign a GUI for visualising a 
  * <code>Chart</code> of a dominance graph and 
@@ -46,14 +42,17 @@ import de.saar.chorus.ubench.NodeType;
  */
 public class ChartViewer extends JFrame implements CaretListener {
 
+	private JTextPane prettyprint; // Component for the text representation
 
-	private JTextPane prettyprint;	// Component for the text representation
-	private Chart chart;			// the chart itself
-	private DomGraph dg;			// the graph belonging to the chart
-	private boolean splitMarked;	// indicates whether or not a split is currently highlighted
+	private Chart chart; // the chart itself
+
+	private DomGraph dg; // the graph belonging to the chart
+
+	private boolean splitMarked; // indicates whether or not a split is currently highlighted
 
 	// redefining some colors
 	private Color myGreen;
+
 	private Color purple;
 
 	/**
@@ -69,8 +68,8 @@ public class ChartViewer extends JFrame implements CaretListener {
 		chart = c;
 		dg = g;
 		splitMarked = false;
-		myGreen = new Color(0,204,51);
-		purple = new Color(163,0,163);
+		myGreen = new Color(0, 204, 51);
+		purple = new Color(163, 0, 163);
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 
@@ -78,19 +77,20 @@ public class ChartViewer extends JFrame implements CaretListener {
 
 		/*
 		 * the label indicating the (only) 
-		 * functinolity.
+		 * functinality.
 		 * If we add more functionality, this should become
 		 * a menu.
 		 */
-		JLabel instruction = new JLabel("Mark a split to highlight it in the graph window.");
+		JLabel instruction = new JLabel(
+				"Mark a split to highlight it in the graph window.");
 
 		// computing the String representation of 
 		// the chart.
 		String textchart = chartOnlyRootsHTML();
 		StringBuffer htmlprint = new StringBuffer();
 
-		textchart = textchart.replace("[","{");
-		textchart = textchart.replace("]","}");
+		textchart = textchart.replace("[", "{");
+		textchart = textchart.replace("]", "}");
 
 		htmlprint.append(textchart);
 		prettyprint.setText(htmlprint.toString());
@@ -99,10 +99,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 		// layout
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
-		Dimension preferred = new Dimension(
-				(int) (Ubench.getInstance().getTabWidth()/1.5),
-				(int) Ubench.getInstance().getTabHeight()
-		);
+		Dimension preferred = new Dimension((int) (Ubench.getInstance()
+				.getTabWidth() / 1.5), (int) Ubench.getInstance()
+				.getTabHeight());
 		setPreferredSize(preferred);
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
@@ -111,39 +110,37 @@ public class ChartViewer extends JFrame implements CaretListener {
 		setVisible(true);
 	}
 
-
 	private String chartOnlyRootsHTML() {
 		StringBuffer ret = new StringBuffer();
 		Set<String> roots = dg.getAllRoots();
 		Set<Set<String>> visited = new HashSet<Set<String>>();
-		ret.append("<html><font face=\"Arial, Arial Black\" color=\"aqua\"><table border=\"0\">");
-		for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
+		ret
+				.append("<html><font face=\"Arial, Arial Black\" color=\"aqua\"><table border=\"0\">");
+		for (Set<String> fragset : chart.getToplevelSubgraphs()) {
 			ret.append(corSubgraph(fragset, roots, visited));
 		}
 		ret.append("</table></font></html>");
 		return ret.toString();
 	}
 
-
-
-	private String corSubgraph(Set<String> subgraph, Set<String> roots, Set<Set<String>> visited) {
+	private String corSubgraph(Set<String> subgraph, Set<String> roots,
+			Set<Set<String>> visited) {
 		Set<String> s = new HashSet<String>(subgraph);
 		StringBuffer ret = new StringBuffer();
 		boolean first = true;
 		String whitespace = "<td></td><td></td>";
 		Set<Set<String>> toVisit = new HashSet<Set<String>>();
 
-		if( !visited.contains(subgraph )) {
+		if (!visited.contains(subgraph)) {
 			visited.add(subgraph);
 
 			s.retainAll(roots);
 			String sgs = s.toString();
 
-
-			if( chart.getSplitsFor(subgraph) != null ) {
+			if (chart.getSplitsFor(subgraph) != null) {
 				ret.append("<tr>" + sgs + " <td>&#8594;</td><td> ");
-				for( Split split : chart.getSplitsFor(subgraph)) {
-					if( first ) {
+				for (Split split : chart.getSplitsFor(subgraph)) {
+					if (first) {
 						first = false;
 					} else {
 						ret.append(whitespace);
@@ -153,101 +150,93 @@ public class ChartViewer extends JFrame implements CaretListener {
 					toVisit.addAll(split.getAllSubgraphs());
 				}
 
-				for( Set<String> sub : toVisit ) {
+				for (Set<String> sub : toVisit) {
 					ret.append(corSubgraph(sub, roots, visited));
 				}
 			}
 
 			return ret.toString();
-		}
-		else {
+		} else {
 			return "";
 		}
 	}
 
-
-
 	private String corSplit(Split split, Set<String> roots) {
 		StringBuffer ret = new StringBuffer("&lt;" + split.getRootFragment());
-		Map<String,List<Set<String>>> map = new HashMap<String,List<Set<String>>> (); 
+		Map<String, List<Set<String>>> map = new HashMap<String, List<Set<String>>>();
 
-		for( String hole : split.getAllDominators() ) {
+		for (String hole : split.getAllDominators()) {
 			List<Set<String>> x = new ArrayList<Set<String>>();
 			map.put(hole, x);
 
-			for( Set<String> wcc : split.getWccs(hole) ) {
+			for (Set<String> wcc : split.getWccs(hole)) {
 				Set<String> copy = new HashSet<String>(wcc);
 				copy.retainAll(roots);
 				x.add(copy);
 			}
 		}
 
-
 		ret.append(" " + map);
 		ret.append("&gt;");
 		return ret.toString();
 	}
-
 
 	/**
 	 * 
 	 */
 	public void caretUpdate(CaretEvent e) {
 		String marked = prettyprint.getSelectedText();
-		
+
 		// a split is selected
-		if((marked != null ) && marked.matches("[ \t\n\f\r]*<.*>")) {
-			Ubench.getInstance().
-			getVisibleTab().getGraph().setMarked(false);
+		if ((marked != null) && marked.matches("[ \t\n\f\r]*<.*>")) {
+			Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 			splitMarked = true;
-			
+
 			// retrieving the split's nodes
-			StringTokenizer tok = new StringTokenizer(marked," {},=<>\t\n\f\r");
+			StringTokenizer tok = new StringTokenizer(marked, " {},=<>\t\n\f\r");
 			String root;
 			List<String> remainingNodes = new ArrayList<String>();
-			if( tok.countTokens() > 0 ) {
+			if (tok.countTokens() > 0) {
 				root = tok.nextToken();
-				while(tok.hasMoreTokens()) {
+				while (tok.hasMoreTokens()) {
 					remainingNodes.add(tok.nextToken());
 				}
 
 				// TODO move the following anywhere else (Tab?)
 				// changing the color of nodes and edges
-				JDomGraph graph = Ubench.getInstance().
-				getVisibleTab().getGraph();
+				JDomGraph graph = Ubench.getInstance().getVisibleTab()
+						.getGraph();
 
 				DefaultGraphCell rootNode = graph.getNodeForName(root);
-				for( DefaultGraphCell rfn : graph.findFragment(rootNode).getNodes() ) {
-					graph.markNode(rfn
-							, myGreen);
+				for (DefaultGraphCell rfn : graph.findFragment(rootNode)
+						.getNodes()) {
+					graph.markNode(rfn, myGreen);
 				}
-				for(DefaultEdge edg : graph.getOutEdges(rootNode)) {
+				for (DefaultEdge edg : graph.getOutEdges(rootNode)) {
 					graph.markEdge(edg, myGreen);
 
 				}
-				
+
 				// the prettyprint contains only roots, so we have
 				// to retrieve the other nodes of the fragments to
 				// mark.
 				Set<Fragment> toMark = new HashSet<Fragment>();
 
-				for(String otherNode : remainingNodes) {
+				for (String otherNode : remainingNodes) {
 					DefaultGraphCell gc = graph.getNodeForName(otherNode);
-					if(graph.getNodeData(gc).getType() != NodeType.unlabelled) {
-						Fragment frag  = graph.findFragment(gc);
+					if (graph.getNodeData(gc).getType() != NodeType.unlabelled) {
+						Fragment frag = graph.findFragment(gc);
 						toMark.add(frag);
 					} else {
 						graph.markNode(gc, Color.blue);
 					}
 
+					for (DefaultEdge edg : graph.getOutEdges(gc)) {
 
-					for(DefaultEdge edg : graph.getOutEdges(gc)) {
-
-						if(graph.getEdgeData(edg).getType() == 
-							EdgeType.dominance) {
+						if (graph.getEdgeData(edg).getType() == EdgeType.dominance) {
 							graph.markEdge(edg, purple);
 							Fragment tgt = graph.getTargetFragment(edg);
-							if(tgt != null ) {
+							if (tgt != null) {
 								toMark.add(tgt);
 							}
 						} else {
@@ -257,13 +246,11 @@ public class ChartViewer extends JFrame implements CaretListener {
 					}
 				}
 
-				for( Fragment frag : toMark ) {
-					for( DefaultGraphCell gc : frag.getNodes() ) {
-						graph.markNode(gc
-								, Color.blue);
-						for(DefaultEdge edg : graph.getOutEdges(gc)) {
-							if(graph.getEdgeData(edg).getType() == 
-								EdgeType.dominance) {
+				for (Fragment frag : toMark) {
+					for (DefaultGraphCell gc : frag.getNodes()) {
+						graph.markNode(gc, Color.blue);
+						for (DefaultEdge edg : graph.getOutEdges(gc)) {
+							if (graph.getEdgeData(edg).getType() == EdgeType.dominance) {
 								graph.markEdge(edg, purple);
 
 							} else {
@@ -272,10 +259,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 						}
 					}
 
-
 				}
-
-
 
 				graph.computeLayout();
 				graph.adjustNodeWidths();
@@ -283,17 +267,14 @@ public class ChartViewer extends JFrame implements CaretListener {
 
 			}
 		} else {
-			if( splitMarked ) {
-				Ubench.getInstance().
-				getVisibleTab().getGraph().setMarked(false);
+			if (splitMarked) {
+				Ubench.getInstance().getVisibleTab().getGraph()
+						.setMarked(false);
 				splitMarked = false;
 			}
 		}
 
-
-
 	}
-
 
 	/**
 	 * This overrides the "setVisible" method to 
@@ -305,14 +286,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	 */
 	public void setVisible(boolean b) {
 		super.setVisible(b);
-		Ubench.getInstance().
-		getVisibleTab().getGraph().setMarked(false);
+		Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 	}
-
-
-
-
-
-
 
 }
