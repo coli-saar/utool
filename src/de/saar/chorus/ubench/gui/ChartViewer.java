@@ -144,7 +144,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    		Ubench.getInstance().
 				getVisibleTab().getGraph().setMarked(false);
 	    		splitMarked = true;
-	    		System.err.println("Split marked.");
+	    		
 	    		StringTokenizer tok = new StringTokenizer(marked," {},=<>\t\n\f\r");
 	    		String root;
 	    		List<String> remainingNodes = new ArrayList<String>();
@@ -161,7 +161,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    			DefaultGraphCell rootNode = graph.getNodeForName(root);
 	    			graph.markNode(rootNode
 	    					, Color.green);
-	    			System.err.println("Root node: " +root);
+	    			
 	    			for(DefaultEdge edg : graph.getOutEdges(rootNode)) {
 	    				graph.markEdge(edg, Color.green);
 	    				
@@ -170,9 +170,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    			Set<Fragment> toMark = new HashSet<Fragment>();
 	    			
 	    			for(String otherNode : remainingNodes) {
-	    				System.err.println("Node: " + otherNode);
 	    				DefaultGraphCell gc = graph.getNodeForName(otherNode);
-	    				System.err.println(gc);
 	    				if(graph.getNodeData(gc).getType() != NodeType.unlabelled) {
 	    					Fragment frag  = graph.findFragment(gc);
 	    					toMark.add(frag);
