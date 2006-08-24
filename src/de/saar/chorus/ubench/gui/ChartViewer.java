@@ -140,12 +140,12 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    
 	    public void caretUpdate(CaretEvent e) {
 	    	String marked = prettyprint.getSelectedText();
-	    	if((marked != null ) && marked.matches("<.*>")) {
+	    	if((marked != null ) && marked.matches("[ \t\n\f\r]*<.*>")) {
 	    		Ubench.getInstance().
 				getVisibleTab().getGraph().setMarked(false);
 	    		splitMarked = true;
 	    		System.err.println("Split marked.");
-	    		StringTokenizer tok = new StringTokenizer(marked," {},=<>");
+	    		StringTokenizer tok = new StringTokenizer(marked," {},=<>\t\n\f\r");
 	    		String root;
 	    		List<String> remainingNodes = new ArrayList<String>();
 	    		if( tok.countTokens() > 0 ) {
