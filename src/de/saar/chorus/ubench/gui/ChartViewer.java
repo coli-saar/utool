@@ -1,5 +1,6 @@
 package de.saar.chorus.ubench.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
@@ -45,6 +47,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
+		JLabel instruction = new JLabel("Mark a split to highlight it in the graph window.");
 		String textchart = chartOnlyRootsHTML(g);
 		StringBuffer htmlprint = new StringBuffer();
 		
@@ -55,7 +58,8 @@ public class ChartViewer extends JFrame implements CaretListener {
 		prettyprint.setText(htmlprint.toString());
 		
 		prettyprint.setEditable(false);
-		add(new JScrollPane(prettyprint));
+		add(instruction, BorderLayout.NORTH);
+		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
 		
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
@@ -241,7 +245,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		public void setVisible(boolean b) {
 			super.setVisible(b);
 			Ubench.getInstance().
-			getVisibleTab().getGraph().setMarked(false);
+			 getVisibleTab().getGraph().setMarked(false);
 		}
 
 
