@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	ChartViewer(Chart c, DomGraph g, String title) {
 		super("Chart of " + title);
 		chart = c;
+		dg = g;
 		splitMarked = false;
 		myGreen = new Color(0,204,51);
 		purple = new Color(163,0,163);
@@ -48,7 +50,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
 		JLabel instruction = new JLabel("Mark a split to highlight it in the graph window.");
-		String textchart = chartOnlyRootsHTML(g);
+		String textchart = chartOnlyRootsHTML();
 		StringBuffer htmlprint = new StringBuffer();
 		
 		textchart = textchart.replace("[","{");
@@ -60,7 +62,11 @@ public class ChartViewer extends JFrame implements CaretListener {
 		prettyprint.setEditable(false);
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
-		
+		Dimension preferred = new Dimension(
+				(int) (Ubench.getInstance().getTabWidth()/1.5),
+				(int) Ubench.getInstance().getTabHeight()
+				);
+		setPreferredSize(preferred);
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
 		pack();
@@ -69,9 +75,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 	}
 	
 	
-	 private String chartOnlyRootsHTML(DomGraph g) {
+	 private String chartOnlyRootsHTML() {
 	        StringBuffer ret = new StringBuffer();
-	        Set<String> roots = g.getAllRoots();
+	        Set<String> roots = dg.getAllRoots();
 	        Set<Set<String>> visited = new HashSet<Set<String>>();
 	        ret.append("<html><font face=\"Arial, Arial Black\" color=\"aqua\"><table border=\"0\">");
 	        for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
@@ -162,7 +168,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    				remainingNodes.add(tok.nextToken());
 	    			}
 	    			
-	    			// TODO move that anywhere else (Tab?)
+	    			// TODO move the following anywhere else (Tab?)
 	    			JDomGraph graph = Ubench.getInstance().
 	    					getVisibleTab().getGraph();
 	    			
