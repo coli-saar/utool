@@ -33,11 +33,13 @@ public class ChartViewer extends JFrame implements CaretListener {
 	private Chart chart;
 	private DomGraph dg;
 	private boolean splitMarked;
+	private Color myGreen;
 	
 	ChartViewer(Chart c, DomGraph g, String title) {
 		super("Chart of " + title);
 		chart = c;
 		splitMarked = false;
+		myGreen = new Color(0,204,51);
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
@@ -160,10 +162,10 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    			
 	    			DefaultGraphCell rootNode = graph.getNodeForName(root);
 	    			graph.markNode(rootNode
-	    					, Color.green);
+	    					, myGreen);
 	    			
 	    			for(DefaultEdge edg : graph.getOutEdges(rootNode)) {
-	    				graph.markEdge(edg, Color.green);
+	    				graph.markEdge(edg, myGreen);
 	    				
 	    			}
 	    			
