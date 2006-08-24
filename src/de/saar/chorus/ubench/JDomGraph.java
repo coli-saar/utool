@@ -72,6 +72,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	
 	private boolean hnc;
 	
+	private boolean marked;
+	
 	private List<Set<DefaultGraphCell>> wccs;
 	
 	// This listener draws a popup menu when the right mouse button is ed.
@@ -142,7 +144,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		nodeToFragment = new HashMap<DefaultGraphCell,Fragment>();
 		dominanceEdges = new HashSet<DefaultEdge>();
 		edgeToFragment = new HashMap<DefaultEdge,Fragment>();
-		
+		marked = false;
 		// set up popup handling
 		popupListeners = new HashSet<DomGraphPopupListener>();
 		addMouseListener(new PopupListener());		
@@ -744,5 +746,74 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 */
 	public List<Set<DefaultGraphCell>> getWccs() {
 		return wccs;
+	}
+	
+	public void markNode(DefaultGraphCell node, Color color) {
+		GraphConstants.setForeground(getModel().getAttributes(node), 
+				color);
+		
+	}
+	
+	public void markEdge(DefaultEdge edge, Color color) {
+		GraphConstants.setLineColor(getModel().getAttributes(edge), 
+				color);
+		
+		
+	}
+	
+	public void setNodeMarked(DefaultGraphCell node, boolean b) {
+		if(b) {
+			GraphConstants.setForeground(getModel().getAttributes(node), 
+					Color.cyan);
+			GraphConstants.setBackground(getModel().getAttributes(node), 
+					Color.blue);
+		} else {
+			GraphConstants.setForeground(getModel().getAttributes(node), 
+					Color.black);
+			GraphConstants.setBackground(getModel().getAttributes(node), 
+					Color.white);
+		}
+	}
+	
+	public void setEdgeMarked(DefaultEdge edge, boolean b) {
+		EdgeType type = getEdgeData(edge).getType();
+		boolean isSolid = type == EdgeType.solid;
+		if(b) {
+			if( isSolid ) {
+			GraphConstants.setLineColor(getModel().getAttributes(edge), 
+					Color.blue);
+			} else {
+				GraphConstants.setLineColor(getModel().getAttributes(edge), 
+						Color.cyan);
+			}
+		} else {
+			
+			if( isSolid ) {
+			GraphConstants.setLineColor(getModel().getAttributes(edge), 
+					Color.black);
+			} else {
+				GraphConstants.setLineColor(getModel().getAttributes(edge), 
+						Color.red);
+			}
+		}
+	}
+	
+	public void setMarked(boolean b) {
+		if( (!b) && marked ) {
+			for( DefaultEdge edge : edges ) {
+				setEdgeMarked(edge, false);
+			}
+			for( DefaultGraphCell node : nodes ) {
+				setNodeMarked(node, false);
+			}
+			computeLayout();
+			adjustNodeWidths();
+			
+		}
+		marked = b;
+	}
+	
+	public boolean isMarked() {
+		return marked;
 	}
 }

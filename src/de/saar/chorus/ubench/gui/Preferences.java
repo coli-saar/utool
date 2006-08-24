@@ -26,6 +26,8 @@ public class Preferences implements Cloneable {
     // non-static fields: specific to each graph
     private boolean showLabels;
     
+    
+    
     // the global preferences
     private static Preferences master;
 
