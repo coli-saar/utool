@@ -41,7 +41,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 		prettyprint.setContentType("text/html");
-		String textchart = chartOnlyRootsHTML(c,g);
+		String textchart = chartOnlyRootsHTML(g);
 		StringBuffer htmlprint = new StringBuffer();
 		
 		textchart = textchart.replace("[","{");
@@ -61,13 +61,13 @@ public class ChartViewer extends JFrame implements CaretListener {
 	}
 	
 	
-	 private String chartOnlyRootsHTML(Chart ch, DomGraph g) {
+	 private String chartOnlyRootsHTML(DomGraph g) {
 	        StringBuffer ret = new StringBuffer();
 	        Set<String> roots = g.getAllRoots();
 	        Set<Set<String>> visited = new HashSet<Set<String>>();
 	        ret.append("<html><font face=\"Arial, Arial Black\" color=\"aqua\"><table border=\"0\">");
-	        for( Set<String> fragset : ch.getToplevelSubgraphs() ) {
-	            ret.append(corSubgraph(fragset, ch, roots, visited));
+	        for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
+	            ret.append(corSubgraph(fragset, roots, visited));
 	        }
 	        ret.append("</table></font></html>");
 	        return ret.toString();
@@ -75,7 +75,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	    
 
 
-	    private String corSubgraph(Set<String> subgraph, Chart ch, Set<String> roots, Set<Set<String>> visited) {
+	    private String corSubgraph(Set<String> subgraph, Set<String> roots, Set<Set<String>> visited) {
 	        Set<String> s = new HashSet<String>(subgraph);
 	        StringBuffer ret = new StringBuffer();
 	        boolean first = true;
@@ -89,9 +89,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 	            String sgs = s.toString();
 	            
 	            
-	            if( ch.getSplitsFor(subgraph) != null ) {
+	            if( chart.getSplitsFor(subgraph) != null ) {
 	                ret.append("<tr>" + sgs + " <td>&#8594;</td><td> ");
-	                for( Split split : ch.getSplitsFor(subgraph)) {
+	                for( Split split : chart.getSplitsFor(subgraph)) {
 	                    if( first ) {
 	                        first = false;
 	                    } else {
@@ -103,7 +103,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	                }
 	                
 	                for( Set<String> sub : toVisit ) {
-	                    ret.append(corSubgraph(sub, ch, roots, visited));
+	                    ret.append(corSubgraph(sub, roots, visited));
 	                }
 	            }
 	                
