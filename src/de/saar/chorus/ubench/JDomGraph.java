@@ -748,12 +748,22 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		return wccs;
 	}
 	
+	/**
+	 * 
+	 * @param node
+	 * @param color
+	 */
 	public void markNode(DefaultGraphCell node, Color color) {
 		GraphConstants.setForeground(getModel().getAttributes(node), 
 				color);
 		
 	}
 	
+	/**
+	 * 
+	 * @param edge
+	 * @param color
+	 */
 	public void markEdge(DefaultEdge edge, Color color) {
 		GraphConstants.setLineColor(getModel().getAttributes(edge), 
 				color);
@@ -761,6 +771,11 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 	}
 	
+	/**
+	 * 
+	 * @param node
+	 * @param b
+	 */
 	public void setNodeMarked(DefaultGraphCell node, boolean b) {
 		if(b) {
 			GraphConstants.setForeground(getModel().getAttributes(node), 
@@ -775,6 +790,12 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		}
 	}
 	
+	
+	/**
+	 * 
+	 * @param edge
+	 * @param b
+	 */
 	public void setEdgeMarked(DefaultEdge edge, boolean b) {
 		EdgeType type = getEdgeData(edge).getType();
 		boolean isSolid = type == EdgeType.solid;
@@ -798,6 +819,10 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		}
 	}
 	
+	/**
+	 * 
+	 * @param b
+	 */
 	public void setMarked(boolean b) {
 		if( (!b) && marked ) {
 			for( DefaultEdge edge : edges ) {
@@ -813,6 +838,10 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		marked = b;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public boolean isMarked() {
 		return marked;
 	}
