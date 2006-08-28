@@ -115,11 +115,11 @@ public class ChartViewer extends JFrame implements CaretListener {
 		Set<String> roots = dg.getAllRoots();
 		Set<Set<String>> visited = new HashSet<Set<String>>();
 		ret
-				.append("<html><font face=\"Arial, Arial Black\" color=\"aqua\"><table border=\"0\">");
+				.append("<html><table border=\"0\" style='font-family:Arial; ; font-size:9pt;'>");
 		for (Set<String> fragset : chart.getToplevelSubgraphs()) {
 			ret.append(corSubgraph(fragset, roots, visited));
 		}
-		ret.append("</table></font></html>");
+		ret.append("</table></html>");
 		return ret.toString();
 	}
 
