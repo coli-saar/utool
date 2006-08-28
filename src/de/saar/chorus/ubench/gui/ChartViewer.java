@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -54,6 +56,10 @@ public class ChartViewer extends JFrame implements CaretListener {
 	private Color myGreen;
 
 	private Color purple;
+	
+	private Color redbrown;
+	
+	private Color lightbrown;
 
 	/**
 	 * A new ChartViewer 
@@ -70,6 +76,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 		splitMarked = false;
 		myGreen = new Color(0, 204, 51);
 		purple = new Color(163, 0, 163);
+		lightbrown = new Color(255,153,51);
+		redbrown = new Color(255,51,51);
+		
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
 
@@ -114,8 +123,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		StringBuffer ret = new StringBuffer();
 		Set<String> roots = dg.getAllRoots();
 		Set<Set<String>> visited = new HashSet<Set<String>>();
-		ret
-				.append("<html><table border=\"0\" style='font-family:Arial; ; font-size:9pt;'>");
+		ret.append("<html><table border=\"0\" style='font-family:Arial; font-size:12pt; color:#000000'>");
 		for (Set<String> fragset : chart.getToplevelSubgraphs()) {
 			ret.append(corSubgraph(fragset, roots, visited));
 		}
@@ -186,21 +194,53 @@ public class ChartViewer extends JFrame implements CaretListener {
 	 */
 	public void caretUpdate(CaretEvent e) {
 		String marked = prettyprint.getSelectedText();
-
+		
+		
+		
 		// a split is selected
 		if ((marked != null) && marked.matches("[ \t\n\f\r]*<.*>")) {
 			Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 			splitMarked = true;
-
+			
 			// retrieving the split's nodes
-			StringTokenizer tok = new StringTokenizer(marked, " {},=<>\t\n\f\r");
+			
+			Pattern splitPat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}, (.+)=\\{\\{(.+)\\}\\}\\}>");
+			Matcher splitMatcher = splitPat.matcher(marked);
+			Set<String> blueBag = new HashSet<String>();
+			Set<String> redBag = new HashSet<String>();
+			//String blueHole;
+			//String redHole;
 			String root;
+			if( splitMatcher.find() ) {
+				root = splitMatcher.group(1);
+				//blueHole = splitMatcher.group(2);
+				
+				blueBag.add(splitMatcher.group(2));
+				StringTokenizer bluetok = new StringTokenizer(splitMatcher.group(3),
+						" {},=<>\t\n\f\r");
+				System.err.println(splitMatcher.group(3));
+				while( bluetok.hasMoreTokens() ) {
+					blueBag.add(bluetok.nextToken());
+				}
+				
+				//redHole = splitMatcher.group(4);
+				redBag.add(splitMatcher.group(4));
+				StringTokenizer redtok = new StringTokenizer(splitMatcher.group(5),
+				" {},=<>\t\n\f\r");
+				System.err.println(splitMatcher.group(5));
+				while( redtok.hasMoreTokens() ) {
+					redBag.add(redtok.nextToken());
+				}
+				
+				
+		/*	StringTokenizer tok = new StringTokenizer(marked, " {},=<>\t\n\f\r");
+			//String root;
 			List<String> remainingNodes = new ArrayList<String>();
 			if (tok.countTokens() > 0) {
 				root = tok.nextToken();
 				while (tok.hasMoreTokens()) {
 					remainingNodes.add(tok.nextToken());
-				}
+				}*/
 
 				// TODO move the following anywhere else (Tab?)
 				// changing the color of nodes and edges
@@ -208,58 +248,18 @@ public class ChartViewer extends JFrame implements CaretListener {
 						.getGraph();
 
 				DefaultGraphCell rootNode = graph.getNodeForName(root);
-				for (DefaultGraphCell rfn : graph.findFragment(rootNode)
-						.getNodes()) {
-					graph.markNode(rfn, myGreen);
-				}
+				graph.markNode(rootNode, myGreen);
+				
 				for (DefaultEdge edg : graph.getOutEdges(rootNode)) {
 					graph.markEdge(edg, myGreen);
 
 				}
+				
+				
+				graph.markWcc(blueBag, Color.BLUE, Color.BLUE);
+				graph.markWcc(redBag, purple, purple);
 
-				// the prettyprint contains only roots, so we have
-				// to retrieve the other nodes of the fragments to
-				// mark.
-				Set<Fragment> toMark = new HashSet<Fragment>();
-
-				for (String otherNode : remainingNodes) {
-					DefaultGraphCell gc = graph.getNodeForName(otherNode);
-					if (graph.getNodeData(gc).getType() != NodeType.unlabelled) {
-						Fragment frag = graph.findFragment(gc);
-						toMark.add(frag);
-					} else {
-						graph.markNode(gc, Color.blue);
-					}
-
-					for (DefaultEdge edg : graph.getOutEdges(gc)) {
-
-						if (graph.getEdgeData(edg).getType() == EdgeType.dominance) {
-							graph.markEdge(edg, purple);
-							Fragment tgt = graph.getTargetFragment(edg);
-							if (tgt != null) {
-								toMark.add(tgt);
-							}
-						} else {
-							graph.markEdge(edg, Color.blue);
-						}
-
-					}
-				}
-
-				for (Fragment frag : toMark) {
-					for (DefaultGraphCell gc : frag.getNodes()) {
-						graph.markNode(gc, Color.blue);
-						for (DefaultEdge edg : graph.getOutEdges(gc)) {
-							if (graph.getEdgeData(edg).getType() == EdgeType.dominance) {
-								graph.markEdge(edg, purple);
-
-							} else {
-								graph.markEdge(edg, Color.blue);
-							}
-						}
-					}
-
-				}
+								
 
 				graph.computeLayout();
 				graph.adjustNodeWidths();
@@ -275,6 +275,8 @@ public class ChartViewer extends JFrame implements CaretListener {
 		}
 
 	}
+	
+	
 
 	/**
 	 * This overrides the "setVisible" method to 
