@@ -845,4 +845,50 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	public boolean isMarked() {
 		return marked;
 	}
+	
+	public void markWcc(Set<String> roots, Color color, Color domEdgeColor) {
+		
+		
+		
+		Set<Fragment> toMark = new HashSet<Fragment>();
+		for (String otherNode : roots) {
+			System.err.println(otherNode);
+			DefaultGraphCell gc = getNodeForName(otherNode);
+			if (getNodeData(gc).getType() != NodeType.unlabelled) {
+				Fragment frag = findFragment(gc);
+				toMark.add(frag);
+			} else {
+				markNode(gc, color);
+			}
+
+			for (DefaultEdge edg : getOutEdges(gc)) {
+
+				if (getEdgeData(edg).getType() == EdgeType.dominance) {
+					markEdge(edg, domEdgeColor);
+					Fragment tgt = getTargetFragment(edg);
+					if (tgt != null) {
+						toMark.add(tgt);
+					}
+				} else {
+					markEdge(edg, color);
+				}
+
+			}
+		}
+
+		for (Fragment frag : toMark) {
+			for (DefaultGraphCell gc : frag.getNodes()) {
+				markNode(gc, color);
+				for (DefaultEdge edg : getOutEdges(gc)) {
+					if (getEdgeData(edg).getType() == EdgeType.dominance) {
+						markEdge(edg, domEdgeColor);
+
+					} else {
+						markEdge(edg, color);
+					}
+				}
+			}
+
+		}
+	}
 }
