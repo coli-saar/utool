@@ -247,6 +247,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 				JDomGraph graph = Ubench.getInstance().getVisibleTab()
 						.getGraph();
 
+				graph.markGraph(Color.LIGHT_GRAY);
 				DefaultGraphCell rootNode = graph.getNodeForName(root);
 				graph.markNode(rootNode, myGreen);
 				
