@@ -847,12 +847,10 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	}
 	
 	public void markWcc(Set<String> roots, Color color, Color domEdgeColor) {
-		
-		
-		
+				
 		Set<Fragment> toMark = new HashSet<Fragment>();
 		for (String otherNode : roots) {
-			System.err.println(otherNode);
+			
 			DefaultGraphCell gc = getNodeForName(otherNode);
 			if (getNodeData(gc).getType() != NodeType.unlabelled) {
 				Fragment frag = findFragment(gc);
@@ -890,5 +888,16 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			}
 
 		}
+	}
+	
+	public void markGraph(Color color) {
+		for( DefaultGraphCell node : nodes ) {
+			markNode(node, color);
+		}
+		
+		for( DefaultEdge edge : edges ) {
+			markEdge(edge, color);
+		}
+		setMarked(true);
 	}
 }
