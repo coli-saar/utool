@@ -218,7 +218,6 @@ public class ChartViewer extends JFrame implements CaretListener {
 				blueBag.add(splitMatcher.group(2));
 				StringTokenizer bluetok = new StringTokenizer(splitMatcher.group(3),
 						" {},=<>\t\n\f\r");
-				System.err.println(splitMatcher.group(3));
 				while( bluetok.hasMoreTokens() ) {
 					blueBag.add(bluetok.nextToken());
 				}
@@ -227,7 +226,6 @@ public class ChartViewer extends JFrame implements CaretListener {
 				redBag.add(splitMatcher.group(4));
 				StringTokenizer redtok = new StringTokenizer(splitMatcher.group(5),
 				" {},=<>\t\n\f\r");
-				System.err.println(splitMatcher.group(5));
 				while( redtok.hasMoreTokens() ) {
 					redBag.add(redtok.nextToken());
 				}
@@ -249,12 +247,17 @@ public class ChartViewer extends JFrame implements CaretListener {
 
 				graph.markGraph(Color.LIGHT_GRAY);
 				DefaultGraphCell rootNode = graph.getNodeForName(root);
-				graph.markNode(rootNode, myGreen);
-				
-				for (DefaultEdge edg : graph.getOutEdges(rootNode)) {
-					graph.markEdge(edg, myGreen);
-
+				Fragment rootFrag = graph.findFragment(rootNode);
+				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
+					graph.markNode(rfn, myGreen);
+					for( DefaultEdge edg : graph.getOutEdges(rfn) ) {
+						graph.markEdge(edg, myGreen);
+					}
 				}
+				
+				
+				
+				
 				
 				
 				graph.markWcc(blueBag, Color.BLUE, Color.BLUE);
