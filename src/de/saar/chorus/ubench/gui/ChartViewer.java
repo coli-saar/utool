@@ -43,24 +43,24 @@ import de.saar.chorus.ubench.NodeType;
  *
  */
 public class ChartViewer extends JFrame implements CaretListener {
-
+	
 	private JTextPane prettyprint; // Component for the text representation
-
+	
 	private Chart chart; // the chart itself
-
+	
 	private DomGraph dg; // the graph belonging to the chart
-
+	
 	private boolean splitMarked; // indicates whether or not a split is currently highlighted
-
+	
 	// redefining some colors
 	private Color myGreen;
-
+	
 	private Color purple;
 	
 	private Color redbrown;
 	
 	private Color lightbrown;
-
+	
 	/**
 	 * A new ChartViewer 
 	 * 
@@ -81,9 +81,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 		
 		prettyprint = new JTextPane();
 		prettyprint.addCaretListener(this);
-
+		
 		prettyprint.setContentType("text/html");
-
+		
 		/*
 		 * the label indicating the (only) 
 		 * functinality.
@@ -91,20 +91,20 @@ public class ChartViewer extends JFrame implements CaretListener {
 		 * a menu.
 		 */
 		JLabel instruction = new JLabel(
-				"Mark a split to highlight it in the graph window.");
-
+		"Mark a split to highlight it in the graph window.");
+		
 		// computing the String representation of 
 		// the chart.
 		String textchart = chartOnlyRootsHTML();
 		StringBuffer htmlprint = new StringBuffer();
-
+		
 		textchart = textchart.replace("[", "{");
 		textchart = textchart.replace("]", "}");
-
+		
 		htmlprint.append(textchart);
 		prettyprint.setText(htmlprint.toString());
 		prettyprint.setEditable(false);
-
+		
 		// layout
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
@@ -118,7 +118,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		validate();
 		setVisible(true);
 	}
-
+	
 	private String chartOnlyRootsHTML() {
 		StringBuffer ret = new StringBuffer();
 		Set<String> roots = dg.getAllRoots();
@@ -130,7 +130,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		ret.append("</table></html>");
 		return ret.toString();
 	}
-
+	
 	private String corSubgraph(Set<String> subgraph, Set<String> roots,
 			Set<Set<String>> visited) {
 		Set<String> s = new HashSet<String>(subgraph);
@@ -138,13 +138,13 @@ public class ChartViewer extends JFrame implements CaretListener {
 		boolean first = true;
 		String whitespace = "<td></td><td></td>";
 		Set<Set<String>> toVisit = new HashSet<Set<String>>();
-
+		
 		if (!visited.contains(subgraph)) {
 			visited.add(subgraph);
-
+			
 			s.retainAll(roots);
 			String sgs = s.toString();
-
+			
 			if (chart.getSplitsFor(subgraph) != null) {
 				ret.append("<tr>" + sgs + " <td>&#8594;</td><td> ");
 				for (Split split : chart.getSplitsFor(subgraph)) {
@@ -153,42 +153,42 @@ public class ChartViewer extends JFrame implements CaretListener {
 					} else {
 						ret.append(whitespace);
 					}
-
+					
 					ret.append(corSplit(split, roots) + "</td></tr>");
 					toVisit.addAll(split.getAllSubgraphs());
 				}
-
+				
 				for (Set<String> sub : toVisit) {
 					ret.append(corSubgraph(sub, roots, visited));
 				}
 			}
-
+			
 			return ret.toString();
 		} else {
 			return "";
 		}
 	}
-
+	
 	private String corSplit(Split split, Set<String> roots) {
 		StringBuffer ret = new StringBuffer("&lt;" + split.getRootFragment());
 		Map<String, List<Set<String>>> map = new HashMap<String, List<Set<String>>>();
-
+		
 		for (String hole : split.getAllDominators()) {
 			List<Set<String>> x = new ArrayList<Set<String>>();
 			map.put(hole, x);
-
+			
 			for (Set<String> wcc : split.getWccs(hole)) {
 				Set<String> copy = new HashSet<String>(wcc);
 				copy.retainAll(roots);
 				x.add(copy);
 			}
 		}
-
+		
 		ret.append(" " + map);
 		ret.append("&gt;");
 		return ret.toString();
 	}
-
+	
 	/**
 	 * 
 	 */
@@ -199,53 +199,62 @@ public class ChartViewer extends JFrame implements CaretListener {
 		
 		// a split is selected
 		if ((marked != null) && marked.matches("[ \t\n\f\r]*<.*>")) {
+			
 			Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 			splitMarked = true;
 			
 			// retrieving the split's nodes
 			
-			Pattern splitPat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}, (.+)=\\{\\{(.+)\\}\\}\\}>");
-			Matcher splitMatcher = splitPat.matcher(marked);
+			Pattern twoHolePat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}, (.+)=\\{\\{(.+)\\}\\}\\}>");
+			Matcher twoHoleMatcher = twoHolePat.matcher(marked);
+			
+			Pattern oneHolePat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}\\}>");
+			Matcher oneHoleMatcher = oneHolePat.matcher(marked);
+			
 			Set<String> blueBag = new HashSet<String>();
 			Set<String> redBag = new HashSet<String>();
 			//String blueHole;
 			//String redHole;
-			String root;
-			if( splitMatcher.find() ) {
-				root = splitMatcher.group(1);
+			String root = "";
+			if( twoHoleMatcher.find() ) {
+				root = twoHoleMatcher.group(1);
 				//blueHole = splitMatcher.group(2);
 				
-				blueBag.add(splitMatcher.group(2));
-				StringTokenizer bluetok = new StringTokenizer(splitMatcher.group(3),
-						" {},=<>\t\n\f\r");
+				blueBag.add(twoHoleMatcher.group(2));
+				StringTokenizer bluetok = new StringTokenizer(twoHoleMatcher.group(3),
+				" {},=<>\t\n\f\r");
 				while( bluetok.hasMoreTokens() ) {
 					blueBag.add(bluetok.nextToken());
 				}
 				
 				//redHole = splitMatcher.group(4);
-				redBag.add(splitMatcher.group(4));
-				StringTokenizer redtok = new StringTokenizer(splitMatcher.group(5),
+				redBag.add(twoHoleMatcher.group(4));
+				StringTokenizer redtok = new StringTokenizer(twoHoleMatcher.group(5),
 				" {},=<>\t\n\f\r");
 				while( redtok.hasMoreTokens() ) {
 					redBag.add(redtok.nextToken());
 				}
+			} else if( oneHoleMatcher.find()) {
 				
+				root = oneHoleMatcher.group(1);
 				
-		/*	StringTokenizer tok = new StringTokenizer(marked, " {},=<>\t\n\f\r");
-			//String root;
-			List<String> remainingNodes = new ArrayList<String>();
-			if (tok.countTokens() > 0) {
-				root = tok.nextToken();
-				while (tok.hasMoreTokens()) {
-					remainingNodes.add(tok.nextToken());
-				}*/
-
-				// TODO move the following anywhere else (Tab?)
-				// changing the color of nodes and edges
-				JDomGraph graph = Ubench.getInstance().getVisibleTab()
-						.getGraph();
-
-				graph.markGraph(Color.LIGHT_GRAY);
+				blueBag.add(oneHoleMatcher.group(2));
+				
+				StringTokenizer bluetok = new StringTokenizer(oneHoleMatcher.group(3),
+				" {},=<>\t\n\f\r");
+				while( bluetok.hasMoreTokens() ) {
+					blueBag.add(bluetok.nextToken());
+				}
+			}
+			
+			// TODO move the following anywhere else (Tab?)
+			// changing the color of nodes and edges
+			JDomGraph graph = Ubench.getInstance().getVisibleTab()
+			.getGraph();
+			
+			graph.markGraph(Color.LIGHT_GRAY);
+			
+			if(!root.equals("")) {
 				DefaultGraphCell rootNode = graph.getNodeForName(root);
 				Fragment rootFrag = graph.findFragment(rootNode);
 				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
@@ -254,34 +263,26 @@ public class ChartViewer extends JFrame implements CaretListener {
 						graph.markEdge(edg, myGreen);
 					}
 				}
-				
-				
-				
-				
-				
-				
-				graph.markWcc(blueBag, Color.BLUE, Color.BLUE);
-				graph.markWcc(redBag, purple, purple);
-
-								
-
-				graph.computeLayout();
-				graph.adjustNodeWidths();
-				graph.setMarked(true);
-
 			}
+			graph.markWcc(blueBag, Color.BLUE, Color.BLUE);
+			graph.markWcc(redBag, purple, purple);
+			
+			graph.computeLayout();
+			graph.adjustNodeWidths();
+			graph.setMarked(true);
+			
 		} else {
 			if (splitMarked) {
 				Ubench.getInstance().getVisibleTab().getGraph()
-						.setMarked(false);
+				.setMarked(false);
 				splitMarked = false;
 			}
 		}
-
+		
 	}
 	
 	
-
+	
 	/**
 	 * This overrides the "setVisible" method to 
 	 * make sure that the highlighting dissapperas when
@@ -294,5 +295,5 @@ public class ChartViewer extends JFrame implements CaretListener {
 		super.setVisible(b);
 		Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 	}
-
+	
 }
