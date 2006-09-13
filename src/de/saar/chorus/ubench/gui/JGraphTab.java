@@ -361,7 +361,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		Chart c = new Chart();
 		ChartSolver.solve(domGraph.compactify(),c);
 		ChartViewer cv = new ChartViewer(c, domGraph,
-				defaultName);
+				defaultName, graph);
 	}
 	
 	/**

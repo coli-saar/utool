@@ -49,6 +49,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 	private Chart chart; // the chart itself
 	
 	private DomGraph dg; // the graph belonging to the chart
+	private JDomGraph jdg; // the Graph to highlight the nodes in
 	
 	private boolean splitMarked; // indicates whether or not a split is currently highlighted
 	
@@ -68,11 +69,12 @@ public class ChartViewer extends JFrame implements CaretListener {
 	 * @param g
 	 * @param title
 	 */
-	ChartViewer(Chart c, DomGraph g, String title) {
+	ChartViewer(Chart c, DomGraph g, String title, JDomGraph jg) {
 		// some initialising
 		super("Chart of " + title);
 		chart = c;
 		dg = g;
+		jdg = jg;
 		splitMarked = false;
 		myGreen = new Color(0, 204, 51);
 		purple = new Color(163, 0, 163);
@@ -200,7 +202,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 		// a split is selected
 		if ((marked != null) && marked.matches("[ \t\n\f\r]*<.*>")) {
 			
-			Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
+			jdg.setMarked(false);
 			splitMarked = true;
 			
 			// retrieving the split's nodes
@@ -249,32 +251,29 @@ public class ChartViewer extends JFrame implements CaretListener {
 			
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
-			JDomGraph graph = Ubench.getInstance().getVisibleTab()
-			.getGraph();
-			
-			graph.markGraph(Color.LIGHT_GRAY);
+						
+			jdg.markGraph(Color.LIGHT_GRAY);
 			
 			if(!root.equals("")) {
-				DefaultGraphCell rootNode = graph.getNodeForName(root);
-				Fragment rootFrag = graph.findFragment(rootNode);
+				DefaultGraphCell rootNode = jdg.getNodeForName(root);
+				Fragment rootFrag = jdg.findFragment(rootNode);
 				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-					graph.markNode(rfn, myGreen);
-					for( DefaultEdge edg : graph.getOutEdges(rfn) ) {
-						graph.markEdge(edg, myGreen);
+					jdg.markNode(rfn, myGreen);
+					for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
+						jdg.markEdge(edg, myGreen);
 					}
 				}
 			}
-			graph.markWcc(blueBag, Color.BLUE, Color.BLUE);
-			graph.markWcc(redBag, purple, purple);
+			jdg.markWcc(blueBag, Color.BLUE, Color.BLUE);
+			jdg.markWcc(redBag, purple, purple);
 			
-			graph.computeLayout();
-			graph.adjustNodeWidths();
-			graph.setMarked(true);
+			jdg.computeLayout();
+			jdg.adjustNodeWidths();
+			jdg.setMarked(true);
 			
 		} else {
 			if (splitMarked) {
-				Ubench.getInstance().getVisibleTab().getGraph()
-				.setMarked(false);
+				jdg.setMarked(false);
 				splitMarked = false;
 			}
 		}
