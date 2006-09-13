@@ -57,7 +57,7 @@ public class ServerThread extends Thread {
 
     @Override
     public void run() {
-        parser = new XmlParser();
+        parser = new XmlParser(logger);
         AbstractOptions options = null;
 
         try {
