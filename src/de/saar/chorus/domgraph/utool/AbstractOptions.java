@@ -23,7 +23,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * @author Alexander Koller
  *
  */
-class AbstractOptions {
+public class AbstractOptions {
     public static enum Operation {
         // real operations
         solve      

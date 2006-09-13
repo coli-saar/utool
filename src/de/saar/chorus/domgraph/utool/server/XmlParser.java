@@ -5,9 +5,10 @@
  *  
  */
 
-package de.saar.chorus.domgraph.utool;
+package de.saar.chorus.domgraph.utool.server;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,12 +31,16 @@ import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.utool.AbstractOptions;
+import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
+import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 
 class XmlParser extends DefaultHandler {
     private CodecManager codecManager;
     private AbstractOptions options;
-    
+
+    private final static String EOF_MESSAGE = "successfully finished parsing one utool element";
 
     public XmlParser() {
         super();
@@ -45,7 +50,7 @@ class XmlParser extends DefaultHandler {
     }
 
 
-    public AbstractOptions parse(String xml)
+    public AbstractOptions parse(Reader xmlSource)
     throws AbstractOptionsParsingException {
         SAXParser saxParser;
         
@@ -53,11 +58,17 @@ class XmlParser extends DefaultHandler {
         
         try {
             saxParser = SAXParserFactory.newInstance().newSAXParser();
-            saxParser.parse( new InputSource(new StringReader(xml)), this );
+            saxParser.parse( new InputSource(xmlSource), this );
         } catch (ParserConfigurationException e) {
             throw new AbstractOptionsParsingException("An error occurred while initialising the XML parser!", e, ExitCodes.PARSER_CONFIGURATION_ERROR);
         } catch (SAXException e) {
-            if( (e.getException() != null) && (e.getException() instanceof AbstractOptionsParsingException) ) {
+            if( EOF_MESSAGE.equals(e.getMessage())) {
+                // Parsing finished successfully. This is an abuse of exceptions
+                // to abort parsing once one complete UTOOL element has been read.
+                
+                // NOP
+                
+            } else if( (e.getException() != null) && (e.getException() instanceof AbstractOptionsParsingException) ) {
                 throw (AbstractOptionsParsingException) e.getException();
             } else {
                 throw new AbstractOptionsParsingException("An error occurred while parsing the input!", e, ExitCodes.PARSING_ERROR_INPUT_GRAPH);
@@ -181,6 +192,15 @@ class XmlParser extends DefaultHandler {
         }
     }
     
+    
+    @Override
+    public void endElement(String uri, String localName, String qname) throws SAXException {
+        if( "utool".equals(qname)) {
+            throw new SAXException(EOF_MESSAGE);
+        }
+    }
+
+
     private String mydecode(String x) throws SAXException {
         try {
             return XmlEntities.decode(x);

@@ -375,53 +375,12 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
         }
 
         /**
-         * @param dominator The dominator to set.
-         */
-        public void setDominator(String dominator) {
-            this.dominator = dominator;
-        }
-
-        /**
          * @return Returns the edgeAccu.
          */
         public List<DomEdge> getEdgeAccu() {
             return edgeAccu;
         }
 
-        /**
-         * @param edgeAccu The edgeAccu to set.
-         */
-        public void setEdgeAccu(List<DomEdge> edgeAccu) {
-            this.edgeAccu = edgeAccu;
-        }
-
-        /**
-         * @return Returns the lastElement.
-         */
-        public Split getLastElement() {
-            return lastElement;
-        }
-
-        /**
-         * @param lastElement The lastElement to set.
-         */
-        public void setLastElement(Split lastElement) {
-            this.lastElement = lastElement;
-        }
-
-        /**
-         * @return Returns the splits.
-         */
-        public List<Split> getSplits() {
-            return splits;
-        }
-
-        /**
-         * @param splits The splits to set.
-         */
-        public void setSplits(List<Split> splits) {
-            this.splits = splits;
-        }
 
         /**
          * @return Returns the currentSplit.
@@ -430,12 +389,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
             return currentSplit;
         }
 
-        /**
-         * @param currentSplit The currentSplit to set.
-         */
-        public void setCurrentSplit(Split currentSplit) {
-            this.currentSplit = currentSplit;
-        }
 
         /**
          * @return Returns the agendaCopy.
@@ -444,12 +397,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
             return agendaCopy;
         }
 
-        /**
-         * @param agendaCopy The agendaCopy to set.
-         */
-        public void setAgendaCopy(Agenda agendaCopy) {
-            this.agendaCopy = agendaCopy;
-        }
         
         public String toString() {
             StringBuilder ret = new StringBuilder();
