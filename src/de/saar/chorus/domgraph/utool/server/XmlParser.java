@@ -39,11 +39,14 @@ import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 class XmlParser extends DefaultHandler {
     private CodecManager codecManager;
     private AbstractOptions options;
+    private Logger logger;
 
     private final static String EOF_MESSAGE = "successfully finished parsing one utool element";
 
-    public XmlParser() {
+    public XmlParser(Logger logger) {
         super();
+        
+        this.logger = logger;
         
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
@@ -85,6 +88,14 @@ class XmlParser extends DefaultHandler {
     }
     
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        // log the opening tag
+        StringBuffer buf = new StringBuffer("<" + qName );
+        for( int i = 0; i < attributes.getLength(); i++ ) {
+            buf.append(" " + attributes.getQName(i) + "='" + attributes.getValue(i) + "'");
+        }
+        buf.append(">");
+        logger.log(buf.toString());
+        
         if( qName.equals("utool") ) {
             String cmd = attributes.getValue("cmd");
     
@@ -195,6 +206,8 @@ class XmlParser extends DefaultHandler {
     
     @Override
     public void endElement(String uri, String localName, String qname) throws SAXException {
+        logger.log("</" + qname + ">");
+
         if( "utool".equals(qname)) {
             throw new SAXException(EOF_MESSAGE);
         }
