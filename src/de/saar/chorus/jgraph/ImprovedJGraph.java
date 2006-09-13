@@ -81,6 +81,7 @@ abstract public class ImprovedJGraph<NodeType,
         edgeCounter = 0;
         
         nodeFont = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN, 17);
+        //nodeFont = new Font("Arial Unicode MS", Font.PLAIN, 17);
         
         getModel().remove(JGraphUtilities.getAll(this));
         nodes.clear();

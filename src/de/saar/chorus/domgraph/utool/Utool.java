@@ -22,6 +22,7 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.gui.Ubench;
 
 /**
@@ -317,7 +318,7 @@ public class Utool {
             
         case server:
             try {
-                UtoolServer.startServer(options);
+                ConnectionManager.startServer(options);
             } catch(IOException e) {
                 System.err.println("An I/O error occurred while running the server: " + e);
                 System.exit(ExitCodes.SERVER_IO_ERROR);

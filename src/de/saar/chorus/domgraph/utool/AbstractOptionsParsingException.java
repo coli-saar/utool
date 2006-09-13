@@ -7,7 +7,7 @@
 
 package de.saar.chorus.domgraph.utool;
 
-class AbstractOptionsParsingException extends Exception {
+public class AbstractOptionsParsingException extends Exception {
     private int exitcode = 0;
     
     private boolean haveCause;
