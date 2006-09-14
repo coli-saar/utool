@@ -3,6 +3,9 @@ package de.saar.chorus.ubench.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,12 +16,14 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -26,10 +31,8 @@ import org.jgraph.graph.DefaultGraphCell;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.ubench.EdgeType;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.NodeType;
 
 /**
  * A <code>JFrame</code> containign a GUI for visualising a 
@@ -42,9 +45,9 @@ import de.saar.chorus.ubench.NodeType;
  * @author Alexander Koller
  *
  */
-public class ChartViewer extends JFrame implements CaretListener {
+public class ChartViewer extends JFrame implements ActionListener {
 	
-	private JTextPane prettyprint; // Component for the text representation
+	private JPanel prettyprint; // Component for the text representation
 	
 	private Chart chart; // the chart itself
 	
@@ -61,6 +64,8 @@ public class ChartViewer extends JFrame implements CaretListener {
 	private Color redbrown;
 	
 	private Color lightbrown;
+	
+	private ButtonGroup radioButtons;
 	
 	/**
 	 * A new ChartViewer 
@@ -81,10 +86,9 @@ public class ChartViewer extends JFrame implements CaretListener {
 		lightbrown = new Color(255,153,51);
 		redbrown = new Color(255,51,51);
 		
-		prettyprint = new JTextPane();
-		prettyprint.addCaretListener(this);
-		
-		prettyprint.setContentType("text/html");
+		GridLayout layout = new GridLayout(0,2);
+		prettyprint = new JPanel(layout);
+		radioButtons = new ButtonGroup();
 		
 		/*
 		 * the label indicating the (only) 
@@ -104,18 +108,18 @@ public class ChartViewer extends JFrame implements CaretListener {
 		textchart = textchart.replace("]", "}");
 		
 		htmlprint.append(textchart);
-		prettyprint.setText(htmlprint.toString());
-		prettyprint.setEditable(false);
+		
 		
 		// layout
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
-		Dimension preferred = new Dimension((int) (Ubench.getInstance()
-				.getTabWidth() / 1.5), (int) Ubench.getInstance()
-				.getTabHeight());
+		Dimension preferred = new Dimension((int) prettyprint.getPreferredSize().width, 
+				(int) (Ubench.getInstance().getTabHeight() * 0.75));
 		setPreferredSize(preferred);
+		
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
+		setLocationRelativeTo(Ubench.getInstance().getWindow());
 		pack();
 		validate();
 		setVisible(true);
@@ -148,31 +152,57 @@ public class ChartViewer extends JFrame implements CaretListener {
 			String sgs = s.toString();
 			
 			if (chart.getSplitsFor(subgraph) != null) {
+				JTextPane nextSubgraph = new JTextPane();
+				nextSubgraph.setContentType("text/html");
+				nextSubgraph.setEditable(false);
+				prettyprint.add(nextSubgraph);
+				
+				nextSubgraph.setText("<html><div style='font-family:Arial; font-size:13pt; color:#000000'>" +sgs + "  &#8594;</div></html>");
 				ret.append("<tr>" + sgs + " <td>&#8594;</td><td> ");
 				for (Split split : chart.getSplitsFor(subgraph)) {
 					if (first) {
 						first = false;
 					} else {
+						JTextPane empty = new JTextPane();
+						empty.setText("  ");
+						empty.setEditable(false);
+						prettyprint.add(empty);
 						ret.append(whitespace);
 					}
+					
+					String nextSplit = corSplit(split, roots);
+					JRadioButton splitButton = new JRadioButton(nextSplit);
+					splitButton.setActionCommand(nextSplit);
+					splitButton.addActionListener(this);
+					//splitButton.setHorizontalTextPosition(AbstractButton.LEADING);
+					splitButton.setBackground(Color.WHITE);
+					splitButton.setRolloverEnabled(true);
+					prettyprint.add(splitButton);
+					radioButtons.add(splitButton);
 					
 					ret.append(corSplit(split, roots) + "</td></tr>");
 					toVisit.addAll(split.getAllSubgraphs());
 				}
+
+				prettyprint.add(new JTextPane());
+				prettyprint.add(new JTextPane());
 				
 				for (Set<String> sub : toVisit) {
 					ret.append(corSubgraph(sub, roots, visited));
+
+					
 				}
 			}
 			
 			return ret.toString();
 		} else {
+			
 			return "";
 		}
 	}
 	
 	private String corSplit(Split split, Set<String> roots) {
-		StringBuffer ret = new StringBuffer("&lt;" + split.getRootFragment());
+		StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
 		Map<String, List<Set<String>>> map = new HashMap<String, List<Set<String>>>();
 		
 		for (String hole : split.getAllDominators()) {
@@ -187,14 +217,14 @@ public class ChartViewer extends JFrame implements CaretListener {
 		}
 		
 		ret.append(" " + map);
-		ret.append("&gt;");
+		ret.append(">");
 		return ret.toString();
 	}
 	
 	/**
 	 * 
 	 */
-	public void caretUpdate(CaretEvent e) {
+	/* public void caretUpdate(CaretEvent e) {
 		String marked = prettyprint.getSelectedText();
 		
 		
@@ -278,7 +308,7 @@ public class ChartViewer extends JFrame implements CaretListener {
 			}
 		}
 		
-	}
+	}*/
 	
 	
 	
@@ -294,5 +324,89 @@ public class ChartViewer extends JFrame implements CaretListener {
 		super.setVisible(b);
 		Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 	}
+
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		
+		String marked = e.getActionCommand();
+		System.err.println(marked);
+		jdg.setMarked(false);
+		splitMarked = true;
+		
+		// retrieving the split's nodes
+		
+		Pattern twoHolePat = Pattern.compile("<(.+) \\{(.+)=\\[\\[(.+)\\]\\], (.+)=\\[\\[(.+)\\]\\]\\}>");
+		Matcher twoHoleMatcher = twoHolePat.matcher(marked);
+		
+		Pattern oneHolePat = Pattern.compile("<(.+) \\{(.+)=\\[\\[(.+)\\]\\]\\}>");
+		Matcher oneHoleMatcher = oneHolePat.matcher(marked);
+		
+		Set<String> blueBag = new HashSet<String>();
+		Set<String> redBag = new HashSet<String>();
+		//String blueHole;
+		//String redHole;
+		String root = "";
+		if( twoHoleMatcher.find() ) {
+			
+			System.err.println(", has two holes.");
+			root = twoHoleMatcher.group(1);
+			//blueHole = splitMatcher.group(2);
+			
+			blueBag.add(twoHoleMatcher.group(2));
+			StringTokenizer bluetok = new StringTokenizer(twoHoleMatcher.group(3),
+			" {},=<>[]\t\n\f\r");
+			while( bluetok.hasMoreTokens() ) {
+				blueBag.add(bluetok.nextToken());
+			}
+			
+			//redHole = splitMatcher.group(4);
+			redBag.add(twoHoleMatcher.group(4));
+			StringTokenizer redtok = new StringTokenizer(twoHoleMatcher.group(5),
+			" {},=<>[]\t\n\f\r");
+			while( redtok.hasMoreTokens() ) {
+				redBag.add(redtok.nextToken());
+			}
+		} else if( oneHoleMatcher.find()) {
+			
+			root = oneHoleMatcher.group(1);
+			
+			blueBag.add(oneHoleMatcher.group(2));
+			
+			StringTokenizer bluetok = new StringTokenizer(oneHoleMatcher.group(3),
+			" {},=<>[]\t\n\f\r");
+			while( bluetok.hasMoreTokens() ) {
+				String next = bluetok.nextToken();
+				System.err.println(next +"\n");
+				blueBag.add(next);
+			}
+		}
+		
+		// TODO move the following anywhere else (Tab?)
+		// changing the color of nodes and edges
+					
+		jdg.markGraph(Color.LIGHT_GRAY);
+		
+		if(!root.equals("")) {
+			DefaultGraphCell rootNode = jdg.getNodeForName(root);
+			Fragment rootFrag = jdg.findFragment(rootNode);
+			for( DefaultGraphCell rfn : rootFrag.getNodes()) {
+				jdg.markNode(rfn, myGreen);
+				for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
+					jdg.markEdge(edg, myGreen);
+				}
+			}
+		}
+		jdg.markWcc(blueBag, Color.BLUE, Color.BLUE);
+		jdg.markWcc(redBag, purple, purple);
+		
+		jdg.computeLayout();
+		jdg.adjustNodeWidths();
+		jdg.setMarked(true);
+		
+	} 
+		
+	
 	
 }
