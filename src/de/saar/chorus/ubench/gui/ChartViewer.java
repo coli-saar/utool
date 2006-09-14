@@ -99,16 +99,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 		JLabel instruction = new JLabel(
 		"Mark a split to highlight it in the graph window.");
 		
-		// computing the String representation of 
-		// the chart.
-		String textchart = chartOnlyRootsHTML();
-		StringBuffer htmlprint = new StringBuffer();
-		
-		textchart = textchart.replace("[", "{");
-		textchart = textchart.replace("]", "}");
-		
-		htmlprint.append(textchart);
-		
+				
 		
 		// layout
 		add(instruction, BorderLayout.NORTH);
@@ -125,24 +116,22 @@ public class ChartViewer extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 	
-	private String chartOnlyRootsHTML() {
-		StringBuffer ret = new StringBuffer();
+	private void chartOnlyRootsHTML() {
+		
 		Set<String> roots = dg.getAllRoots();
 		Set<Set<String>> visited = new HashSet<Set<String>>();
-		ret.append("<html><table border=\"0\" style='font-family:Arial; font-size:12pt; color:#000000'>");
+		
 		for (Set<String> fragset : chart.getToplevelSubgraphs()) {
-			ret.append(corSubgraph(fragset, roots, visited));
+			corSubgraph(fragset, roots, visited);
 		}
-		ret.append("</table></html>");
-		return ret.toString();
+		
 	}
 	
-	private String corSubgraph(Set<String> subgraph, Set<String> roots,
+	private void corSubgraph(Set<String> subgraph, Set<String> roots,
 			Set<Set<String>> visited) {
 		Set<String> s = new HashSet<String>(subgraph);
-		StringBuffer ret = new StringBuffer();
 		boolean first = true;
-		String whitespace = "<td></td><td></td>";
+		
 		Set<Set<String>> toVisit = new HashSet<Set<String>>();
 		
 		if (!visited.contains(subgraph)) {
@@ -158,7 +147,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 				prettyprint.add(nextSubgraph);
 				
 				nextSubgraph.setText("<html><div style='font-family:Arial; font-size:13pt; color:#000000'>" +sgs + "  &#8594;</div></html>");
-				ret.append("<tr>" + sgs + " <td>&#8594;</td><td> ");
+				
 				for (Split split : chart.getSplitsFor(subgraph)) {
 					if (first) {
 						first = false;
@@ -167,7 +156,6 @@ public class ChartViewer extends JFrame implements ActionListener {
 						empty.setText("  ");
 						empty.setEditable(false);
 						prettyprint.add(empty);
-						ret.append(whitespace);
 					}
 					
 					String nextSplit = corSplit(split, roots);
@@ -179,8 +167,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 					splitButton.setRolloverEnabled(true);
 					prettyprint.add(splitButton);
 					radioButtons.add(splitButton);
-					
-					ret.append(corSplit(split, roots) + "</td></tr>");
+				
 					toVisit.addAll(split.getAllSubgraphs());
 				}
 
@@ -188,17 +175,10 @@ public class ChartViewer extends JFrame implements ActionListener {
 				prettyprint.add(new JTextPane());
 				
 				for (Set<String> sub : toVisit) {
-					ret.append(corSubgraph(sub, roots, visited));
-
-					
+					corSubgraph(sub, roots, visited);
 				}
 			}
-			
-			return ret.toString();
-		} else {
-			
-			return "";
-		}
+		} 
 	}
 	
 	private String corSplit(Split split, Set<String> roots) {
@@ -221,95 +201,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 		return ret.toString();
 	}
 	
-	/**
-	 * 
-	 */
-	/* public void caretUpdate(CaretEvent e) {
-		String marked = prettyprint.getSelectedText();
 		
-		
-		
-		// a split is selected
-		if ((marked != null) && marked.matches("[ \t\n\f\r]*<.*>")) {
-			
-			jdg.setMarked(false);
-			splitMarked = true;
-			
-			// retrieving the split's nodes
-			
-			Pattern twoHolePat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}, (.+)=\\{\\{(.+)\\}\\}\\}>");
-			Matcher twoHoleMatcher = twoHolePat.matcher(marked);
-			
-			Pattern oneHolePat = Pattern.compile("<(.+) \\{(.+)=\\{\\{(.+)\\}\\}\\}>");
-			Matcher oneHoleMatcher = oneHolePat.matcher(marked);
-			
-			Set<String> blueBag = new HashSet<String>();
-			Set<String> redBag = new HashSet<String>();
-			//String blueHole;
-			//String redHole;
-			String root = "";
-			if( twoHoleMatcher.find() ) {
-				root = twoHoleMatcher.group(1);
-				//blueHole = splitMatcher.group(2);
-				
-				blueBag.add(twoHoleMatcher.group(2));
-				StringTokenizer bluetok = new StringTokenizer(twoHoleMatcher.group(3),
-				" {},=<>\t\n\f\r");
-				while( bluetok.hasMoreTokens() ) {
-					blueBag.add(bluetok.nextToken());
-				}
-				
-				//redHole = splitMatcher.group(4);
-				redBag.add(twoHoleMatcher.group(4));
-				StringTokenizer redtok = new StringTokenizer(twoHoleMatcher.group(5),
-				" {},=<>\t\n\f\r");
-				while( redtok.hasMoreTokens() ) {
-					redBag.add(redtok.nextToken());
-				}
-			} else if( oneHoleMatcher.find()) {
-				
-				root = oneHoleMatcher.group(1);
-				
-				blueBag.add(oneHoleMatcher.group(2));
-				
-				StringTokenizer bluetok = new StringTokenizer(oneHoleMatcher.group(3),
-				" {},=<>\t\n\f\r");
-				while( bluetok.hasMoreTokens() ) {
-					blueBag.add(bluetok.nextToken());
-				}
-			}
-			
-			// TODO move the following anywhere else (Tab?)
-			// changing the color of nodes and edges
-						
-			jdg.markGraph(Color.LIGHT_GRAY);
-			
-			if(!root.equals("")) {
-				DefaultGraphCell rootNode = jdg.getNodeForName(root);
-				Fragment rootFrag = jdg.findFragment(rootNode);
-				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-					jdg.markNode(rfn, myGreen);
-					for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
-						jdg.markEdge(edg, myGreen);
-					}
-				}
-			}
-			jdg.markWcc(blueBag, Color.BLUE, Color.BLUE);
-			jdg.markWcc(redBag, purple, purple);
-			
-			jdg.computeLayout();
-			jdg.adjustNodeWidths();
-			jdg.setMarked(true);
-			
-		} else {
-			if (splitMarked) {
-				jdg.setMarked(false);
-				splitMarked = false;
-			}
-		}
-		
-	}*/
-	
 	
 	
 	/**
@@ -331,7 +223,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		
 		String marked = e.getActionCommand();
-		System.err.println(marked);
+		
 		jdg.setMarked(false);
 		splitMarked = true;
 		
@@ -378,7 +270,6 @@ public class ChartViewer extends JFrame implements ActionListener {
 			" {},=<>[]\t\n\f\r");
 			while( bluetok.hasMoreTokens() ) {
 				String next = bluetok.nextToken();
-				System.err.println(next +"\n");
 				blueBag.add(next);
 			}
 		}
