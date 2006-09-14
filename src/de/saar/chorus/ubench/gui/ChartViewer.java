@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,11 +17,12 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
@@ -96,7 +98,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 		 * a menu.
 		 */
 		JLabel instruction = new JLabel(
-		"Mark a split to highlight it in the graph window.");
+		"Click on a split to highlight it in the graph window.");
 		
 				
 		chartOnlyRootsHTML();
@@ -104,7 +106,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
 		Dimension preferred = new Dimension((int) prettyprint.getPreferredSize().width, 
-				(int) (Ubench.getInstance().getTabHeight() * 0.75));
+				(int) Ubench.getInstance().getTabHeight());
 		setPreferredSize(preferred);
 		
 		//TODO perhaps this isn't such a good idea...
@@ -158,14 +160,14 @@ public class ChartViewer extends JFrame implements ActionListener {
 					}
 					
 					String nextSplit = corSplit(split, roots);
-					JRadioButton splitButton = new JRadioButton(nextSplit);
+					JButton splitButton = new JButton(nextSplit);
 					splitButton.setActionCommand(nextSplit);
 					splitButton.addActionListener(this);
 					
 					splitButton.setBackground(Color.WHITE);
-				/*splitButton.setBorder(new BasicBorders.RadioButtonBorder(
-							Color.WHITE, Color.WHITE,
-							Color.BLUE, Color.ORANGE));*/
+					splitButton.setBorderPainted(false);
+					splitButton.setHorizontalAlignment(AbstractButton.LEFT);
+					splitButton.setMargin(new Insets(0,0,0,0));
 					splitButton.setRolloverEnabled(true);
 					prettyprint.add(splitButton);
 					radioButtons.add(splitButton);
@@ -244,7 +246,6 @@ public class ChartViewer extends JFrame implements ActionListener {
 		String root = "";
 		if( twoHoleMatcher.find() ) {
 			
-			System.err.println(", has two holes.");
 			root = twoHoleMatcher.group(1);
 			//blueHole = splitMatcher.group(2);
 			
