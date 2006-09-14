@@ -16,7 +16,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -100,7 +99,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 		"Mark a split to highlight it in the graph window.");
 		
 				
-		
+		chartOnlyRootsHTML();
 		// layout
 		add(instruction, BorderLayout.NORTH);
 		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
@@ -162,8 +161,11 @@ public class ChartViewer extends JFrame implements ActionListener {
 					JRadioButton splitButton = new JRadioButton(nextSplit);
 					splitButton.setActionCommand(nextSplit);
 					splitButton.addActionListener(this);
-					//splitButton.setHorizontalTextPosition(AbstractButton.LEADING);
+					
 					splitButton.setBackground(Color.WHITE);
+				/*splitButton.setBorder(new BasicBorders.RadioButtonBorder(
+							Color.WHITE, Color.WHITE,
+							Color.BLUE, Color.ORANGE));*/
 					splitButton.setRolloverEnabled(true);
 					prettyprint.add(splitButton);
 					radioButtons.add(splitButton);
