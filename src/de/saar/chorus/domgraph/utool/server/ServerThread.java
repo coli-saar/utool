@@ -10,11 +10,14 @@ package de.saar.chorus.domgraph.utool.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.Socket;
 import java.util.List;
 
+import de.saar.basic.Logger;
+import de.saar.basic.LoggingWriter;
 import de.saar.basic.XmlEncodingWriter;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
@@ -40,6 +43,7 @@ public class ServerThread extends Thread {
     private Socket socket;
     private XmlParser parser ;
     
+    
     public static void startServerThread(Socket socket, Logger logger) throws IOException {
         ServerThread thread = new ServerThread(socket, logger);
         thread.start();
@@ -49,10 +53,8 @@ public class ServerThread extends Thread {
         this.logger = logger;
         this.socket = socket;
         
-        out = new PrintWriter(socket.getOutputStream(), true);
+        out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent:"), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        
-        
     }
 
     @Override
@@ -61,7 +63,6 @@ public class ServerThread extends Thread {
         AbstractOptions options = null;
 
         try {
-        
             try {
                 options = parser.parse(in);
             } catch (AbstractOptionsParsingException e) {
@@ -70,20 +71,16 @@ public class ServerThread extends Thread {
                 socket.close();
                 return;
             }
-            
-            
-            
+
             processCommand(options);
-            
-            
+
             in.close();
             out.close();
             socket.close();
         } catch (IOException e) {
             logger.log("An I/O exception occurred while processing a command in the server:");
             logger.log(e.toString());
-        } 
-
+        }
 
     }
     
