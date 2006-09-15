@@ -5,11 +5,11 @@
  *  
  */
 
-package de.saar.chorus.domgraph.utool.server;
+package de.saar.basic;
 
 import java.io.PrintWriter;
 
-class Logger {
+public class Logger {
     private  boolean logging = false;
     private PrintWriter logTo = null;
     

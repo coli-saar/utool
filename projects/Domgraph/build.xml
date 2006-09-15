@@ -94,7 +94,9 @@
                debug="true"
                includes="${domgraph.allsourcefiles}"
                excludes="**/Test*.java"
-               source="1.5">
+               source="1.5"
+			fork="yes" memoryMaximumSize="512m"
+			>
 
 			<classpath>
 				<pathelement path="${build.classes}" />

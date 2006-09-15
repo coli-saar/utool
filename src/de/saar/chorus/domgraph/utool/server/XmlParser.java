@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.utool.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -21,6 +22,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import sun.security.pkcs.ParsingException;
+import de.saar.basic.Logger;
+import de.saar.basic.LoggingReader;
 import de.saar.basic.XmlDecodingException;
 import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -53,15 +56,17 @@ class XmlParser extends DefaultHandler {
     }
 
 
-    public AbstractOptions parse(Reader xmlSource)
+    public AbstractOptions parse(BufferedReader xmlSource)
     throws AbstractOptionsParsingException {
         SAXParser saxParser;
+        LoggingReader reader = null;
         
         options = new AbstractOptions();
         
         try {
             saxParser = SAXParserFactory.newInstance().newSAXParser();
-            saxParser.parse( new InputSource(xmlSource), this );
+            reader = new LoggingReader(new NonClosingBufferedReader(xmlSource), logger, "Received: ");
+            saxParser.parse( new InputSource(reader), this );
         } catch (ParserConfigurationException e) {
             throw new AbstractOptionsParsingException("An error occurred while initialising the XML parser!", e, ExitCodes.PARSER_CONFIGURATION_ERROR);
         } catch (SAXException e) {
@@ -70,6 +75,9 @@ class XmlParser extends DefaultHandler {
                 // to abort parsing once one complete UTOOL element has been read.
                 
                 // NOP
+                
+                reader.flushLog();
+                
                 
             } else if( (e.getException() != null) && (e.getException() instanceof AbstractOptionsParsingException) ) {
                 throw (AbstractOptionsParsingException) e.getException();
@@ -88,13 +96,14 @@ class XmlParser extends DefaultHandler {
     }
     
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        // log the opening tag
+        /* log the opening tag
         StringBuffer buf = new StringBuffer("<" + qName );
         for( int i = 0; i < attributes.getLength(); i++ ) {
             buf.append(" " + attributes.getQName(i) + "='" + attributes.getValue(i) + "'");
         }
         buf.append(">");
         logger.log(buf.toString());
+        */
         
         if( qName.equals("utool") ) {
             String cmd = attributes.getValue("cmd");
@@ -206,7 +215,7 @@ class XmlParser extends DefaultHandler {
     
     @Override
     public void endElement(String uri, String localName, String qname) throws SAXException {
-        logger.log("</" + qname + ">");
+        //logger.log("</" + qname + ">");
 
         if( "utool".equals(qname)) {
             throw new SAXException(EOF_MESSAGE);
@@ -267,5 +276,16 @@ class XmlParser extends DefaultHandler {
         return codecManager;
     }
 
+    
+    
+    private static class NonClosingBufferedReader extends BufferedReader
+    {
+        public NonClosingBufferedReader(Reader i) {
+            super(new BufferedReader(i));
+        }
+
+        public void close() {
+        }
+    }
 
 }
