@@ -53,7 +53,7 @@ public class ServerThread extends Thread {
         this.logger = logger;
         this.socket = socket;
         
-        out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent:"), true);
+        out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent: "), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
