@@ -3,6 +3,7 @@ package de.saar.chorus.ubench.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -147,7 +148,11 @@ public class ChartViewer extends JFrame implements ActionListener {
 				nextSubgraph.setEditable(false);
 				prettyprint.add(nextSubgraph);
 				
-				nextSubgraph.setText("<html><div style='font-family:Arial; font-size:13pt; color:#000000'>" +sgs + "  &#8594;</div></html>");
+				nextSubgraph.setText("<html content=\"text/html; " +
+						"charset=UTF-8\"><div style='" +
+						"font-size:15pt; color:#000000'>" +
+						"<font face=\"Arial Unicode MS\">" 
+						+sgs + "  &#8594;</font></div></html>");
 				
 				for (Split split : chart.getSplitsFor(subgraph)) {
 					if (first) {
@@ -169,6 +174,8 @@ public class ChartViewer extends JFrame implements ActionListener {
 					splitButton.setHorizontalAlignment(AbstractButton.LEFT);
 					splitButton.setMargin(new Insets(0,0,0,0));
 					splitButton.setRolloverEnabled(true);
+					splitButton.setFont(new Font("Arial Unicode MS", Font.PLAIN, 15));
+					
 					prettyprint.add(splitButton);
 					radioButtons.add(splitButton);
 				
