@@ -207,6 +207,21 @@ public class JDomGraphTab extends JGraphTab  {
 		this.isSolvedYet = isSolvedYet;
 	}
 	
+	public void displayChart() {
+		
+		 
+		if(! isSolvedYet) {
+			isSolvedYet = true;
+			chart = new Chart();
+			ChartSolver.solve(domGraph.compactify(), chart);
+			
+		}
+		
+		ChartViewer cv = new ChartViewer(chart, 
+				domGraph, defaultName, graph);
+		
+	}
+	
 	
 	/**
 	 * A <code>JPanel</code> representing a status bar for 
