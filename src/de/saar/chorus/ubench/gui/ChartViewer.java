@@ -69,7 +69,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	private Map<Split, String> nameToSplit;
 	private List<Split> orderedSplits;
-	private List<String> subgraphs;
+	private List<Set<String>> subgraphs;
 	private List<Integer> noOfSplits;
 	
 	/**
@@ -105,7 +105,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		radioButtons = new ButtonGroup();
 		nameToSplit = new HashMap<Split,String>();
-		subgraphs = new ArrayList<String>();
+		subgraphs = new ArrayList<Set<String>>();
 		noOfSplits = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
 		
@@ -176,15 +176,18 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						+sgs + "  &#8594;</font></div></html>");
 				
 				List<Split> splits = chart.getSplitsFor(subgraph);
-				subgraphs.add(sgs);
+				
 				noOfSplits.add(splits.size());
 				
 				int splitcount = 0;
 				for (Split split : splits ) {
+					subgraphs.add(subgraph);
 					splitcount++;
 					if (first) {
+						
 						first = false;
 					} else {
+		
 						JTextPane empty = new JTextPane();
 						empty.setText("  ");
 						empty.setEditable(false);
@@ -265,21 +268,21 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	public void valueChanged(ListSelectionEvent	 e) {
 		
 		
-		System.err.println("Clicked on Split: " + orderedSplits.get(
-				prettyprint.getSelectedColumn()));
 		
 		//String marked = orderedSplits.get(
 			//	prettyprint.getSelectedColumn());
 		
-		jdg.setMarked(false);
-		splitMarked = true;
 		
+		
+		if(prettyprint.getSelectedColumn() == 1 ) {
+			
+			System.err.println("Clicked on Split: " + orderedSplits.get(
+					prettyprint.getSelectedColumn()));
+			
 		Split selectedSplit = orderedSplits.get(
 				prettyprint.getSelectedColumn());
 		
 		// retrieving the split's nodes
-		
-		
 		
 		// TODO move the following anywhere else (Tab?)
 		// changing the color of nodes and edges
@@ -312,7 +315,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		}
 		colorindex = 0;
 		
-		
+		} else if (prettyprint.getSelectedColumn() == 0) {
+			Set<String> subgraph = subgraphs.get(
+					prettyprint.getSelectedRow());
+			jdg.markGraph(Color.LIGHT_GRAY);
+			jdg.markWcc(subgraph, colors.get(colorindex), 
+					colors.get(colorindex));
+		}
 		
 		jdg.computeLayout();
 		jdg.adjustNodeWidths();
