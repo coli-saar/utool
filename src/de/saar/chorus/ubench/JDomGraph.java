@@ -757,6 +757,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		GraphConstants.setForeground(getModel().getAttributes(node), 
 				color);
 		
+		
+		
 	}
 	
 	/**
@@ -831,8 +833,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			for( DefaultGraphCell node : nodes ) {
 				setNodeMarked(node, false);
 			}
-			computeLayout();
-			adjustNodeWidths();
 			
 		}
 		marked = b;
@@ -888,6 +888,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			}
 
 		}
+		
 	}
 	
 	public void markGraph(Color color) {

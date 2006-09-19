@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,7 +68,12 @@ public class ChartViewer extends JFrame implements ActionListener {
 	
 	private Color lightbrown;
 	
+	List<Color> colors;
+	int colorindex;
+	
 	private ButtonGroup radioButtons;
+	
+	private Map<String, Split> nameToSplit;
 	
 	/**
 	 * A new ChartViewer 
@@ -88,9 +94,18 @@ public class ChartViewer extends JFrame implements ActionListener {
 		lightbrown = new Color(255,153,51);
 		redbrown = new Color(255,51,51);
 		
+		colors = new ArrayList<Color>();
+		colors.add(Color.blue);
+		colors.add(purple);
+		colors.add(redbrown);
+		colors.add(lightbrown);
+		
+		colorindex = 0;
+		
 		GridLayout layout = new GridLayout(0,2);
 		prettyprint = new JPanel(layout);
 		radioButtons = new ButtonGroup();
+		nameToSplit = new TreeMap<String,Split>();
 		
 		/*
 		 * the label indicating the (only) 
@@ -165,6 +180,9 @@ public class ChartViewer extends JFrame implements ActionListener {
 					}
 					
 					String nextSplit = corSplit(split, roots);
+					
+					nameToSplit.put(nextSplit, split);
+					
 					JButton splitButton = new JButton(nextSplit);
 					splitButton.setActionCommand(nextSplit);
 					splitButton.addActionListener(this);
@@ -233,61 +251,26 @@ public class ChartViewer extends JFrame implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		
+		System.err.println("Clicked on Split: " + e.getActionCommand());
+		
 		String marked = e.getActionCommand();
 		
 		jdg.setMarked(false);
 		splitMarked = true;
 		
+		Split selectedSplit = nameToSplit.get(marked);
+		
 		// retrieving the split's nodes
 		
-		Pattern twoHolePat = Pattern.compile("<(.+) \\{(.+)=\\[\\[(.+)\\]\\], (.+)=\\[\\[(.+)\\]\\]\\}>");
-		Matcher twoHoleMatcher = twoHolePat.matcher(marked);
 		
-		Pattern oneHolePat = Pattern.compile("<(.+) \\{(.+)=\\[\\[(.+)\\]\\]\\}>");
-		Matcher oneHoleMatcher = oneHolePat.matcher(marked);
-		
-		Set<String> blueBag = new HashSet<String>();
-		Set<String> redBag = new HashSet<String>();
-		//String blueHole;
-		//String redHole;
-		String root = "";
-		if( twoHoleMatcher.find() ) {
-			
-			root = twoHoleMatcher.group(1);
-			//blueHole = splitMatcher.group(2);
-			
-			blueBag.add(twoHoleMatcher.group(2));
-			StringTokenizer bluetok = new StringTokenizer(twoHoleMatcher.group(3),
-			" {},=<>[]\t\n\f\r");
-			while( bluetok.hasMoreTokens() ) {
-				blueBag.add(bluetok.nextToken());
-			}
-			
-			//redHole = splitMatcher.group(4);
-			redBag.add(twoHoleMatcher.group(4));
-			StringTokenizer redtok = new StringTokenizer(twoHoleMatcher.group(5),
-			" {},=<>[]\t\n\f\r");
-			while( redtok.hasMoreTokens() ) {
-				redBag.add(redtok.nextToken());
-			}
-		} else if( oneHoleMatcher.find()) {
-			
-			root = oneHoleMatcher.group(1);
-			
-			blueBag.add(oneHoleMatcher.group(2));
-			
-			StringTokenizer bluetok = new StringTokenizer(oneHoleMatcher.group(3),
-			" {},=<>[]\t\n\f\r");
-			while( bluetok.hasMoreTokens() ) {
-				String next = bluetok.nextToken();
-				blueBag.add(next);
-			}
-		}
 		
 		// TODO move the following anywhere else (Tab?)
 		// changing the color of nodes and edges
 					
 		jdg.markGraph(Color.LIGHT_GRAY);
+		
+		Set<String> dominators = selectedSplit.getAllDominators();
+		String root = selectedSplit.getRootFragment();
 		
 		if(!root.equals("")) {
 			DefaultGraphCell rootNode = jdg.getNodeForName(root);
@@ -299,11 +282,24 @@ public class ChartViewer extends JFrame implements ActionListener {
 				}
 			}
 		}
-		jdg.markWcc(blueBag, Color.BLUE, Color.BLUE);
-		jdg.markWcc(redBag, purple, purple);
+		
+		for(String hole : dominators) {
+			
+			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
+			List<Set<String>> wccs = selectedSplit.getWccs(hole);
+			for( Set<String> wcc : wccs) {
+				wcc.add(hole);
+				jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+			}
+			colorindex++;
+		}
+		colorindex = 0;
+		
+		
 		
 		jdg.computeLayout();
 		jdg.adjustNodeWidths();
+		
 		jdg.setMarked(true);
 		
 	} 
