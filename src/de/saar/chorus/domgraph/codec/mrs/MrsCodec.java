@@ -224,9 +224,6 @@ class MrsCodec {
 				
 				// check that the dominance children of the edges are pairwise connected by hypernormal paths
 				
-				Set<String> rootSet = new TreeSet<String>(); 
-				rootSet.add(root);
-				
 				Object[] edgeArray = edges.toArray();
 				
 				for (int i = 0; i < edgeArray.length; ++i) {
@@ -234,6 +231,9 @@ class MrsCodec {
 						String ni = (String) ((Edge)edgeArray[i]).getTarget();
 						String nj = (String) ((Edge)edgeArray[j]).getTarget();
 					
+						Set<String> rootSet = new TreeSet<String>(); 
+						rootSet.add(root);
+						
 						if (! graph.isHypernormallyReachable(ni, nj, rootSet)) {
 							// XXX -- check error code
 							throw new MalformedDomgraphException(
@@ -243,7 +243,7 @@ class MrsCodec {
 						}
 					}
 				}
-						
+
 				Collection<String> holes = graph.getOpenHoles(root);
 				
 				if (holes.size() == 1) {
