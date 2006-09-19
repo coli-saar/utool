@@ -2,14 +2,12 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
@@ -118,14 +116,22 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		JLabel instruction = new JLabel(
 		"Click on a split to highlight it in the graph window.");
 		
-				
+		
 		chartOnlyRootsHTML();
 		// layout
 		add(instruction, BorderLayout.NORTH);
 		
 		prettyprint = new JTable(new ChartTableModel());
+		
+		prettyprint.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		prettyprint.setColumnSelectionAllowed(true);
+		prettyprint.setRowSelectionAllowed(true);
 		prettyprint.setCellSelectionEnabled(true);
 		prettyprint.getSelectionModel().addListSelectionListener(this);
+		
+		prettyprint.getColumnModel().getSelectionModel().addListSelectionListener(this);
+		
 		JScrollPane printPane = new JScrollPane(prettyprint);
 		add(printPane);
 		
@@ -167,7 +173,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				JTextPane nextSubgraph = new JTextPane();
 				nextSubgraph.setContentType("text/html");
 				nextSubgraph.setEditable(false);
-	//			prettyprint.add(nextSubgraph);
+				//			prettyprint.add(nextSubgraph);
 				
 				nextSubgraph.setText("<html content=\"text/html; " +
 						"charset=UTF-8\"><div style='" +
@@ -187,11 +193,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						
 						first = false;
 					} else {
-		
+						
 						JTextPane empty = new JTextPane();
 						empty.setText("  ");
 						empty.setEditable(false);
-					//	prettyprint.add(empty);
+						//	prettyprint.add(empty);
 					}
 					
 					String nextSplit = corSplit(split, roots);
@@ -199,25 +205,25 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					nameToSplit.put(split, splitcount + ". " + nextSplit);
 					orderedSplits.add(split);
 					
-	/*				JButton splitButton = new JButton(nextSplit);
-					splitButton.setActionCommand(nextSplit);
-					splitButton.addActionListener(this);
+					/*				JButton splitButton = new JButton(nextSplit);
+					 splitButton.setActionCommand(nextSplit);
+					 splitButton.addActionListener(this);
+					 
+					 splitButton.setBackground(Color.WHITE);
+					 splitButton.setBorderPainted(false);
+					 splitButton.setHorizontalAlignment(AbstractButton.LEFT);
+					 splitButton.setMargin(new Insets(0,0,0,0));
+					 splitButton.setRolloverEnabled(true);
+					 splitButton.setFont(new Font("Arial Unicode MS", Font.PLAIN, 15));
+					 
+					 prettyprint.add(splitButton);
+					 radioButtons.add(splitButton);*/
 					
-					splitButton.setBackground(Color.WHITE);
-					splitButton.setBorderPainted(false);
-					splitButton.setHorizontalAlignment(AbstractButton.LEFT);
-					splitButton.setMargin(new Insets(0,0,0,0));
-					splitButton.setRolloverEnabled(true);
-					splitButton.setFont(new Font("Arial Unicode MS", Font.PLAIN, 15));
-					
-					prettyprint.add(splitButton);
-					radioButtons.add(splitButton);*/
-				
 					toVisit.addAll(split.getAllSubgraphs());
 				}
-
-			//	prettyprint.add(new JTextPane());
-			//	prettyprint.add(new JTextPane());
+				
+				//	prettyprint.add(new JTextPane());
+				//	prettyprint.add(new JTextPane());
 				
 				for (Set<String> sub : toVisit) {
 					corSubgraph(sub, roots, visited);
@@ -246,7 +252,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		return ret.toString();
 	}
 	
-		
+	
 	
 	
 	/**
@@ -261,66 +267,65 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		super.setVisible(b);
 		Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void valueChanged(ListSelectionEvent	 e) {
 		
 		
-		
-		//String marked = orderedSplits.get(
-			//	prettyprint.getSelectedColumn());
-		
+		ListSelectionModel model = (ListSelectionModel) e.getSource();
 		
 		
 		if(prettyprint.getSelectedColumn() == 1 ) {
 			
-			System.err.println("Clicked on Split: " + orderedSplits.get(
-					prettyprint.getSelectedColumn()));
 			
-		Split selectedSplit = orderedSplits.get(
-				prettyprint.getSelectedColumn());
-		
-		// retrieving the split's nodes
-		
-		// TODO move the following anywhere else (Tab?)
-		// changing the color of nodes and edges
-					
-		jdg.markGraph(Color.LIGHT_GRAY);
-		
-		Set<String> dominators = selectedSplit.getAllDominators();
-		String root = selectedSplit.getRootFragment();
-		
-		if(!root.equals("")) {
-			DefaultGraphCell rootNode = jdg.getNodeForName(root);
-			Fragment rootFrag = jdg.findFragment(rootNode);
-			for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-				jdg.markNode(rfn, myGreen);
-				for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
-					jdg.markEdge(edg, myGreen);
+			Split selectedSplit = orderedSplits.get(
+					prettyprint.getSelectedColumn());
+			
+			// retrieving the split's nodes
+			
+			// TODO move the following anywhere else (Tab?)
+			// changing the color of nodes and edges
+			
+			jdg.markGraph(Color.LIGHT_GRAY);
+			
+			Set<String> dominators = selectedSplit.getAllDominators();
+			String root = selectedSplit.getRootFragment();
+			
+			if(!root.equals("")) {
+				DefaultGraphCell rootNode = jdg.getNodeForName(root);
+				Fragment rootFrag = jdg.findFragment(rootNode);
+				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
+					jdg.markNode(rfn, myGreen);
+					for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
+						jdg.markEdge(edg, myGreen);
+					}
 				}
 			}
-		}
-		
-		for(String hole : dominators) {
 			
-			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
-			List<Set<String>> wccs = selectedSplit.getWccs(hole);
-			for( Set<String> wcc : wccs) {
-				wcc.add(hole);
-				jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+			for(String hole : dominators) {
+				
+				//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
+				List<Set<String>> wccs = selectedSplit.getWccs(hole);
+				for( Set<String> wcc : wccs) {
+					wcc.add(hole);
+					jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+				}
+				colorindex++;
 			}
-			colorindex++;
-		}
-		colorindex = 0;
-		
+			colorindex = 0;
+			
 		} else if (prettyprint.getSelectedColumn() == 0) {
-			Set<String> subgraph = subgraphs.get(
-					prettyprint.getSelectedRow());
-			jdg.markGraph(Color.LIGHT_GRAY);
-			jdg.markWcc(subgraph, colors.get(colorindex), 
-					colors.get(colorindex));
+			int row = prettyprint.getSelectedRow();
+			
+			if(row > -1) {
+				Set<String> subgraph = subgraphs.get(
+						row);
+				jdg.markGraph(Color.LIGHT_GRAY);
+				jdg.markWcc(subgraph, colors.get(colorindex), 
+						colors.get(colorindex));
+			}
 		}
 		
 		jdg.computeLayout();
@@ -329,9 +334,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		jdg.setMarked(true);
 		
 	} 
-		
+	
 	class ChartTableModel extends AbstractTableModel {
-
+		
 		/* (non-Javadoc)
 		 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
 		 */
@@ -343,27 +348,27 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				return "Splits";
 			} else return "";
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see javax.swing.table.TableModel#getColumnCount()
 		 */
 		public int getColumnCount() {
 			return 2;
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see javax.swing.table.TableModel#getRowCount()
 		 */
 		public int getRowCount() {
-				return orderedSplits.size();
+			return orderedSplits.size();
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see javax.swing.table.TableModel#getValueAt(int, int)
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			if(columnIndex == 0) {
-			
+				
 				int splitcount = 0;
 				for(int i = 0; i < noOfSplits.size(); i++ ) {
 					if(rowIndex == splitcount) {
