@@ -2,31 +2,25 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -38,7 +32,7 @@ import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
- * A <code>JFrame</code> containign a GUI for visualising a 
+ * A <code>JFrame</code> containing a GUI for visualising a 
  * <code>Chart</code> of a dominance graph and 
  * highlighting parts of it in a <code>JDomGraph</code>.
  * 
@@ -48,10 +42,10 @@ import de.saar.chorus.ubench.JDomGraph;
  * @author Alexander Koller
  *
  */
-public class ChartViewer extends JFrame implements ActionListener {
+public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
-	private JPanel prettyprint; // Component for the text representation
-	
+	//private JPanel prettyprint; // Component for the text representation
+	private JTable prettyprint;
 	private Chart chart; // the chart itself
 	
 	private DomGraph dg; // the graph belonging to the chart
@@ -73,7 +67,10 @@ public class ChartViewer extends JFrame implements ActionListener {
 	
 	private ButtonGroup radioButtons;
 	
-	private Map<String, Split> nameToSplit;
+	private Map<Split, String> nameToSplit;
+	private List<Split> orderedSplits;
+	private List<String> subgraphs;
+	private List<Integer> noOfSplits;
 	
 	/**
 	 * A new ChartViewer 
@@ -97,15 +94,20 @@ public class ChartViewer extends JFrame implements ActionListener {
 		colors = new ArrayList<Color>();
 		colors.add(Color.blue);
 		colors.add(purple);
+		colors.add(Color.CYAN);
+		colors.add(Color.RED);
 		colors.add(redbrown);
 		colors.add(lightbrown);
 		
 		colorindex = 0;
 		
-		GridLayout layout = new GridLayout(0,2);
-		prettyprint = new JPanel(layout);
+		//GridLayout layout = new GridLayout(0,2);
+		
 		radioButtons = new ButtonGroup();
-		nameToSplit = new TreeMap<String,Split>();
+		nameToSplit = new HashMap<Split,String>();
+		subgraphs = new ArrayList<String>();
+		noOfSplits = new ArrayList<Integer>();
+		orderedSplits = new ArrayList<Split>();
 		
 		/*
 		 * the label indicating the (only) 
@@ -120,14 +122,18 @@ public class ChartViewer extends JFrame implements ActionListener {
 		chartOnlyRootsHTML();
 		// layout
 		add(instruction, BorderLayout.NORTH);
-		add(new JScrollPane(prettyprint), BorderLayout.CENTER);
-		Dimension preferred = new Dimension((int) prettyprint.getPreferredSize().width, 
-				(int) Ubench.getInstance().getTabHeight());
-		setPreferredSize(preferred);
+		
+		prettyprint = new JTable(new ChartTableModel());
+		prettyprint.setCellSelectionEnabled(true);
+		prettyprint.getSelectionModel().addListSelectionListener(this);
+		JScrollPane printPane = new JScrollPane(prettyprint);
+		add(printPane);
+		
+		
 		
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
-		setLocationRelativeTo(Ubench.getInstance().getWindow());
+		//setLocationRelativeTo(Ubench.getInstance().getWindow());
 		pack();
 		validate();
 		setVisible(true);
@@ -161,7 +167,7 @@ public class ChartViewer extends JFrame implements ActionListener {
 				JTextPane nextSubgraph = new JTextPane();
 				nextSubgraph.setContentType("text/html");
 				nextSubgraph.setEditable(false);
-				prettyprint.add(nextSubgraph);
+	//			prettyprint.add(nextSubgraph);
 				
 				nextSubgraph.setText("<html content=\"text/html; " +
 						"charset=UTF-8\"><div style='" +
@@ -169,21 +175,28 @@ public class ChartViewer extends JFrame implements ActionListener {
 						"<font face=\"Arial Unicode MS\">" 
 						+sgs + "  &#8594;</font></div></html>");
 				
-				for (Split split : chart.getSplitsFor(subgraph)) {
+				List<Split> splits = chart.getSplitsFor(subgraph);
+				subgraphs.add(sgs);
+				noOfSplits.add(splits.size());
+				
+				int splitcount = 0;
+				for (Split split : splits ) {
+					splitcount++;
 					if (first) {
 						first = false;
 					} else {
 						JTextPane empty = new JTextPane();
 						empty.setText("  ");
 						empty.setEditable(false);
-						prettyprint.add(empty);
+					//	prettyprint.add(empty);
 					}
 					
 					String nextSplit = corSplit(split, roots);
 					
-					nameToSplit.put(nextSplit, split);
+					nameToSplit.put(split, splitcount + ". " + nextSplit);
+					orderedSplits.add(split);
 					
-					JButton splitButton = new JButton(nextSplit);
+	/*				JButton splitButton = new JButton(nextSplit);
 					splitButton.setActionCommand(nextSplit);
 					splitButton.addActionListener(this);
 					
@@ -195,13 +208,13 @@ public class ChartViewer extends JFrame implements ActionListener {
 					splitButton.setFont(new Font("Arial Unicode MS", Font.PLAIN, 15));
 					
 					prettyprint.add(splitButton);
-					radioButtons.add(splitButton);
+					radioButtons.add(splitButton);*/
 				
 					toVisit.addAll(split.getAllSubgraphs());
 				}
 
-				prettyprint.add(new JTextPane());
-				prettyprint.add(new JTextPane());
+			//	prettyprint.add(new JTextPane());
+			//	prettyprint.add(new JTextPane());
 				
 				for (Set<String> sub : toVisit) {
 					corSubgraph(sub, roots, visited);
@@ -249,16 +262,20 @@ public class ChartViewer extends JFrame implements ActionListener {
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
-	public void actionPerformed(ActionEvent e) {
+	public void valueChanged(ListSelectionEvent	 e) {
 		
-		System.err.println("Clicked on Split: " + e.getActionCommand());
 		
-		String marked = e.getActionCommand();
+		System.err.println("Clicked on Split: " + orderedSplits.get(
+				prettyprint.getSelectedColumn()));
+		
+		//String marked = orderedSplits.get(
+			//	prettyprint.getSelectedColumn());
 		
 		jdg.setMarked(false);
 		splitMarked = true;
 		
-		Split selectedSplit = nameToSplit.get(marked);
+		Split selectedSplit = orderedSplits.get(
+				prettyprint.getSelectedColumn());
 		
 		// retrieving the split's nodes
 		
@@ -304,6 +321,58 @@ public class ChartViewer extends JFrame implements ActionListener {
 		
 	} 
 		
-	
+	class ChartTableModel extends AbstractTableModel {
+
+		/* (non-Javadoc)
+		 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+		 */
+		@Override
+		public String getColumnName(int column) {
+			if(column == 0) {
+				return "Subgraph";
+			} else if (column == 1) {
+				return "Splits";
+			} else return "";
+		}
+
+		/* (non-Javadoc)
+		 * @see javax.swing.table.TableModel#getColumnCount()
+		 */
+		public int getColumnCount() {
+			return 2;
+		}
+
+		/* (non-Javadoc)
+		 * @see javax.swing.table.TableModel#getRowCount()
+		 */
+		public int getRowCount() {
+				return orderedSplits.size();
+		}
+
+		/* (non-Javadoc)
+		 * @see javax.swing.table.TableModel#getValueAt(int, int)
+		 */
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			if(columnIndex == 0) {
+			
+				int splitcount = 0;
+				for(int i = 0; i < noOfSplits.size(); i++ ) {
+					if(rowIndex == splitcount) {
+						return subgraphs.get(i);
+					} else {
+						splitcount += noOfSplits.get(i);
+						if( rowIndex < splitcount ) {
+							return "";
+						}
+					}
+					
+				}			
+			} else {
+				return nameToSplit.get(orderedSplits.get(rowIndex));
+			}
+			return null;
+		}
+		
+	}
 	
 }
