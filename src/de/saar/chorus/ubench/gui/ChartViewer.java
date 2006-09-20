@@ -131,7 +131,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		chartOnlyRootsHTML();
 		// layout
-		add(instruction, BorderLayout.NORTH);
+		add(instruction);
 		
 		prettyprint = new JTable(new ChartTableModel());
 		
@@ -152,10 +152,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
-		//setLocationRelativeTo(Ubench.getInstance().getWindow());
+	
+		setLocationRelativeTo(Ubench.getInstance().getWindow());
+	
 		pack();
 		validate();
+	
+		
 		setVisible(true);
+		
 	}
 	
 	private void chartOnlyRootsHTML() {
