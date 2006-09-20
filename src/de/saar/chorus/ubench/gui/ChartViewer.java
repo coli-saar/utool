@@ -2,6 +2,8 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +21,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -69,6 +73,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private List<Split> orderedSplits;
 	private List<Set<String>> subgraphs;
 	private List<Integer> noOfSplits;
+	private List<Integer> splitNumbers;
+	
+	private String longestSplit;
+	private Set<String> biggestSubgraph;
+	private int lastIndex;
+	
 	
 	/**
 	 * A new ChartViewer 
@@ -106,6 +116,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		subgraphs = new ArrayList<Set<String>>();
 		noOfSplits = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
+		splitNumbers = new ArrayList<Integer>();
+		
 		
 		/*
 		 * the label indicating the (only) 
@@ -131,6 +143,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		prettyprint.getSelectionModel().addListSelectionListener(this);
 		
 		prettyprint.getColumnModel().getSelectionModel().addListSelectionListener(this);
+		initColumnSizes();
 		
 		JScrollPane printPane = new JScrollPane(prettyprint);
 		add(printPane);
@@ -153,6 +166,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		for (Set<String> fragset : chart.getToplevelSubgraphs()) {
 			corSubgraph(fragset, roots, visited);
 		}
+	
+		biggestSubgraph = subgraphs.get(0);
+	    lastIndex = orderedSplits.size();
 		
 	}
 	
@@ -170,24 +186,17 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			String sgs = s.toString();
 			
 			if (chart.getSplitsFor(subgraph) != null) {
-				JTextPane nextSubgraph = new JTextPane();
-				nextSubgraph.setContentType("text/html");
-				nextSubgraph.setEditable(false);
-				//			prettyprint.add(nextSubgraph);
 				
-				nextSubgraph.setText("<html content=\"text/html; " +
-						"charset=UTF-8\"><div style='" +
-						"font-size:15pt; color:#000000'>" +
-						"<font face=\"Arial Unicode MS\">" 
-						+sgs + "  &#8594;</font></div></html>");
 				
 				List<Split> splits = chart.getSplitsFor(subgraph);
-				
 				noOfSplits.add(splits.size());
 				
 				int splitcount = 0;
 				for (Split split : splits ) {
-					subgraphs.add(subgraph);
+					
+					
+					
+					subgraphs.add(s);
 					splitcount++;
 					if (first) {
 						
@@ -202,32 +211,33 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					
 					String nextSplit = corSplit(split, roots);
 					
-					nameToSplit.put(split, splitcount + ". " + nextSplit);
+					if( longestSplit == null ) {
+						longestSplit = nextSplit;
+					} else {
+						if(nextSplit.length() > 
+						longestSplit.length() ) {
+							longestSplit = nextSplit;
+						}
+					}
+					
+					nameToSplit.put(split, nextSplit);
+					splitNumbers.add(splitcount);
 					orderedSplits.add(split);
 					
-					/*				JButton splitButton = new JButton(nextSplit);
-					 splitButton.setActionCommand(nextSplit);
-					 splitButton.addActionListener(this);
-					 
-					 splitButton.setBackground(Color.WHITE);
-					 splitButton.setBorderPainted(false);
-					 splitButton.setHorizontalAlignment(AbstractButton.LEFT);
-					 splitButton.setMargin(new Insets(0,0,0,0));
-					 splitButton.setRolloverEnabled(true);
-					 splitButton.setFont(new Font("Arial Unicode MS", Font.PLAIN, 15));
-					 
-					 prettyprint.add(splitButton);
-					 radioButtons.add(splitButton);*/
+					
 					
 					toVisit.addAll(split.getAllSubgraphs());
 				}
+				subgraphs.add(new HashSet<String>());
+				orderedSplits.add(null);
+				noOfSplits.add(1);
+				splitNumbers.add(0);
 				
-				//	prettyprint.add(new JTextPane());
-				//	prettyprint.add(new JTextPane());
 				
 				for (Set<String> sub : toVisit) {
 					corSubgraph(sub, roots, visited);
 				}
+				
 			}
 		} 
 	}
@@ -273,59 +283,67 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	public void valueChanged(ListSelectionEvent	 e) {
 		
+		int row = prettyprint.getSelectedRow();
+		int col = prettyprint.getSelectedColumn();
 		
-		ListSelectionModel model = (ListSelectionModel) e.getSource();
 		
-		
-		if(prettyprint.getSelectedColumn() == 1 ) {
+		if( (col >= 1) && (row > -1)  ) {
 			
 			
 			Split selectedSplit = orderedSplits.get(
-					prettyprint.getSelectedColumn());
+					prettyprint.getSelectedRow());
 			
 			// retrieving the split's nodes
 			
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
-			
-			jdg.markGraph(Color.LIGHT_GRAY);
-			
-			Set<String> dominators = selectedSplit.getAllDominators();
-			String root = selectedSplit.getRootFragment();
-			
-			if(!root.equals("")) {
-				DefaultGraphCell rootNode = jdg.getNodeForName(root);
-				Fragment rootFrag = jdg.findFragment(rootNode);
-				for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-					jdg.markNode(rfn, myGreen);
-					for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
-						jdg.markEdge(edg, myGreen);
+			if(selectedSplit != null ) {
+				jdg.markGraph(Color.LIGHT_GRAY);
+				
+				Set<String> dominators = selectedSplit.getAllDominators();
+				String root = selectedSplit.getRootFragment();
+				
+				if(!root.equals("")) {
+					DefaultGraphCell rootNode = jdg.getNodeForName(root);
+					Fragment rootFrag = jdg.findFragment(rootNode);
+					for( DefaultGraphCell rfn : rootFrag.getNodes()) {
+						jdg.markNode(rfn, myGreen);
+						for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
+							jdg.markEdge(edg, myGreen);
+						}
 					}
 				}
-			}
-			
-			for(String hole : dominators) {
 				
-				//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
-				List<Set<String>> wccs = selectedSplit.getWccs(hole);
-				for( Set<String> wcc : wccs) {
-					wcc.add(hole);
-					jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+				for(String hole : dominators) {
+					
+					//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
+					List<Set<String>> wccs = selectedSplit.getWccs(hole);
+					for( Set<String> wcc : wccs) {
+						wcc.add(hole);
+						jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+					}
+					colorindex++;
 				}
-				colorindex++;
+				colorindex = 0;
+			} else {
+				jdg.setMarked(false);
 			}
-			colorindex = 0;
 			
-		} else if (prettyprint.getSelectedColumn() == 0) {
-			int row = prettyprint.getSelectedRow();
-			
+		} else if (col == 0) {
 			if(row > -1) {
 				Set<String> subgraph = subgraphs.get(
 						row);
-				jdg.markGraph(Color.LIGHT_GRAY);
-				jdg.markWcc(subgraph, colors.get(colorindex), 
-						colors.get(colorindex));
+				
+				if( ! subgraph.isEmpty() ) {
+					jdg.markGraph(Color.LIGHT_GRAY);
+					jdg.markWcc(subgraph, colors.get(colorindex), 
+							colors.get(colorindex));
+				} else {
+					jdg.setMarked(false);
+				}
 			}
+		} else {
+			jdg.setMarked(false);
 		}
 		
 		jdg.computeLayout();
@@ -334,6 +352,38 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		jdg.setMarked(true);
 		
 	} 
+	
+	private void initColumnSizes() {
+        AbstractTableModel model = (ChartTableModel)prettyprint.getModel();
+        TableColumn column = null;
+        Component comp = null;
+        int headerWidth = 0;
+        int cellWidth = 0;
+        Object[] longValues = {biggestSubgraph, lastIndex, longestSplit};
+        
+        TableCellRenderer headerRenderer =
+        	prettyprint.getTableHeader().getDefaultRenderer();
+
+        for (int i = 0; i < 3; i++) {
+            column = prettyprint.getColumnModel().getColumn(i);
+
+            comp = headerRenderer.getTableCellRendererComponent(
+                                 null, column.getHeaderValue(),
+                                 false, false, 0, 0);
+            headerWidth = comp.getPreferredSize().width;
+
+            
+            comp = prettyprint.getDefaultRenderer(model.getColumnClass(i)).
+                             getTableCellRendererComponent(
+                            		 prettyprint, longValues[i],
+                                 false, false, 0, i);
+            cellWidth = comp.getPreferredSize().width;
+
+                      
+            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
+        }
+    }
+	
 	
 	class ChartTableModel extends AbstractTableModel {
 		
@@ -345,6 +395,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			if(column == 0) {
 				return "Subgraph";
 			} else if (column == 1) {
+				return "No.";
+			} else if( column == 2 ) {
 				return "Splits";
 			} else return "";
 		}
@@ -353,7 +405,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		 * @see javax.swing.table.TableModel#getColumnCount()
 		 */
 		public int getColumnCount() {
-			return 2;
+			return 3;
 		}
 		
 		/* (non-Javadoc)
@@ -367,25 +419,40 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		 * @see javax.swing.table.TableModel#getValueAt(int, int)
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex) {
+			
 			if(columnIndex == 0) {
 				
-				int splitcount = 0;
-				for(int i = 0; i < noOfSplits.size(); i++ ) {
-					if(rowIndex == splitcount) {
-						return subgraphs.get(i);
-					} else {
-						splitcount += noOfSplits.get(i);
-						if( rowIndex < splitcount ) {
-							return "";
-						}
-					}
-					
-				}			
-			} else {
-				return nameToSplit.get(orderedSplits.get(rowIndex));
+				Set<String> toShow = subgraphs.get(rowIndex);
+				if(splitNumbers.get(rowIndex) == 1) {
+					return toShow;
+				} else {
+					return "";
+				}
+				
+				
+			} else if(columnIndex == 2) {
+				Split next = orderedSplits.get(rowIndex);
+				
+				if( next != null) {
+					return  nameToSplit.get(next);
+				} else {
+					return " ";
+				}
+			} else if(columnIndex == 1) {
+				Integer splitnumber = splitNumbers.get(rowIndex);
+				if(splitnumber == 0) {
+					return null;
+				}
+				else {
+					return splitnumber;
+				}
 			}
 			return null;
 		}
+		
+		 public Class getColumnClass(int c) {
+		        return getValueAt(0, c).getClass();
+		    }
 		
 	}
 	
