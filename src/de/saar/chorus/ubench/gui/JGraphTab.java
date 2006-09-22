@@ -11,6 +11,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 
 /**
@@ -62,10 +63,15 @@ public abstract class JGraphTab extends JScrollableJGraph {
 
 	// the listener
 	protected CommandListener listener;
+	
+	protected ChartViewer cv;
 
 	// the tabs have to define their clone-methods themselves
 	public abstract JGraphTab clone();
 
+	
+	
+	
 	/**
 	 * A new <code>JGraphTab</code>
 	 * 
@@ -360,7 +366,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	public void displayChart() {
 		Chart c = new Chart();
 		ChartSolver.solve(domGraph.compactify(),c);
-		ChartViewer cv = new ChartViewer(c, domGraph,
+		cv = new ChartViewer(c, domGraph,
 				defaultName, graph);
 	}
 	
@@ -371,5 +377,19 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	public boolean isEmpty() {
 		return empty;
 	}
+
+
+	/**
+	 * @return Returns the hasActiveChartViewer.
+	 */
+	public boolean hasVisibleChartViewer() {
+		return (cv != null  && cv.isVisible() == true);
+	}
+
+	public void focusChart() {
+		if(cv != null) 
+			cv.toFront();
+	}
+	
 
 }

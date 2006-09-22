@@ -112,8 +112,14 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 	 * Just causes refreshing all visible GUI components.
 	 */
 	public void stateChanged(ChangeEvent e) {
-      if ( ! (Ubench.getInstance().getVisibleTab() == null) ) {
-		  Ubench.getInstance().refresh();
+		
+		JGraphTab visibleTab = Ubench.getInstance().getVisibleTab();
+		
+      if ( ! (visibleTab == null) ) {
+    	  Ubench.getInstance().refresh();
+		  if(visibleTab.hasVisibleChartViewer()) {
+			  visibleTab.focusChart();
+		  }
 		  validate();
       }
    }

@@ -6,6 +6,7 @@ package de.saar.chorus.ubench;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -23,9 +24,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
@@ -75,6 +78,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	private boolean marked;
 	
 	private List<Set<DefaultGraphCell>> wccs;
+	
 	
 	// This listener draws a popup menu when the right mouse button is ed.
 	private class PopupListener extends MouseAdapter {
@@ -748,157 +752,5 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		return wccs;
 	}
 	
-	/**
-	 * 
-	 * @param node
-	 * @param color
-	 */
-	public void markNode(DefaultGraphCell node, Color color) {
-		GraphConstants.setForeground(getModel().getAttributes(node), 
-				color);
-		
-		
-	}
 	
-	/**
-	 * 
-	 * @param edge
-	 * @param color
-	 */
-	public void markEdge(DefaultEdge edge, Color color) {
-		GraphConstants.setLineColor(getModel().getAttributes(edge), 
-				color);
-		
-		
-	}
-	
-	/**
-	 * 
-	 * @param node
-	 * @param b
-	 */
-	public void setNodeMarked(DefaultGraphCell node, boolean b) {
-		if(b) {
-			GraphConstants.setForeground(getModel().getAttributes(node), 
-					Color.cyan);
-			GraphConstants.setBackground(getModel().getAttributes(node), 
-					Color.blue);
-		} else {
-			GraphConstants.setForeground(getModel().getAttributes(node), 
-					Color.black);
-			GraphConstants.setBackground(getModel().getAttributes(node), 
-					Color.white);
-		}
-	}
-	
-	
-	/**
-	 * 
-	 * @param edge
-	 * @param b
-	 */
-	public void setEdgeMarked(DefaultEdge edge, boolean b) {
-		EdgeType type = getEdgeData(edge).getType();
-		boolean isSolid = type == EdgeType.solid;
-		if(b) {
-			if( isSolid ) {
-			GraphConstants.setLineColor(getModel().getAttributes(edge), 
-					Color.blue);
-			} else {
-				GraphConstants.setLineColor(getModel().getAttributes(edge), 
-						Color.cyan);
-			}
-		} else {
-			
-			if( isSolid ) {
-			GraphConstants.setLineColor(getModel().getAttributes(edge), 
-					Color.black);
-			} else {
-				GraphConstants.setLineColor(getModel().getAttributes(edge), 
-						Color.red);
-			}
-		}
-	}
-	
-	/**
-	 * 
-	 * @param b
-	 */
-	public void setMarked(boolean b) {
-		if( (!b) && marked ) {
-			for( DefaultEdge edge : edges ) {
-				setEdgeMarked(edge, false);
-			}
-			for( DefaultGraphCell node : nodes ) {
-				setNodeMarked(node, false);
-			}
-		computeLayout();
-		adjustNodeWidths();
-		}
-		marked = b;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean isMarked() {
-		return marked;
-	}
-	
-	public void markWcc(Set<String> roots, Color color, Color domEdgeColor) {
-				
-		Set<Fragment> toMark = new HashSet<Fragment>();
-		for (String otherNode : roots) {
-			
-			DefaultGraphCell gc = getNodeForName(otherNode);
-			if (getNodeData(gc).getType() != NodeType.unlabelled) {
-				Fragment frag = findFragment(gc);
-				toMark.add(frag);
-			} else {
-				markNode(gc, color);
-			}
-
-			for (DefaultEdge edg : getOutEdges(gc)) {
-
-				if (getEdgeData(edg).getType() == EdgeType.dominance) {
-					markEdge(edg, domEdgeColor);
-					Fragment tgt = getTargetFragment(edg);
-					if (tgt != null) {
-						toMark.add(tgt);
-					}
-				} else {
-					markEdge(edg, color);
-				}
-
-			}
-		}
-
-		for (Fragment frag : toMark) {
-			for (DefaultGraphCell gc : frag.getNodes()) {
-				markNode(gc, color);
-				for (DefaultEdge edg : getOutEdges(gc)) {
-					if (getEdgeData(edg).getType() == EdgeType.dominance) {
-						markEdge(edg, domEdgeColor);
-
-					} else {
-						markEdge(edg, color);
-					}
-				}
-			}
-
-		}
-		
-	}
-	
-	public void markGraph(Color color) {
-		for( DefaultGraphCell node : nodes ) {
-			markNode(node, color);
-		}
-		
-		for( DefaultEdge edge : edges ) {
-			markEdge(edge, color);
-		}
-		setMarked(true);
-	}
 }
