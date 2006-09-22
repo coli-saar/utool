@@ -1,9 +1,10 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.Ubench;
 
 /**
  * A <code>JFrame</code> containing a GUI for visualising a 
@@ -53,21 +55,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private DomGraph dg; // the graph belonging to the chart
 	private JDomGraph jdg; // the Graph to highlight the nodes in
 	
-	private boolean splitMarked; // indicates whether or not a split is currently highlighted
 	
-	// redefining some colors
-	private Color myGreen;
-	
-	private Color purple;
-	
-	private Color redbrown;
-	
-	private Color lightbrown;
-	
-	List<Color> colors;
-	int colorindex;
-	
-	private ButtonGroup radioButtons;
 	
 	private Map<Split, String> nameToSplit;
 	private List<Split> orderedSplits;
@@ -87,31 +75,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * @param g
 	 * @param title
 	 */
-	ChartViewer(Chart c, DomGraph g, String title, JDomGraph jg) {
+	public ChartViewer(Chart c, DomGraph g, String title, JDomGraph jg) {
 		// some initialising
 		super("Chart of " + title);
 		chart = c;
 		dg = g;
 		jdg = jg;
-		splitMarked = false;
-		myGreen = new Color(0, 204, 51);
-		purple = new Color(163, 0, 163);
-		lightbrown = new Color(255,153,51);
-		redbrown = new Color(255,51,51);
 		
-		colors = new ArrayList<Color>();
-		colors.add(Color.blue);
-		colors.add(purple);
-		colors.add(Color.CYAN);
-		colors.add(Color.RED);
-		colors.add(redbrown);
-		colors.add(lightbrown);
-		
-		colorindex = 0;
-		
-		//GridLayout layout = new GridLayout(0,2);
-		
-		radioButtons = new ButtonGroup();
 		nameToSplit = new HashMap<Split,String>();
 		subgraphs = new ArrayList<Set<String>>();
 		noOfSplits = new ArrayList<Integer>();
@@ -270,6 +240,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	
 	
+	
+
 	/**
 	 * This overrides the "setVisible" method to 
 	 * make sure that the highlighting dissapperas when
@@ -280,7 +252,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	public void setVisible(boolean b) {
 		super.setVisible(b);
-		Ubench.getInstance().getVisibleTab().getGraph().setMarked(false);
+		
+		FormatManager.unmark(jdg);
 	}
 	
 	/* (non-Javadoc)
@@ -303,7 +276,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
 			if(selectedSplit != null ) {
-				jdg.markGraph(Color.LIGHT_GRAY);
+				
+				FormatManager.markSplit(selectedSplit,
+					nameToSplit.get(selectedSplit), jdg	);
+				
+			/*	jdg.markGraph(Color.LIGHT_GRAY);
 				
 				Set<String> dominators = selectedSplit.getAllDominators();
 				String root = selectedSplit.getRootFragment();
@@ -312,9 +289,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					DefaultGraphCell rootNode = jdg.getNodeForName(root);
 					Fragment rootFrag = jdg.findFragment(rootNode);
 					for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-						jdg.markNode(rfn, myGreen);
+						jdg.markNode(rfn, rootColor);
 						for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
-							jdg.markEdge(edg, myGreen);
+							jdg.markEdge(edg, rootColor);
 						}
 					}
 				}
@@ -325,13 +302,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					List<Set<String>> wccs = selectedSplit.getWccs(hole);
 					for( Set<String> wcc : wccs) {
 						wcc.add(hole);
-						jdg.markWcc(wcc, colors.get(colorindex), colors.get(colorindex));
+						jdg.markSubgraph(wcc, colors.get(colorindex), colors.get(colorindex));
+						colorindex++;
 					}
-					colorindex++;
+					
 				}
-				colorindex = 0;
+				colorindex = 0;*/
 			} else {
-				jdg.setMarked(false);
+				FormatManager.unmark(jdg);
 			}
 			
 		} else if (col == 0) {
@@ -340,21 +318,21 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						row);
 				
 				if( ! subgraph.isEmpty() ) {
-					jdg.markGraph(Color.LIGHT_GRAY);
-					jdg.markWcc(subgraph, colors.get(colorindex), 
-							colors.get(colorindex));
+					FormatManager.markSubgraph(subgraph, jdg);
+					
+					/*jdg.markGraph(Color.LIGHT_GRAY);
+					jdg.markSubgraph(subgraph, colors.get(colorindex), 
+							colors.get(colorindex));*/
 				} else {
-					jdg.setMarked(false);
+					FormatManager.unmark(jdg);
 				}
 			}
 		} else {
-			jdg.setMarked(false);
+			FormatManager.unmark(jdg);
 		}
 		
 		jdg.computeLayout();
 		jdg.adjustNodeWidths();
-		
-		jdg.setMarked(true);
 		
 	} 
 	

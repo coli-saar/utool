@@ -26,6 +26,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 /**
  * A <code>JPanel</code> displaying a <code>JDomGraph</code>,
@@ -208,17 +209,22 @@ public class JDomGraphTab extends JGraphTab  {
 	}
 	
 	public void displayChart() {
-		
-		 if(! isSolvedYet) {
-			isSolvedYet = true;
-			chart = new Chart();
-			ChartSolver.solve(domGraph.compactify(), chart);
+		if(cv == null ) {
+		 if(!isSolvedYet) {
+			 isSolvedYet = true;
+				chart = new Chart();
+				ChartSolver.solve(domGraph.compactify(), chart);
+		 }
 			
+			cv = new ChartViewer(chart, 
+					domGraph, defaultName, graph);
+		} else {
+			ChartViewer temp = new ChartViewer(chart, 
+					domGraph, defaultName, graph);
 		}
-		
-		ChartViewer cv = new ChartViewer(chart, 
-				domGraph, defaultName, graph);
 	}
+	
+
 	
 	
 	/**
