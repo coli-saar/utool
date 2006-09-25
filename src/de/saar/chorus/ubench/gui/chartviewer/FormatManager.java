@@ -218,12 +218,15 @@ public class FormatManager {
 	public static String markSplit(Split split, String splitAsString,
 			JDomGraph graph) {
 		
-		String coloredSplit = "";
+		StringBuffer coloredSplit = new StringBuffer();
+		coloredSplit.append("<html>");
 		
 		shadeGraph(graph);
 		
 		Set<String> dominators = split.getAllDominators();
 		String root = split.getRootFragment();
+		coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
+		
 		
 		if(!root.equals("")) {
 			DefaultGraphCell rootNode = graph.getNodeForName(root);
@@ -242,6 +245,11 @@ public class FormatManager {
 			List<Set<String>> wccs = split.getWccs(hole);
 			for( Set<String> wcc : wccs) {
 				wcc.add(hole);
+				
+				coloredSplit.append("<div style='color:'" + 
+						subgraphcolors[subgraphcolorindex].getRGB() + 
+						"font-face:bold'>" +hole + "=[" + wcc + "]");
+								
 				markSubgraph(wcc, subgraphcolors[subgraphcolorindex], 
 						graph, false);
 				if(++subgraphcolorindex == subgraphcolors.length) {
@@ -257,7 +265,7 @@ public class FormatManager {
 			
 		} 
 		subgraphcolorindex = 0;
-		return coloredSplit;
+		return coloredSplit.toString();
 		
 	}
 	
