@@ -85,6 +85,8 @@
                            value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
 		</jar>
+		<signjar jar="${domgraph.jar}" alias="utool-dist" 
+			storepass="constraint"	keystore="utool-3.1-pre.keystore"/>
 	</target>
 	
 	
