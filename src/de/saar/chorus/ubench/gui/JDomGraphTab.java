@@ -2,6 +2,8 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,6 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
@@ -209,6 +212,11 @@ public class JDomGraphTab extends JGraphTab  {
 	}
 	
 	public void displayChart() {
+		
+		Cursor waitcursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+		
+		changeCursorGlobally(waitcursor);
+		
 		if(cv == null ) {
 		 if(!isSolvedYet) {
 			 isSolvedYet = true;
@@ -222,6 +230,8 @@ public class JDomGraphTab extends JGraphTab  {
 			ChartViewer temp = new ChartViewer(chart, 
 					domGraph, defaultName, graph);
 		}
+		
+		changeCursorGlobally(Cursor.getDefaultCursor());
 	}
 	
 
@@ -464,6 +474,12 @@ public class JDomGraphTab extends JGraphTab  {
 	
 	
 	
+	private void changeCursorGlobally(Cursor cursor) {
+		SwingUtilities.getRoot(this).setCursor(cursor);
+		graph.setCursor(cursor);
+		statusBar.setCursor(cursor);
+		Ubench.getInstance().getWindow().setCursor(cursor);
+	}
 	
 	
 	/**

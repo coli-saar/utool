@@ -819,7 +819,12 @@ public class CommandListener implements ActionListener, ItemListener {
 							
 						}
 					} else if(command.equals(("chartView"))) {
-						Ubench.getInstance().getVisibleTab().displayChart();
+						new Thread() {
+							public void run() {
+								Ubench.getInstance().getVisibleTab().displayChart();
+							}
+						}.run();
+						
 					} else if(command.equals("showcodecs")) {
 						JFrame cf = new JFrame("Codecs in Utool");
 						JLabel cp = new JLabel();
