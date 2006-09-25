@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -191,7 +192,7 @@ public class FormatManager {
 		
 	}
 	
-	private static void markGraph(Color color, JDomGraph graph) {
+	public static void markGraph(Color color, JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, color, graph, markedNodeFont);
 		}
@@ -200,6 +201,7 @@ public class FormatManager {
 			markEdge(edge, color, graph, markedEdgeWidth);
 		}
 		
+		refreshGraphLayout(graph);
 	}
 	
 	
@@ -226,7 +228,7 @@ public class FormatManager {
 		
 		shadeGraph(graph);
 		
-		Set<String> dominators = split.getAllDominators();
+		Set<String> dominators = new HashSet<String>(split.getAllDominators());
 		String root = split.getRootFragment();
 	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
 		
@@ -245,8 +247,9 @@ public class FormatManager {
 		for(String hole : dominators) {
 			
 			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
-			List<Set<String>> wccs = split.getWccs(hole);
-			for( Set<String> wcc : wccs) {
+			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
+			for( Set<String> subg : wccs) {
+				Set<String> wcc = new HashSet<String>(subg);
 				wcc.add(hole);
 				
 	//			coloredSplit.append("<div style='color:'" + 

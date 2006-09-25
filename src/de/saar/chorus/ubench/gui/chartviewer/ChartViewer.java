@@ -162,7 +162,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					
 					
 					
-					subgraphs.add(s);
+					subgraphs.add(new HashSet<String>(s));
 					splitcount++;
 					if (first) {
 						
@@ -271,34 +271,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				FormatManager.markSplit(selectedSplit,
 					nameToSplit.get(selectedSplit), jdg	);
 				
-			/*	jdg.markGraph(Color.LIGHT_GRAY);
-				
-				Set<String> dominators = selectedSplit.getAllDominators();
-				String root = selectedSplit.getRootFragment();
-				
-				if(!root.equals("")) {
-					DefaultGraphCell rootNode = jdg.getNodeForName(root);
-					Fragment rootFrag = jdg.findFragment(rootNode);
-					for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-						jdg.markNode(rfn, rootColor);
-						for( DefaultEdge edg : jdg.getOutEdges(rfn) ) {
-							jdg.markEdge(edg, rootColor);
-						}
-					}
-				}
-				
-				for(String hole : dominators) {
-					
-					//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
-					List<Set<String>> wccs = selectedSplit.getWccs(hole);
-					for( Set<String> wcc : wccs) {
-						wcc.add(hole);
-						jdg.markSubgraph(wcc, colors.get(colorindex), colors.get(colorindex));
-						colorindex++;
-					}
-					
-				}
-				colorindex = 0;*/
+		
 			} else {
 				FormatManager.unmark(jdg);
 			}
@@ -311,9 +284,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				if( ! subgraph.isEmpty() ) {
 					FormatManager.markSubgraph(subgraph, jdg);
 					
-					/*jdg.markGraph(Color.LIGHT_GRAY);
-					jdg.markSubgraph(subgraph, colors.get(colorindex), 
-							colors.get(colorindex));*/
+					
 				} else {
 					FormatManager.unmark(jdg);
 				}
@@ -322,9 +293,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			FormatManager.unmark(jdg);
 		}
 		
-	//	jdg.computeLayout();
-	//	jdg.adjustNodeWidths();
-		
+			
 	} 
 	
 	private void initColumnSizes() {
