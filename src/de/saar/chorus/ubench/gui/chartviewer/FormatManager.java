@@ -10,6 +10,7 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
+import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.ubench.EdgeType;
@@ -58,7 +59,7 @@ public class FormatManager {
 	 * @param node
 	 * @param color
 	 */
-	public static void markNode(DefaultGraphCell node, Color color,
+	private static void markNode(DefaultGraphCell node, Color color,
 			JDomGraph graph, Font font) {
 		GraphConstants.setForeground(graph.getModel().getAttributes(node),
 				color);
@@ -71,7 +72,7 @@ public class FormatManager {
 	 * @param edge
 	 * @param color
 	 */
-	public static void markEdge(DefaultEdge edge, Color color, JDomGraph graph,
+	private static void markEdge(DefaultEdge edge, Color color, JDomGraph graph,
 			float width) {
 		GraphConstants
 		.setLineColor(graph.getModel().getAttributes(edge), color);
@@ -85,7 +86,7 @@ public class FormatManager {
 	 * @param node
 	 * @param b
 	 */
-	public static void unmarkNode(DefaultGraphCell node, JDomGraph graph) {
+	private static void unmarkNode(DefaultGraphCell node, JDomGraph graph) {
 		
 		GraphModel model = graph.getModel();
 		
@@ -101,7 +102,7 @@ public class FormatManager {
 	 * @param edge
 	 * @param b
 	 */
-	public static void unmarkEdge(DefaultEdge edge, JDomGraph graph) {
+	private static void unmarkEdge(DefaultEdge edge, JDomGraph graph) {
 		
 		GraphModel model = graph.getModel();
 		EdgeType type = graph.getEdgeData(edge).getType();
@@ -134,14 +135,16 @@ public class FormatManager {
 			unmarkNode(node, graph);
 		}
 		
+		refreshGraphLayout(graph);
 	}
 	
 	public static void markSubgraph(Set<String> roots, JDomGraph graph) {
 		markSubgraph(roots, subgraphcolors[subgraphcolorindex],
 				graph, true);
+		refreshGraphLayout(graph);
 	}
 	
-	public static void markSubgraph(Set<String> roots, Color color, 
+	private static void markSubgraph(Set<String> roots, Color color, 
 			JDomGraph graph, boolean shadeRemaining) {
 		
 		if(shadeRemaining) {
@@ -188,7 +191,7 @@ public class FormatManager {
 		
 	}
 	
-	public static void markGraph(Color color, JDomGraph graph) {
+	private static void markGraph(Color color, JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, color, graph, markedNodeFont);
 		}
@@ -201,7 +204,7 @@ public class FormatManager {
 	
 	
 	
-	public static void shadeGraph(JDomGraph graph) {
+	private static void shadeGraph(JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, deactivatedColor, graph, standardNodeFont);
 		}
@@ -219,13 +222,13 @@ public class FormatManager {
 			JDomGraph graph) {
 		
 		StringBuffer coloredSplit = new StringBuffer();
-		coloredSplit.append("<html>");
+	//	coloredSplit.append("<html>");
 		
 		shadeGraph(graph);
 		
 		Set<String> dominators = split.getAllDominators();
 		String root = split.getRootFragment();
-		coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
+	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
 		
 		
 		if(!root.equals("")) {
@@ -246,9 +249,9 @@ public class FormatManager {
 			for( Set<String> wcc : wccs) {
 				wcc.add(hole);
 				
-				coloredSplit.append("<div style='color:'" + 
-						subgraphcolors[subgraphcolorindex].getRGB() + 
-						"font-face:bold'>" +hole + "=[" + wcc + "]");
+	//			coloredSplit.append("<div style='color:'" + 
+	//					subgraphcolors[subgraphcolorindex].getRGB() + 
+	//					"font-face:bold'>" +hole + "=[" + wcc + "]");
 								
 				markSubgraph(wcc, subgraphcolors[subgraphcolorindex], 
 						graph, false);
@@ -265,8 +268,13 @@ public class FormatManager {
 			
 		} 
 		subgraphcolorindex = 0;
+		refreshGraphLayout(graph);
 		return coloredSplit.toString();
 		
+	}
+	
+	private static void refreshGraphLayout(JDomGraph graph) {
+		JGraphUtilities.applyLayout(graph, new JDomGraphDummyLayout(graph));
 	}
 	
 }

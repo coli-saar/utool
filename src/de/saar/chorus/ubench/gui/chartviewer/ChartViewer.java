@@ -322,8 +322,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			FormatManager.unmark(jdg);
 		}
 		
-		jdg.computeLayout();
-		jdg.adjustNodeWidths();
+	//	jdg.computeLayout();
+	//	jdg.adjustNodeWidths();
 		
 	} 
 	
