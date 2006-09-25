@@ -17,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
@@ -27,9 +28,9 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
 
 public class ExampleViewer extends JFrame implements 
-              ListSelectionListener, ActionListener {
+ListSelectionListener, ActionListener {
 	
-
+	
 	private BorderLayout layout = new BorderLayout();
 	private	File exampleFolder;
 	private JPanel listContents;
@@ -45,75 +46,79 @@ public class ExampleViewer extends JFrame implements
 		setLayout(layout);
 		setAlwaysOnTop(true);
 		
-	    exampleFiles = Ubench.getInstance().getCodecManager().getExampleFiles();
-		exampleNames = new String[exampleFiles.size()];
+		exampleFiles = Ubench.getInstance().getCodecManager().getExampleFiles();
 		
-		for( int i = 0; i < exampleNames.length; i++) {
-			exampleNames[i] = exampleFiles.get(i).getName();
-		}
+		if( ! exampleFiles.isEmpty() ) {
+			exampleNames = new String[exampleFiles.size()];
 			
-		
-		
-		files = new JList(exampleNames);
-		files.addListSelectionListener(this);
-		files.addMouseListener(new DoubleClickAdapter());
-		files.addKeyListener(new EnterAdapter());
-		
-		JScrollPane listPane = new JScrollPane(files);
-		
-		listContents = new JPanel();
-		listContents.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-		listContents.add(listPane, BorderLayout.WEST);
-		
-		JPanel preview = new JPanel();
-		preview.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-		//preview.setPreferredSize(listPane.getSize());
-	//	prev  = new JLabel();
-	//	preview.add(prev);
-		
-		load = new JButton("Load!");
-		load.addActionListener(this);
-		load.setActionCommand("loEx");
-		preview.add(load);
-		
-		cancel = new JButton ("Cancel");
-		cancel.addActionListener(this);
-		cancel.setActionCommand("cancel");
-		preview.add(cancel);
-		
-		
-	
-		listContents.add(preview, BorderLayout.SOUTH);
-		listContents.validate();
-		add(listPane,BorderLayout.WEST);
-		add(preview, BorderLayout.SOUTH);
-		JPanel description = new JPanel();
-		desc = new JLabel("No example selected.");
-		description.add(desc);
-		
-		add(description, BorderLayout.EAST); 
-		
-		pack();
-		validate();
+			for( int i = 0; i < exampleNames.length; i++) {
+				exampleNames[i] = exampleFiles.get(i).getName();
+			}
+			
+			
+			
+			files = new JList(exampleNames);
+			files.addListSelectionListener(this);
+			files.addMouseListener(new DoubleClickAdapter());
+			files.addKeyListener(new EnterAdapter());
+			
+			JScrollPane listPane = new JScrollPane(files);
+			
+			listContents = new JPanel();
+			listContents.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+			listContents.add(listPane, BorderLayout.WEST);
+			
+			JPanel preview = new JPanel();
+			preview.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+
+			
+			load = new JButton("Load!");
+			load.addActionListener(this);
+			load.setActionCommand("loEx");
+			preview.add(load);
+			
+			cancel = new JButton ("Cancel");
+			cancel.addActionListener(this);
+			cancel.setActionCommand("cancel");
+			preview.add(cancel);
+			
+			
+			
+			listContents.add(preview, BorderLayout.SOUTH);
+			listContents.validate();
+			add(listPane,BorderLayout.WEST);
+			add(preview, BorderLayout.SOUTH);
+			JPanel description = new JPanel();
+			desc = new JLabel("No example selected.");
+			description.add(desc);
+			
+			add(description, BorderLayout.EAST); 
+			
+			pack();
+			validate();
+		} else {
+			throw new IOException("There are no examples in your Utool directory.");
+			
+		}
 		//setVisible(true);
 	}
 	
 	
-
+	
 	/* (non-Javadoc)
 	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
 	 */
 	public void valueChanged(ListSelectionEvent e) {
-	
+		
 		
 		String selected = exampleNames[files.getSelectedIndex()];
-			
-			pack();
-			validate();
-			desc.setText("Example " + selected);
-			
+		
+		pack();
+		validate();
+		desc.setText("Example " + selected);
+		
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
@@ -125,39 +130,39 @@ public class ExampleViewer extends JFrame implements
 		
 		
 		if(e.getActionCommand().equals("loEx")) {
-		final String selected = exampleFiles.get(
+			final String selected = exampleFiles.get(
 					files.getSelectedIndex()).getAbsolutePath();
-		setVisible(false);
-		Ubench.getInstance().getStatusBar().showProgressBar();
+			setVisible(false);
+			Ubench.getInstance().getStatusBar().showProgressBar();
 			new Thread(){
-                public void run() {
-                    
-                    // loading the graph and converting it to a 
-                    // JDomGraph
-                    DomGraph theDomGraph = new DomGraph();
-                    NodeLabels labels = new NodeLabels();
-                    JDomGraph graph = Ubench.getInstance().genericLoadGraph(selected, theDomGraph, labels);
-                    
-                    
-                    if( graph != null ) {
-                        
-                        //	DomGraphTConverter conv = new DomGraphTConverter(graph);
-                        
-                        // setting up a new graph tab.
-                        // the graph is painted and shown at once.
-                        Ubench.getInstance().addNewTab(graph, selected, theDomGraph, true, true, labels);
-                    }
-                }
-            }.start();
+				public void run() {
+					
+					// loading the graph and converting it to a 
+					// JDomGraph
+					DomGraph theDomGraph = new DomGraph();
+					NodeLabels labels = new NodeLabels();
+					JDomGraph graph = Ubench.getInstance().genericLoadGraph(selected, theDomGraph, labels);
+					
+					
+					if( graph != null ) {
+						
+						//	DomGraphTConverter conv = new DomGraphTConverter(graph);
+						
+						// setting up a new graph tab.
+						// the graph is painted and shown at once.
+						Ubench.getInstance().addNewTab(graph, selected, theDomGraph, true, true, labels);
+					}
+				}
+			}.start();
 		} else if (e.getActionCommand().equals("cancel")) {
 			setVisible(false);
 			dispose();
 		}
 		
 	}
-    
+	
 	private class DoubleClickAdapter extends MouseAdapter {
-
+		
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if(e.getClickCount() == 2) {
@@ -170,17 +175,17 @@ public class ExampleViewer extends JFrame implements
 	
 	private class EnterAdapter extends KeyAdapter {
 		public void keyReleased(KeyEvent ke) {
-		if( ke.getKeyCode() == KeyEvent.VK_ENTER) {
-			actionPerformed(new ActionEvent
-					(load, ActionEvent.ACTION_PERFORMED, "loEx"));
-		}
-		
-		
+			if( ke.getKeyCode() == KeyEvent.VK_ENTER) {
+				actionPerformed(new ActionEvent
+						(load, ActionEvent.ACTION_PERFORMED, "loEx"));
+			}
+			
+			
 		}
 		
 	}
 	
 }
-		
-	
+
+
 
