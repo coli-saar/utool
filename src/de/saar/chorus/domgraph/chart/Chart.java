@@ -9,7 +9,6 @@ package de.saar.chorus.domgraph.chart;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,26 +26,28 @@ import org._3pq.jgrapht.util.ModifiableInteger;
  * fragments of G must be distributed over the holes of F. That is, it
  * splits G into a root fragment F and the weakly connected components
  * that remain after F is removed.<p>
- * 
- * All subgraphs and splits in a chart object are productive, in the sense
- * that each of them can be used in some solved form. This is guaranteed
- * initially by the {@link ChartSolver}. Then the Chart object keeps track 
- * of how often each subgraph is referenced
- * in the splits. The user designates one or more subgraphs as top-level
- * subgraphs, which will always retain a reference count of at least 1.
- * If the reference count of any other subgraph drops to zero at any point,
- * this subgraph and all of its splits will be deleted from the chart,
- * which may lead to the removal of other subgraphs, and so on. 
+ *  
+ * This class supports the dynamic addition and removal of splits and
+ * subgraphs, and maintains the invariant that all subgraphs and splits
+ * in the chart can be used in some solved form -- if they can't, they
+ * are removed from the chart. It uses reference counters to keep track
+ * of this; to initialise them, the user must specify one or more
+ * subgraphs as "top-level" subgraphs, which receive a reference count
+ * of 1. One important limitation is that it is not allowed to delete
+ * a subgraph (or the last split in the subgraph) if this subgraph
+ * is still referenced from elsewhere. The relevant methods throw an
+ * UnsupportedOperationException if you attempt this.
  * 
  * @author Alexander Koller
  *
  */
-public class Chart {
+public class Chart implements Cloneable {
     private Map<Set<String>, List<Split>> chart;
     private Map<Set<String>, ModifiableInteger> refcount;
     private int size;
     private List<Set<String>> toplevelSubgraphs;
-    
+
+
     /**
      * The constructor.
      */
@@ -108,6 +109,10 @@ public class Chart {
         x.setValue(x.intValue()-1);
     }
     
+    private int getReferenceCount(Set<String> subgraph) {
+        return refcount.get(subgraph).getValue();
+    }
+    
 
     /**
      * Sets the splits for a given subgraph. If the subgraph already
@@ -119,6 +124,11 @@ public class Chart {
     public void setSplitsForSubgraph(Set<String> subgraph, List<Split> splits) {
         Set<Set<String>> subgraphsAllSplits = new HashSet<Set<String>>();
         List<Split> oldSplits = getSplitsFor(subgraph);
+        
+        if( splits.isEmpty() && (getReferenceCount(subgraph) > 0)) {
+            throw new UnsupportedOperationException("The subgraph is still referenced " 
+                    + getReferenceCount(subgraph) + " times. You may not remove its last split.");
+        }
         
         // update reference count effects of deleting the old splits
         for( Split oldSplit : oldSplits ) {
@@ -141,31 +151,29 @@ public class Chart {
         }
         
         // remove subgraphs with zero reference count from the chart
-        deleteUnproductiveSubgraphs(subgraphsAllSplits);
-    }
-
-    
-    
-    /**
-     * Deletes all subgraphs from the given collection whose reference count is zero.
-     * 
-     * @param subgraphs a collection of subgraphs
-     */
-    private void deleteUnproductiveSubgraphs(Collection<Set<String>> subgraphs) {
-        for( Set<String> subgraph : subgraphs ) {
-            if( refcount.get(subgraph).getValue() == 0 ) {
-                deleteSubgraph(subgraph);
+        for( Set<String> s : subgraphsAllSplits ) {
+            if( getReferenceCount(s) == 0 ) {
+                deleteSubgraph(s);
             }
         }
     }
 
+    
+    
     /**
-     * Deletes a subgraph and all of its splits from the chart.
+     * Deletes a subgraph and all of its splits from the chart. This method
+     * updates the reference counts, and recursively deletes all other subgraphs that
+     * become unreachable.
      * 
      * @param subgraph a subgraph
      */
-    private void deleteSubgraph(Set<String> subgraph) {
+    public void deleteSubgraph(Set<String> subgraph) {
         List<Split> splits = getSplitsFor(subgraph);
+        
+        if( getReferenceCount(subgraph) > 0 ) {
+            throw new UnsupportedOperationException("The subgraph is still referenced "
+                    + getReferenceCount(subgraph) + " times. You may not delete it.");
+        }
         
         // update reference counts for referred sub-subgraphs and
         // recursively delete those if they drop to zero
@@ -173,7 +181,7 @@ public class Chart {
             for( Set<String> subsubgraph : split.getAllSubgraphs() ) {
                 decReferenceCount(subsubgraph);
                 
-                if( refcount.get(subsubgraph).getValue() == 0 ) {
+                if( getReferenceCount(subsubgraph) == 0 ) {
                     deleteSubgraph(subsubgraph);
                 }
             }
@@ -298,4 +306,45 @@ public class Chart {
             return ret;
         }
     }
+    
+
+    /** 
+     * Computes a clone of the chart. Splits and subgraphs can be added and deleted,
+     * and toplevel subgraphs changed, on the clone without affecting
+     * the original chart object. However, the clone contains referneces to the same
+     * individual subgraphs and splits as the original chart, so be sure
+     * not to modify the subgraphs and splits themselves. (This would be
+     * a bad idea anyway.)
+     * 
+     * @return a <code>Chart</code> object which is a clone of the current
+     * chart
+     */
+    @Override
+    public Object clone() {
+        Chart ret = new Chart();
+        
+        for( Map.Entry<Set<String>, List<Split>> entry : chart.entrySet() ) {
+            ret.chart.put(entry.getKey(), new ArrayList<Split>(entry.getValue()));
+        }
+        
+        for( Map.Entry<Set<String>, ModifiableInteger> entry : refcount.entrySet() ) {
+            ret.refcount.put(entry.getKey(), new ModifiableInteger(entry.getValue().getValue()));
+        }
+
+        ret.size = size;
+        
+        ret.toplevelSubgraphs = new ArrayList<Set<String>>(toplevelSubgraphs);
+        
+        return ret;
+    }
 }
+
+
+
+/*
+ * UNIT TESTS:
+ *  - clone is different object than original chart
+ *  - maps in clone are equal
+ *  - changing stuff in clone doesn't make a difference
+ *  
+ */
