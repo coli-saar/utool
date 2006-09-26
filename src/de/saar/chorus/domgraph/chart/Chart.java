@@ -120,6 +120,9 @@ public class Chart implements Cloneable {
      * 
      * @param subgraph a subgraph
      * @param splits the new splits for this subgraph
+     * @throws UnsupportedOperationException - if you try to delete all splits
+     * of a subgraph that is still referenced from some other split. If this 
+     * happens, the chart remains unchanged.
      */
     public void setSplitsForSubgraph(Set<String> subgraph, List<Split> splits) {
         Set<Set<String>> subgraphsAllSplits = new HashSet<Set<String>>();
@@ -166,6 +169,10 @@ public class Chart implements Cloneable {
      * become unreachable.
      * 
      * @param subgraph a subgraph
+     * @throws UnsupportedOperationException - if you try to delete a subgraph
+     * that is still referenced from some split. If this happens, the chart
+     * remains unchanged.
+     * 
      */
     public void deleteSubgraph(Set<String> subgraph) {
         List<Split> splits = getSplitsFor(subgraph);
@@ -190,6 +197,7 @@ public class Chart implements Cloneable {
         size -= splits.size();
         splits.clear(); // TODO - or perhaps delete the subgraph altogether?
     }
+    
 
     /**
      * Returns the list of all splits for the given subgraph.
