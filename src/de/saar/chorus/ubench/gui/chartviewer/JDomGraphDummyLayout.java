@@ -58,25 +58,21 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 		Map<DefaultGraphCell,AttributeMap> viewMap = new 
 		HashMap<DefaultGraphCell,AttributeMap>();
 		
-		
-		//place every node on its position
-		//and remembering that in the viewMap.
-		for(DefaultGraphCell node : graph.getNodes() ) {
+		DefaultGraphCell node = graph.getNodes().iterator().next();
+
 			int x = (int) graph.getCellBounds(node).getMinX() + 1;
 			int y = (int) graph.getCellBounds(node).getMinY() + 1 ;
 			
 			placeNodeAt(node, x, y, viewMap);
-		}
-		//updating the graph.
+	
 		graph.getGraphLayoutCache().edit(viewMap, null, null, null);
 		
-		for(DefaultGraphCell node : graph.getNodes() ) {
-			int x = (int) graph.getCellBounds(node).getMinX() - 1;
-			int y = (int) graph.getCellBounds(node).getMinY() - 1 ;
+		
+			 x --;
+			 y --;
 			
 			placeNodeAt(node, x, y, viewMap);
-		}
-		//updating the graph.
+
 		graph.getGraphLayoutCache().edit(viewMap, null, null, null);
 	}
 	
