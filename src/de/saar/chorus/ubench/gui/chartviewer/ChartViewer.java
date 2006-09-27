@@ -58,6 +58,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private Set<String> biggestSubgraph;
 	private int lastIndex;
 	
+	private int currentrow;
+	private int currentcolumn;
+	
 	
 	/**
 	 * A new ChartViewer 
@@ -78,7 +81,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSplits = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
 		splitNumbers = new ArrayList<Integer>();
-		
+		currentrow = -1;
+		currentcolumn = -1;
 		
 		/*
 		 * the label indicating the (only) 
@@ -257,6 +261,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		int row = prettyprint.getSelectedRow();
 		int col = prettyprint.getSelectedColumn();
 		
+		if(row == currentrow && col == currentcolumn ) {
+			return;
+		} else {
+			currentrow = row;
+			currentcolumn = col;
+		}
 		
 		if( (col >= 1) && (row > -1)  ) {
 			
@@ -269,9 +279,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
 			if(selectedSplit != null ) {
-			
 				FormatManager.markSplit(selectedSplit,
 					nameToSplit.get(selectedSplit), jdg	);
+				
 			
 			} else {
 				FormatManager.unmark(jdg);
@@ -283,8 +293,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						row);
 				
 				if( ! subgraph.isEmpty() ) {
+				
 					FormatManager.markSubgraph(subgraph, jdg);
-					
 					
 				} else {
 					FormatManager.unmark(jdg);
