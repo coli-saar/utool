@@ -252,6 +252,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	public void valueChanged(ListSelectionEvent	 e) {
 		
+		  if (e.getValueIsAdjusting()) return;
+		
 		int row = prettyprint.getSelectedRow();
 		int col = prettyprint.getSelectedColumn();
 		
@@ -267,11 +269,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
 			if(selectedSplit != null ) {
-				
+			
 				FormatManager.markSplit(selectedSplit,
 					nameToSplit.get(selectedSplit), jdg	);
-				
-		
+			
 			} else {
 				FormatManager.unmark(jdg);
 			}

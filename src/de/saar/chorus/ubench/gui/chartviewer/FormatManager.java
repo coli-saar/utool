@@ -140,16 +140,21 @@ public class FormatManager {
 	}
 	
 	public static void markSubgraph(Set<String> roots, JDomGraph graph) {
+		
 		markSubgraph(roots, subgraphcolors[subgraphcolorindex],
 				graph, true);
+		
 		refreshGraphLayout(graph);
+	
 	}
 	
 	private static void markSubgraph(Set<String> roots, Color color, 
 			JDomGraph graph, boolean shadeRemaining) {
 		
+		long start = System.currentTimeMillis();
 		if(shadeRemaining) {
 			shadeGraph(graph);
+			
 		}
 		
 		Set<Fragment> toMark = new HashSet<Fragment>();
@@ -232,7 +237,7 @@ public class FormatManager {
 		String root = split.getRootFragment();
 	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
 		
-		
+
 		if(!root.equals("")) {
 			DefaultGraphCell rootNode = graph.getNodeForName(root);
 			Fragment rootFrag = graph.findFragment(rootNode);
@@ -243,6 +248,8 @@ public class FormatManager {
 				}
 			}
 		}
+		
+	
 		
 		for(String hole : dominators) {
 			
@@ -269,9 +276,14 @@ public class FormatManager {
 				subgraphcolorindex = 0;
 			} 
 			
+		
 		} 
+
 		subgraphcolorindex = 0;
+		
+
 		refreshGraphLayout(graph);
+
 		return coloredSplit.toString();
 		
 	}
