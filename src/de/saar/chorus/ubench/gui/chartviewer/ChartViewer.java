@@ -1,5 +1,6 @@
 package de.saar.chorus.ubench.gui.chartviewer;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
@@ -20,9 +23,13 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.jgraph.graph.DefaultGraphCell;
+
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.Ubench;
 
@@ -53,6 +60,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private List<Set<String>> subgraphs;
 	private List<Integer> noOfSplits;
 	private List<Integer> splitNumbers;
+	private Map<Set<String>, Set<String>> rootsToSubgraphs;
 	
 	private String longestSplit;
 	private Set<String> biggestSubgraph;
@@ -61,7 +69,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private int currentrow;
 	private int currentcolumn;
 	
+	private JPanel statusbar;
+	private JLabel solvedforms;
+	private int noOfSolvedForms;
+	private JButton sf1;
+	private JButton elred;
+	private JButton delSplit;
 	
+	private NodeLabels labels;
+	
+	private ChartViewerListener listener;
 	/**
 	 * A new ChartViewer 
 	 * 
@@ -69,14 +86,20 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * @param g
 	 * @param title
 	 */
-	public ChartViewer(Chart c, DomGraph g, String title, JDomGraph jg) {
+	public ChartViewer(Chart c, DomGraph g, 
+			String title, JDomGraph jg,
+			NodeLabels la) {
 		// some initialising
 		super("Chart of " + title);
+		
+		labels = la;
+		listener = new ChartViewerListener(this);
 		chart = c;
 		dg = g;
 		jdg = jg;
 		
 		nameToSplit = new HashMap<Split,String>();
+		rootsToSubgraphs = new HashMap<Set<String>, Set<String>>();
 		subgraphs = new ArrayList<Set<String>>();
 		noOfSplits = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
@@ -113,7 +136,36 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		JScrollPane printPane = new JScrollPane(prettyprint);
 		add(printPane);
 		
+		noOfSolvedForms = chart.countSolvedForms().intValue();
 		
+		JPanel firstrow = new JPanel();
+		JPanel secondrow = new JPanel();
+		
+		statusbar = new JPanel();
+		sf1 = new JButton("Show solved form #1");
+		sf1.setActionCommand("solvechart");
+		sf1.addActionListener(listener);
+		
+		elred = new JButton("Eleminate Redundancies");
+		elred.setActionCommand("elred");
+		elred.addActionListener(listener);
+		
+		delSplit = new JButton("Delete Marked Split");
+		delSplit.setActionCommand("delSplit");
+		delSplit.addActionListener(listener);
+		
+		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms.");
+		
+		firstrow.add(solvedforms);
+		firstrow.add(sf1);
+		
+		secondrow.add(elred);
+		secondrow.add(delSplit);
+		
+		statusbar.add(firstrow, BorderLayout.NORTH);
+		statusbar.add(secondrow, BorderLayout.SOUTH);
+		
+		add(statusbar,BorderLayout.SOUTH);
 		
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
@@ -154,6 +206,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			
 			s.retainAll(roots);
 			String sgs = s.toString();
+			rootsToSubgraphs.put(s, subgraph);
 			
 			if (chart.getSplitsFor(subgraph) != null) {
 				
@@ -163,10 +216,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				
 				int splitcount = 0;
 				for (Split split : splits ) {
-					
-					
-					
-					subgraphs.add(new HashSet<String>(s));
+														
+					subgraphs.add(s);
 					splitcount++;
 					if (first) {
 						
@@ -266,6 +317,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} else {
 			currentrow = row;
 			currentcolumn = col;
+			System.err.println(row + " | " + col);
 		}
 		
 		if( (col >= 1) && (row > -1)  ) {
@@ -279,9 +331,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			// TODO move the following anywhere else (Tab?)
 			// changing the color of nodes and edges
 			if(selectedSplit != null ) {
-				FormatManager.markSplit(selectedSplit,
-					nameToSplit.get(selectedSplit), jdg	);
-				
+				markSplit(selectedSplit);
 			
 			} else {
 				FormatManager.unmark(jdg);
@@ -293,7 +343,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						row);
 				
 				if( ! subgraph.isEmpty() ) {
-				
 					FormatManager.markSubgraph(subgraph, jdg);
 					
 				} else {
@@ -303,8 +352,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} else {
 			FormatManager.unmark(jdg);
 		}
-		
-			
+					
 	} 
 	
 	private void initColumnSizes() {
@@ -337,6 +385,49 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
             column.setPreferredWidth(Math.max(headerWidth, cellWidth));
         }
     }
+	
+	public void markSplit(Split split) {
+		
+		int subgraphindex = -1;
+		StringBuffer coloredSplit = new StringBuffer();
+	//	coloredSplit.append("<html>");
+		
+	//	shadeGraph(graph);
+		
+		Set<String> dominators = new HashSet<String>(split.getAllDominators());
+		String root = split.getRootFragment();
+	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
+		
+
+		if(!root.equals("")) {
+			DefaultGraphCell rootNode = jdg.getNodeForName(root);
+			Fragment rootFrag = jdg.findFragment(rootNode);
+			FormatManager.markRootFragment(rootFrag, jdg);
+		}
+		
+	
+		
+		for(String hole : dominators) {
+			
+			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
+			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
+			for( Set<String> subg : wccs) {
+				subgraphindex++;
+				Set<String> wcc = new HashSet<String>(subg);
+				wcc.add(hole);
+				
+	//			coloredSplit.append("<div style='color:'" + 
+	//					subgraphcolors[subgraphcolorindex].getRGB() + 
+	//					"font-face:bold'>" +hole + "=[" + wcc + "]");
+								
+				FormatManager.markSubgraph(wcc, jdg, subgraphindex);
+				
+			}
+		
+
+			FormatManager.refreshGraphLayout(jdg);
+		}	
+	}
 	
 	
 	class ChartTableModel extends AbstractTableModel {
@@ -409,5 +500,108 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		    }
 		
 	}
+
+
+	/**
+	 * @return Returns the chart.
+	 */
+	Chart getChart() {
+		return chart;
+	}
+
+	/**
+	 * @param chart The chart to set.
+	 */
+	void setChart(Chart chart) {
+		this.chart = chart;
+	}
+
+	/**
+	 * @return Returns the dg.
+	 */
+	DomGraph getDg() {
+		return dg;
+	}
+
+	/**
+	 * @param dg The dg to set.
+	 */
+	void setDg(DomGraph dg) {
+		this.dg = dg;
+	}
+
+	/**
+	 * @return Returns the jdg.
+	 */
+	JDomGraph getJdg() {
+		return jdg;
+	}
+
+	/**
+	 * @param jdg The jdg to set.
+	 */
+	void setJdg(JDomGraph jdg) {
+		this.jdg = jdg;
+	}
 	
+	void refreshChartWindow() {
+		prettyprint.getSelectionModel().setSelectionInterval(-1,-1);
+		currentcolumn = -1;
+		currentrow = -1;
+		splitNumbers.clear();
+		orderedSplits.clear();
+		rootsToSubgraphs.clear();
+		longestSplit = "";
+		biggestSubgraph = new HashSet<String>();
+		lastIndex = -1;
+		subgraphs.clear();
+		
+		chartOnlyRootsHTML();
+		initColumnSizes();
+		noOfSolvedForms = chart.countSolvedForms().intValue();
+		solvedforms.setText("This Chart has " + noOfSolvedForms + " solved Forms.");
+		pack();
+		validate();
+	}
+	
+	Split getSelectedSplit() {
+		int row = prettyprint.getSelectedRow();
+		int col = prettyprint.getSelectedColumn();
+		
+		if( (col >= 1) && (row > -1)  ) {
+			Split selectedSplit = orderedSplits.get(
+					prettyprint.getSelectedRow());
+		    return selectedSplit;
+		} return null;
+	}
+	
+	Set<String> getSubgraphForMarkedSplit() {
+		int row = prettyprint.getSelectedRow();
+		
+		if( row > -1 ) {
+			
+			return rootsToSubgraphs.get(
+					subgraphs.get(row));
+		
+		} return null;
+	}
+	
+	void deleteIndex(int i) {
+	
+	}
+
+	/**
+	 * @return Returns the labels.
+	 */
+	NodeLabels getLabels() {
+		return labels;
+	}
+
+	/**
+	 * @param labels The labels to set.
+	 */
+	void setLabels(NodeLabels labels) {
+		this.labels = labels;
+	}
+		
 }

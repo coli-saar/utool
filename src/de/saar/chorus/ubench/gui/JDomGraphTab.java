@@ -224,11 +224,11 @@ public class JDomGraphTab extends JGraphTab  {
 				ChartSolver.solve(domGraph.compactify(), chart);
 		 }
 			
-			cv = new ChartViewer(chart, 
-					domGraph, defaultName, graph);
+			cv = new ChartViewer((Chart) chart.clone(), 
+					domGraph, defaultName, graph, nodeLabels);
 		} else {
-			ChartViewer temp = new ChartViewer(chart, 
-					domGraph, defaultName, graph);
+			ChartViewer temp = new ChartViewer((Chart) chart.clone(), 
+					domGraph, defaultName, graph, nodeLabels);
 		}
 		
 		changeCursorGlobally(Cursor.getDefaultCursor());

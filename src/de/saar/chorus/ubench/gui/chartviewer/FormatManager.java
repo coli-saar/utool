@@ -79,7 +79,6 @@ public class FormatManager {
 		.setLineColor(graph.getModel().getAttributes(edge), color);
 		GraphConstants
 		.setLineWidth(graph.getModel().getAttributes(edge), width);
-		
 	}
 	
 	/**
@@ -137,6 +136,12 @@ public class FormatManager {
 		}
 		
 		refreshGraphLayout(graph);
+	}
+	
+	public static void markSubgraph(Set<String> roots, JDomGraph graph, int subgraphindex) {
+		int color = subgraphindex % subgraphcolors.length;
+		
+		markSubgraph(roots, subgraphcolors[color], graph, false);
 	}
 	
 	public static void markSubgraph(Set<String> roots, JDomGraph graph) {
@@ -225,70 +230,16 @@ public class FormatManager {
 		}
 	}
 	
-	public static String markSplit(Split split, String splitAsString,
-			JDomGraph graph) {
-		
-		StringBuffer coloredSplit = new StringBuffer();
-	//	coloredSplit.append("<html>");
-		
-		shadeGraph(graph);
-		
-		Set<String> dominators = new HashSet<String>(split.getAllDominators());
-		String root = split.getRootFragment();
-	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
-		
-
-		if(!root.equals("")) {
-			DefaultGraphCell rootNode = graph.getNodeForName(root);
-			Fragment rootFrag = graph.findFragment(rootNode);
-			for( DefaultGraphCell rfn : rootFrag.getNodes()) {
-				markNode(rfn, rootcolor, graph, markedNodeFont);
-				for( DefaultEdge edg : graph.getOutEdges(rfn) ) {
-					markEdge(edg, rootcolor, graph, markedEdgeWidth);
-				}
+	public static void markRootFragment(Fragment root, JDomGraph graph) {
+		for( DefaultGraphCell rfn : root.getNodes()) {
+			markNode(rfn, rootcolor, graph, markedNodeFont);
+			for( DefaultEdge edg : graph.getOutEdges(rfn) ) {
+				markEdge(edg, rootcolor, graph, markedEdgeWidth);
 			}
 		}
-		
-	
-		
-		for(String hole : dominators) {
-			
-			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
-			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
-			for( Set<String> subg : wccs) {
-				Set<String> wcc = new HashSet<String>(subg);
-				wcc.add(hole);
-				
-	//			coloredSplit.append("<div style='color:'" + 
-	//					subgraphcolors[subgraphcolorindex].getRGB() + 
-	//					"font-face:bold'>" +hole + "=[" + wcc + "]");
-								
-				markSubgraph(wcc, subgraphcolors[subgraphcolorindex], 
-						graph, false);
-				if(++subgraphcolorindex == subgraphcolors.length) {
-					subgraphcolorindex = 0;
-				} 
-			}
-			
-			subgraphcolorindex--;
-			
-			if(++subgraphcolorindex == subgraphcolors.length) {
-				subgraphcolorindex = 0;
-			} 
-			
-		
-		} 
-
-		subgraphcolorindex = 0;
-		
-
-		refreshGraphLayout(graph);
-
-		return coloredSplit.toString();
-		
 	}
 	
-	private static void refreshGraphLayout(JDomGraph graph) {
+	public static void refreshGraphLayout(JDomGraph graph) {
 		JGraphUtilities.applyLayout(graph, new JDomGraphDummyLayout(graph));
 	}
 	
