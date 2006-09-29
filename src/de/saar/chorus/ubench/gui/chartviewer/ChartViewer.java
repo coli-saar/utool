@@ -545,8 +545,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	}
 	
 	void refreshChartWindow() {
+		((AbstractTableModel) prettyprint.getModel()).fireTableDataChanged();
 		
-		((AbstractTableModel) prettyprint.getModel()).fireTableRowsDeleted(currentrow, currentrow);
 		prettyprint.getSelectionModel().setSelectionInterval(-1,-1);
 		currentcolumn = -1;
 		currentrow = -1;
