@@ -2,10 +2,13 @@ package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -18,6 +21,7 @@ import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
+import de.saar.chorus.ubench.gui.CommandListener.XMLFilter;
 
 public class ChartViewerListener implements ActionListener {
 
@@ -41,6 +45,7 @@ public class ChartViewerListener implements ActionListener {
 					splits.remove(selectedSplit);
 					chart.setSplitsForSubgraph(subgraph, splits);
 					viewer.refreshChartWindow();
+					
 				} catch(UnsupportedOperationException ex) {
 					JOptionPane.showMessageDialog(viewer,
 							"You cannot delete the selected Split." + 
@@ -52,13 +57,34 @@ public class ChartViewerListener implements ActionListener {
 				
 			}
 		} else if( command.equals("elred")) {
+			
+				JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+				fc.setDialogTitle("Choose the equation system input file");
+				fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
+				
+				int fcVal = fc.showOpenDialog(viewer);	
+				
+				if(fcVal == JFileChooser.APPROVE_OPTION){
+					
+					File file = fc.getSelectedFile();
+					EquationSystem eqs = new EquationSystem();
+					try {
+					eqs.read(new FileReader(file));
+					} catch( Exception ex ) {
+						JOptionPane.showMessageDialog(viewer,
+								"The Equation System cannot be parsed." + 
+								System.getProperty("line.separator") + 
+								"Either the input file is not valid or it contains syntax errors.",
+								"Error while Loading Equation System",
+								JOptionPane.ERROR_MESSAGE);
+					} 
 				IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
 					(DomGraph) viewer.getDg().clone(), viewer.getLabels(),
-					new EquationSystem());
+					eqs);
 		
 				elim.eliminate(viewer.getChart());
 				viewer.refreshChartWindow();
-				
+				}
 		
 		} else if( command.equals("solvechart")) {
 			Chart chart = viewer.getChart();
