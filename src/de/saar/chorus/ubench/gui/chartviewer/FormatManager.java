@@ -216,7 +216,7 @@ public class FormatManager {
 	
 	
 	
-	private static void shadeGraph(JDomGraph graph) {
+	public static void shadeGraph(JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, deactivatedColor, graph, standardNodeFont);
 		}

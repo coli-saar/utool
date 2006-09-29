@@ -392,7 +392,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		StringBuffer coloredSplit = new StringBuffer();
 	//	coloredSplit.append("<html>");
 		
-	//	shadeGraph(graph);
+		FormatManager.shadeGraph(jdg);
 		
 		Set<String> dominators = new HashSet<String>(split.getAllDominators());
 		String root = split.getRootFragment();
