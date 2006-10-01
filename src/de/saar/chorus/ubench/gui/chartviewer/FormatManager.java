@@ -153,10 +153,65 @@ public class FormatManager {
 	
 	}
 	
+	public static String splitToHTML(Split split, Set<String> roots) {
+		StringBuffer htmlsplit = new StringBuffer();
+		
+		htmlsplit.append("<html><b>&lt;<font color=\"#" + 
+				Integer.toHexString(rootcolor.getRGB()).substring(2)
+				+"\">" + split.getRootFragment() + "</font> ");
+		
+		
+		
+		boolean firsthole = true;
+		for (String hole : split.getAllDominators()) {
+			if(firsthole) {
+				firsthole = false;
+			} else {
+				htmlsplit.append(", ");
+			}
+			htmlsplit.append("<font color=\"#" + 
+					Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
+					+ "\">" +hole +"=[</font>");
+			List<Set<String>> x = new ArrayList<Set<String>>();
+		
+			boolean firstsubgraph = true;
+			for (Set<String> wcc : split.getWccs(hole)) {
+				if(firstsubgraph) {
+					firstsubgraph = false;
+				} else {
+					htmlsplit.append(", ");
+				}
+				Set<String> copy = new HashSet<String>(wcc);
+				copy.retainAll(roots);
+				htmlsplit.append("<font color=\"#" + 
+						Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
+						+ "\">" + copy +"</font>");
+				x.add(copy);
+				if( ++subgraphcolorindex >= subgraphcolors.length) {
+					subgraphcolorindex = 0;
+				}
+			}
+			subgraphcolorindex--;
+			htmlsplit.append("<font color=\"#" + 
+					Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
+						+ "\">]</font>");
+			if( ++subgraphcolorindex >= subgraphcolors.length) {
+				subgraphcolorindex = 0;
+			}
+		}
+		
+		
+		htmlsplit.append("&gt;");
+		htmlsplit.append("</b></html>");
+		subgraphcolorindex = 0;
+		
+		return htmlsplit.toString();
+		
+	}
+	
 	private static void markSubgraph(Set<String> roots, Color color, 
 			JDomGraph graph, boolean shadeRemaining) {
 		
-		long start = System.currentTimeMillis();
 		if(shadeRemaining) {
 			shadeGraph(graph);
 			

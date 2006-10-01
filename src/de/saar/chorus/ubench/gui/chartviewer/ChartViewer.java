@@ -310,13 +310,26 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if(row == currentrow && col == currentcolumn ) {
 			return;
 		} else {
+			int lastrow = currentrow;
+			int lastcolumn = currentcolumn;
+			
 			currentrow = row;
 			currentcolumn = col;
+			
+			if(lastrow > -1 && lastcolumn > -1 ) {
+				((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(lastrow,lastcolumn);
+				if(lastcolumn == 1 ) {
+					((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(lastrow,++lastcolumn);
+				}
+			}
+			((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(row,col);
+			if( currentcolumn == 1 ) {
+				((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(row,col +1 );
+			}
 		}
 		
+		
 		if( (col >= 1) && (row > -1)  ) {
-			
-			
 			Split selectedSplit = orderedSplits.get(
 					prettyprint.getSelectedRow());
 			
@@ -340,6 +353,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					FormatManager.markSubgraph(subgraph, jdg);
 					
 				} else {
+
 					FormatManager.unmark(jdg);
 				}
 			}
@@ -383,8 +397,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	public void markSplit(Split split) {
 		
 		int subgraphindex = -1;
-		StringBuffer coloredSplit = new StringBuffer();
-	//	coloredSplit.append("<html>");
 		
 		FormatManager.shadeGraph(jdg);
 		
@@ -409,10 +421,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				subgraphindex++;
 				Set<String> wcc = new HashSet<String>(subg);
 				wcc.add(hole);
-				
-	//			coloredSplit.append("<div style='color:'" + 
-	//					subgraphcolors[subgraphcolorindex].getRGB() + 
-	//					"font-face:bold'>" +hole + "=[" + wcc + "]");
+		
 								
 				FormatManager.markSubgraph(wcc, jdg, subgraphindex);
 				
@@ -460,9 +469,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			
 			if(columnIndex == 0) {
-				
+				// a subgraph 
 				Set<String> toShow = subgraphs.get(rowIndex);
 				if(splitNumbers.get(rowIndex) == 1) {
+					if(rowIndex == currentrow && 
+							columnIndex == currentcolumn) {
+						return"<html><font color=\"blue\"><b>" 
+						+ toShow + "</b></font></html>";
+					}
 					return toShow;
 				} else {
 					return "";
@@ -470,14 +484,20 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				
 				
 			} else if(columnIndex == 2) {
+				// a split
 				Split next = orderedSplits.get(rowIndex);
 				
 				if( next != null) {
+					if( rowIndex == currentrow && 
+							currentcolumn >= 1 ) {
+						return FormatManager.splitToHTML(next, subgraphs.get(rowIndex));
+					}
 					return  nameToSplit.get(next);
 				} else {
 					return " ";
 				}
 			} else if(columnIndex == 1) {
+				// the number of a split (relative to the splits in its subgraph)
 				Integer splitnumber = splitNumbers.get(rowIndex);
 				if(splitnumber == 0) {
 					return null;
