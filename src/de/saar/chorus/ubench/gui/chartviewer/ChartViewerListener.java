@@ -104,6 +104,8 @@ public class ChartViewerListener implements ActionListener {
 					viewer.getLabels());
 			
 			Ubench.getInstance().addTab(sFTab, true);
+		} else if ( command.equals("resetchart") ) {
+			viewer.resetChart();
 		}
 
 	}

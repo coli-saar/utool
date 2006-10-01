@@ -2,6 +2,8 @@ package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,13 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -48,7 +53,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	//private JPanel prettyprint; // Component for the text representation
 	private JTable prettyprint;
-	private Chart chart; // the chart itself
+	private Chart chart; // the chart to work with
+	private Chart chartcopy; // a safety copy :)
 	
 	private DomGraph dg; // the graph belonging to the chart
 	private JDomGraph jdg; // the Graph to highlight the nodes in
@@ -58,7 +64,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private Map<Split, String> nameToSplit;
 	private List<Split> orderedSplits;
 	private List<Set<String>> subgraphs;
-	private List<Integer> noOfSplits;
+	private List<Integer> splitCounts;
 	private List<Integer> splitNumbers;
 	private Map<Set<String>, Set<String>> rootsToSubgraphs;
 	
@@ -71,10 +77,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	private JPanel statusbar;
 	private JLabel solvedforms;
+	private JLabel subgraphLabel;
+	private JLabel splitLabel;
+	
 	private int noOfSolvedForms;
-	private JButton sf1;
-	private JButton elred;
-	private JButton delSplit;
+	private int noOfSplits;
+	private int noOfSubgraphs;
+	
 	
 	private NodeLabels labels;
 	
@@ -94,14 +103,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		labels = la;
 		listener = new ChartViewerListener(this);
-		chart = c;
+		chartcopy = c;
+		chart = (Chart) c.clone();
 		dg = g;
 		jdg = jg;
 		
 		nameToSplit = new HashMap<Split,String>();
 		rootsToSubgraphs = new HashMap<Set<String>, Set<String>>();
 		subgraphs = new ArrayList<Set<String>>();
-		noOfSplits = new ArrayList<Integer>();
+		splitCounts = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
 		splitNumbers = new ArrayList<Integer>();
 		currentrow = -1;
@@ -117,7 +127,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		"Click on a split to highlight it in the graph window.");
 		
 		
-		chartOnlyRootsHTML();
+		calculateChartTable();
 		// layout
 		add(instruction);
 		
@@ -137,36 +147,21 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		add(printPane);
 		
 		noOfSolvedForms = chart.countSolvedForms().intValue();
+		noOfSplits = chart.size();
 		
-		JPanel firstrow = new JPanel();
-		JPanel secondrow = new JPanel();
 		
+		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms, "
+				+ "contains " + noOfSplits + " splits and " +
+						"" + noOfSubgraphs + " subgraphs.");
+		
+	
 		statusbar = new JPanel();
-		sf1 = new JButton("Show solved form #1");
-		sf1.setActionCommand("solvechart");
-		sf1.addActionListener(listener);
 		
-		elred = new JButton("Eleminate Redundancies");
-		elred.setActionCommand("elred");
-		elred.addActionListener(listener);
-		
-		delSplit = new JButton("Delete Marked Split");
-		delSplit.setActionCommand("delSplit");
-		delSplit.addActionListener(listener);
-		
-		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms.");
-		
-		firstrow.add(solvedforms);
-		firstrow.add(sf1);
-		
-		secondrow.add(elred);
-		secondrow.add(delSplit);
-		
-		statusbar.add(firstrow, BorderLayout.NORTH);
-		statusbar.add(secondrow, BorderLayout.SOUTH);
+		statusbar.add(solvedforms);
 		
 		add(statusbar,BorderLayout.SOUTH);
 		
+		setJMenuBar(new ChartViewerMenu(listener));
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
 	
@@ -180,7 +175,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 	
-	private void chartOnlyRootsHTML() {
+	private void calculateChartTable() {
 		
 		Set<String> roots = dg.getAllRoots();
 		Set<Set<String>> visited = new HashSet<Set<String>>();
@@ -209,10 +204,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			rootsToSubgraphs.put(s, subgraph);
 			
 			if (chart.getSplitsFor(subgraph) != null) {
-				
+				noOfSubgraphs++;
 				
 				List<Split> splits = chart.getSplitsFor(subgraph);
-				noOfSplits.add(splits.size());
+				splitCounts.add(splits.size());
 				
 				int splitcount = 0;
 				for (Split split : splits ) {
@@ -251,7 +246,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				}
 				subgraphs.add(new HashSet<String>());
 				orderedSplits.add(null);
-				noOfSplits.add(1);
+				splitCounts.add(1);
 				splitNumbers.add(0);
 				
 				
@@ -317,7 +312,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} else {
 			currentrow = row;
 			currentcolumn = col;
-			System.err.println(row + " | " + col);
 		}
 		
 		if( (col >= 1) && (row > -1)  ) {
@@ -558,11 +552,20 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		lastIndex = -1;
 		subgraphs.clear();
 	
-
-		chartOnlyRootsHTML();
+		noOfSubgraphs = 0;
+		calculateChartTable();
 		initColumnSizes();
 		noOfSolvedForms = chart.countSolvedForms().intValue();
-		solvedforms.setText("This Chart has " + noOfSolvedForms + " solved Forms.");
+		
+		noOfSplits = chart.size();
+		
+		
+		
+		solvedforms.setText("This Chart has " + noOfSolvedForms + " solved forms, "
+				+ "contains " + noOfSplits + " splits and " +
+				"" + noOfSubgraphs + " subgraphs.");
+		
+		
 		pack();
 		validate();
 	}
@@ -605,6 +608,57 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	void setLabels(NodeLabels labels) {
 		this.labels = labels;
+	}
+	
+	
+	void resetChart() {
+		chart = (Chart) chartcopy.clone();
+		refreshChartWindow();
+	}
+	
+	class ChartViewerMenu extends JMenuBar {
+		
+		ActionListener lis;
+		JMenu chartmenu, splitmenu;
+		JMenuItem elred, reset, delete, firstsolvedform;
+		
+		ChartViewerMenu(ActionListener li) {
+			
+			lis=li;
+			
+			chartmenu = new JMenu("Chart");
+			
+			firstsolvedform = new JMenuItem("Show first Solved Form");
+			firstsolvedform.setActionCommand("solvechart");
+			firstsolvedform.addActionListener(lis);
+			chartmenu.add(firstsolvedform);
+			
+			chartmenu.addSeparator();
+			
+			elred = new JMenuItem("Eliminate Equivalences...");
+			elred.setActionCommand("elred");
+			elred.addActionListener(lis);
+			chartmenu.add(elred);
+			
+			reset = new JMenuItem("Reset Chart");
+			reset.setActionCommand("resetchart");
+			reset.addActionListener(lis);
+			chartmenu.add(reset);
+			chartmenu.validate();
+			add(chartmenu);
+			
+			splitmenu = new JMenu("Split");
+			
+			
+			delete = new JMenuItem("Delete Marked Split");
+			delete.setActionCommand("delSplit");
+			delete.setMnemonic(KeyEvent.VK_DELETE);
+			delete.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
+			delete.addActionListener(lis);
+			splitmenu.add(delete);
+			splitmenu.validate();
+			add(splitmenu);
+		}
 	}
 		
 }
