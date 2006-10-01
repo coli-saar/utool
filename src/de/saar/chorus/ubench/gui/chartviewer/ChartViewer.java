@@ -165,11 +165,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		//TODO perhaps this isn't such a good idea...
 		setAlwaysOnTop(true);
 	
-		setLocationRelativeTo(Ubench.getInstance().getWindow());
+	
 	
 		pack();
 		validate();
-	
+		setLocationRelativeTo(Ubench.getInstance().getWindow());
 		
 		setVisible(true);
 		
