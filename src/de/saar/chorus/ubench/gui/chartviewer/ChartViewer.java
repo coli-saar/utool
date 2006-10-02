@@ -335,7 +335,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			
 			// retrieving the split's nodes
 			
-			// TODO move the following anywhere else (Tab?)
+			
 			// changing the color of nodes and edges
 			if(selectedSplit != null ) {
 				markSplit(selectedSplit);
@@ -402,7 +402,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		Set<String> dominators = new HashSet<String>(split.getAllDominators());
 		String root = split.getRootFragment();
-	//	coloredSplit.append("&lt;<div style='color:" + rootcolor.getRGB() + "font-face:bold'>" + root +"</div> \\{");
+	
 		
 
 		if(!root.equals("")) {
@@ -415,19 +415,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		for(String hole : dominators) {
 			
-			//jdg.markNode(jdg.getNodeForName(hole), colors.get(colorindex));
 			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
 			for( Set<String> subg : wccs) {
 				subgraphindex++;
 				Set<String> wcc = new HashSet<String>(subg);
 				wcc.add(hole);
 		
-								
 				FormatManager.markSubgraph(wcc, jdg, subgraphindex);
 				
 			}
-		
-
 			FormatManager.refreshGraphLayout(jdg);
 		}	
 	}
