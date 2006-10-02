@@ -85,8 +85,7 @@
                            value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
 		</jar>
-		<signjar jar="${domgraph.jar}" alias="utool-dist" 
-			storepass="constraint"	keystore="utool-3.1-pre.keystore"/>
+		
 	</target>
 	
 	
@@ -198,6 +197,17 @@
 		</scp>
 	</target>
 	
+	
+	
+	<!-- create a new singed jar:
+		
+		     ant -Dkeystore=... -Dkeystore.alias=... -Dkeystore.password=... deploy
+
+	     -->
+	<target name="webstart" depends="utool">
+		<signjar jar="${domgraph.jar}" alias="${keystore.alias}" 
+					storepass="${keystore.password}"	keystore="${keystore}"/>
+	</target>
 	
 	<target name="make-manual">
 		<exec executable="make" dir="doc">
