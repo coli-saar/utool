@@ -51,56 +51,75 @@ import de.saar.chorus.ubench.gui.Ubench;
  */
 public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
-	//private JPanel prettyprint; // Component for the text representation
-	private JTable prettyprint;
-	private Chart chart; // the chart to work with
-	private Chart chartcopy; // a safety copy :)
+	
+	private JTable prettyprint;	// the chart as JTable
+	private Chart chart; 		// the chart to work with
+	private Chart chartcopy; 	// a safety copy
 	
 	private DomGraph dg; // the graph belonging to the chart
 	private JDomGraph jdg; // the Graph to highlight the nodes in
+	// the node labels object of the DomGraph
+	private NodeLabels labels;
 	
+	// splits and their string representation
+	private Map<Split, String> nameToSplit;	
 	
+	// splits in the order they appear in the table
+	private List<Split> orderedSplits; 
 	
-	private Map<Split, String> nameToSplit;
-	private List<Split> orderedSplits;
+	// subgraphs in the order they appear in the table
 	private List<Set<String>> subgraphs;
-	private List<Integer> splitCounts;
+	
+	// the numbers ordering the splits of a subgraph
 	private List<Integer> splitNumbers;
+	
+	// subgraphs, complete and represented only by roots
 	private Map<Set<String>, Set<String>> rootsToSubgraphs;
 	
+	/*
+	 * for determining the cell widths 
+	 */
 	private String longestSplit;
 	private Set<String> biggestSubgraph;
 	private int lastIndex;
 	
+	// keeping track of the currently marked field
 	private int currentrow;
 	private int currentcolumn;
 	
-	private JPanel statusbar;
-	private JLabel solvedforms;
-	private JLabel subgraphLabel;
-	private JLabel splitLabel;
+	/*
+	 * Status bar, showing the number of splits, subgraphs
+	 * and solved forms
+	 */
+	private JPanel statusbar; 	// panel on the bottom
+	private JLabel solvedforms; // text on the bottom
 	
+	// counting solved forms, splits and subgraphs
 	private int noOfSolvedForms;
 	private int noOfSplits;
 	private int noOfSubgraphs;
 	
-	
-	private NodeLabels labels;
-	
+
+	// the ActionListener responsible for actions
+	// triggered via the Window Menu
 	private ChartViewerListener listener;
+	
+	
 	/**
-	 * A new ChartViewer 
+	 * A new ChartViewer
 	 * 
-	 * @param c
-	 * @param g
-	 * @param title
+	 * @param c the Chart
+	 * @param g the DomGraph
+	 * @param title the name of the graph
+	 * @param jg the visible JDomGraph
+	 * @param la the NodeLabels object
 	 */
 	public ChartViewer(Chart c, DomGraph g, 
 			String title, JDomGraph jg,
 			NodeLabels la) {
+		
 		// some initialising
 		super("Chart of " + title);
-		
 		labels = la;
 		listener = new ChartViewerListener(this);
 		chartcopy = c;
@@ -111,45 +130,44 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		nameToSplit = new HashMap<Split,String>();
 		rootsToSubgraphs = new HashMap<Set<String>, Set<String>>();
 		subgraphs = new ArrayList<Set<String>>();
-		splitCounts = new ArrayList<Integer>();
 		orderedSplits = new ArrayList<Split>();
 		splitNumbers = new ArrayList<Integer>();
 		currentrow = -1;
 		currentcolumn = -1;
 		
-		/*
-		 * the label indicating the (only) 
-		 * functinality.
-		 * If we add more functionality, this should become
-		 * a menu.
-		 */
+		
 		JLabel instruction = new JLabel(
 		"Click on a split to highlight it in the graph window.");
 		
-		
+		// filling the Lists and Maps used by the 
+		// Table model
 		calculateChartTable();
-		// layout
-		add(instruction);
 		
+	
+		// initialising and customising the JTable
 		prettyprint = new JTable(new ChartTableModel());
 		
-		prettyprint.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
+		// single-cell-selection and listening to 
+		// changes of this selection
+		prettyprint.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);		
 		prettyprint.setColumnSelectionAllowed(true);
 		prettyprint.setRowSelectionAllowed(true);
 		prettyprint.setCellSelectionEnabled(true);
-		prettyprint.getSelectionModel().addListSelectionListener(this);
-		
+		prettyprint.getSelectionModel().addListSelectionListener(this);		
 		prettyprint.getColumnModel().getSelectionModel().addListSelectionListener(this);
+		
+		// column width
 		initColumnSizes();
 		
+		// layout
+		add(instruction);
 		JScrollPane printPane = new JScrollPane(prettyprint);
 		add(printPane);
 		
 		noOfSolvedForms = chart.countSolvedForms().intValue();
 		noOfSplits = chart.size();
 		
-		
+		// the information text on the bottom
 		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms, "
 				+ "contains " + noOfSplits + " splits and " +
 						"" + noOfSubgraphs + " subgraphs.");
@@ -161,12 +179,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		add(statusbar,BorderLayout.SOUTH);
 		
+		// menu.
 		setJMenuBar(new ChartViewerMenu(listener));
-		//TODO perhaps this isn't such a good idea...
+		
+		//TODO modify this so as to be only on top within Ubench
 		setAlwaysOnTop(true);
-	
-	
-	
+		
 		pack();
 		validate();
 		setLocationRelativeTo(Ubench.getInstance().getWindow());
@@ -175,6 +193,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 	
+	/**
+	 * The main method for creating the data structure
+	 * representing the visible Chart table internally.
+	 *
+	 */
 	private void calculateChartTable() {
 		
 		Set<String> roots = dg.getAllRoots();
@@ -189,44 +212,62 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 	
+	/**
+	 * Recursive helper method to fill the lists for each
+	 * subgraph.
+	 * 
+	 * @param subgraph the current subgraph
+	 * @param roots the roots of the current subgraph
+	 * @param visited the set of visited subgraphs
+	 */
 	private void corSubgraph(Set<String> subgraph, Set<String> roots,
 			Set<Set<String>> visited) {
 		Set<String> s = new HashSet<String>(subgraph);
-		boolean first = true;
 		
 		Set<Set<String>> toVisit = new HashSet<Set<String>>();
 		
 		if (!visited.contains(subgraph)) {
+			
+			// a new subgraph
 			visited.add(subgraph);
 			
 			s.retainAll(roots);
-			String sgs = s.toString();
 			rootsToSubgraphs.put(s, subgraph);
 			
 			if (chart.getSplitsFor(subgraph) != null) {
+				
+				// counting the number of subgraphs with
+				// splits (for the 
+				// information in the status bar)
 				noOfSubgraphs++;
 				
 				List<Split> splits = chart.getSplitsFor(subgraph);
-				splitCounts.add(splits.size());
 				
+				// for numbering the splits in the table,
+				// count the splits of each subgraph
 				int splitcount = 0;
+				
+				// for each split of the current subgraph...
 				for (Split split : splits ) {
-														
+					
+					/*
+					 * Adding the subgraph to the subgraph-list
+					 * for each split.
+					 * This is to retrieve the subgraph for 
+					 * a marked split (even if the subgraph
+					 * is shown only once in the table) by
+					 * just using the index of the currently 
+					 * marked row.
+					 */
 					subgraphs.add(s);
 					splitcount++;
-					if (first) {
-						
-						first = false;
-					} else {
-						
-						JTextPane empty = new JTextPane();
-						empty.setText("  ");
-						empty.setEditable(false);
-						//	prettyprint.add(empty);
-					}
 					
+					// to compute the string representations of 
+					// each split in the chart.
 					String nextSplit = corSplit(split, roots);
 					
+					// retrieving the longest split
+					// found so far
 					if( longestSplit == null ) {
 						longestSplit = nextSplit;
 					} else {
@@ -237,16 +278,19 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					}
 					
 					nameToSplit.put(split, nextSplit);
+					
+					// updating the lists of splits and 
+					// split numbers
 					splitNumbers.add(splitcount);
 					orderedSplits.add(split);
 					
-					
-					
 					toVisit.addAll(split.getAllSubgraphs());
 				}
+				
+				// this is to create an empty line after
+				// each subgraph "paragraph" in the table
 				subgraphs.add(new HashSet<String>());
 				orderedSplits.add(null);
-				splitCounts.add(1);
 				splitNumbers.add(0);
 				
 				
@@ -258,6 +302,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} 
 	}
 	
+	/**
+	 * This computes a String representation of
+	 * a split.
+	 * @param split the split
+	 * @param roots the list of nodes to show finally
+	 * @return the String representing the split
+	 */
 	private String corSplit(Split split, Set<String> roots) {
 		StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
 		Map<String, List<Set<String>>> map = new HashMap<String, List<Set<String>>>();
@@ -285,8 +336,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 	/**
 	 * This overrides the "setVisible" method to 
-	 * make sure that the highlighting dissapperas when
-	 * this window is closed.
+	 * make sure that the marking disappears when
+	 * the window is closed.
 	 * 
 	 * @Override
 	 * 
@@ -297,72 +348,104 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		FormatManager.unmark(jdg);
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+
+	/**
+	 * This handels selection changes of the table
+	 * and is responsible for marking splits and subgraphs
+	 * in the table itself and in the main window.
 	 */
 	public void valueChanged(ListSelectionEvent	 e) {
 		
-		  if (e.getValueIsAdjusting()) return;
+		if (e.getValueIsAdjusting()) return;
 		
+		// the selected cell
 		int row = prettyprint.getSelectedRow();
 		int col = prettyprint.getSelectedColumn();
 		
 		if(row == currentrow && col == currentcolumn ) {
+			// no real selection change
 			return;
 		} else {
+			// the last selected cell
 			int lastrow = currentrow;
 			int lastcolumn = currentcolumn;
 			
+			// updating the indices 
 			currentrow = row;
 			currentcolumn = col;
-			
 			if(lastrow > -1 && lastcolumn > -1 ) {
-				((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(lastrow,lastcolumn);
 				if(lastcolumn == 1 ) {
-					((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(lastrow,++lastcolumn);
+					// updating cellview of the last selected
+					// split if the last selected field was a number
+					((AbstractTableModel) prettyprint.getModel())
+					.fireTableCellUpdated(lastrow,++lastcolumn);
+				} else {
+//					updating cellview of the last selcted field
+					// (if there was one)
+					((AbstractTableModel) prettyprint.getModel())
+					.fireTableCellUpdated(lastrow,lastcolumn);
 				}
 			}
-			((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(row,col);
+			
+			
 			if( currentcolumn == 1 ) {
-				((AbstractTableModel) prettyprint.getModel()).fireTableCellUpdated(row,col +1 );
-			}
-		}
-		
-		
-		if( (col >= 1) && (row > -1)  ) {
-			Split selectedSplit = orderedSplits.get(
-					prettyprint.getSelectedRow());
-			
-			// retrieving the split's nodes
-			
-			
-			// changing the color of nodes and edges
-			if(selectedSplit != null ) {
-				markSplit(selectedSplit);
-			
+				// updating cellview of the currently selected
+				// split if the selected field is a number	
+				((AbstractTableModel) prettyprint.getModel())
+				.fireTableCellUpdated(row,col +1 );
 			} else {
-				FormatManager.unmark(jdg);
+				//	 updating the cellview of the currently selected field
+				((AbstractTableModel) prettyprint.getModel())
+				.fireTableCellUpdated(row,col);
 			}
 			
-		} else if (col == 0) {
-			if(row > -1) {
-				Set<String> subgraph = subgraphs.get(
-						row);
+			
+			if( (col >= 1) && (row > -1)  ) {
+				// a split or the number of a split
+				// is seleced
+				Split selectedSplit = orderedSplits.get(
+						prettyprint.getSelectedRow());
 				
-				if( ! subgraph.isEmpty() ) {
-					FormatManager.markSubgraph(subgraph, jdg);
+				
+				if(selectedSplit != null ) {
+					// marking the split in the main window
+					markSplit(selectedSplit);
 					
 				} else {
-
+					// and empty row -> unmarking the graph
 					FormatManager.unmark(jdg);
 				}
-			}
-		} else {
-			FormatManager.unmark(jdg);
-		}
+				
+			} else if (col == 0) {
+				// a subgraph is selected
+				if(row > -1) {
+					Set<String> subgraph = subgraphs.get(
+							row);
 					
+					if( ! subgraph.isEmpty() ) {
+						// marking the subgraph in the main window
+						FormatManager.markSubgraph(subgraph, jdg);
+						
+					} else {
+						// and empty row -> unmarking the graph
+						FormatManager.unmark(jdg);
+					}
+				}
+			} else {
+				// nothing marked -> unmarking the graph
+				FormatManager.unmark(jdg);
+			}
+		}
 	} 
 	
+	/**
+	 * This is to init the widths of each column according to 
+	 * the longest entry of a column.
+	 * TODO SWING appearantly does not really care about this but
+	 *      restricts the widths to a certain maximum of which only
+	 *      SWING knows the origin...
+	 *
+	 */
 	private void initColumnSizes() {
         AbstractTableModel model = (ChartTableModel)prettyprint.getModel();
         TableColumn column = null;
@@ -394,47 +477,71 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
         }
     }
 	
+	/**
+	 * Mark a split in the main window by
+	 * retrieving the colors via <code>FormatManager</code>.
+	 * 
+	 * @param split the <code>Split</code> to mark.
+	 */
 	public void markSplit(Split split) {
 		
+		// indexing the subgraphs 
+		// within the split (starting at 0).
 		int subgraphindex = -1;
 		
+		// this makes the graph grey at first.
 		FormatManager.shadeGraph(jdg);
 		
 		Set<String> dominators = new HashSet<String>(split.getAllDominators());
 		String root = split.getRootFragment();
 	
-		
-
+		// the root fragment has a special color.
 		if(!root.equals("")) {
 			DefaultGraphCell rootNode = jdg.getNodeForName(root);
 			Fragment rootFrag = jdg.findFragment(rootNode);
+			
 			FormatManager.markRootFragment(rootFrag, jdg);
 		}
 		
 	
-		
+		// iterating over the holes of the root fragment
 		for(String hole : dominators) {
 			
 			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
+			
+			// for each subgraph of a hole...
 			for( Set<String> subg : wccs) {
+				
+				// count it
 				subgraphindex++;
 				Set<String> wcc = new HashSet<String>(subg);
+				
+				// color it together with the hole
+				// TODO decide which color the hole should
+				// get when there are several subgraphs
 				wcc.add(hole);
-		
+				
 				FormatManager.markSubgraph(wcc, jdg, subgraphindex);
 				
 			}
+			// repainting the graph
 			FormatManager.refreshGraphLayout(jdg);
 		}	
 	}
 	
-	
+	/**
+	 * An <code>AbstractTableModel</code> representing a
+	 * <code>Chart</code> in a <code>JTable</code>.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
 	class ChartTableModel extends AbstractTableModel {
 		
-		/* (non-Javadoc)
-		 * @see javax.swing.table.AbstractTableModel#getColumnName(int)
+		
+		/**
+		 * The column headers.
 		 */
-		@Override
 		public String getColumnName(int column) {
 			if(column == 0) {
 				return "Subgraph";
@@ -445,22 +552,24 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			} else return "";
 		}
 		
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getColumnCount()
-		 */
+	/**
+	 * The number of Columns.
+	 * @return 3.
+	 */
 		public int getColumnCount() {
 			return 3;
 		}
 		
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getRowCount()
+		/**
+		 * The number of rows.
 		 */
 		public int getRowCount() {
 			return orderedSplits.size();
 		}
 		
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getValueAt(int, int)
+	
+		/**
+		 * Retrieving the value of a field.
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			
@@ -468,12 +577,17 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				// a subgraph 
 				Set<String> toShow = subgraphs.get(rowIndex);
 				if(splitNumbers.get(rowIndex) == 1) {
+					// subgraphs are only shown 
+					// for the first of its splits
 					if(rowIndex == currentrow && 
 							columnIndex == currentcolumn) {
+						// a marked subgraph
 						return FormatManager.getHTMLforMarkedSubgraph(toShow);
 					}
+					// a subgraph that is not marked
 					return toShow;
 				} else {
+					// as subgraph not to show.
 					return "";
 				}
 				
@@ -485,10 +599,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				if( next != null) {
 					if( rowIndex == currentrow && 
 							currentcolumn >= 1 ) {
+						// a marked split
 						return FormatManager.getHTMLforMarkedSplit(next, subgraphs.get(rowIndex));
 					}
+					// a split not marked
 					return  nameToSplit.get(next);
 				} else {
+					// and empty row
 					return " ";
 				}
 			} else if(columnIndex == 1) {
@@ -553,9 +670,18 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		this.jdg = jdg;
 	}
 	
+	/**
+	 * Refreshing the window after the chart has
+	 * changed.
+	 *
+	 */
 	void refreshChartWindow() {
+		
+		// fire data change.
 		((AbstractTableModel) prettyprint.getModel()).fireTableDataChanged();
 		
+		// emptying the data structure and resetting
+		// the indices.
 		prettyprint.getSelectionModel().setSelectionInterval(-1,-1);
 		currentcolumn = -1;
 		currentrow = -1;
@@ -566,16 +692,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		biggestSubgraph = new HashSet<String>();
 		lastIndex = -1;
 		subgraphs.clear();
-	
 		noOfSubgraphs = 0;
+		
+		// rebuilding the data structure
 		calculateChartTable();
 		initColumnSizes();
+		
+		// refreshing the status bar
 		noOfSolvedForms = chart.countSolvedForms().intValue();
-		
 		noOfSplits = chart.size();
-		
-		
-		
+				
 		solvedforms.setText("This Chart has " + noOfSolvedForms + " solved forms, "
 				+ "contains " + noOfSplits + " splits and " +
 				"" + noOfSubgraphs + " subgraphs.");
@@ -585,6 +711,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		validate();
 	}
 	
+	/**
+	 * 
+	 * @return the currrently selected split if there is one, null otherwise
+	 */
 	Split getSelectedSplit() {
 		int row = prettyprint.getSelectedRow();
 		int col = prettyprint.getSelectedColumn();
@@ -596,6 +726,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} return null;
 	}
 	
+	/**
+	 * 
+	 * @return the subgraph the currently selected split belongs to, 
+	 * @return null if there is no split selected
+	 */
 	Set<String> getSubgraphForMarkedSplit() {
 		int row = prettyprint.getSelectedRow();
 		
@@ -607,9 +742,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		} return null;
 	}
 	
-	void deleteIndex(int i) {
 	
-	}
 
 	/**
 	 * @return Returns the labels.
@@ -625,12 +758,22 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		this.labels = labels;
 	}
 	
-	
+	/**
+	 * Setting the chart to the "original" chart
+	 * using the pointer to the copy.
+	 *
+	 */
 	void resetChart() {
 		chart = (Chart) chartcopy.clone();
 		refreshChartWindow();
 	}
 	
+	/**
+	 * The Menu Bar for the chart window.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
 	class ChartViewerMenu extends JMenuBar {
 		
 		ActionListener lis;

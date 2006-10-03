@@ -1,5 +1,6 @@
 package de.saar.chorus.ubench.gui.chartviewer;
 
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -66,6 +67,8 @@ public class ChartViewerListener implements ActionListener {
 				
 				if(fcVal == JFileChooser.APPROVE_OPTION){
 					
+					viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					
 					File file = fc.getSelectedFile();
 					EquationSystem eqs = new EquationSystem();
 					try {
@@ -84,6 +87,7 @@ public class ChartViewerListener implements ActionListener {
 		
 				elim.eliminate(viewer.getChart());
 				viewer.refreshChartWindow();
+				viewer.setCursor(Cursor.getDefaultCursor());
 				}
 		
 		} else if( command.equals("solvechart")) {
@@ -105,7 +109,9 @@ public class ChartViewerListener implements ActionListener {
 			
 			Ubench.getInstance().addTab(sFTab, true);
 		} else if ( command.equals("resetchart") ) {
+			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			viewer.resetChart();
+			viewer.setCursor(Cursor.getDefaultCursor());
 		}
 
 	}
