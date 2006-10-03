@@ -3,8 +3,10 @@ package de.saar.chorus.ubench.gui.chartviewer;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
@@ -27,10 +29,10 @@ public class FormatManager {
 	private final static Color standardNodeBackground = Color.WHITE;
 	
 	private final static Font standardNodeFont = GraphConstants.DEFAULTFONT
-	.deriveFont(Font.PLAIN, 17);
+													.deriveFont(Font.PLAIN, 17);
 	
 	private final static Font markedNodeFont = GraphConstants.DEFAULTFONT
-	.deriveFont(Font.BOLD, 17);
+													.deriveFont(Font.BOLD, 17);
 	
 	private final static Color standardSolidEdgeColor = Color.BLACK;
 	
@@ -46,12 +48,18 @@ public class FormatManager {
 	
 	
 	private final static Color[] subgraphcolors = {
-			Color.BLUE, new Color(163, 0, 163),
-			new Color(255,153,51), new Color(255,51,51),
-			Color.CYAN		
-			};
+		Color.BLUE, new Color(163, 0, 163),
+		new Color(255,153,51), new Color(255,51,51),
+		Color.CYAN		
+	};
 	
 	private static int subgraphcolorindex = 0;
+	
+	private static Map<Split,String> splitToMarkedHTML = 
+		new HashMap<Split,String>();
+	
+	private static Map<Set<String>,String> subgraphToMarkedHTML = 
+		new HashMap<Set<String>,String>();	
 	
 	private final static Color rootcolor = new Color(0, 204, 51);
 	
@@ -150,63 +158,80 @@ public class FormatManager {
 				graph, true);
 		
 		refreshGraphLayout(graph);
-	
+		
 	}
 	
-	public static String splitToHTML(Split split, Set<String> roots) {
-		StringBuffer htmlsplit = new StringBuffer();
+	public static String getHTMLforMarkedSubgraph(Set<String> subgraph) {
+		if( subgraphToMarkedHTML.containsKey(subgraph) ) {
+			return subgraphToMarkedHTML.get(subgraph);
+		} else {
+			String htmlsubgraph = "<html><font color=\"#" + 
+			Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2) +
+			"\"><b>" + subgraph + "</b></font></html>";
+			
+			subgraphToMarkedHTML.put(subgraph, htmlsubgraph);
+			return htmlsubgraph;
+		}
+	}
+	
+	public static String getHTMLforMarkedSplit(Split split, Set<String> roots) {
 		
-		htmlsplit.append("<html><b>&lt;<font color=\"#" + 
-				Integer.toHexString(rootcolor.getRGB()).substring(2)
-				+"\">" + split.getRootFragment() + "</font> ");
-		
-		
-		
-		boolean firsthole = true;
-		for (String hole : split.getAllDominators()) {
-			if(firsthole) {
-				firsthole = false;
-			} else {
-				htmlsplit.append(", ");
-			}
-			htmlsplit.append("<font color=\"#" + 
-					Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
-					+ "\">" +hole +"=[</font>");
-			List<Set<String>> x = new ArrayList<Set<String>>();
-		
-			boolean firstsubgraph = true;
-			for (Set<String> wcc : split.getWccs(hole)) {
-				if(firstsubgraph) {
-					firstsubgraph = false;
+		if( splitToMarkedHTML.containsKey(split) ) {
+			return splitToMarkedHTML.get(split);
+		} else {
+			
+			StringBuffer htmlsplit = new StringBuffer();
+			
+			htmlsplit.append("<html><b>&lt;<font color=\"#" + 
+					Integer.toHexString(rootcolor.getRGB()).substring(2)
+					+"\">" + split.getRootFragment() + "</font> ");
+			
+			boolean firsthole = true;
+			for (String hole : split.getAllDominators()) {
+				if(firsthole) {
+					firsthole = false;
 				} else {
 					htmlsplit.append(", ");
 				}
-				Set<String> copy = new HashSet<String>(wcc);
-				copy.retainAll(roots);
 				htmlsplit.append("<font color=\"#" + 
 						Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
-						+ "\">" + copy +"</font>");
-				x.add(copy);
+						+ "\">" +hole +"=[</font>");
+				List<Set<String>> x = new ArrayList<Set<String>>();
+				
+				boolean firstsubgraph = true;
+				for (Set<String> wcc : split.getWccs(hole)) {
+					if(firstsubgraph) {
+						firstsubgraph = false;
+					} else {
+						htmlsplit.append(", ");
+					}
+					Set<String> copy = new HashSet<String>(wcc);
+					copy.retainAll(roots);
+					htmlsplit.append("<font color=\"#" + 
+							Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
+							+ "\">" + copy +"</font>");
+					x.add(copy);
+					if( ++subgraphcolorindex >= subgraphcolors.length) {
+						subgraphcolorindex = 0;
+					}
+				}
+				subgraphcolorindex--;
+				htmlsplit.append("<font color=\"#" + 
+						Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
+						+ "\">]</font>");
 				if( ++subgraphcolorindex >= subgraphcolors.length) {
 					subgraphcolorindex = 0;
 				}
 			}
-			subgraphcolorindex--;
-			htmlsplit.append("<font color=\"#" + 
-					Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)
-						+ "\">]</font>");
-			if( ++subgraphcolorindex >= subgraphcolors.length) {
-				subgraphcolorindex = 0;
-			}
+			
+			
+			htmlsplit.append("&gt;");
+			htmlsplit.append("</b></html>");
+			subgraphcolorindex = 0;
+			
+			splitToMarkedHTML.put(split,htmlsplit.toString());
+			return htmlsplit.toString();
 		}
-		
-		
-		htmlsplit.append("&gt;");
-		htmlsplit.append("</b></html>");
-		subgraphcolorindex = 0;
-		
-		return htmlsplit.toString();
-		
 	}
 	
 	private static void markSubgraph(Set<String> roots, Color color, 

@@ -470,8 +470,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				if(splitNumbers.get(rowIndex) == 1) {
 					if(rowIndex == currentrow && 
 							columnIndex == currentcolumn) {
-						return"<html><font color=\"blue\"><b>" 
-						+ toShow + "</b></font></html>";
+						return FormatManager.getHTMLforMarkedSubgraph(toShow);
 					}
 					return toShow;
 				} else {
@@ -486,7 +485,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				if( next != null) {
 					if( rowIndex == currentrow && 
 							currentcolumn >= 1 ) {
-						return FormatManager.splitToHTML(next, subgraphs.get(rowIndex));
+						return FormatManager.getHTMLforMarkedSplit(next, subgraphs.get(rowIndex));
 					}
 					return  nameToSplit.get(next);
 				} else {
