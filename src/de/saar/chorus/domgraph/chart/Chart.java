@@ -44,6 +44,7 @@ import org._3pq.jgrapht.util.ModifiableInteger;
 public class Chart implements Cloneable {
     private Map<Set<String>, List<Split>> chart;
     private Map<Set<String>, ModifiableInteger> refcount;
+    private Map<Set<String>, BigInteger> numSolvedForms;
     private int size;
     private List<Set<String>> toplevelSubgraphs;
 
@@ -54,6 +55,7 @@ public class Chart implements Cloneable {
     public Chart() {
         chart = new HashMap<Set<String>, List<Split>>();
         refcount = new HashMap<Set<String>, ModifiableInteger>();
+        numSolvedForms = new HashMap<Set<String>, BigInteger>();
         toplevelSubgraphs = new ArrayList<Set<String>>();
         size = 0;
     }
@@ -282,13 +284,16 @@ public class Chart implements Cloneable {
      */
     public BigInteger countSolvedForms() {
         BigInteger ret = BigInteger.ONE;
-        Map<Set<String>, BigInteger> numSolvedForms = new HashMap<Set<String>,BigInteger>();
-        
+                
         for( Set<String> subgraph : getToplevelSubgraphs() ) {
             ret = ret.multiply(countSolvedFormsFor(subgraph, numSolvedForms));
         }
         
         return ret;
+    }
+    
+    public BigInteger countSolvedFormsFor(Set<String> subgraph) {
+    	return countSolvedFormsFor(subgraph, numSolvedForms);
     }
 
     private BigInteger countSolvedFormsFor(Set<String> subgraph, Map<Set<String>,BigInteger> numSolvedForms) {
@@ -298,7 +303,7 @@ public class Chart implements Cloneable {
             return numSolvedForms.get(subgraph);
         } else if( !containsSplitFor(subgraph) ) {
             // no split for subgraph => subgraph contains only one fragment
-            return BigInteger.ONE;
+        	return BigInteger.ONE;
         } else {
             for( Split split : getSplitsFor(subgraph) ) {
                 BigInteger sfsThisSplit = BigInteger.ONE;

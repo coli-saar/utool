@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +20,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -145,7 +145,28 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	
 		// initialising and customising the JTable
-		prettyprint = new JTable(new ChartTableModel());
+		prettyprint = new JTable(new ChartTableModel()) {
+			public String getToolTipText(MouseEvent e) {
+				 java.awt.Point p = e.getPoint();
+			        int rowIndex = rowAtPoint(p);
+			        int colIndex = columnAtPoint(p);
+			        int realColumnIndex = convertColumnIndexToModel(colIndex);
+			        
+			        if(realColumnIndex == 0) {
+			        	Set<String> subgraph = subgraphs.get(rowIndex);
+			        	if( subgraph != null && (! subgraph.isEmpty())) {
+			        		int num = chart.countSolvedFormsFor(
+			        				rootsToSubgraphs.get(subgraph)).intValue();
+			        		if(num == 1) {
+			        			return "This Subgraph has 1 solved form.";
+			        		}
+			        		return "This Subgraph has " +  
+			        			num + " solved forms.";
+			        	}
+			        }
+				return null;
+			}
+		};
 		
 		// single-cell-selection and listening to 
 		// changes of this selection

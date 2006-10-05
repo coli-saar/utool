@@ -21,6 +21,17 @@ import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.NodeType;
 
+/**
+ * This is a class providing methods to mark Splits and Subgraphs
+ * via a <code>ChartViewer</code>. It manages the colors involved
+ * and does the marking itself in a <color>JDomGraph</code>.
+ * Further this class provides methods to get a HTML representation
+ * of a Split oder a subgraph so as to color the parts of the String
+ * according to the marking in the main window.
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class FormatManager {
 	
 	// some constants
@@ -46,22 +57,24 @@ public class FormatManager {
 	
 	private final static Color deactivatedColor = Color.LIGHT_GRAY;
 	
-	
+	private final static Color rootcolor = new Color(0, 204, 51);
 	private final static Color[] subgraphcolors = {
 		Color.BLUE, new Color(163, 0, 163),
 		new Color(255,153,51), new Color(255,51,51),
 		Color.CYAN		
 	};
 	
+	// keepint track of the last subgraph color used.
 	private static int subgraphcolorindex = 0;
 	
+	// storing html representations calculated before.
 	private static Map<Split,String> splitToMarkedHTML = 
 		new HashMap<Split,String>();
 	
 	private static Map<Set<String>,String> subgraphToMarkedHTML = 
 		new HashMap<Set<String>,String>();	
 	
-	private final static Color rootcolor = new Color(0, 204, 51);
+	
 	
 	/**
 	 * 
@@ -161,6 +174,11 @@ public class FormatManager {
 		
 	}
 	
+	/**
+	 * 
+	 * @param subgraph
+	 * @return
+	 */
 	public static String getHTMLforMarkedSubgraph(Set<String> subgraph) {
 		if( subgraphToMarkedHTML.containsKey(subgraph) ) {
 			return subgraphToMarkedHTML.get(subgraph);
@@ -174,6 +192,12 @@ public class FormatManager {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param split
+	 * @param roots
+	 * @return
+	 */
 	public static String getHTMLforMarkedSplit(Split split, Set<String> roots) {
 		
 		if( splitToMarkedHTML.containsKey(split) ) {
@@ -234,6 +258,13 @@ public class FormatManager {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param roots
+	 * @param color
+	 * @param graph
+	 * @param shadeRemaining
+	 */
 	private static void markSubgraph(Set<String> roots, Color color, 
 			JDomGraph graph, boolean shadeRemaining) {
 		
@@ -282,6 +313,11 @@ public class FormatManager {
 		
 	}
 	
+	/**
+	 * 
+	 * @param color
+	 * @param graph
+	 */
 	public static void markGraph(Color color, JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, color, graph, markedNodeFont);
@@ -295,7 +331,10 @@ public class FormatManager {
 	}
 	
 	
-	
+	/**
+	 * 
+	 * @param graph
+	 */
 	public static void shadeGraph(JDomGraph graph) {
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, deactivatedColor, graph, standardNodeFont);
@@ -310,6 +349,11 @@ public class FormatManager {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param root
+	 * @param graph
+	 */
 	public static void markRootFragment(Fragment root, JDomGraph graph) {
 		for( DefaultGraphCell rfn : root.getNodes()) {
 			markNode(rfn, rootcolor, graph, markedNodeFont);
@@ -319,6 +363,10 @@ public class FormatManager {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param graph
+	 */
 	public static void refreshGraphLayout(JDomGraph graph) {
 		JGraphUtilities.applyLayout(graph, new JDomGraphDummyLayout(graph));
 	}

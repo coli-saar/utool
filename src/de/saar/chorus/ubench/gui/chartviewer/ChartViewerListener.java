@@ -24,6 +24,11 @@ import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
 import de.saar.chorus.ubench.gui.CommandListener.XMLFilter;
 
+/**
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class ChartViewerListener implements ActionListener {
 
 	private ChartViewer viewer;
