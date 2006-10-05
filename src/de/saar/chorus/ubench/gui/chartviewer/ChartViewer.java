@@ -159,9 +159,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						int num = chart.countSolvedFormsFor(
 								rootsToSubgraphs.get(subgraph)).intValue();
 						if(num == 1) {
-							return "This Subgraph has 1 solved form.";
+							return "This subgraph has 1 solved form.";
 						}
-						return "This Subgraph has " +  
+						return "This subgraph has " +  
 						num + " solved forms.";
 					}
 				}
@@ -741,9 +741,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				+ "contains " + noOfSplits + " splits and " +
 				"" + noOfSubgraphs + " subgraphs.");
 		
-		
-		//pack();
-		validate();
+			validate();
 	}
 	
 	/**
