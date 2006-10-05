@@ -130,6 +130,8 @@ public class Chart implements Cloneable {
         Set<Set<String>> subgraphsAllSplits = new HashSet<Set<String>>();
         List<Split> oldSplits = getSplitsFor(subgraph);
         
+        numSolvedForms.clear();
+        
         if( splits.isEmpty() && (getReferenceCount(subgraph) > 0)) {
             throw new UnsupportedOperationException("The subgraph is still referenced " 
                     + getReferenceCount(subgraph) + " times. You may not remove its last split.");

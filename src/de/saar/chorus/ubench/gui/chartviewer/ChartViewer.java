@@ -742,7 +742,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				"" + noOfSubgraphs + " subgraphs.");
 		
 		
-		pack();
+		//pack();
 		validate();
 	}
 	
