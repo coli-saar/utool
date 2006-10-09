@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -206,7 +208,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		//TODO modify this so as to be only on top within Ubench
 		setAlwaysOnTop(true);
-		
+		addWindowFocusListener(new ChartViewerFocusListener());
 		pack();
 		validate();
 		setLocationRelativeTo(Ubench.getInstance().getWindow());
@@ -424,54 +426,57 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			}
 			
 			
-			
-			if( (col >= 1) && (row > -1)  ) {
-				// a split or the number of a split
-				// is seleced
-				SwingUtilities.invokeLater( new Thread() {	
+			markGraph(row, col);
+		}
+	} 
+	
+	private void markGraph(int row, int col) {
+		if( (col >= 1) && (row > -1)  ) {
+			// a split or the number of a split
+			// is seleced
+			SwingUtilities.invokeLater( new Thread() {	
+				
+				public void run() {
+					Split selectedSplit = orderedSplits.get(
+							prettyprint.getSelectedRow());
 					
-					public void run() {
-						Split selectedSplit = orderedSplits.get(
+					
+					if(selectedSplit != null ) {
+						// marking the split in the main window
+						
+						markSplit(selectedSplit);
+						
+					} else {
+						// and empty row -> unmarking the graph
+						FormatManager.unmark(jdg);
+					}
+				}} );
+		} else if (col == 0) {
+			// a subgraph is selected
+			if(row > -1) {
+				SwingUtilities.invokeLater( new Thread() {
+					
+					public void run() {		
+						Set<String> subgraph = subgraphs.get(
 								prettyprint.getSelectedRow());
 						
-						
-						if(selectedSplit != null ) {
-							// marking the split in the main window
-							
-							markSplit(selectedSplit);
+						if( ! subgraph.isEmpty() ) {
+							// marking the subgraph in the main window
+							FormatManager.markSubgraph(subgraph, jdg);
 							
 						} else {
 							// and empty row -> unmarking the graph
 							FormatManager.unmark(jdg);
-						}
-					}} );
-			} else if (col == 0) {
-				// a subgraph is selected
-				if(row > -1) {
-					SwingUtilities.invokeLater( new Thread() {
-						
-						public void run() {		
-							Set<String> subgraph = subgraphs.get(
-									prettyprint.getSelectedRow());
-							
-							if( ! subgraph.isEmpty() ) {
-								// marking the subgraph in the main window
-								FormatManager.markSubgraph(subgraph, jdg);
-								
-							} else {
-								// and empty row -> unmarking the graph
-								FormatManager.unmark(jdg);
-							} 
-						}
-					});
-				}
-			} else {
-				// nothing marked -> unmarking the graph
-				FormatManager.unmark(jdg);
+						} 
+					}
+				});
 			}
-			
+		} else {
+			// nothing marked -> unmarking the graph
+			FormatManager.unmark(jdg);
 		}
-	} 
+		
+	}
 	
 	/**
 	 * This is to init the widths of each column according to 
@@ -852,4 +857,17 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		}
 	}
 	
+	private class ChartViewerFocusListener implements WindowFocusListener {
+
+		public void windowGainedFocus(WindowEvent e) {
+
+			int row = prettyprint.getSelectedRow();
+			int col = prettyprint.getSelectedColumn();
+			markGraph(row,col);
+		}
+
+		public void windowLostFocus(WindowEvent e) {
+		}
+		
+	}
 }
