@@ -816,7 +816,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		ActionListener lis;
 		JMenu chartmenu, splitmenu;
-		JMenuItem elred, reset, delete, firstsolvedform;
+		JMenuItem elred, reset, delete, firstsolvedform, loadeqs;
 		
 		ChartViewerMenu(ActionListener li) {
 			
@@ -831,9 +831,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			
 			chartmenu.addSeparator();
 			
-			elred = new JMenuItem("Eliminate Equivalences...");
+			loadeqs = new JMenuItem("Load Equation System...");
+			loadeqs.setActionCommand("loadeqs");
+			loadeqs.addActionListener(lis);
+			chartmenu.add(loadeqs);
+			
+			elred = new JMenuItem("Eliminate Equivalences");
 			elred.setActionCommand("elred");
 			elred.addActionListener(lis);
+			elred.setMnemonic(KeyEvent.VK_R);
+			elred.setAccelerator(KeyStroke.getKeyStroke("alt R"));
 			chartmenu.add(elred);
 			
 			reset = new JMenuItem("Reset Chart");

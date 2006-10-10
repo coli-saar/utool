@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +25,7 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
@@ -77,6 +77,8 @@ public class Ubench {
     // to fit the preferred size of this tab
     private boolean useNextTabToResizeFrame;
     
+    private EquationSystem eqs;
+    
     /**
      * Setting up a new Ubench object. 
      *
@@ -85,7 +87,7 @@ public class Ubench {
 //      register codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
-        
+        eqs = null;
         
     }
     
@@ -685,6 +687,20 @@ public class Ubench {
         
         return instance;
     }
+
+	/**
+	 * @return Returns the eqs.
+	 */
+	public EquationSystem getEquationSystem() {
+		return eqs;
+	}
+
+	/**
+	 * @param eqs The eqs to set.
+	 */
+	public void setEquationSystem(EquationSystem eqs) {
+		this.eqs = eqs;
+	}
     
 }
 
