@@ -33,6 +33,7 @@ public class ChartViewerListener implements ActionListener {
 
 	private ChartViewer viewer;
 	
+	
 	ChartViewerListener(ChartViewer cv) {
 		viewer = cv;
 	}
@@ -62,39 +63,27 @@ public class ChartViewerListener implements ActionListener {
 				}
 				
 			}
-		} else if( command.equals("elred")) {
-			
-				JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-				fc.setDialogTitle("Choose the equation system input file");
-				fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
-				
-				int fcVal = fc.showOpenDialog(viewer);	
-				
-				if(fcVal == JFileChooser.APPROVE_OPTION){
-					
-					viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					
-					File file = fc.getSelectedFile();
-					EquationSystem eqs = new EquationSystem();
-					try {
-					eqs.read(new FileReader(file));
-					} catch( Exception ex ) {
-						JOptionPane.showMessageDialog(viewer,
-								"The Equation System cannot be parsed." + 
-								System.getProperty("line.separator") + 
-								"Either the input file is not valid or it contains syntax errors.",
-								"Error while Loading Equation System",
-								JOptionPane.ERROR_MESSAGE);
-					} 
+		} else if (command.equals("loadeqs")) {
+			loadEquationSystem();
+		}else if( command.equals("elred")) {
+			EquationSystem eqs = Ubench.getInstance().getEquationSystem();
+				if(eqs == null) {
+					JOptionPane.showMessageDialog(viewer,
+							"You have to specify a xml file that contains your equation system" + 
+							System.getProperty("line.separator") + 
+							" before Utool can eliminate equivalences.",
+							"Please load an equation system",
+							JOptionPane.INFORMATION_MESSAGE);
+					loadEquationSystem();
+				}
+				eqs = Ubench.getInstance().getEquationSystem();
 				IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
 					(DomGraph) viewer.getDg().clone(), viewer.getLabels(),
 					eqs);
 		
 				elim.eliminate(viewer.getChart());
 				viewer.refreshChartWindow();
-				viewer.setCursor(Cursor.getDefaultCursor());
-				}
-		
+				
 		} else if( command.equals("solvechart")) {
 			Chart chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
@@ -119,6 +108,34 @@ public class ChartViewerListener implements ActionListener {
 			viewer.setCursor(Cursor.getDefaultCursor());
 		}
 
+	}
+	
+	private void loadEquationSystem() {
+		JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+		fc.setDialogTitle("Choose the equation system input file");
+		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
+		
+		int fcVal = fc.showOpenDialog(viewer);	
+		
+		if(fcVal == JFileChooser.APPROVE_OPTION){
+			
+			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			
+			File file = fc.getSelectedFile();
+			EquationSystem eqs = new EquationSystem();
+			try {
+				eqs.read(new FileReader(file));
+				Ubench.getInstance().setEquationSystem(eqs);
+			} catch( Exception ex ) {
+				JOptionPane.showMessageDialog(viewer,
+						"The Equation System cannot be parsed." + 
+						System.getProperty("line.separator") + 
+						"Either the input file is not valid or it contains syntax errors.",
+						"Error while Loading Equation System",
+						JOptionPane.ERROR_MESSAGE);
+			}
+			viewer.setCursor(Cursor.getDefaultCursor());
+		}
 	}
 
 }
