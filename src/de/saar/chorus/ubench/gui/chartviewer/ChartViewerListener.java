@@ -136,6 +136,7 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 						JOptionPane.ERROR_MESSAGE);
 			}
 			viewer.setCursor(Cursor.getDefaultCursor());
+			viewer.refreshStatusBar();
 		}
 	}
 

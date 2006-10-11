@@ -100,7 +100,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * and solved forms
 	 */
 	private JPanel statusbar; 	// panel on the bottom
-	private JLabel solvedforms; // text on the bottom
+	private JLabel solvedforms, iseqs, isred, es, red; // text on the bottom
 	
 	// counting solved forms, splits and subgraphs
 	private int noOfSolvedForms;
@@ -206,12 +206,23 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms, "
 				+ "contains " + noOfSplits + " splits and " +
 				"" + noOfSubgraphs + " subgraphs.");
+		JPanel chartstate = new JPanel();
+		es = new JLabel("EQS:");
+		red = new JLabel("Red:");
+		iseqs = new JLabel();
+		isred = new JLabel();
+		refreshStatusBar();
 		
+		
+		chartstate.add(es);
+		chartstate.add(iseqs);
+		chartstate.add(red);
+		chartstate.add(isred);
 		
 		statusbar = new JPanel();
 		
 		statusbar.add(solvedforms);
-		
+		statusbar.add(chartstate,BorderLayout.WEST);
 		add(statusbar,BorderLayout.SOUTH);
 		
 		// menu.
@@ -814,10 +825,47 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	void resetChart() {
 		chart = (Chart) chartcopy.clone();
+		if(Ubench.getInstance().reduceAutomatically) {
+			reduceChart();
+		}
 		refreshChartWindow();
+		if(reduced) {
+			isred = new JLabel("<html><font color=\"green\">" +
+			"&#8730;</font></html>");
+			isred.setToolTipText("Equivalences are eliminated.");
+			red.setToolTipText("Equivalences are eliminated.");
+		} else {
+			isred= new JLabel("<html><font color=\"red\">" +
+			"X</font></html>");
+			isred.setToolTipText("Equivalences are not eliminated yet.");
+			red.setToolTipText("Equivalences are not eliminated yet.");
+		}
 	}
 	
-	
+	void refreshStatusBar() {
+		if( Ubench.getInstance().isEquationSystemLoaded() ) {
+			iseqs.setText("<html><font color=\"green\">" +
+					"&#8730;</font></html>");
+			iseqs.setToolTipText("An Equation System is loaded.");
+			es.setToolTipText("An Equation System loaded.");
+		} else {
+			iseqs = new JLabel("<html><font color=\"red\">" +
+			"X</font></html>");
+			iseqs.setToolTipText("No Equation System loaded.");
+			es.setToolTipText("No Equation System loaded.");
+		}
+		if(reduced) {
+			isred.setText("<html><font color=\"green\">" +
+			"&#8730;</font></html>");
+			isred.setToolTipText("Equivalences are eliminated.");
+			red.setToolTipText("Equivalences are eliminated.");
+		} else {
+			isred.setText("<html><font color=\"red\">" +
+			"X</font></html>");
+			isred.setToolTipText("Equivalences are not eliminated yet.");
+			red.setToolTipText("Equivalences are not eliminated yet.");
+		}
+	}
 	
 	/**
 	 * The Menu Bar for the chart window.
@@ -921,12 +969,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			 */
 			return;
 		}
+		if(! reduced ) {
 		IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
 			(DomGraph) dg.clone(), labels,
 			eqs);
 
 		elim.eliminate(chart);
 		reduced = true;
+		refreshStatusBar();
+		}
 	}
 
 	/**
