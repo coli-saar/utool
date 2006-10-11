@@ -79,6 +79,8 @@ public class Ubench {
     
     private EquationSystem eqs;
     
+    public boolean reduceAutomatically;
+    
     /**
      * Setting up a new Ubench object. 
      *
@@ -88,6 +90,7 @@ public class Ubench {
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
         eqs = null;
+        reduceAutomatically = false;
         
     }
     
@@ -701,7 +704,12 @@ public class Ubench {
 	public void setEquationSystem(EquationSystem eqs) {
 		this.eqs = eqs;
 	}
+	
+	public boolean isEquationSystemLoaded() {
+		return eqs != null;
+	}
     
+	
 }
 
 /**

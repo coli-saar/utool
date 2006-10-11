@@ -2,7 +2,6 @@ package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -24,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,6 +36,8 @@ import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
+import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.Fragment;
@@ -78,6 +81,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	// subgraphs, complete and represented only by roots
 	private Map<Set<String>, Set<String>> rootsToSubgraphs;
+	
+	private boolean reduced;
 	
 	/*
 	 * for determining the cell widths 
@@ -130,6 +135,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		dg = g;
 		jdg = jg;
 		
+		if(Ubench.getInstance().reduceAutomatically) {
+			reduceChart();
+		} else {
+			reduced = false;
+		}
+			
 		nameToSplit = new HashMap<Split,String>();
 		rootsToSubgraphs = new HashMap<Set<String>, Set<String>>();
 		subgraphs = new ArrayList<Set<String>>();
@@ -806,6 +817,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		refreshChartWindow();
 	}
 	
+	
+	
 	/**
 	 * The Menu Bar for the chart window.
 	 * 
@@ -814,11 +827,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	class ChartViewerMenu extends JMenuBar {
 		
-		ActionListener lis;
-		JMenu chartmenu, splitmenu;
-		JMenuItem elred, reset, delete, firstsolvedform, loadeqs;
 		
-		ChartViewerMenu(ActionListener li) {
+		ChartViewerListener lis;
+		JMenu chartmenu, splitmenu;
+		JMenuItem elred, reset, delete, 
+				  firstsolvedform, loadeqs,
+				  autoreduce;
+		
+		ChartViewerMenu(ChartViewerListener li) {
 			
 			lis=li;
 			
@@ -836,6 +852,18 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			loadeqs.addActionListener(lis);
 			chartmenu.add(loadeqs);
 			
+			autoreduce = new JCheckBoxMenuItem("Reduce Chart Automatically");
+			
+			if(Ubench.getInstance().reduceAutomatically) {
+				autoreduce.setSelected(true);
+			} else {
+				autoreduce.setSelected(false);
+			}
+
+			autoreduce.addItemListener(lis);
+			lis.registerEventSource(autoreduce, "autoreduce");
+			chartmenu.add(autoreduce);
+			
 			elred = new JMenuItem("Eliminate Equivalences");
 			elred.setActionCommand("elred");
 			elred.addActionListener(lis);
@@ -843,6 +871,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			elred.setAccelerator(KeyStroke.getKeyStroke("alt R"));
 			chartmenu.add(elred);
 			
+			
+			
+			chartmenu.addSeparator();
 			reset = new JMenuItem("Reset Chart");
 			reset.setActionCommand("resetchart");
 			reset.addActionListener(lis);
@@ -876,5 +907,39 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		public void windowLostFocus(WindowEvent e) {
 		}
 		
+	}
+
+	
+	void reduceChart() {
+		EquationSystem eqs = Ubench.getInstance().getEquationSystem();
+		
+		if(eqs == null ) {
+			/*
+			 * TODO actually, this should never happen,
+			 * hovever it should be handeled in an 
+			 * proper and appropriate way.
+			 */
+			return;
+		}
+		IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
+			(DomGraph) dg.clone(), labels,
+			eqs);
+
+		elim.eliminate(chart);
+		reduced = true;
+	}
+
+	/**
+	 * @return Returns the reduced.
+	 */
+	boolean isReduced() {
+		return reduced;
+	}
+
+	/**
+	 * @param reduced The reduced to set.
+	 */
+	void setReduced(boolean reduced) {
+		this.reduced = reduced;
 	}
 }
