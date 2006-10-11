@@ -853,8 +853,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if( Ubench.getInstance().isEquationSystemLoaded() ) {
 			iseqs.setText("<html><font color=\"green\">" +
 					"&#8730;</font></html>");
-			iseqs.setToolTipText("An Equation System is loaded.");
-			es.setToolTipText("An Equation System loaded.");
+			iseqs.setToolTipText("Equation System loaded.");
+			es.setToolTipText("Equation System loaded.");
 		} else {
 			iseqs = new JLabel("<html><font color=\"red\">" +
 			"X </font></html>");
