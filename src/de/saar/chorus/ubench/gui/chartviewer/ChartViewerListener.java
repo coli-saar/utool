@@ -3,10 +3,14 @@ package de.saar.chorus.ubench.gui.chartviewer;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JFileChooser;
@@ -22,20 +26,20 @@ import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
-import de.saar.chorus.ubench.gui.CommandListener.XMLFilter;
 
 /**
  * 
  * @author Michaela Regneri
  *
  */
-public class ChartViewerListener implements ActionListener {
+public class ChartViewerListener implements ActionListener, ItemListener {
 
 	private ChartViewer viewer;
-	
+	private Map<Object, String> eventSources;
 	
 	ChartViewerListener(ChartViewer cv) {
 		viewer = cv;
+		eventSources = new HashMap<Object,String>();
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -64,24 +68,13 @@ public class ChartViewerListener implements ActionListener {
 				
 			}
 		} else if (command.equals("loadeqs")) {
-			loadEquationSystem();
+			loadEquationSystem(false);
 		}else if( command.equals("elred")) {
-			EquationSystem eqs = Ubench.getInstance().getEquationSystem();
-				if(eqs == null) {
-					JOptionPane.showMessageDialog(viewer,
-							"You have to specify a xml file that contains your equation system" + 
-							System.getProperty("line.separator") + 
-							" before Utool can eliminate equivalences.",
-							"Please load an equation system",
-							JOptionPane.INFORMATION_MESSAGE);
-					loadEquationSystem();
+			 
+				if(! Ubench.getInstance().isEquationSystemLoaded() ) {
+					loadEquationSystem(true);
 				}
-				eqs = Ubench.getInstance().getEquationSystem();
-				IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
-					(DomGraph) viewer.getDg().clone(), viewer.getLabels(),
-					eqs);
-		
-				elim.eliminate(viewer.getChart());
+				viewer.reduceChart();
 				viewer.refreshChartWindow();
 				
 		} else if( command.equals("solvechart")) {
@@ -110,7 +103,15 @@ public class ChartViewerListener implements ActionListener {
 
 	}
 	
-	private void loadEquationSystem() {
+	private void loadEquationSystem(boolean preliminary) {
+		if(preliminary) {
+			JOptionPane.showMessageDialog(viewer,
+					"You have to specify a xml file that contains your equation system" + 
+					System.getProperty("line.separator") + 
+					" before Utool can eliminate equivalences.",
+					"Please load an equation system",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
 		JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 		fc.setDialogTitle("Choose the equation system input file");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
@@ -135,6 +136,34 @@ public class ChartViewerListener implements ActionListener {
 						JOptionPane.ERROR_MESSAGE);
 			}
 			viewer.setCursor(Cursor.getDefaultCursor());
+		}
+	}
+
+	public void registerEventSource(Object source, String command) {
+		eventSources.put(source, command);
+	}
+	
+	private String lookupEventSource(Object source) {
+		return eventSources.get(source);
+	}
+	/* (non-Javadoc)
+	 * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
+	 */
+	public void itemStateChanged(ItemEvent e) {
+		String command = lookupEventSource(e.getSource());
+		if(command.equals("autoreduce")) {
+			if(e.getStateChange() == ItemEvent.SELECTED ) {
+				Ubench.getInstance().reduceAutomatically = true;
+				if(! Ubench.getInstance().isEquationSystemLoaded() ) {
+					loadEquationSystem(true);
+				}
+				if(! viewer.isReduced() ) {
+					viewer.reduceChart();
+					viewer.refreshChartWindow();
+				}
+			} else {
+				Ubench.getInstance().reduceAutomatically = false;
+			}
 		}
 	}
 
