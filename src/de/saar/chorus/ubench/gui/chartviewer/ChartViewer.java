@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -24,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -211,19 +211,25 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		red = new JLabel("Red:");
 		iseqs = new JLabel();
 		isred = new JLabel();
+		statusbar = new JPanel();
+
 		refreshStatusBar();
-		
-		
 		chartstate.add(es);
 		chartstate.add(iseqs);
 		chartstate.add(red);
 		chartstate.add(isred);
+		statusbar.add(solvedforms, BorderLayout.CENTER);
 		
-		statusbar = new JPanel();
-		
-		statusbar.add(solvedforms);
 		statusbar.add(chartstate,BorderLayout.WEST);
 		add(statusbar,BorderLayout.SOUTH);
+		
+		
+		
+		
+		
+		
+	
+		
 		
 		// menu.
 		setJMenuBar(new ChartViewerMenu(listener));
@@ -769,6 +775,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				"" + noOfSubgraphs + " subgraphs.");
 		
 			validate();
+			refreshStatusBar();
 	}
 	
 	/**
@@ -850,7 +857,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			es.setToolTipText("An Equation System loaded.");
 		} else {
 			iseqs = new JLabel("<html><font color=\"red\">" +
-			"X</font></html>");
+			"X </font></html>");
 			iseqs.setToolTipText("No Equation System loaded.");
 			es.setToolTipText("No Equation System loaded.");
 		}
@@ -861,10 +868,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			red.setToolTipText("Equivalences are eliminated.");
 		} else {
 			isred.setText("<html><font color=\"red\">" +
-			"X</font></html>");
+			"X </font></html>");
 			isred.setToolTipText("Equivalences are not eliminated yet.");
 			red.setToolTipText("Equivalences are not eliminated yet.");
 		}
+		
+		setMinimumSize(new Dimension((int) (statusbar.getPreferredSize().width * 1.2),
+				getPreferredSize().height)
+				);
+		validate();
 	}
 	
 	/**
