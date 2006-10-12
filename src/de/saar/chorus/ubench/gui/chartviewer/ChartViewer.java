@@ -203,7 +203,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSplits = chart.size();
 		
 		// the information text on the bottom
-		solvedforms = new JLabel("This Chart has " + noOfSolvedForms + " solved forms, "
+		solvedforms = new JLabel("   This Chart has " + noOfSolvedForms + " solved forms, "
 				+ "contains " + noOfSplits + " splits and " +
 				"" + noOfSubgraphs + " subgraphs.");
 		JPanel chartstate = new JPanel();
@@ -211,7 +211,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		red = new JLabel("Red:");
 		iseqs = new JLabel();
 		isred = new JLabel();
-		statusbar = new JPanel();
+		statusbar = new JPanel(new BorderLayout());
 
 		refreshStatusBar();
 		chartstate.add(es);
@@ -220,7 +220,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		chartstate.add(isred);
 		statusbar.add(solvedforms, BorderLayout.CENTER);
 		
-		statusbar.add(chartstate,BorderLayout.WEST);
+		statusbar.add(chartstate,BorderLayout.EAST);
 		add(statusbar,BorderLayout.SOUTH);
 		
 		
@@ -770,7 +770,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSolvedForms = chart.countSolvedForms().intValue();
 		noOfSplits = chart.size();
 		
-		solvedforms.setText("This Chart has " + noOfSolvedForms + " solved forms, "
+		solvedforms.setText("   This Chart has " + noOfSolvedForms + " solved forms, "
 				+ "contains " + noOfSplits + " splits and " +
 				"" + noOfSubgraphs + " subgraphs.");
 		
