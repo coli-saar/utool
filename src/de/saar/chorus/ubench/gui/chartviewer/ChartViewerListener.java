@@ -68,7 +68,25 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 				
 			}
 		} else if (command.equals("loadeqs")) {
-			loadEquationSystem(false);
+			
+			boolean askforreduction = true;
+			if(Ubench.getInstance().isEquationSystemLoaded()) {
+				askforreduction = false;
+			}
+			String eqsname = loadEquationSystem(false);
+			if( eqsname != null && askforreduction ) {
+				int yesno = JOptionPane.showConfirmDialog(viewer, 
+						"The Equation System " + eqsname + " is loaded now." + 
+						System.getProperty("line.separator") + 
+						"Would you like to eliminate the equivalences immediately?", 
+						"Ready to Eliminate Equivalences", JOptionPane.YES_NO_OPTION, 
+						JOptionPane.QUESTION_MESSAGE);
+				if(yesno == JOptionPane.YES_OPTION) {
+					viewer.reduceChart();
+					viewer.refreshChartWindow();
+				}
+			}
+			
 		}else if( command.equals("elred")) {
 			 
 				if(! Ubench.getInstance().isEquationSystemLoaded() ) {
@@ -103,7 +121,8 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 
 	}
 	
-	private void loadEquationSystem(boolean preliminary) {
+	private String loadEquationSystem(boolean preliminary) {
+		String toReturn = null;
 		if(preliminary) {
 			JOptionPane.showMessageDialog(viewer,
 					"You have to specify a xml file that contains your equation system" + 
@@ -127,6 +146,7 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			try {
 				eqs.read(new FileReader(file));
 				Ubench.getInstance().setEquationSystem(eqs);
+				toReturn = file.getName();
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(viewer,
 						"The Equation System cannot be parsed." + 
@@ -138,6 +158,8 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			viewer.setCursor(Cursor.getDefaultCursor());
 			viewer.refreshStatusBar();
 		}
+		
+		return toReturn;
 	}
 
 	public void registerEventSource(Object source, String command) {
