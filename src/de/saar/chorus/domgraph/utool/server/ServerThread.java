@@ -48,6 +48,14 @@ public class ServerThread extends Thread {
         ServerThread thread = new ServerThread(socket, logger);
         thread.start();
     }
+    
+    public static void stopServerThread() {
+    	// TODO implement this
+    }
+    
+    public static boolean isServerThreadRunning() {
+    	return true;
+    }
 
     private ServerThread(Socket socket, Logger logger) throws IOException {
         this.logger = logger;
