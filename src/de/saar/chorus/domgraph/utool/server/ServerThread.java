@@ -42,22 +42,10 @@ public class ServerThread extends Thread {
     private Logger logger;
     private Socket socket;
     private XmlParser parser ;
+  
     
     
-    public static void startServerThread(Socket socket, Logger logger) throws IOException {
-        ServerThread thread = new ServerThread(socket, logger);
-        thread.start();
-    }
-    
-    public static void stopServerThread() {
-    	// TODO implement this
-    }
-    
-    public static boolean isServerThreadRunning() {
-    	return true;
-    }
-
-    private ServerThread(Socket socket, Logger logger) throws IOException {
+    ServerThread(Socket socket, Logger logger) throws IOException {
         this.logger = logger;
         this.socket = socket;
         
@@ -88,7 +76,7 @@ public class ServerThread extends Thread {
         } catch (IOException e) {
             logger.log("An I/O exception occurred while processing a command in the server:");
             logger.log(e.toString());
-        }
+        } 
 
     }
     

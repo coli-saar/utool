@@ -8,8 +8,11 @@
 package de.saar.chorus.domgraph.utool.server;
 
 import java.io.IOException;
+import java.lang.Thread.State;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.saar.basic.Logger;
 import de.saar.chorus.domgraph.chart.Chart;
@@ -45,36 +48,99 @@ import de.saar.chorus.domgraph.utool.AbstractOptions;
 
 public class ConnectionManager {
     private static Logger logger;
+    
+    public static enum State { RUNNING, STOPPED };
+    private static State state = State.STOPPED;
+    
+    public static interface StateChangeListener {
+    	public void stateChanged(State newState);
+    }
+    private static List<StateChangeListener> listeners =
+    	new ArrayList<StateChangeListener>();
+    
+    private static List<ServerThread> threads = 
+    	new ArrayList<ServerThread>();
+    
 
-    public static void startServer(AbstractOptions cmdlineOptions) throws IOException { //throws Exception {
+    public static void startServer(AbstractOptions cmdlineOptions) throws IOException { 
         ServerSocket ssock = null;
         int port;
         
-        logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
-        port = cmdlineOptions.getPort();
-        
-        
-        // warm up if requested
-        if( cmdlineOptions.hasOptionWarmup() ) {
-            warmup();
-        }
-        
-        
-        // open server socket
-        ssock = new ServerSocket(port);
-        logger.log("Listening on port " + port + "...");
-        
-        
-        while( true ) {
-            // accept one connection
-            logger.log("Waiting for connection ... ");
-            Socket sock = ssock.accept();
-            logger.log("accepted connection from " + sock);
-            
-            ServerThread.startServerThread(sock, logger);
-        }
+       	synchronized (ConnectionManager.class) {
+        		state = State.RUNNING;
+        		notifyListeners();
+       	}
 
+        try {  
+        	logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
+        	port = cmdlineOptions.getPort();
+
+
+        	// warm up if requested
+        	if( cmdlineOptions.hasOptionWarmup() ) {
+        		warmup();
+        	}
+
+
+        	// open server socket
+        	ssock = new ServerSocket(port);
+        	logger.log("Listening on port " + port + "...");
+
+
+        	while( true ) {
+        		// accept one connection
+        		logger.log("Waiting for connection ... ");
+        		Socket sock = ssock.accept();
+        		logger.log("accepted connection from " + sock);
+
+        		synchronized (ConnectionManager.class) {
+        			ServerThread thread = new ServerThread(sock, logger);
+        			thread.start();
+        			threads.add(thread);
+        		}
+        	}
+        } catch(IOException e) {
+        	// if an I/O exception occurs, kill all threads and shut down
+        	// the server
+        	stopServer();
+        	throw e;
+        }
     }
+    
+    @SuppressWarnings("deprecation")
+	public static void stopServer() {
+    	synchronized (ConnectionManager.class) {
+        	for( ServerThread thread : threads ) {
+        		if( thread.getState() != Thread.State.TERMINATED ) {
+        			// We can get away with using the stop method here, because
+        			// there are no objects that are visible from more than one
+        			// server thread, and thus thread-safety is not such a big
+        			// concern here. It might still be nice to replace this
+        			// by a call to interrupt, but then we might have to
+        			// distribute wait() calls throughout the rest of the
+        			// Domgraph code to have something that _can_ be interrupted
+        			// in a fine-grained way, and would that be much better? - AK
+        			thread.stop();
+        		}
+        	}
+        	
+        	threads.clear();
+        	
+        	state = State.STOPPED;
+        	notifyListeners();
+		}
+    }
+    
+    public static State getState() {
+    	return state;
+    }
+    
+    
+    private static void notifyListeners() {
+    	for( StateChangeListener listener : listeners ) {
+    		listener.stateChanged(state);
+    	}
+	}
 
     /**
      * Warms up the server after it has been started. This exercises the
