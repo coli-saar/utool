@@ -832,6 +832,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	void resetChart() {
 		chart = (Chart) chartcopy.clone();
+		reduced = false;
 		if(Ubench.getInstance().reduceAutomatically) {
 			reduceChart();
 		}
