@@ -51,6 +51,7 @@ public class ConnectionManager {
     
     public static enum State { RUNNING, STOPPED };
     private static State state = State.STOPPED;
+    private static ServerSocket ssock = null;
     
     public static interface StateChangeListener {
     	public void stateChanged(State newState);
@@ -61,32 +62,57 @@ public class ConnectionManager {
     private static List<ServerThread> threads = 
     	new ArrayList<ServerThread>();
     
+    
 
+    /**
+     * Starts the Utool Server. This method opens a socket on the port
+     * specified in the <code>cmdlineOptions</code>, and accepts connections
+     * from clients on this port. It will then spawn a new thread for dealing
+     * with this particular client and go back to accepting more connections.
+     * This method doesn't return under normal circumstances.<p>
+     * 
+     * If an I/O error occurs in this method, it will throw the IOException
+     * that was thrown by the method that encountered the problem. In this case,
+     * the server and all client-specific threads will be shut down, as per
+     * the <code>stopServer</code> method below.<p>
+     * 
+     * This method sets the server state to <code>RUNNING</code>. 
+     * 
+     * @param cmdlineOptions
+     * @throws IOException
+     */
     public static void startServer(AbstractOptions cmdlineOptions) throws IOException { 
-        ServerSocket ssock = null;
         int port;
         
-       	synchronized (ConnectionManager.class) {
+        try {
+        	synchronized (ConnectionManager.class) {
         		state = State.RUNNING;
         		notifyListeners();
-       	}
-
-        try {  
-        	logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
-        	port = cmdlineOptions.getPort();
+        		
+        		logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
+            	port = cmdlineOptions.getPort();
 
 
-        	// warm up if requested
-        	if( cmdlineOptions.hasOptionWarmup() ) {
-        		warmup();
+            	// warm up if requested
+            	// TODO - make this interruptible; right now the server can't
+            	// be shut down until the warmup is done.
+            	if( cmdlineOptions.hasOptionWarmup() ) {
+            		warmup();
+            	}
+
+
+            	// open server socket
+            	ssock = new ServerSocket(port);
+            	logger.log("Listening on port " + port + "...");
         	}
+        } catch(IOException e) {
+        	// if an I/O exception occurs, kill all threads and shut down
+        	// the server
+        	stopServer();
+        	throw e;
+        } 
 
-
-        	// open server socket
-        	ssock = new ServerSocket(port);
-        	logger.log("Listening on port " + port + "...");
-
-
+        try {
         	while( true ) {
         		// accept one connection
         		logger.log("Waiting for connection ... ");
@@ -104,30 +130,48 @@ public class ConnectionManager {
         	// the server
         	stopServer();
         	throw e;
-        }
+        } 
     }
     
     @SuppressWarnings("deprecation")
 	public static void stopServer() {
     	synchronized (ConnectionManager.class) {
-        	for( ServerThread thread : threads ) {
-        		if( thread.getState() != Thread.State.TERMINATED ) {
-        			// We can get away with using the stop method here, because
-        			// there are no objects that are visible from more than one
-        			// server thread, and thus thread-safety is not such a big
-        			// concern here. It might still be nice to replace this
-        			// by a call to interrupt, but then we might have to
-        			// distribute wait() calls throughout the rest of the
-        			// Domgraph code to have something that _can_ be interrupted
-        			// in a fine-grained way, and would that be much better? - AK
-        			thread.stop();
-        		}
-        	}
-        	
-        	threads.clear();
-        	
-        	state = State.STOPPED;
-        	notifyListeners();
+    		if( state == State.RUNNING ) {
+    			if( ssock != null ) {
+    				// We have to be this brutal, as the blocking accept()
+    				// call in startServer() won't let us interrupt it.
+    				// At this point, accept() will throw an I/O exception,
+    				// and stopServer() will be called a second time; but
+    				// as we have the lock in this thread, we will change the
+    				// state to STOPPED before the original server thread
+    				// gets here, and so it will just do nothing.
+    				try {
+						ssock.close();
+		    			ssock = null;
+					} catch (IOException e) {
+						// At this point, we really don't care.
+					}
+    			}
+    			
+    			for( ServerThread thread : threads ) {
+    				if( thread.getState() != Thread.State.TERMINATED ) {
+    					// We can get away with using the stop method here, because
+    					// there are no objects that are visible from more than one
+    					// server thread, and thus thread-safety is not such a big
+    					// concern here. It might still be nice to replace this
+    					// by a call to interrupt, but then we might have to
+    					// distribute wait() calls throughout the rest of the
+    					// Domgraph code to have something that _can_ be interrupted
+    					// in a fine-grained way, and would that be much better? - AK
+    					thread.stop();
+    				}
+    			}
+
+    			threads.clear();
+
+    			state = State.STOPPED;
+    			notifyListeners();
+    		}
 		}
     }
     

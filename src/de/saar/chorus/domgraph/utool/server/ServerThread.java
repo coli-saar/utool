@@ -36,7 +36,7 @@ import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.ubench.gui.Ubench;
 
-public class ServerThread extends Thread {
+class ServerThread extends Thread {
     private PrintWriter out;
     private BufferedReader in;
     private Logger logger;
