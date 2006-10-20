@@ -23,6 +23,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -953,6 +954,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			splitmenu.add(delete);
 			splitmenu.validate();
 			add(splitmenu);
+			
 		}
 	}
 	

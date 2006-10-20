@@ -8,20 +8,15 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +35,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
@@ -56,6 +50,9 @@ import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.utool.AbstractOptions;
+import de.saar.chorus.domgraph.utool.server.ConnectionManager;
+import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 
@@ -69,7 +66,8 @@ import de.saar.chorus.ubench.JDomGraph;
  * @author Michaela Regneri
  *
  */
-public class CommandListener implements ActionListener, ItemListener {
+public class CommandListener implements ActionListener, 
+		ItemListener, ConnectionManager.StateChangeListener {
 	private File lastPath = new File(System.getProperty("user.dir"));
 	private String recentPath = ".", recentFile="";
 	
@@ -86,7 +84,7 @@ public class CommandListener implements ActionListener, ItemListener {
 	 */
 	public CommandListener() {
 		CodecManager codecman = Ubench.getInstance().getCodecManager();
-		
+		ConnectionManager.addListener(this);
 		// initializing fields
 		eventSources = new HashMap<Object,String>();
 		
@@ -143,7 +141,37 @@ public class CommandListener implements ActionListener, ItemListener {
 		/* Handling the known actions by identifying their command */
 		
 		// picture export
-		 if(command.equals("print")) {
+		if(command.equals("server")) {
+			if(Ubench.getInstance().getMenuBar().isServerButtonPressed())
+			{ AbstractOptions op = new AbstractOptions();
+
+		    op.setOptionLogging(true);
+			op.setLogWriter(new PrintWriter(System.err, true));
+		    op.setOptionWarmup(false);
+			op.setPort(2802);
+				try {ConnectionManager.startServer(op);}
+				catch( IOException ex ) {
+					System.err.println("Internal Server Error.");
+					ex.printStackTrace();
+				}
+			} else {
+				ConnectionManager.stopServer();
+			}
+		} else if(command.equals("serverd")) {
+			if(Ubench.getInstance().getMenuBar().isServerDButtonPressed()) {
+				AbstractOptions op = new AbstractOptions();
+				op.setOptionLogging(true);
+				op.setLogWriter(new PrintWriter(System.err, true));
+				op.setOptionWarmup(false);
+				op.setPort(2802);
+				try {ConnectionManager.startServer(op);}
+				catch( IOException ex ) {
+					System.err.println("Internal Server Error.");
+				}
+			} else {
+				ConnectionManager.stopServer();
+			}
+		} else if(command.equals("print")) {
 				new ExportUtilities(Ubench.getInstance().getVisibleTab().getGraph()).print();
 			} else {
 				// loading any graph file
@@ -1243,6 +1271,20 @@ public class CommandListener implements ActionListener, ItemListener {
 		}
 		Ubench.getInstance().getStatusBar().showBar(solvedFormTab.getBarCode());
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see de.saar.chorus.domgraph.utool.server.ConnectionManager.StateChangeListener#stateChanged(de.saar.chorus.domgraph.utool.server.ConnectionManager.State)
+	 */
+	public void stateChanged(State newState) {
+		
+		JDomGraphMenu menu = Ubench.getInstance().getMenuBar();
+		
+		if(newState == ConnectionManager.State.RUNNING) {
+			menu.setServerButtonPressed(true);
+		} else if(newState == ConnectionManager.State.STOPPED) {
+			menu.setServerButtonPressed(false);
+		}
 	}
 	
 	
