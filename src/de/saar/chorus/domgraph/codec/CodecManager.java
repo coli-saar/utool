@@ -61,23 +61,25 @@ public class CodecManager {
     }
     
     public static String getCodecName(Class codecClass) {
-        try {
-            Method getName = codecClass.getMethod("getName");
-            return (String) getName.invoke(null);
-        } catch(Exception e) {
-            assert false; // we should never get here
-            return null;
-        }
+    	if( codecClass.isAnnotationPresent(CodecMetadata.class)) {
+    		return ((CodecMetadata) codecClass.getAnnotation(CodecMetadata.class)).name();
+    	} else {
+    		return null;
+    	}
     }
     
     public static String getCodecExtension(Class codecClass) {
-        try {
-            Method getExtension = codecClass.getMethod("getExtension");
-            return (String) getExtension.invoke(null);
-        } catch(Exception e) {
-            assert false; // we should never get here
-            return null;
-        }
+    	if( codecClass.isAnnotationPresent(CodecMetadata.class)) {
+    		String ret = ((CodecMetadata) codecClass.getAnnotation(CodecMetadata.class)).extension();
+    		
+    		if( "".equals(ret) ) {
+    			return null;
+    		} else {
+    			return ret;
+    		}
+    	} else {
+    		return null;
+    	}
     }
     
     private Object constructCodecArgumentless(Class codecClass) {
@@ -142,8 +144,8 @@ public class CodecManager {
      * codec doesn't have a name.
      */
     public void registerCodec(Class codecClass) throws CodecRegistrationException {
-        if( getCodecName(codecClass) == null ) {
-            throw new CodecRegistrationException("Codec " + codecClass + " has a null name.");
+    	if( !codecClass.isAnnotationPresent(CodecMetadata.class)) {
+    		throw new CodecRegistrationException("Codec " + codecClass + " has no CodecMetadata annotation.");
         }
         
         if( OutputCodec.class.isAssignableFrom(codecClass) ) {

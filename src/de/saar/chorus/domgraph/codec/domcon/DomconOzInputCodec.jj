@@ -43,20 +43,12 @@ import org.testng.annotations.Test;
  * @author Alexander Koller
  *
  */
-
+@CodecMetadata(name="domcon-oz", extension=".clls")
 public class DomconOzInputCodec extends InputCodec {
     private DomGraph graph;
     private NodeLabels labels;
   private List<String> varlist;
-  
-  public static String getName() {
-  	return "domcon-oz";
-  }
-  
-  public static String getExtension() {
-  	return ".clls";
-  }
-
+ 
     public DomconOzInputCodec() {
 	this((Reader) null);
 	varlist = new ArrayList<String>();
@@ -170,7 +162,7 @@ TOKEN :
     <LABEL : "label">
  |  <DOM   : "dom">
  |  <OZATOM  : "\'" (~["\'"])* "\'"
-  	   | (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&","ä","Ä","ö","Ö","ü","Ü","ß"])+>
+  	   | (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&","ï¿½","ï¿½","ï¿½","ï¿½","ï¿½","ï¿½","ï¿½"])+>
 
 }
 

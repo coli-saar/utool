@@ -15,12 +15,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-       
+
+@CodecMetadata(name="mrs-xml", extension=".mrs.xml")
 public class MrsXmlInputCodec extends InputCodec {
 	
 	private MrsCodec codec;
@@ -30,15 +32,6 @@ public class MrsXmlInputCodec extends InputCodec {
 		super();
 	}
 	
-	public static String getName()
-	{
-		return "mrs-xml";
-	}
-	
-	public static String getExtension()
-	{
-		return ".mrs.xml";
-	}
 	
 	private class XmlParser extends DefaultHandler {
 		

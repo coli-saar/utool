@@ -72,7 +72,7 @@ import org._3pq.jgrapht.Edge;
 
 
 
-
+@CodecMetadata(name="holesem-comsem", extension=".hs.pl")
 public class HolesemComsemInputCodec extends InputCodec {
 	public static final int ERROR_GRAPH_NOT_NORMAL = 1;
 	public static final int ERROR_GRAPH_NOT_HNC = 2;
@@ -83,14 +83,6 @@ public class HolesemComsemInputCodec extends InputCodec {
     private NodeLabels labels;
   private List<String> varlist;
   private int nextGensymIndex;
-
-	public static String getName() {
-		return "holesem-comsem";
-	}
-	
-	public static String getExtension() {
-		return ".hs.pl";
-	}
 	
     public HolesemComsemInputCodec() {
 	this((Reader) null);

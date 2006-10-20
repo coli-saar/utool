@@ -16,6 +16,7 @@ import org.testng.annotations.Configuration;
 import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
@@ -40,15 +41,8 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="chain", extension="")
 public class Chain extends InputCodec {
-    public static String getName() {
-        return "chain";
-    }
-    
-    public static String getExtension() {
-        return null;
-    }
-    
     public static int ERROR_CHAIN_LENGTH = 1;
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) 

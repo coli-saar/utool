@@ -7,6 +7,8 @@
 
 package de.saar.chorus.domgraph.codec.term;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
+
 
 /**
  * An output codec for terms in Prolog syntax. See 
@@ -18,16 +20,9 @@ package de.saar.chorus.domgraph.codec.term;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="term-prolog", extension=".t.pl")
 public class PrologTermOutputCodec extends TermOutputCodec {
-    public static String getName() {
-        return "term-prolog";
-    }
-    
-    public static String getExtension() {
-        return ".t.pl";
-    }
-
-    public PrologTermOutputCodec() {
+	public PrologTermOutputCodec() {
         super(",");
     }
     

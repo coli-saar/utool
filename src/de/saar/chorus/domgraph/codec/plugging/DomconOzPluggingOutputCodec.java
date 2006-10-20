@@ -15,6 +15,7 @@ import java.util.List;
 
 import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
@@ -32,15 +33,9 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public class DomconOzPluggingOutputCodec extends PluggingOutputCodec {
-    public static String getName() {
-        return "plugging-oz";
-    }
-    
-    public static String getExtension() {
-        return ".plug.oz";
-    }
 
+@CodecMetadata(name="plugging-oz", extension=".plug.oz")
+public class DomconOzPluggingOutputCodec extends PluggingOutputCodec {
 
     public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
             Writer writer) throws IOException, MalformedDomgraphException {

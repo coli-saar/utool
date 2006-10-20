@@ -23,6 +23,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
@@ -69,17 +70,9 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="domgraph-gxl", extension=".dg.xml")
 public class DomgraphGxlInputCodec extends InputCodec {
-    public static String getName() {
-        return "domgraph-gxl";
-    }
-    
-    public static String getExtension() {
-        return ".dg.xml";
-    }
-
-    
-    
+ 
     /**
      * Reads a GXL description of a dominance graph from a file and writes it
      * into a JDomGraph object. Any previous contents of the JDomGraph object
