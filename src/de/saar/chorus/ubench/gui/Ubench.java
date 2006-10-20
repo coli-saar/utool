@@ -4,8 +4,10 @@
  */
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -17,8 +19,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -630,6 +636,7 @@ public class Ubench {
         menuBar = new JDomGraphMenu(listener);
         window.setJMenuBar(menuBar);
         statusBar = new JDomGraphStatusBar(listener);
+        
         
         // ttm.registerComponent(slider);
         ttm.registerComponent(statusBar);
