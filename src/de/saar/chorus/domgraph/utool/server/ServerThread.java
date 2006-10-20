@@ -353,7 +353,9 @@ class ServerThread extends Thread {
         out.println("type='" + type + "' />");
     }
 
-    
+    public void closeSocket() throws IOException {
+        socket.close();
+    }
 }
 
 

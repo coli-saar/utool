@@ -146,18 +146,17 @@ ItemListener, ConnectionManager.StateChangeListener {
 			op.setPort(2802);
 			
 			
-		SwingUtilities.invokeLater(
-						new Thread() {
-							public void run() {
-								try {
-								ConnectionManager.startServer(op);
-								}
-								catch( IOException ex ) {
-									System.err.println("Internal Server Error.");
-									ex.printStackTrace();
-								}
-							}
-						}); 
+			new Thread() {
+			    public void run() {
+			        try {
+			            ConnectionManager.startServer(op);
+			        }
+			        catch( IOException ex ) {
+			            System.err.println("Internal Server Error.");
+			            ex.printStackTrace();
+			        }
+			    }
+			}.start();
 			} else {
 				ConnectionManager.stopServer();
 			}
@@ -169,18 +168,17 @@ ItemListener, ConnectionManager.StateChangeListener {
 				op.setOptionWarmup(false);
 				op.setPort(2802);
 
-				SwingUtilities.invokeLater(
-						new Thread() {
-							public void run() {
-								try {
-								ConnectionManager.startServer(op);
-								}
-								catch( IOException ex ) {
-									System.err.println("Internal Server Error.");
-									ex.printStackTrace();
-								}
-							}
-						});
+				new Thread() {
+				    public void run() {
+				        try {
+				            ConnectionManager.startServer(op);
+				        }
+				        catch( IOException ex ) {
+				            System.err.println("Internal Server Error.");
+				            ex.printStackTrace();
+				        }
+				    }
+				}.start();
 			} else {
 				ConnectionManager.stopServer();
 			}

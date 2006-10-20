@@ -344,15 +344,7 @@ public class JDomGraphMenu extends JMenuBar {
     }
 	
     void setServerButtonPressed(boolean b) {
-    	if(b) {
-    		if(!server.isSelected()) {
-    			server.doClick();
-    		}
-    	} else {
-    		if( server.isSelected() ) {
-    			server.doClick();
-    		}
-    	}
+        server.setSelected(b);
     }
     
     boolean isServerButtonPressed() {
