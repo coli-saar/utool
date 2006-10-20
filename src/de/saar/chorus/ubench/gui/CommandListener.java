@@ -187,7 +187,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 				ConnectionManager.stopServer();
 			}
 		} else if(command.equals("print")) {
-			new ExportUtilities(Ubench.getInstance().getVisibleTab().getGraph()).print();
+			WaitingDialog progress = new WaitingDialog("Printing Graph...", 
+					Ubench.getInstance().getWindow());
+			progress.beginTask();
+			ExportUtilities.printComponent(Ubench.getInstance().getVisibleTab().getGraph());
+			progress.endTask();
 		} else {
 			// loading any graph file
 			if( command.equals("loadGXL") ) {

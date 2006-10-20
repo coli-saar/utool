@@ -13,7 +13,7 @@ import javax.swing.JProgressBar;
 
 public class WaitingDialog extends JDialog implements ActionListener {
 	
-	private final int tasklength = 100;
+	private final int tasklength = 1000;
 	private JProgressBar progressBar;
 	private JButton ok;
 	private JPanel dialogPane;
