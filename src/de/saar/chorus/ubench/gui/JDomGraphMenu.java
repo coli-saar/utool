@@ -1,13 +1,19 @@
 package de.saar.chorus.ubench.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 
 
@@ -64,6 +70,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  displayChart,
 					  displayCodecs;
     
+	private JToggleButton server, serverdebug;
+	
 	// the listener for the menu(s)
 	private CommandListener listener;
 	
@@ -300,6 +308,30 @@ public class JDomGraphMenu extends JMenuBar {
         helpMenu.add(about);
         add(helpMenu);
         
+        server = new JToggleButton(new ImageIcon("projects/Domgraph/pictures/Ch5.gif")) {
+        	public String getToolTipText() {
+        		if(isSelected()) {
+        			return ("Server Running.");
+        		} else {
+        			return ("Server Off.");
+        		}
+        	}
+        };
+        server.setActionCommand("server");
+        server.addActionListener(listener);
+        server.setBackground(Color.GRAY);
+        server.setOpaque(false);
+        server.setIconTextGap(1);
+        server.setMargin(new Insets(1,1,1,1));
+        add(Box.createHorizontalGlue());
+        add(server);
+        
+        serverdebug = new JToggleButton("DS");
+        serverdebug.setActionCommand("serverd");
+        serverdebug.addActionListener(listener);
+        add(serverdebug);
+        
+        
 	}
 	
 	/**
@@ -311,6 +343,25 @@ public class JDomGraphMenu extends JMenuBar {
     		cSolvForms.setEnabled(b);
     }
 	
+    void setServerButtonPressed(boolean b) {
+    	if(b) {
+    		if(!server.isSelected()) {
+    			server.doClick();
+    		}
+    	} else {
+    		if( server.isSelected() ) {
+    			server.doClick();
+    		}
+    	}
+    }
+    
+    boolean isServerButtonPressed() {
+    	return server.isSelected();
+    }
+    boolean isServerDButtonPressed() {
+    	return serverdebug.isSelected();
+    }
+    
 	/**
 	 * Enable or disable the items that operate
 	 * on the visible graph.

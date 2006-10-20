@@ -42,7 +42,7 @@ ListSelectionListener, ActionListener {
 	private JButton load;
 	private JButton cancel;
 	public ExampleViewer() throws IOException {
-		super();
+		super("Open Example");
 		setLayout(layout);
 		setAlwaysOnTop(true);
 		
@@ -113,8 +113,8 @@ ListSelectionListener, ActionListener {
 		
 		String selected = exampleNames[files.getSelectedIndex()];
 		
-		pack();
-		validate();
+	/*	pack(); */
+		validate(); 
 		desc.setText("Example " + selected);
 		
 	}
