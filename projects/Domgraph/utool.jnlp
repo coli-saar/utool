@@ -1,0 +1,45 @@
+<!-- Test for Astro Prime Web Start Deployment -->
+<jnlp
+  spec="1.0+"
+  codebase="http://www.coli.uni-saarland.de/~regneri/utool/webstart"
+  href="utool.jnlp">
+  <information>
+    <title>Utool</title>
+    <vendor>Project CHORUS</vendor>
+    <homepage href="http://www.coli.uni-saarland.de/projects/chorus/utool"/>
+    <description>The Swiss Army Knife of Underspecification</description>
+    <description kind="short">Utool 3.0 Workbench</description>
+    <!-- icon href="icon.gif"/ -->
+    <!-- icon kind="splash" href="splash.gif"/ -->
+    <offline-allowed/>
+  </information>
+  <security>
+    <all-permissions/>
+  </security>
+  <resources>
+    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
+    <jar href="Utool-3.1pre.jar"/>
+  </resources>
+  <resources os="Windows">
+    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
+  <jar href="Utool-3.1pre.jar"/>
+    
+  </resources>
+  <resources os="SunOS" arch="sparc">
+    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
+  <jar href="Utool-3.1pre.jar"/>
+  </resources>
+  <resources os="Linux">
+    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
+    <jar href="Utool-3.1pre.jar"/>
+   
+  </resources>
+  <resources os="Mac OS">
+    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
+    <jar href="Utool-3.1pre.jar"/>
+    
+  </resources>
+  <application-desc>
+	<argument>display</argument>	
+<application-desc/>
+</jnlp>
