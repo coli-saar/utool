@@ -26,58 +26,67 @@ import com.lowagie.text.pdf.PdfWriter;
 
 
 
-public class ExportUtilities implements Printable {
+public class ExportUtilities  {
 
-	private Component componentToBePrinted;
-	/* (non-Javadoc)
-	 * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
-	 */
-	public ExportUtilities(Component componentToBePrinted) {
-		this.componentToBePrinted = componentToBePrinted;
-	}
-	
-	public static void printComponent(Component c) {
-		new ExportUtilities(c).print();
-	}
-	
-	public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
-		if (pageIndex > 0) {
-			return(NO_SUCH_PAGE);
-		} else {
-			Graphics2D g2d = (Graphics2D)g;
-			
-			disableDoubleBuffering(componentToBePrinted);
-			
-			
-			double scale = Math.min(pageFormat.getImageableWidth()/(double) componentToBePrinted.getWidth(), 
-					pageFormat.getImageableHeight()/ (double) componentToBePrinted.getHeight());
-			
-			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-			g2d.scale(scale,scale);
-			componentToBePrinted.paint(g2d);
-			g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY() );
-			enableDoubleBuffering(componentToBePrinted);
-			return(PAGE_EXISTS);
+	private static class PrintUtilities implements Printable {
+		
+		private Component componentToBePrinted;
+		
+		private PrintUtilities(Component componentToBePrinted) {
+			this.componentToBePrinted = componentToBePrinted;
+		}
+		
+		public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
+			if (pageIndex > 0) {
+				return(NO_SUCH_PAGE);
+			} else {
+				Graphics2D g2d = (Graphics2D)g;
+				
+				disableDoubleBuffering(componentToBePrinted);
+				
+				
+				double scale = Math.min(pageFormat.getImageableWidth()/(double) componentToBePrinted.getWidth(), 
+						pageFormat.getImageableHeight()/ (double) componentToBePrinted.getHeight());
+				
+				g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+				g2d.scale(scale,scale);
+				componentToBePrinted.paint(g2d);
+				g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY() );
+				enableDoubleBuffering(componentToBePrinted);
+				return(PAGE_EXISTS);
+			}
+		}
+		
+		public void print() {
+			PrinterJob printJob = PrinterJob.getPrinterJob();
+			printJob.setPrintable(this);
+			if (printJob.printDialog())
+				try {
+					printJob.print();
+				} catch(PrinterException pe) {
+					System.out.println("Error printing: " + pe);
+				}
 		}
 	}
 	
-	public void print() {
-		PrinterJob printJob = PrinterJob.getPrinterJob();
-		printJob.setPrintable(this);
-		if (printJob.printDialog())
-			try {
-				printJob.print();
-			} catch(PrinterException pe) {
-				System.out.println("Error printing: " + pe);
-			}
+
+	/* (non-Javadoc)
+	 * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+	 */
+	
+	
+	public static void printComponent(Component c) {
+		new PrintUtilities(c).print();
 	}
 	
-	public static void disableDoubleBuffering(Component c) {
+
+	
+	private static void disableDoubleBuffering(Component c) {
 		RepaintManager currentManager = RepaintManager.currentManager(c);
 		currentManager.setDoubleBufferingEnabled(false);
 	}
 	
-	public static void enableDoubleBuffering(Component c) {
+	private static void enableDoubleBuffering(Component c) {
 		RepaintManager currentManager = RepaintManager.currentManager(c);
 		currentManager.setDoubleBufferingEnabled(true);
 	}
