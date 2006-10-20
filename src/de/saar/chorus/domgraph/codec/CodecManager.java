@@ -17,14 +17,17 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import de.saar.chorus.ubench.gui.Ubench;
 
@@ -308,8 +311,8 @@ public class CodecManager {
         return inputCodecClasses;
     }
     
-    public List<String> getAllInputCodecExtensions() {
-    	List<String> extensions = new ArrayList<String>();
+    public Set<String> getAllInputCodecExtensions() {
+    	Set<String> extensions = new HashSet<String>();
     	
     	for(Class codecClass : inputCodecClasses ) {
     		String lastExt = CodecManager.getCodecExtension(codecClass);
@@ -322,8 +325,8 @@ public class CodecManager {
     	return extensions;
     }
     
-    public List<String> getAllOutputCodecExtensions() {
-    	List<String> extensions = new ArrayList<String>();
+    public Set<String> getAllOutputCodecExtensions() {
+    	Set<String> extensions = new HashSet<String>();
     	
     	for(Class codecClass : outputCodecClasses ) {
     		String lastExt = CodecManager.getCodecExtension(codecClass);
@@ -370,7 +373,7 @@ public class CodecManager {
      */
     public void registerAllDeclaredCodecs() throws CodecRegistrationException {
         try {
-            ClassLoader loader = getClass().getClassLoader();
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
             Enumeration<URL> urls = loader.getResources("de/saar/chorus/domgraph/codec/codecclasses.properties");
 
             while( urls.hasMoreElements() ) {
@@ -392,10 +395,25 @@ public class CodecManager {
     
     public List<File> getExampleFiles() {
     	List<File> ret = new ArrayList<File>();
-    	
-    	File exampleFolder = new File("projects/Domgraph/examples/");
+    	File exampleFolder;
+    	try{URI filelocation = 
+    		Thread.currentThread().getContextClassLoader().
+    		getResource("projects/Domgraph/examples/").toURI();
+    	exampleFolder  = new File(filelocation);
+    	} catch (Exception e) {
+    		exampleFolder  = new File("projects/Domgraph/examples/");
+    	}
+    	 
     	if(! exampleFolder.isDirectory()) {
-    		exampleFolder = new File("examples/");
+    		
+    		try{URI filelocation = 
+        		Thread.currentThread().getContextClassLoader().
+        		getResource("examples/").toURI();
+        	exampleFolder  = new File(filelocation);
+        	} catch (Exception e) {
+        		exampleFolder = new File("examples/");
+        	}
+    		
     		if(! exampleFolder.isDirectory()) {
 			return ret;
     		}

@@ -204,8 +204,8 @@
 		     ant -Dkeystore=... -Dkeystore.alias=... -Dkeystore.password=... deploy
 
 	     -->
-	<target name="webstart" depends="utool">
-		<signjar jar="${domgraph.jar}" alias="${keystore.alias}" 
+	<target name="webstart" depends="source-dist">
+		<signjar jar="${domgraph-dist.jar}" alias="${keystore.alias}" 
 					storepass="${keystore.password}"	keystore="${keystore}"/>
 	</target>
 	
