@@ -76,9 +76,12 @@ public class ConnectionManager {
      * the server and all client-specific threads will be shut down, as per
      * the <code>stopServer</code> method below.<p>
      * 
-     * This method sets the server state to <code>RUNNING</code>. 
+     * This method sets the server state to <code>RUNNING</code> while it
+     * accepts connections. It will also notify all connected state change
+     * listeners of the change to the <code>RUNNING</code> state.
      * 
-     * @param cmdlineOptions
+     * @param cmdlineOptions - an AbstractOptions object that defines the
+     * "port", "hasOptionLogging", "getLogWriter", and "hasOptionWarmup" options.
      * @throws IOException
      */
     public static void startServer(AbstractOptions cmdlineOptions) throws IOException { 
@@ -133,6 +136,17 @@ public class ConnectionManager {
         } 
     }
     
+    /**
+     * Stops a running Utool Server. This will terminate the server
+     * thread and all client-specific threads, and will shut down
+     * all associated sockets. (This may result in clients complaining
+     * about lost sockets.) <p>
+     * 
+     * This method sets the server state to <code>STOPPED</code>. 
+     * It will also notify all connected state change
+     * listeners of the change to the <code>STOPPED</code> state.
+     * 
+     */
     @SuppressWarnings("deprecation")
 	public static void stopServer() {
     	synchronized (ConnectionManager.class) {
@@ -175,8 +189,28 @@ public class ConnectionManager {
 		}
     }
     
+    /**
+     * Returns the current state of the server (RUNNING or STOPPED).
+     * 
+     * @return the state
+     */
     public static State getState() {
     	return state;
+    }
+    
+    /**
+     * Adds a state change listener to this server. The listener's
+     * <code>stateChanged</code> method will be called each time the
+     * server's state changes.
+     * 
+     * @param listener a listener
+     */
+    public static void addListener(StateChangeListener listener) {
+    	listeners.add(listener);
+    }
+    
+    public static void removeListener(StateChangeListener listener) {
+    	listeners.remove(listener);
     }
     
     
