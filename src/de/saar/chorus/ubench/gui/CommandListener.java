@@ -7,7 +7,6 @@
 
 package de.saar.chorus.ubench.gui;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -26,17 +25,15 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
+
+import com.sun.java.swing.SwingUtilities2;
 
 import de.saar.basic.ExportUtilities;
 import de.saar.basic.WaitingDialog;
@@ -143,31 +140,49 @@ ItemListener, ConnectionManager.StateChangeListener {
 		// picture export
 		if(command.equals("server")) {
 			if(Ubench.getInstance().getMenuBar().isServerButtonPressed())
-			{ AbstractOptions op = new AbstractOptions();
+			{final  AbstractOptions op = new AbstractOptions();
 			
 			op.setOptionLogging(true);
 			op.setLogWriter(new PrintWriter(System.err, true));
 			op.setOptionWarmup(false);
 			op.setPort(2802);
-			try {ConnectionManager.startServer(op);}
-			catch( IOException ex ) {
-				System.err.println("Internal Server Error.");
-				ex.printStackTrace();
-			}
+			
+			
+		SwingUtilities.invokeLater(
+						new Thread() {
+							public void run() {
+								try {
+								ConnectionManager.startServer(op);
+								}
+								catch( IOException ex ) {
+									System.err.println("Internal Server Error.");
+									ex.printStackTrace();
+								}
+							}
+						}); 
 			} else {
 				ConnectionManager.stopServer();
 			}
 		} else if(command.equals("serverd")) {
 			if(Ubench.getInstance().getMenuBar().isServerDButtonPressed()) {
-				AbstractOptions op = new AbstractOptions();
+				final AbstractOptions op = new AbstractOptions();
 				op.setOptionLogging(true);
 				op.setLogWriter(new PrintWriter(System.err, true));
 				op.setOptionWarmup(false);
 				op.setPort(2802);
-				try {ConnectionManager.startServer(op);}
-				catch( IOException ex ) {
-					System.err.println("Internal Server Error.");
-				}
+
+				SwingUtilities.invokeLater(
+						new Thread() {
+							public void run() {
+								try {
+								ConnectionManager.startServer(op);
+								}
+								catch( IOException ex ) {
+									System.err.println("Internal Server Error.");
+									ex.printStackTrace();
+								}
+							}
+						});
 			} else {
 				ConnectionManager.stopServer();
 			}
@@ -523,6 +538,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 											oc.print_footer(writer);
 											
 											progress.endTask();
+											progress.setVisible(false);
 											// new text
 											long total_time = time_extraction + time_solver;
 											String interTime = null;

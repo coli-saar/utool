@@ -2,18 +2,16 @@ package de.saar.basic;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
 
-import de.saar.chorus.ubench.gui.JDialogListener;
-import de.saar.chorus.ubench.gui.Ubench;
 
-public class WaitingDialog extends JDialog {
+public class WaitingDialog extends JDialog implements ActionListener {
 	
 	private final int tasklength = 100;
 	private JProgressBar progressBar;
@@ -30,14 +28,10 @@ public class WaitingDialog extends JDialog {
 		ok = new JButton("OK");
 		ok.setActionCommand("ok");
 		
-	
-		
 		// listener for the button 
-		ok.addActionListener(new JDialogListener(this));
+		ok.addActionListener(this);
 		
 		progressBar.setStringPainted(true); 
-		
-		
 		dialogPane.add(progressBar,BorderLayout.CENTER);
 		dialogPane.add(ok,BorderLayout.SOUTH);
 		dialogPane.doLayout();
@@ -74,6 +68,16 @@ public class WaitingDialog extends JDialog {
 		// enabling the button that closes
 		// the dialog pane.
 		ok.setEnabled(true);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	public void actionPerformed(ActionEvent e) {
+		if(e.getActionCommand().equals("ok")) {
+			setVisible(false);
+		}
+		
 	}
 	
 }
