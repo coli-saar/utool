@@ -8,7 +8,6 @@
 package de.saar.chorus.domgraph.utool.server;
 
 import java.io.IOException;
-import java.lang.Thread.State;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -69,7 +68,9 @@ public class ConnectionManager {
      * specified in the <code>cmdlineOptions</code>, and accepts connections
      * from clients on this port. It will then spawn a new thread for dealing
      * with this particular client and go back to accepting more connections.
-     * This method doesn't return under normal circumstances.<p>
+     * This method doesn't return under normal circumstances. You will probably
+     * want to run it in a new thread of its own, which also takes care of
+     * catching the IOException that this method can throw.<p>
      * 
      * If an I/O error occurs in this method, it will throw the IOException
      * that was thrown by the method that encountered the problem. In this case,
@@ -129,10 +130,15 @@ public class ConnectionManager {
         		}
         	}
         } catch(IOException e) {
-        	// if an I/O exception occurs, kill all threads and shut down
-        	// the server
-        	stopServer();
-        	throw e;
+        	// If an unexpected I/O exception occurs here, then shut down
+            // the server and report it. However, if this was an exception
+            // in the accept() call above which was caused by the stopServer()
+            // method below (= the state is now STOPPED), then just ignore
+            // the error.
+            if( state == State.RUNNING ) {
+                stopServer();
+                throw e;
+            }
         } 
     }
     
@@ -151,6 +157,8 @@ public class ConnectionManager {
 	public static void stopServer() {
     	synchronized (ConnectionManager.class) {
     		if( state == State.RUNNING ) {
+                state = State.STOPPED;
+                
     			if( ssock != null ) {
     				// We have to be this brutal, as the blocking accept()
     				// call in startServer() won't let us interrupt it.
@@ -169,6 +177,13 @@ public class ConnectionManager {
     			
     			for( ServerThread thread : threads ) {
     				if( thread.getState() != Thread.State.TERMINATED ) {
+                        try {
+                            thread.closeSocket();
+                        } catch(IOException e) {
+                            // At this point, we really don't care.
+                        }
+                        
+                        
     					// We can get away with using the stop method here, because
     					// there are no objects that are visible from more than one
     					// server thread, and thus thread-safety is not such a big
@@ -183,7 +198,6 @@ public class ConnectionManager {
 
     			threads.clear();
 
-    			state = State.STOPPED;
     			notifyListeners();
     		}
 		}
