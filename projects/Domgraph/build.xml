@@ -199,13 +199,13 @@
 	
 	
 	
-	<!-- create a new singed jar:
+	<!-- create a new signed jar:
 		
-		     ant -Dkeystore=... -Dkeystore.alias=... -Dkeystore.password=... deploy
+		     ant -Dkeystore=... -Dkeystore.alias=... -Dkeystore.password=... signed-utool
 
 	     -->
-	<target name="webstart" depends="source-dist">
-		<signjar jar="${domgraph-dist.jar}" alias="${keystore.alias}" 
+	<target name="signed-utool" depends="utool">
+		<signjar jar="${domgraph.jar}" alias="${keystore.alias}" 
 					storepass="${keystore.password}"	keystore="${keystore}"/>
 	</target>
 	
