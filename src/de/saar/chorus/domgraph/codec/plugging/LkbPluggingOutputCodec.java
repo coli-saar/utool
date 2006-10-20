@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.saar.basic.StringTools;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.PluggingOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -34,16 +35,10 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Stefan Thater
  *
  */
+@CodecMetadata(name="plugging-lkb", extension=".lkbplug.lisp")
 public class LkbPluggingOutputCodec extends PluggingOutputCodec {
-    public static String getName() {
-        return "plugging-lkb";
-    }
-    
-    public static String getExtension() {
-        return ".lkbplug.lisp";
-    }
-
-    public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
+ 
+	public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges,
             Writer writer) throws IOException, MalformedDomgraphException {
         List<String> edgeStrings = new ArrayList<String>();
         

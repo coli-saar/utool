@@ -22,19 +22,11 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.codec.*;
 import de.saar.chorus.domgraph.codec.mrs.*;
 
+@CodecMetadata(name="mrs-prolog", extension=".mrs.pl")
 public class MrsPrologInputCodec extends InputCodec
 {
     private MrsCodec codec;
-    
-    public static String getName()
-    {
-		return "mrs-prolog";
-    }
-	
-    public static String getExtension()
-    {
-		return ".mrs.pl";
-    }
+ 
    
     public MrsPrologInputCodec()
     {

@@ -12,6 +12,7 @@ import java.io.Writer;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -32,16 +33,9 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="domgraph-dot", extension=".dg.dot")
 public class DotOutputCodec extends GraphOutputCodec {
 
-    public static String getName() {
-        return "domgraph-dot";
-    }
-    
-    public static String getExtension() {
-        return ".dg.dot";
-    }
-    
     public DotOutputCodec() {
     }
 

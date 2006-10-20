@@ -16,6 +16,7 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -32,16 +33,9 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="domcon-oz", extension=".clls")
 public class DomconOzOutputCodec extends GraphOutputCodec {
-    public static String getName() {
-        return "domcon-oz";
-    }
-    
-    public static String getExtension() {
-        return ".clls";
-    }
-    
-    
+ 
     public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         List<String> atoms = new ArrayList<String>();

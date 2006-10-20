@@ -7,6 +7,8 @@
 
 package de.saar.chorus.domgraph.codec.term;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
+
 
 /**
  * An output codec for terms in Oz syntax. See 
@@ -18,15 +20,8 @@ package de.saar.chorus.domgraph.codec.term;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="term-oz", extension=".t.oz")
 public class OzTermOutputCodec extends TermOutputCodec {
-    public static String getName() {
-        return "term-oz";
-    }
-    
-    public static String getExtension() {
-        return ".t.oz";
-    }
-
     public OzTermOutputCodec() {
         super(" ");
     }

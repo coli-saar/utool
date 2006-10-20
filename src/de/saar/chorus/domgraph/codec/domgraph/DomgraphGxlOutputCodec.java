@@ -14,6 +14,7 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -28,17 +29,9 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="domgraph-gxl", extension=".dg.xml")
 public class DomgraphGxlOutputCodec extends GraphOutputCodec {
-    public static String getName() {
-        return "domgraph-gxl";
-    }
-    
-    public static String getExtension() {
-        return ".dg.xml";
-    }
-
-
-    public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
+	public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         int count = 0;
         

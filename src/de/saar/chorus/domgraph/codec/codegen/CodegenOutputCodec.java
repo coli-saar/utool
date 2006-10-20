@@ -13,26 +13,19 @@ import java.io.Writer;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.EdgeData;
-import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
+@CodecMetadata(name="domgraph-codegen", extension=".java")
 public class CodegenOutputCodec extends GraphOutputCodec {
     private String graphName, labelsName;
     private int methIdx = 1;
     
-    public static String getName() {
-        return "domgraph-codegen";
-    }
-    
-    public static String getExtension() {
-        return ".java";
-    }
-    
+  
     public CodegenOutputCodec() {
         graphName = "graph";
         labelsName = "labels";

@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -48,18 +49,11 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
+@CodecMetadata(name="domgraph-udraw", extension=".dg.udg")
 public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
 	private boolean pipe = false;
 	
-	public static String getName()
-	{
-		return "domgraph-udraw";
-	}
-	
-	public static String getExtension()
-	{
-		return ".dg.udg";
-	}
+
 	
 	public DomgraphUdrawOutputCodec(String options)
 	{
