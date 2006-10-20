@@ -160,28 +160,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 			} else {
 				ConnectionManager.stopServer();
 			}
-		} else if(command.equals("serverd")) {
-			if(Ubench.getInstance().getMenuBar().isServerDButtonPressed()) {
-				final AbstractOptions op = new AbstractOptions();
-				op.setOptionLogging(true);
-				op.setLogWriter(new PrintWriter(System.err, true));
-				op.setOptionWarmup(false);
-				op.setPort(2802);
-
-				new Thread() {
-				    public void run() {
-				        try {
-				            ConnectionManager.startServer(op);
-				        }
-				        catch( IOException ex ) {
-				            System.err.println("Internal Server Error.");
-				            ex.printStackTrace();
-				        }
-				    }
-				}.start();
-			} else {
-				ConnectionManager.stopServer();
-			}
 		} else if(command.equals("print")) {
 			WaitingDialog progress = new WaitingDialog("Printing Graph...", 
 					Ubench.getInstance().getWindow());

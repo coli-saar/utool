@@ -311,8 +311,8 @@ public class CodecManager {
         return inputCodecClasses;
     }
     
-    public Set<String> getAllInputCodecExtensions() {
-    	Set<String> extensions = new HashSet<String>();
+    public List<String> getAllInputCodecExtensions() {
+    	List<String> extensions = new ArrayList<String>();
     	
     	for(Class codecClass : inputCodecClasses ) {
     		String lastExt = CodecManager.getCodecExtension(codecClass);
@@ -325,8 +325,8 @@ public class CodecManager {
     	return extensions;
     }
     
-    public Set<String> getAllOutputCodecExtensions() {
-    	Set<String> extensions = new HashSet<String>();
+    public List<String> getAllOutputCodecExtensions() {
+    	List<String> extensions = new ArrayList<String>();
     	
     	for(Class codecClass : outputCodecClasses ) {
     		String lastExt = CodecManager.getCodecExtension(codecClass);

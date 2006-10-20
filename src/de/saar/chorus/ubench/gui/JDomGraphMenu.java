@@ -70,7 +70,7 @@ public class JDomGraphMenu extends JMenuBar {
 					  displayChart,
 					  displayCodecs;
     
-	private JToggleButton server, serverdebug;
+	private JToggleButton server;
 	
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -324,13 +324,7 @@ public class JDomGraphMenu extends JMenuBar {
         server.setIconTextGap(1);
         server.setMargin(new Insets(1,1,1,1));
         add(Box.createHorizontalGlue());
-        add(server);
-        
-        serverdebug = new JToggleButton("DS");
-        serverdebug.setActionCommand("serverd");
-        serverdebug.addActionListener(listener);
-        add(serverdebug);
-        
+        add(server);      
         
 	}
 	
@@ -350,9 +344,7 @@ public class JDomGraphMenu extends JMenuBar {
     boolean isServerButtonPressed() {
     	return server.isSelected();
     }
-    boolean isServerDButtonPressed() {
-    	return serverdebug.isSelected();
-    }
+   
     
 	/**
 	 * Enable or disable the items that operate
