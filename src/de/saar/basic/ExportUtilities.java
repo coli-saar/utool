@@ -167,6 +167,7 @@ public class ExportUtilities implements Printable {
 		} else {
 			filename = name;
 		}
+		
 		File file = new File(filename);
 
 		String picExt = pointedExtension.substring(1, ext.length());
