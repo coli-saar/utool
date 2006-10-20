@@ -33,8 +33,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
-import com.sun.java.swing.SwingUtilities2;
-
 import de.saar.basic.ExportUtilities;
 import de.saar.basic.WaitingDialog;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
