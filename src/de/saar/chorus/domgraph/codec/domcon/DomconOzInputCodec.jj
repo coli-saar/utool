@@ -49,6 +49,7 @@ public class DomconOzInputCodec extends InputCodec {
     private NodeLabels labels;
   private List<String> varlist;
  
+    @CodecConstructor
     public DomconOzInputCodec() {
 	this((Reader) null);
 	varlist = new ArrayList<String>();
@@ -162,7 +163,7 @@ TOKEN :
     <LABEL : "label">
  |  <DOM   : "dom">
  |  <OZATOM  : "\'" (~["\'"])* "\'"
-  	   | (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&","Ã¤","Ã„","Ã¶","Ã–","Ã¼","Ãœ","ÃŸ"])+>
+  	   | (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&","ä","ö","ü","Ä","Ö","Ü","ß"])+>
 
 }
 
