@@ -55,17 +55,9 @@ public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
 	private boolean pipe = false;
 	
     public DomgraphUdrawOutputCodec(
-            @CodecOption(name="pipe", defaultValue="false") boolean pipe
-           ) {
+            @CodecOption(name="pipe", defaultValue="false") boolean pipe) {
         this.pipe = pipe;
     }
-
-	/*
-	public DomgraphUdrawOutputCodec(String options)
-	{
-		pipe = "pipe".equals(options);
-	}
-    */
 
 	public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException 
 	{
