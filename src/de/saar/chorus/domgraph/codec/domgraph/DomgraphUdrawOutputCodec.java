@@ -16,6 +16,7 @@ import java.util.Set;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
+import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -33,8 +34,8 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * 
  * This codec can be run into two modes. By default, it computes an uDraw
  * representation which is suitable for loading into uDraw(Graph) via
- * the File/Open menu. Alternatively, you can pass the string "pipe" to
- * it as a codec option. In this case, the codec will compute a uDraw
+ * the File/Open menu. Alternatively, you can pass the boolean option "pipe"
+ * to it. If "pipe" is set to true, the codec will compute a uDraw
  * graph drawing command which can be fed to uDraw(Graph) via a pipe, e.g.
  * <blockquote><code>utool convert -O domgraph-udraw --output-codec-options pipe | uDraw -pipe</code></blockquote>
  * <p>
@@ -53,12 +54,18 @@ import de.saar.chorus.domgraph.graph.NodeType;
 public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
 	private boolean pipe = false;
 	
+    public DomgraphUdrawOutputCodec(
+            @CodecOption(name="pipe", defaultValue="false") boolean pipe
+           ) {
+        this.pipe = pipe;
+    }
 
-	
+	/*
 	public DomgraphUdrawOutputCodec(String options)
 	{
 		pipe = "pipe".equals(options);
 	}
+    */
 
 	public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException 
 	{

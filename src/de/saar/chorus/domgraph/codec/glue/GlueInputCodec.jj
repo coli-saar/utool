@@ -44,8 +44,8 @@ import java.util.Map;
  * An example input looks as follows:<p>
  * <code>[(((X -o z) -o w) -o a) -o Y, (X -o a) -o b -o c, Y]</code><p>
  *
- * @author Alexander Koller
  * @author Etienne Ailloud
+ * @author Alexander Koller
  *
  */
  
@@ -58,7 +58,7 @@ public class GlueInputCodec extends InputCodec {
 	// Variable-to-formula mapping - meant to emulate the "type inference"
 	private Map<String,Formula> varToFormula;
 	
-
+	@CodecConstructor
 	public GlueInputCodec() {
 	  this((Reader) null);
 	  varToFormula = new HashMap<String,Formula>();

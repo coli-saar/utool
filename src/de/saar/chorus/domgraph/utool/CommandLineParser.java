@@ -329,7 +329,7 @@ class CommandLineParser {
             codecManager.registerAllDeclaredCodecs();
         } catch(Exception e) {
             System.err.println("An error occurred trying to register a codec.");
-            System.err.println(e);
+            System.err.println(e + " (cause: " + e.getCause() + ")");
 
             System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }

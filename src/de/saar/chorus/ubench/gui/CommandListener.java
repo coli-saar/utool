@@ -268,7 +268,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							
 							
 							OutputCodec oc = 
-								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),null);
+								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),"");
 							if( oc != null ) {
 								try {
 									FileWriter writer = new FileWriter(file);
@@ -471,7 +471,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 									
 									
 									OutputCodec oc= Ubench.getInstance().getCodecManager().
-									getOutputCodecForFilename(outputfile.getName(), null);
+									getOutputCodecForFilename(outputfile.getName(), "");
 									
 									
 									

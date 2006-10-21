@@ -84,6 +84,7 @@ public class HolesemComsemInputCodec extends InputCodec {
   private List<String> varlist;
   private int nextGensymIndex;
 	
+	@CodecConstructor
     public HolesemComsemInputCodec() {
 	this((Reader) null);
 

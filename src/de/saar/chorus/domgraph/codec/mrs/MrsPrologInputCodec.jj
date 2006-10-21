@@ -27,7 +27,7 @@ public class MrsPrologInputCodec extends InputCodec
 {
     private MrsCodec codec;
  
-   
+   @CodecConstructor
     public MrsPrologInputCodec()
     {
 		this((Reader) null);
