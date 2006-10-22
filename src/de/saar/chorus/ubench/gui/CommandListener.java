@@ -228,7 +228,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JFileChooser fc = new JFileChooser(recentPath);
+						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
 						
 						// show plugging codecs just for solved forms.
 						// TODO perhaps find a more aesthetic solution here.
