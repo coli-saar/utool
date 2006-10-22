@@ -573,6 +573,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 					StringBuffer codecList = new StringBuffer();
 					codecList.append("<html>Input Codecs:<br><br>" + 
 					"<table border=\"0\">");
+					
+					// TODO avoid doubling here
 					for( GenericFileFilter filter : ffInputCodecs ) {
 						codecList.append("<tr><td>" + filter.desc+ "</td><td> ("
 								+ filter.getExtension() +
