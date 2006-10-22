@@ -356,7 +356,7 @@ class CommandLineParser {
         }
         
         if( (outputCodec == null) && (inputCodec != null) ) {
-            outputCodec = codecManager.getOutputCodecForName(CodecManager.getCodecName(inputCodec.getClass()), options);
+            outputCodec = codecManager.getOutputCodecForName(codecManager.getName(inputCodec), options);
         }
         
         return outputCodec;

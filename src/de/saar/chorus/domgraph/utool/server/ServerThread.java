@@ -291,12 +291,12 @@ class ServerThread extends Thread {
         case _displayCodecs:
             out.println("<result>");
             
-            for( Class codec : parser.getCodecManager().getAllInputCodecs()) {
-                displayOneCodec(codec, out, "input");
+            for( String codecname : parser.getCodecManager().getAllInputCodecs()) {
+                displayOneInputCodec(codecname, out);
             }
             
-            for( Class codec : parser.getCodecManager().getAllOutputCodecs()) {
-                displayOneCodec(codec, out, "output");
+            for( String codecname : parser.getCodecManager().getAllOutputCodecs()) {
+                displayOneOutputCodec(codecname, out);
             }
             
             out.println("</result>");
@@ -340,6 +340,7 @@ class ServerThread extends Thread {
     }
 
 
+    /*
     private static void displayOneCodec(Class codec, PrintWriter out, String type) {
         String name = CodecManager.getCodecName(codec);
         String ext = CodecManager.getCodecExtension(codec);
@@ -351,6 +352,33 @@ class ServerThread extends Thread {
         }
         
         out.println("type='" + type + "' />");
+    }
+    */
+    
+    private void displayOneInputCodec(String codec, PrintWriter out) {
+        CodecManager manager = parser.getCodecManager();
+        String ext = manager.getInputCodecExtension(codec);
+        
+        out.print("  <codec name='" + codec + "' ");
+        
+        if( ext != null ) {
+            out.print("extension='" + ext + "' ");
+        }
+        
+        out.println("type='input' />");
+    }
+
+    private void displayOneOutputCodec(String codec, PrintWriter out) {
+        CodecManager manager = parser.getCodecManager();
+        String ext = manager.getOutputCodecExtension(codec);
+        
+        out.print("  <codec name='" + codec + "' ");
+        
+        if( ext != null ) {
+            out.print("extension='" + ext + "' ");
+        }
+        
+        out.println("type='output' />");
     }
 
     public void closeSocket() throws IOException {

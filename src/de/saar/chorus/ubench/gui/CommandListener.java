@@ -87,22 +87,20 @@ ItemListener, ConnectionManager.StateChangeListener {
 		ffOutputCodecs = new ArrayList<GenericFileFilter>();
 		showAll = new OverallFileFilter();
 		
-		for( Class codec : codecman.getAllInputCodecs() ) {
-			String name = CodecManager.getCodecName(codec);
-			String extension = CodecManager.getCodecExtension(codec);
+		for( String codecname : codecman.getAllInputCodecs() ) {
+			String extension = codecman.getInputCodecExtension(codecname);
 			
-			if( (name != null) && (extension != null)) {
-				ffInputCodecs.add(new GenericFileFilter(extension, name));
+			if( (codecname != null) && (extension != null)) {
+				ffInputCodecs.add(new GenericFileFilter(extension, codecname));
 				showAll.addExtension(extension);
 			}
 		}
 		
-		for( Class codec : codecman.getAllOutputCodecs() ) {
-			String name = CodecManager.getCodecName(codec);
-			String extension = CodecManager.getCodecExtension(codec);
+		for( String codecname : codecman.getAllOutputCodecs() ) {
+			String extension = codecman.getOutputCodecExtension(codecname);
 			
-			if( (name != null) && (extension != null)) {
-				ffOutputCodecs.add(new GenericFileFilter(CodecManager.getCodecExtension(codec), CodecManager.getCodecName(codec)));
+			if( (codecname != null) && (extension != null)) {
+				ffOutputCodecs.add(new GenericFileFilter(extension, codecname));
 			}
 		}
 		
