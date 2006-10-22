@@ -10,8 +10,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
+import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.CodecManager;
-import de.saar.chorus.ubench.gui.CommandListener.GenericFileFilter;
 
 public class JCodecFileChooser extends JFileChooser
 			implements PropertyChangeListener {
