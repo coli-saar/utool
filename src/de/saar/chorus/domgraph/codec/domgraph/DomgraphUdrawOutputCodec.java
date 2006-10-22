@@ -17,8 +17,8 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecOption;
-import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -51,7 +51,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *
  */
 @CodecMetadata(name="domgraph-udraw", extension=".dg.udg")
-public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
+public class DomgraphUdrawOutputCodec extends OutputCodec {
 	private boolean pipe = false;
 	
     public DomgraphUdrawOutputCodec(
@@ -59,7 +59,8 @@ public class DomgraphUdrawOutputCodec extends GraphOutputCodec {
         this.pipe = pipe;
     }
 
-	public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException 
+    @Override
+	public void encode(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException 
 	{
 		Set<String> indeg0 = new HashSet<String>();
 		

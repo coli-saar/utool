@@ -184,7 +184,7 @@ class ServerThread extends Thread {
                             
                             if( !options.hasOptionNoOutput() ) {
                                 buf.append("  <solution string='");
-                                options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), enc);
+                                options.getOutputCodec().encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), enc);
                                 buf.append("' />\n");
                             }
                         }
@@ -214,7 +214,7 @@ class ServerThread extends Thread {
                 try {
                     XmlEncodingWriter enc = new XmlEncodingWriter(out);
                     out.print("<result usr='");
-                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), enc);
+                    options.getOutputCodec().encode(options.getGraph(), options.getLabels(), enc);
                     out.println("' />");
                 } catch(MalformedDomgraphException e) {
                     sendError(out, ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode(), "This graph is not supported by the specified output codec.");

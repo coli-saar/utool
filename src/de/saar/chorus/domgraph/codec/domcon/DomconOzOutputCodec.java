@@ -18,8 +18,8 @@ import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecTools;
-import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -34,9 +34,8 @@ import de.saar.chorus.domgraph.graph.NodeType;
  *
  */
 @CodecMetadata(name="domcon-oz", extension=".clls")
-public class DomconOzOutputCodec extends GraphOutputCodec {
- 
-    public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
+public class DomconOzOutputCodec extends OutputCodec {
+    public void encode(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         List<String> atoms = new ArrayList<String>();
         

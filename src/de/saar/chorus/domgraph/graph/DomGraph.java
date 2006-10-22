@@ -9,7 +9,6 @@ package de.saar.chorus.domgraph.graph;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,19 +19,13 @@ import java.util.Set;
 
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
-import org._3pq.jgrapht.event.ConnectedComponentTraversalEvent;
-import org._3pq.jgrapht.event.TraversalListenerAdapter;
-import org._3pq.jgrapht.event.VertexTraversalEvent;
-import org._3pq.jgrapht.graph.AsUndirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 import org.testng.annotations.Configuration;
-import org.testng.annotations.ExpectedExceptions;
 import org.testng.annotations.Test;
 
 import de.saar.basic.TestTools;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.codec.InputCodec;
-import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 
 /**
@@ -717,14 +710,32 @@ public class DomGraph implements Cloneable {
         
         cachedResults = null;
 	}
+    
+    public List<DomEdge> getAllDomEdges() {
+        List<DomEdge> ret = new ArrayList<DomEdge>();
+        
+        for( Edge e : getAllEdges() ) {
+            EdgeData data = getData(e);
+            
+            if( data.getType() == EdgeType.DOMINANCE ) {
+                ret.add(new DomEdge((String) e.getSource(), (String) e.getTarget()));
+            }
+        }
+        
+        return ret;
+    }
 	
 	/**
 	 * Sets the dominance edges of the graph to the given collection,
 	 * possibly removing any existing dominance edges first.
-	 * Dominance edges are specified as {@link DomEdge} objects.
+	 * Dominance edges are specified as {@link DomEdge} objects.<p>
+     * 
+     * This destructive method is deprecated as of Utool 3.1.
+     * Use {@link #withDominanceEdges(Collection)} instead.
 	 * 
 	 * @param domedges the new dominance edges.
 	 */
+    @Deprecated
 	public void setDominanceEdges(Collection<DomEdge> domedges) {
 		removeAllDominanceEdges();
 		
@@ -735,6 +746,30 @@ public class DomGraph implements Cloneable {
         cachedResults = null;
 	}
 	
+    /**
+     * Returns a dominance graph that is just like the current graph,
+     * except that the dominance edges are replaced by those specified in
+     * <code>domedges</code>. The original graph is not modified.
+     * 
+     * @param domedges the dominance edges of the new graph
+     * @return a new dominance graph with these dominance edges
+     */
+    public DomGraph withDominanceEdges(Collection<DomEdge> domedges) {
+        DomGraph ret = (DomGraph) clone();
+        
+        ret.removeAllDominanceEdges();
+        
+        if( domedges != null ) {
+            for( DomEdge e : domedges ) {
+                ret.addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
+            }
+        }
+            
+        
+        ret.cachedResults = null;
+        
+        return ret;
+    }
 	
 	
 	

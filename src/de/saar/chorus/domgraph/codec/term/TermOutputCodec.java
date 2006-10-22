@@ -17,8 +17,8 @@ import java.util.Map;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecTools;
-import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -45,9 +45,8 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public class TermOutputCodec extends GraphOutputCodec {
+public class TermOutputCodec extends OutputCodec {
     public static final int ERROR_NOT_SIMPLE_SOLVED_FORM = 1;
-    
     
     protected String separator;
     
@@ -62,7 +61,8 @@ public class TermOutputCodec extends GraphOutputCodec {
         this.separator = separator;
     }
 
-    public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
+    @Override
+    public void encode(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         Map<String,String> domEdges = new HashMap<String,String>(); // top -> bottom
         List<String> terms = new ArrayList<String>();

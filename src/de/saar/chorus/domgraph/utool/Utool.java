@@ -196,7 +196,7 @@ public class Utool {
                                 if( count > 1 ) {
                                     options.getOutputCodec().print_list_separator(options.getOutput());
                                 }
-                                options.getOutputCodec().encode(options.getGraph(), domedges, options.getLabels(), options.getOutput());
+                                options.getOutputCodec().encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), options.getOutput());
                             }
                         }
                         long end_extraction = System.currentTimeMillis();
@@ -245,7 +245,7 @@ public class Utool {
             if( !options.hasOptionNoOutput() ) {
                 try {
                     options.getOutputCodec().print_header(options.getOutput());
-                    options.getOutputCodec().encode(options.getGraph(), null, options.getLabels(), options.getOutput());
+                    options.getOutputCodec().encode(options.getGraph(), options.getLabels(), options.getOutput());
                     options.getOutputCodec().print_footer(options.getOutput());
                 } catch(MalformedDomgraphException e) {
                     System.err.println("This graph is not supported by the specified output codec.");
