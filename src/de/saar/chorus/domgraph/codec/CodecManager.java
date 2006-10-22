@@ -264,7 +264,7 @@ public class CodecManager {
     private Map<String, String> tokenizeOptions(String options) {
         Map<String,String> ret = new HashMap<String,String>();
         
-        if( options != null ) {
+        if( (options != null) && !"".equals(options) ) {
             String regex = "\\s*=|,\\s*";
             String[] tokens = options.split(regex);
             int i = 0;
@@ -574,6 +574,26 @@ public class CodecManager {
         for( String outputCodecName : outputCodecNames ) {
             displayOneCodec(outputCodecClassMap.get(outputCodecName), formatString, out);
         }
+    }
+    
+    /**
+     * Figure out the name of the output codec for the given filename. 
+     * 
+     * @param filename
+     * @return
+     */
+    public String getOutputCodecNameForFilename(String filename) {
+        return getCodecName(getOutputCodecClassForFilename(filename));
+    }
+
+    /**
+     * Figure out the name of the input codec for the given filename. 
+     * 
+     * @param filename
+     * @return
+     */
+    public String getInputCodecNameForFilename(String filename) {
+        return getCodecName(getInputCodecClassForFilename(filename));
     }
 
     private void displayOneCodec(Class codec, String formatString, PrintStream out) {
