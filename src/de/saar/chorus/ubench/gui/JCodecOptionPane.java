@@ -1,6 +1,7 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -44,7 +44,7 @@ public class JCodecOptionPane extends JPanel {
 
 	
 	private void constructOptionPanel() {
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		setLayout(new GridLayout(0,2));
 		
 		// to make sure that the panel always looks
 		// the same way
@@ -56,10 +56,14 @@ public class JCodecOptionPane extends JPanel {
 					
 			if( optclass == Boolean.TYPE ) {
 				
-				JCheckBox box = new JCheckBox(opt);
+				JCheckBox box = new JCheckBox();
+				add(new JLabel(opt));
 				add(box);
+				
+				
 				booleans.put(opt, box);
 			} else if( optclass.isEnum() ) {
+			
 				//optpan.add(new JPanel();
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
 				add(new JLabel(opt + ":"));
@@ -72,7 +76,7 @@ public class JCodecOptionPane extends JPanel {
 				add(box);
 				enums.put(opt,box);
 			} else {
-				//optview = new JPanel();
+				
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
 				add(new JLabel(opt + ":"));
 				JTextField line = new JTextField();
@@ -82,11 +86,12 @@ public class JCodecOptionPane extends JPanel {
 		}
 		if(optionnames.isEmpty()) {
 			add(new JLabel("This Codec"));
-			add(new JLabel("has no"));
+					add(new JLabel("has no"));
 			add(new JLabel("options"));
 			add(new JLabel("to set."));
 		}
-		
+		doLayout();
+		validate();
 	}
 	
 	public Map<String,String> getOptionMap() {
