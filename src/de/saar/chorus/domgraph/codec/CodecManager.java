@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
+
 import de.saar.chorus.ubench.gui.Ubench;
 
 /**
@@ -66,7 +69,20 @@ public class CodecManager {
         exampleNameToPath = new HashMap<String,File>();
     }
     
-    public static String getCodecName(Class codecClass) {
+    // TODO - I would like to get rid of the getName methods; codecs should
+    // be totally opaque to the user. At the moment, though, it's not clear
+    // to me how to determine an output codec from an input codec in
+    // CommandLineParser#determineOutputCodec.
+    public String getName(InputCodec codec) {
+        return getCodecName(codec.getClass());
+    }
+    
+    public String getName(OutputCodec codec) {
+        return getCodecName(codec.getClass());
+    }
+    
+    
+    private static String getCodecName(Class codecClass) {
     	if( codecClass.isAnnotationPresent(CodecMetadata.class)) {
     		return ((CodecMetadata) codecClass.getAnnotation(CodecMetadata.class)).name();
     	} else {
@@ -74,7 +90,7 @@ public class CodecManager {
     	}
     }
     
-    public static String getCodecExtension(Class codecClass) {
+    private static String getCodecExtension(Class codecClass) {
     	if( codecClass.isAnnotationPresent(CodecMetadata.class)) {
     		String ret = ((CodecMetadata) codecClass.getAnnotation(CodecMetadata.class)).extension();
     		
@@ -613,10 +629,16 @@ public class CodecManager {
     /**
      * Returns the list of all registered input codecs.
      * 
-     * @return the input codecs
+     * @return the names of all input codecs
      */
-    public List<Class> getAllInputCodecs() {
-        return inputCodecClasses;
+    public List<String> getAllInputCodecs() {
+        List<String> ret = new ArrayList<String>(inputCodecClasses.size());
+        
+        for( Class codecC : inputCodecClasses ) {
+            ret.add(getCodecName(codecC));
+        }
+        
+        return ret;
     }
     
     public List<String> getAllInputCodecExtensions() {
@@ -650,10 +672,16 @@ public class CodecManager {
     /**
      * Returns the list of all registered output codecs.
      * 
-     * @return the output codecs
+     * @return the names of all output codecs
      */
-    public List<Class> getAllOutputCodecs() {
-        return outputCodecClasses;
+    public List<String> getAllOutputCodecs() {
+        List<String> ret = new ArrayList<String>(outputCodecClasses.size());
+        
+        for( Class codecC : outputCodecClasses ) {
+            ret.add(getCodecName(codecC));
+        }
+        
+        return ret;
     }
     
     
@@ -783,6 +811,13 @@ public class CodecManager {
         return (CodecMetadata) codecClass.getAnnotation(CodecMetadata.class);
     }
     
+    public String getInputCodecExtension(String codecname) {
+        return getCodecExtension(getInputCodecClassForName(codecname));
+    }
+    
+    public String getOutputCodecExtension(String codecname) {
+        return getCodecExtension(getOutputCodecClassForName(codecname));
+    }
     
     
 
@@ -791,6 +826,25 @@ public class CodecManager {
      *  - exception when trying to register a class which isn't a codec
      *  - exception when trying to register a nameless codec (getName = null)
      */
+    
+    @Test(groups = {"Domgraph"})
+    public class UnitTests {
+        private CodecManager manager;
+        
+        @Configuration(beforeSuite = true)
+        public void setup() throws Exception {
+            manager = new CodecManager();
+            manager.registerAllDeclaredCodecs();
+        }
+        
+        public void getCodecNames() {
+            assert "domcon-oz".equals(manager.getInputCodecNameForFilename("foo.clls"));
+            assert "domcon-oz".equals(manager.getOutputCodecNameForFilename("foo.clls"));
+            assert "mrs-prolog".equals(manager.getInputCodecNameForFilename("foo.mrs.pl"));
+            assert "domgraph-udraw".equals(manager.getOutputCodecNameForFilename("foo.dg.udg"));
+        }
+    }
+
     
     
 }
