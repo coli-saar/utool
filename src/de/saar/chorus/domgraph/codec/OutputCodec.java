@@ -68,11 +68,10 @@ public abstract class OutputCodec {
      * @throws NullPointerException if the <code>domedge</code>
      * argument is <code>null</code> and the codec is a plugging codec.
      */
-    public void encode(DomGraph graph, Collection<DomEdge> domedges,
-                        NodeLabels labels, Writer writer)
-    throws IOException, MalformedDomgraphException {
+    public abstract void encode(DomGraph graph, NodeLabels labels, Writer writer) 
+    throws IOException, MalformedDomgraphException;
         
-        
+/*        
         switch(getType()) {
         case GRAPH:
             DomGraph copy = (DomGraph) graph.clone();
@@ -94,7 +93,7 @@ public abstract class OutputCodec {
         }
         
     }
-    
+  */  
     
     /** abstract printing methods -- implement these **/
     
@@ -111,8 +110,8 @@ public abstract class OutputCodec {
      * @throws MalformedDomgraphException if the graph cannot 
      * be encoded by this codec
      */
-    abstract public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
-    throws IOException, MalformedDomgraphException;
+    //abstract public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
+    //throws IOException, MalformedDomgraphException;
     
     /**
      * Implement this method for a plugging output codec. This method
@@ -127,8 +126,8 @@ public abstract class OutputCodec {
      * @throws MalformedDomgraphException if the plugging cannot 
      * be encoded by this codec
      */
-    abstract public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges, Writer writer)
-    throws IOException, MalformedDomgraphException;
+    //abstract public void encode_plugging(DomGraph graph, Collection<DomEdge> domedges, Writer writer)
+    //throws IOException, MalformedDomgraphException;
     
     /**
      * Prints a header at the beginning of a file to which the USR

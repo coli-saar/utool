@@ -13,8 +13,8 @@ import java.io.Writer;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
-import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -34,12 +34,9 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  *
  */
 @CodecMetadata(name="domgraph-dot", extension=".dg.dot")
-public class DotOutputCodec extends GraphOutputCodec {
-
-    public DotOutputCodec() {
-    }
-
-    public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer)
+public class DotOutputCodec extends OutputCodec {
+    @Override
+    public void encode(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         
         writer.write("digraph domgraph {\n");

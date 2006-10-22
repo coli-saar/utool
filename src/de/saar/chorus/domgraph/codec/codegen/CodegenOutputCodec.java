@@ -14,23 +14,15 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.codec.CodecMetadata;
-import de.saar.chorus.domgraph.codec.GraphOutputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 @CodecMetadata(name="domgraph-codegen", extension=".java")
-public class CodegenOutputCodec extends GraphOutputCodec {
-    private String graphName, labelsName;
+public class CodegenOutputCodec extends OutputCodec {
     private int methIdx = 1;
-    
-  
-    public CodegenOutputCodec() {
-        graphName = "graph";
-        labelsName = "labels";
-    }
-    
     
     private String getNodeData(DomGraph graph, String node) {
         return "new NodeData(NodeType." + graph.getData(node).getType() + ")";
@@ -41,7 +33,7 @@ public class CodegenOutputCodec extends GraphOutputCodec {
     }
 
     @Override
-    public void encode_graph(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException {
+    public void encode(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException {
         writer.write("\n    public void makeGraph" + (methIdx++) + "(DomGraph graph, NodeLabels labels) {\n");
         writer.write("        graph.clear();\n");
         writer.write("        labels.clear();\n\n");

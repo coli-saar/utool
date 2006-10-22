@@ -274,7 +274,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 									FileWriter writer = new FileWriter(file);
 									oc.print_header(writer);
 									oc.encode(Ubench.getInstance().getVisibleTab().getDomGraph(),
-											null, 
 											Ubench.getInstance().getVisibleTab().getNodeLabels(), 
 											writer);
 									oc.print_footer(writer);
@@ -505,7 +504,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 												if( count > 1 ) {
 													oc.print_list_separator(writer);
 												}
-												oc.encode(graph, domedges, 
+												oc.encode(graph.withDominanceEdges(domedges), 
 														Ubench.getInstance().getVisibleTab().getNodeLabels(), 
 														writer);
 												
