@@ -6,23 +6,67 @@
 	
 	This package contains the following groups of classes:
 	<ul>
-		<li>the <i>base classes</i> {@link de.saar.chorus.domgraph.codec.InputCodec},
-			{@link de.saar.chorus.domgraph.codec.OutputCodec}, 
-			{@link de.saar.chorus.domgraph.codec.GraphOutputCodec}, and
-			{@link de.saar.chorus.domgraph.codec.PluggingOutputCodec}, from
+		<li>the <i>base classes</i> {@link de.saar.chorus.domgraph.codec.InputCodec} and
+			{@link de.saar.chorus.domgraph.codec.OutputCodec}, from
 			which all concrete codec classes are derived;
 		</li>
 		<li>classes for dealing with <i>codec management</i>:
 			{@link de.saar.chorus.domgraph.codec.CodecManager};
 		</li>
+		<li>the <i>annotation types</i> {@link de.saar.chorus.domgraph.codec.CodecMetadata},
+			{@link de.saar.chorus.domgraph.codec.CodecOption}, and
+			{@link de.saar.chorus.domgraph.codec.CodecConstructor}, which
+			are required to equip codec classes with metadata;
+		</li>
 		<li>classes for various <i>exception</i> that can occur while either using
 		or registering a codec.</li>
 	</ul>
 	
-	Codecs are classes with a fairly strictly defined interface. They
-	are not intended to be instantiated by an application directly.
-	Instead, they are registered in a codec manager object by their
-	name and associated filename extension, and then the application
-	can request fresh codec objects by name or extension from the
-	codec manager.
-</body>
+	Codecs must follow certain fairly strict rules that guarantee
+	that they can be used from a variety of different contexts (such as
+	the main Utool command-line tool and the GUI). These rules are as
+	follows.
+	<ul>
+		<li>A codec class must be a non-abstract class that is derived
+			from <code>InputCodec</code> or from <code>OutputCodec</code>.
+			It must have an annotation of type <code>CodecMetadata</code>
+			which defines its name and, optionally, its associated filename extension. A codec
+			whose extension is the empty string, <code>""</code>, is assumed
+			not to be associated with any extension.
+		</li>
+		<li>A codec class must have exactly one <i>codec constructor</i>.
+			A codec constructor is a public constructor of the codec class.
+			If there is only one public constructor, then it is automatically
+			used as the codec constructor.
+			If there is more than one public constructor in the class,
+			then exactly one of them must be marked with a <code>CodecConstructor</code>
+			annotation. The codec constructor must not declare any
+			checked exceptions.
+		</li>
+		<li>Each parameter of the codec constructor must have an annotation
+			of type <code>CodecOption</code>. The annotation specifies the
+			name and, optionally, a default value for this option. Each parameter
+			must be of one of the following types:
+			<ul>
+				<li>any primitive type except for <code>void</code> and <code>char</code></li>
+				<li>any enumeration type</li>
+				<li>the class <code>String</code>.</li>
+			</ul>
+		</li>
+	</ul>
+
+    The intended way to instantiate a codec class is by calling one of the
+	getInputCodecFor... or getOutputCodecFor... methods of a <code>CodecManager</code>
+	object. These methods all expect either a codec name or a filename
+	as their first arguments. As their second arguments, you can pass
+	either a string or a map specifying the options that should be passed
+	to the constructor of the new codec object. The map should associate
+	each parameter name of the codec constructor (as per the <code>CodecOption</code>
+	annotations) with a String value for this option. This string is then
+	automatically translated into the appropriate primitive or enum type
+	if needed, as per the <code>valueOf</code> methods in the case of 
+	the primitive types. If you pass the options in a string, this string
+	is assumed to be of the form "opt1=val1,opt2=val2,...,optn=valn". It
+	is then broken up into a map that assigns values to option names, and
+	instantiation proceeds as above.
+	</body>
