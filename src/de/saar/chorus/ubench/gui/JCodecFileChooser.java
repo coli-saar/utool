@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
+import de.saar.chorus.ubench.gui.CommandListener.GenericFileFilter;
 
 public class JCodecFileChooser extends JFileChooser
 			implements PropertyChangeListener {
@@ -45,27 +46,42 @@ public class JCodecFileChooser extends JFileChooser
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		String prop = evt.getPropertyName();
-	
+		String codecname = null;
+		JPanel newAcc = new JPanel();
 		if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
-	        File file = (File) evt.getNewValue();
-	        if(input) {
-	        	
-	        } else {
-	        	
-	        }
-	    } else if(JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(prop)) {
-	    	FileFilter filter = getFileFilter();
-	    	JPanel newAcc ;
-	    	if(input) {
-	    		newAcc = JCodecOptionPane.constructInputCodecPanel(
-	    				filter.getDescription());
-	    	} else {
-	    		newAcc = JCodecOptionPane.constructOutputCodecPanel(
-	    				filter.getDescription());
-	    	}
-	    	setAccessory(newAcc);
-	    	repaint();
-	    }
+			File file = (File) evt.getNewValue();
+			
+			if(file != null) {
+				if(input) {
+					codecname = manager.getInputCodecNameForFilename(file.getName());
+				} else {
+					codecname = manager.getOutputCodecNameForFilename(file.getName());
+				}
+			}
+		} else if(JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(prop)) {
+			FileFilter filter = getFileFilter();
+			try {
+				codecname = ((GenericFileFilter) filter).getName(); 
+			} catch(ClassCastException e) {
+				System.err.println("All Codecs Selected.");
+			}
+		} else {
+			return;
+		}
+		
+		if(codecname != null) {
+			System.err.println("Codecname: " + codecname);
+			if(input) {
+				newAcc = JCodecOptionPane.constructInputCodecPanel(
+						codecname);
+			} else {
+				newAcc = JCodecOptionPane.constructOutputCodecPanel(
+						codecname);
+			}
+		} 
+		setAccessory(newAcc);
+		validate();
 	}
-
 }
+
+

@@ -909,7 +909,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 * @author Alexander Koller
 	 *
 	 */
-	private class GenericFileFilter extends FileFilter implements Comparable {
+	class GenericFileFilter extends FileFilter implements Comparable {
 		private String extension;
 		private String desc;
 		
@@ -951,6 +951,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		 */
 		public String getDescription() {
 			return "*" + extension + " (" + desc + ")";
+		}
+		public String getName() {
+			return desc;
 		}
 		
 		public String getExtension() {
