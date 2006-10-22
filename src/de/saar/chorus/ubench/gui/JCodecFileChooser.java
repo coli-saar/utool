@@ -70,13 +70,11 @@ public class JCodecFileChooser extends JFileChooser
 		}
 		
 		if(codecname != null) {
-			System.err.println("Codecname: " + codecname);
+		
 			if(input) {
-				newAcc = JCodecOptionPane.constructInputCodecPanel(
-						codecname);
+				newAcc = new JCodecOptionPane(manager.getInputCodecOptionTypes(codecname));
 			} else {
-				newAcc = JCodecOptionPane.constructOutputCodecPanel(
-						codecname);
+				newAcc = new JCodecOptionPane(manager.getOutputCodecOptionTypes(codecname));
 			}
 		} 
 		setAccessory(newAcc);

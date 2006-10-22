@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
 
-public class JCodecOptionPane {
+public class JCodecOptionPane extends JPanel {
 
 	private static Map<String, JTextField> texttypes =
 		new HashMap<String, JTextField>();
@@ -32,25 +32,19 @@ public class JCodecOptionPane {
 	private static Map<String, JComboBox> enums =
 		new HashMap<String,JComboBox>();
 	
-	private static CodecManager codecmanager =
-		Ubench.getInstance().getCodecManager();
 	
-	public static JPanel constructInputCodecPanel(String codec) {
-		
-		return constructOptionPanel(
-				codecmanager.getInputCodecOptionTypes(codec));
+	
+	private Map<String, Class> optionTypes;
+	
+	public JCodecOptionPane(Map<String,Class> options) {
+		optionTypes = options;
+		constructOptionPanel();
 	}
 	
-	public static JPanel constructOutputCodecPanel(String codec) {
-		
-		return constructOptionPanel(codecmanager.
-				getOutputCodecOptionTypes(codec));
-	}
+
 	
-	private static JPanel constructOptionPanel(Map<String,Class> optionTypes) {
-		JPanel optpan = new JPanel();
-		
-		optpan.setLayout(new BoxLayout(optpan, BoxLayout.PAGE_AXIS));
+	private void constructOptionPanel() {
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		// to make sure that the panel always looks
 		// the same way
@@ -63,39 +57,57 @@ public class JCodecOptionPane {
 			if( optclass == Boolean.TYPE ) {
 				
 				JCheckBox box = new JCheckBox(opt);
-				optpan.add(box);
+				add(box);
 				booleans.put(opt, box);
 			} else if( optclass.isEnum() ) {
 				//optpan.add(new JPanel();
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
-				optpan.add(new JLabel(opt + ":"));
+				add(new JLabel(opt + ":"));
 				Object[] constants = optclass.getEnumConstants();
 				Vector<String> stringvals = new Vector<String>(constants.length);
 				for( Object cos : constants )  {
 					stringvals.add(cos.toString());
 				}
 				JComboBox box = new JComboBox(stringvals);
-				optpan.add(box);
+				add(box);
 				enums.put(opt,box);
 			} else {
 				//optview = new JPanel();
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
-				optpan.add(new JLabel(opt + ":"));
+				add(new JLabel(opt + ":"));
 				JTextField line = new JTextField();
-				optpan.add(line);
+				add(line);
 				texttypes.put(opt,line);
 			}
 		}
 		if(optionnames.isEmpty()) {
-			optpan.add(new JLabel("This Codec"));
-			optpan.add(new JLabel("has no"));
-			optpan.add(new JLabel("options"));
-			optpan.add(new JLabel("to set."));
+			add(new JLabel("This Codec"));
+			add(new JLabel("has no"));
+			add(new JLabel("options"));
+			add(new JLabel("to set."));
 		}
-		return optpan;
+		
 	}
 	
-	public static String getOptionString() {
+	public Map<String,String> getOptionMap() {
+		Map<String,String> ret = new HashMap<String,String>();
+		
+		for(String opt : booleans.keySet() ) {
+			ret.put(opt, Boolean.toString(booleans.get(opt).isSelected()));
+		}
+		
+		for(String opt : enums.keySet() ) {
+			ret.put(opt, enums.get(opt).getSelectedItem().toString());
+		}
+		
+		for(String opt : texttypes.keySet()) {
+			ret.put(opt,texttypes.get(opt).getText());
+		}
+		
+		return ret;
+	}
+	
+	public String getOptionString() {
 		StringBuffer ret = new StringBuffer();
 		boolean first = true;
 		
@@ -131,6 +143,8 @@ public class JCodecOptionPane {
 	// this is to debug the Pane
 	public static void main(String[] args) {
 		Ubench.getInstance();
+		CodecManager codecmanager = Ubench.getInstance().getCodecManager();
+		
 		try{
 			codecmanager.registerCodec(DummyCodec.class);
 		} catch(Exception e) {
@@ -140,9 +154,10 @@ public class JCodecOptionPane {
 	//	JFrame window = new JFrame("Debug Codec Option Panel");
 		//window.setLayout(new BoxLayout(window, BoxLayout.PAGE_AXIS));
 		JFrame window = new JFrame("dummy-codec" + "(out)");
-		window.add(constructOutputCodecPanel("dummy-codec"));
+		JCodecOptionPane dummypane = new JCodecOptionPane(codecmanager.getOutputCodecOptionTypes("dummy-codec"));
+		window.add(dummypane);
 		JButton ok = new JButton("print command");
-		ok.addActionListener(new DebugListener());
+		ok.addActionListener(dummypane.new DebugListener());
 		ok.setActionCommand("tr");
 		window.add(ok, BorderLayout.SOUTH);
 		window.pack();
@@ -151,7 +166,7 @@ public class JCodecOptionPane {
 		
 	}
 
-	private static class DebugListener implements ActionListener {
+	private class DebugListener implements ActionListener {
 	
 	/* (non-Javadoc)
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
