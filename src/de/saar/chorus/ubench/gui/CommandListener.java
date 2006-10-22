@@ -34,6 +34,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
 import de.saar.basic.ExportUtilities;
+import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
@@ -574,14 +575,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					// TODO avoid doubling here
 					for( GenericFileFilter filter : ffInputCodecs ) {
-						codecList.append("<tr><td>" + filter.desc+ "</td><td> ("
+						codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
 								+ filter.getExtension() +
 						")</td></tr>");
 					}
 					codecList.append("</table><br><br><br>Output Codecs:<br><br>" + 
 					"<table border=\"0\">");
 					for( GenericFileFilter filter : ffOutputCodecs ) {
-						codecList.append("<tr><td>" + filter.desc+ "</td><td> ("
+						codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
 								+ filter.getExtension() +
 						")</td></tr>");
 					}
@@ -900,70 +901,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 	}
 	
-	
-	/**
-	 * TODO comment me!
-	 * 
-	 * @author Alexander Koller
-	 *
-	 */
-	class GenericFileFilter extends FileFilter implements Comparable {
-		private String extension;
-		private String desc;
-		
-		/**
-		 * 
-		 * @param extension
-		 * @param desc
-		 */
-		GenericFileFilter(String extension, String desc) {
-			if( extension.startsWith(".") )
-				this.extension = extension;
-			else
-				this.extension = "." + extension;
-			
-			this.desc = desc;
-		}
-		
-		/**
-		 * 
-		 * @return
-		 */
-		public boolean accept(File f) {
-			String fileName = f.getName();
-			
-			if( f.isDirectory() ) {
-				return true;
-			} 
-			
-			if(fileName.endsWith(extension) ) {
-				return true;
-			}
-			
-			return false;
-		}
-		
-		/**
-		 * 
-		 * @return
-		 */
-		public String getDescription() {
-			return "*" + extension + " (" + desc + ")";
-		}
-		public String getName() {
-			return desc;
-		}
-		
-		public String getExtension() {
-			return extension;
-		}
-		
-		public int compareTo(Object o) {
-			return desc.compareTo( 
-					((GenericFileFilter)o).desc);
-		}
-		
-	}
 	
 	/**
 	 * A <code>FileFilter</code> that 
