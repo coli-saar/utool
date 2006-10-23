@@ -42,6 +42,7 @@ public class ExitCodes {
     public static final int PARSER_CONFIGURATION_ERROR = 140;
     public static final int NO_SUCH_COMMAND = 141;
     public static final int CODEC_REGISTRATION_ERROR = 142;
+    public static final int EXAMPLE_PARSING_ERROR = 143;
     
     public static final int NO_INPUT = 150;
     public static final int NO_INPUT_CODEC_SPECIFIED = 151;

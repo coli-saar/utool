@@ -38,7 +38,6 @@ ListSelectionListener, ActionListener {
 	private JLabel prev;
 	private JList files;
 	private String[] exampleNames;
-	private List<File> exampleFiles;
 	private JButton load;
 	private JButton cancel;
 	public ExampleViewer() throws IOException {
@@ -46,17 +45,9 @@ ListSelectionListener, ActionListener {
 		setLayout(layout);
 		setAlwaysOnTop(true);
 		
-		exampleFiles = Ubench.getInstance().getCodecManager().getExampleFiles();
+		exampleNames = Ubench.getInstance().getExampleManager().getExampleNames().toArray(new String[] { });
 		
-		if( ! exampleFiles.isEmpty() ) {
-			exampleNames = new String[exampleFiles.size()];
-			
-			for( int i = 0; i < exampleNames.length; i++) {
-				exampleNames[i] = exampleFiles.get(i).getName();
-			}
-			
-			
-			
+		if( exampleNames.length > 0 ) {
 			files = new JList(exampleNames);
 			files.addListSelectionListener(this);
 			files.addMouseListener(new DoubleClickAdapter());
@@ -130,8 +121,7 @@ ListSelectionListener, ActionListener {
 		
 		
 		if(e.getActionCommand().equals("loEx")) {
-			final String selected = exampleFiles.get(
-					files.getSelectedIndex()).getAbsolutePath();
+			final String selected = exampleNames[files.getSelectedIndex()];
 			setVisible(false);
 			Ubench.getInstance().getStatusBar().showProgressBar();
 			new Thread(){
@@ -141,7 +131,13 @@ ListSelectionListener, ActionListener {
 					// JDomGraph
 					DomGraph theDomGraph = new DomGraph();
 					NodeLabels labels = new NodeLabels();
-					JDomGraph graph = Ubench.getInstance().genericLoadGraph(selected, theDomGraph, labels);
+                    
+                    Ubench u = Ubench.getInstance();
+                    
+					JDomGraph graph = 
+                        u.genericLoadGraph(u.getExampleManager().getExampleReader(selected), 
+                                u.getCodecManager().getInputCodecNameForFilename(selected),
+                                theDomGraph, labels);
 					
 					
 					if( graph != null ) {

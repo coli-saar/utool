@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -39,12 +40,23 @@ class CommandLineParser {
     
 
     private CodecManager codecManager;
-    
+    private ExampleManager exampleManager;
     
     public CommandLineParser() {
         codecManager = new CodecManager();
         //codecManager.registerAllVisibleCodecs();
         registerAllCodecs(codecManager);
+        
+        try {
+            exampleManager = new ExampleManager();
+            exampleManager.addAllExamples("examples");
+            exampleManager.addAllExamples("projects/Domgraph/examples");
+        } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
+            System.err.println("A parsing error occurred while reading an examples declaration.");
+            System.err.println(e + " (cause: " + e.getCause() + ")");
+            
+            System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
+        }
     }
 
     public AbstractOptions parse(String[] args)
@@ -146,6 +158,14 @@ class CommandLineParser {
                     if( "-".equals(argument)) {
                         reader = new InputStreamReader(System.in, Charset.forName("UTF-8"));
                         ret.setInputName("(standard input)");
+                    } else if( argument.startsWith("ex:")) {
+                        reader = exampleManager.getExampleReader(argument.substring(3));
+                        
+                        if( reader == null ) {
+                            throw new IOException("Can't find example file '" + argument.substring(3) + "'");
+                        }
+                        
+                        ret.setInputName(argument);
                     } else {
                         reader = inputCodec.getReaderForSpecification(argument);
                         ret.setInputName(argument);
