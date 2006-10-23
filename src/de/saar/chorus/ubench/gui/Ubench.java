@@ -27,6 +27,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -110,6 +112,25 @@ public class Ubench {
 
             System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
         }
+        
+        /*
+         * this is what it should look like in theory -- in practice
+         * the GTK L&F is really ugly, even on 1.6 Beta. Why? 
+         *
+        // set look and feel
+        System.setProperty("swing.aatext","true");
+        try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			System.err.println("Ubench running Windows look and feel");
+		} catch (Exception e) {
+			try {
+				UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+				System.err.println("Ubench running GTK look and feel");
+			} catch (Exception e1) {
+				System.err.println("Ubench running default look and feel");
+			} 
+		} 
+		*/
 
         
         eqs = null;
