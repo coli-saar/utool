@@ -323,7 +323,7 @@ public class JDomGraphMenu extends JMenuBar {
         }
         
          
-        server.setToolTipText("Click here to start a server" + 
+        server.setToolTipText("Click here to start a server " + 
     			System.getProperty("line.separator") + 
     			"on port 2802.");
         
@@ -352,11 +352,11 @@ public class JDomGraphMenu extends JMenuBar {
     void setServerButtonPressed(boolean b) {
         server.setSelected(b);
         if(b) {
-        	server.setToolTipText("The server is running." +
+        	server.setToolTipText("The server is running. " +
         			System.getProperty("line.separator") + 
         		"Click here to stop it.");
         } else {
-        	server.setToolTipText("Click here to start a server" + 
+        	server.setToolTipText("Click here to start a server " + 
         			System.getProperty("line.separator") + 
         			"on port 2802.");
         }
