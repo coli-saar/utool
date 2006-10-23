@@ -106,6 +106,7 @@ public class Ubench {
             exampleManager = new ExampleManager();
             exampleManager.addAllExamples("examples");
             exampleManager.addAllExamples("projects/Domgraph/examples");
+         
         } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
             System.err.println("A parsing error occurred while reading an examples declaration.");
             System.err.println(e + " (cause: " + e.getCause() + ")");

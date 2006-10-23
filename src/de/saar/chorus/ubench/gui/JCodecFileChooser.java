@@ -79,6 +79,7 @@ public class JCodecFileChooser extends JFileChooser
 		} 
 		setAccessory(newAcc);
 		validate();
+		codecname = null;
 	}
 }
 
