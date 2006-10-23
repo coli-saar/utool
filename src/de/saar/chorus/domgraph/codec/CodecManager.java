@@ -7,15 +7,12 @@
 
 package de.saar.chorus.domgraph.codec;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +24,6 @@ import java.util.Properties;
 
 import org.testng.annotations.Configuration;
 import org.testng.annotations.Test;
-
-import de.saar.chorus.ubench.gui.Ubench;
 
 /**
  * A registry and factory for codecs. A codec manager is a place where different
@@ -593,20 +588,34 @@ public class CodecManager {
      * Figure out the name of the output codec for the given filename. 
      * 
      * @param filename
-     * @return
+     * @return the name of the output codec, or null if no codec is
+     * associated with this filename.
      */
     public String getOutputCodecNameForFilename(String filename) {
-        return getCodecName(getOutputCodecClassForFilename(filename));
+        Class cc = getOutputCodecClassForFilename(filename);
+        
+        if( cc == null ) {
+            return null;
+        } else {
+            return getCodecName(cc);
+        }
     }
 
     /**
      * Figure out the name of the input codec for the given filename. 
      * 
      * @param filename
-     * @return
+     * @return the name of the input codec, or null if no codec is
+     * associated with this filename.
      */
     public String getInputCodecNameForFilename(String filename) {
-        return getCodecName(getInputCodecClassForFilename(filename));
+        Class cc = getInputCodecClassForFilename(filename);
+        
+        if( cc == null ) {
+            return null;
+        } else {
+            return getCodecName(cc);
+        }
     }
 
     private void displayOneCodec(Class codec, String formatString, PrintStream out) {
@@ -764,6 +773,8 @@ public class CodecManager {
             assert "domcon-oz".equals(manager.getOutputCodecNameForFilename("foo.clls"));
             assert "mrs-prolog".equals(manager.getInputCodecNameForFilename("foo.mrs.pl"));
             assert "domgraph-udraw".equals(manager.getOutputCodecNameForFilename("foo.dg.udg"));
+            
+            assert manager.getOutputCodecNameForFilename("does.not.exist") == null;
         }
     }
 
