@@ -101,7 +101,7 @@ public class ExampleManager extends DefaultHandler {
      * in the given directory. It is assumed to have the following form:
      * <blockquote>
      *   &lt;examples&gt;
-     *     &lt;example name="..." description="..." /&gt;
+     *     &lt;example filename="..." description="..." /&gt;
      *   &lt;/examples&gt;
      * </blockquote>
      * 
