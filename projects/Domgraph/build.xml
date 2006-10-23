@@ -44,7 +44,8 @@
 	<property name="domgraph-compact.jar" value="${build.lib}/Utool-compact-${domgraph.version}.jar" />
 	<property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*, ${chorus}/ubench/*,${chorus}/treelayout/*,${chorus}/ubench/gui/*,${chorus}/ubench/gui/chartviewer/*,${chorus}/jgraph/*" />
 	<property name="domgraph.allsourcefiles" value="${chorus}/domgraph/**/*.java, ${chorus}/domgraph/**/*.jj, ${chorus}/domgraph/**/*.properties, ${coli}/basic/*.java, ${coli}/getopt/*.java,${chorus}/ubench/*.java,${chorus}/ubench/gui/chartviewer/*.java,${chorus}/treelayout/*.java,${chorus}/ubench/gui/*.java,${chorus}/jgraph/*.java" />
-
+	<property name="pictures" value="${prefix}/projects/Domgraph/pictures"/>
+	
 	<!-- parameters for the distribution -->
 	<property name="domgraph-dist.jar" value="${build.lib}/Utool-src-${domgraph.version}.jar" />
 	<property name="distribution.exclude" value="" />
@@ -66,7 +67,7 @@
 		<jar jarfile="${domgraph-compact.jar}">
 			<fileset refid="domgraph.required.classes" />
 			<fileset dir="${build.classes}" includes="**/*.properties" />
-
+			<fileset dir="." includes="pictures/**/*"/>
 			<manifest>
 				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
@@ -79,7 +80,7 @@
 		         includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
 								   ${getopt.unpacked.classes},${itext.unpacked.classes}"
 					excludes="**/*$UnitTests.class" />
-			<fileset dir="." includes="examples/**/*" />
+			<fileset dir="." includes="examples/**/*, pictures/**/*" />
 			<manifest>
 				<attribute name="Main-Class"
                            value="de.saar.chorus.domgraph.utool.Utool" />
@@ -150,7 +151,7 @@
 			<manifest>
 				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
 			</manifest>
-
+			
 			<fileset dir="tmp_Domgraph/"/>
 		</jar>
 
