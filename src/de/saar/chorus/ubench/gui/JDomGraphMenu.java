@@ -1,9 +1,9 @@
 package de.saar.chorus.ubench.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,6 +15,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+
+import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 
 
 /**
@@ -308,21 +310,31 @@ public class JDomGraphMenu extends JMenuBar {
         helpMenu.add(about);
         add(helpMenu);
         
-        server = new JToggleButton(new ImageIcon("projects/Domgraph/pictures/Ch5.gif")) {
-        	public String getToolTipText() {
-        		if(isSelected()) {
-        			return ("Server Running.");
-        		} else {
-        			return ("Server Off.");
-        		}
-        	}
-        };
+        URL picurl = null;
+        picurl = Thread.currentThread().getContextClassLoader().getResource("projects/Domgraph/pictures/Ch5.gif");
+        if(picurl == null) {
+        	picurl = Thread.currentThread().getContextClassLoader().getResource("pictures/Ch5.gif");
+        }
+        if(picurl == null) {
+        	server = new JToggleButton("@");
+        } else {
+        	ImageIcon ic = new ImageIcon(picurl);
+        	server = new JToggleButton(ic);
+        }
+        
+         
+        server.setToolTipText("Click here to start a server" + 
+    			System.getProperty("line.separator") + 
+    			"on port 2802.");
+        
         server.setActionCommand("server");
         server.addActionListener(listener);
         server.setBackground(Color.GRAY);
         server.setOpaque(false);
         server.setIconTextGap(1);
         server.setMargin(new Insets(1,1,1,1));
+        setServerButtonPressed(ConnectionManager.getState() 
+        		== ConnectionManager.State.RUNNING);
         add(Box.createHorizontalGlue());
         add(server);      
         
@@ -339,6 +351,15 @@ public class JDomGraphMenu extends JMenuBar {
 	
     void setServerButtonPressed(boolean b) {
         server.setSelected(b);
+        if(b) {
+        	server.setToolTipText("The server is running." +
+        			System.getProperty("line.separator") + 
+        		"Click here to stop it.");
+        } else {
+        	server.setToolTipText("Click here to start a server" + 
+        			System.getProperty("line.separator") + 
+        			"on port 2802.");
+        }
     }
     
     boolean isServerButtonPressed() {
