@@ -149,15 +149,14 @@ public class JCodecOptionPane extends JPanel {
 	public static void main(String[] args) {
 		Ubench.getInstance();
 		CodecManager codecmanager = Ubench.getInstance().getCodecManager();
-		
+		System.err.println(codecmanager.getOutputCodecNameForFilename("rondane-1.mrs.pl"));
 		try{
 			codecmanager.registerCodec(DummyCodec.class);
 		} catch(Exception e) {
 			e.printStackTrace();
 			return;
 		}
-	//	JFrame window = new JFrame("Debug Codec Option Panel");
-		//window.setLayout(new BoxLayout(window, BoxLayout.PAGE_AXIS));
+
 		JFrame window = new JFrame("dummy-codec" + "(out)");
 		JCodecOptionPane dummypane = new JCodecOptionPane(codecmanager.getOutputCodecOptionTypes("dummy-codec"));
 		window.add(dummypane);

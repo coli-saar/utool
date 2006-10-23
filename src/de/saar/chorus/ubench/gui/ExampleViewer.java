@@ -47,6 +47,8 @@ ListSelectionListener, ActionListener {
 		
 		exampleNames = Ubench.getInstance().getExampleManager().getExampleNames().toArray(new String[] { });
 		
+		//exampleNames = Ubench.getInstance().getExampleManager().getExampleNames().toArray();
+		
 		if( exampleNames.length > 0 ) {
 			files = new JList(exampleNames);
 			files.addListSelectionListener(this);

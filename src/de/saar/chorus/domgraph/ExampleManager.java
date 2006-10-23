@@ -90,8 +90,8 @@ public class ExampleManager extends DefaultHandler {
         }
     }
     
-    private InputStream getExampleStream(String name, String directory) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(directory + "/" + name);
+    private InputStream getExampleStream(String name, String directory) {    
+    	return Thread.currentThread().getContextClassLoader().getResourceAsStream(directory + "/" + name);
     }
     
 
@@ -123,8 +123,11 @@ public class ExampleManager extends DefaultHandler {
         
         try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-            parser.parse(new InputSource(getExampleStream("examples.xml", directory)), this);   
+            InputSource insrc = new InputSource(getExampleStream("examples.xml", directory));
+        
+            parser.parse(insrc, this);   
         } catch(IOException e) {
+
             // ignore -- this probably means that the examples.xml didn't exist here
         } catch(SAXException e) {
             throw new ParserException(e);
@@ -142,16 +145,18 @@ public class ExampleManager extends DefaultHandler {
      */
     public void addExample(String filename, String directory, String description) {
         if( getExampleStream(filename, directory) != null ) {
+        	
             exampleNames.add(filename);
             descriptions.put(filename, description);
             exampleDirectories.put(filename, directory);
-        }
+        } 
     }
     
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if( "example".equals(qName)) {
             addExample(attributes.getValue("filename"), currentDirectory, attributes.getValue("description"));
+           
         }
     }
 
