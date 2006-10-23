@@ -161,10 +161,12 @@
 	
 	<!-- deploy a new distribution as follows:
 	
-	     ant -Ddeploy.username=... -Ddeploy.password=... deploy
+	     ant -Ddeploy.username=... -Ddeploy.password=...                   [for deployment]
+  	         -Dkeystore=... -Dkeystore.alias=... -Dkeystore.password=...   [for Jar signing]
+ 	         deploy
 
      -->
-	<target name="deploy" depends="source-dist,utool">
+	<target name="deploy" depends="source-dist,signed-utool">
 		<!-- deploy Jars -->
 		<sshexec host="${deploy.hostname}" username="${deploy.username}" password="${deploy.password}"
 			trust="yes"
@@ -174,6 +176,13 @@
 			password="${deploy.password}">
 			<fileset file="${domgraph.jar}" />
 			<fileset file="${domgraph-dist.jar}" />
+		</scp>
+		
+		<!-- deploy Webstart configuration file -->
+		<scp todir="${deploy.username}@${deploy.hostname}:${deploy.dir}"
+			trust="true"
+			password="${deploy.password}">
+			<fileset file="utool.jnlp" />
 		</scp>
 
 		<!-- deploy documentation -->
