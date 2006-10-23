@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 
+import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -79,6 +81,8 @@ public class Ubench {
     // the codec manager
     private CodecManager codecManager;
     
+    private ExampleManager exampleManager;
+    
     // if true, the next tab addition will resize the main jframe
     // to fit the preferred size of this tab
     private boolean useNextTabToResizeFrame;
@@ -95,6 +99,19 @@ public class Ubench {
 //      register codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
+        
+        try {
+            exampleManager = new ExampleManager();
+            exampleManager.addAllExamples("examples");
+            exampleManager.addAllExamples("projects/Domgraph/examples");
+        } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
+            System.err.println("A parsing error occurred while reading an examples declaration.");
+            System.err.println(e + " (cause: " + e.getCause() + ")");
+
+            System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
+        }
+
+        
         eqs = null;
         reduceAutomatically = false;
         
@@ -454,13 +471,13 @@ public class Ubench {
         else
             return null;
     }
-    
-    
-    
+
     /**
-     * Loads a labelled dominance graph from a file.
+     * Loads a labelled dominance graph from a reader.
      * 
-     * @param filename the file name
+     * @param reader the Reader from which the graph is read
+     * @param codec the name of the input codec that should be used
+     * to decode the graph 
      * @param graph a <code>DomGraph</code> which this method sets
      * to the dominance graph part of the labelled graph
      * @param nl a <code>NodeLabels</code> object which this method
@@ -468,16 +485,13 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public JDomGraph genericLoadGraph(String filename, DomGraph graph, NodeLabels nl) {
+    public JDomGraph genericLoadGraph(Reader reader, String codec, DomGraph graph, NodeLabels nl) {
         InputCodec inputCodec = 
-            codecManager.getInputCodecForFilename(filename, "");
+            codecManager.getInputCodecForName(codec, "");
         
         if(inputCodec != null ) {
             try {
-                inputCodec.decode(
-                		new InputStreamReader(
-                				new FileInputStream(filename))
-                		, graph, nl);
+                inputCodec.decode(reader, graph, nl);
                 
             } catch (IOException e) {
                 JOptionPane
@@ -518,6 +532,34 @@ public class Ubench {
         
         DomGraphTConverter conv = new DomGraphTConverter(graph, nl);
         return conv.getJDomGraph();
+    }
+    
+
+    
+    /**
+     * Loads a labelled dominance graph from a file.
+     * 
+     * @param filename the file name
+     * @param graph a <code>DomGraph</code> which this method sets
+     * to the dominance graph part of the labelled graph
+     * @param nl a <code>NodeLabels</code> object which this method
+     * fills with the node labelling part of the labelled graph
+     * @return a new <code>JDomGraph</code> representation for the
+     * labelled graph
+     */
+    public JDomGraph genericLoadGraph(String filename, DomGraph graph, NodeLabels nl) {
+        try {
+            return genericLoadGraph(new InputStreamReader(new FileInputStream(filename)),
+                    codecManager.getInputCodecNameForFilename(filename),
+                    graph, nl);
+        } catch (IOException e) {
+            JOptionPane
+            .showMessageDialog(
+                    window,
+                    "The specified file doesn't exist or cannot be opened.",
+                    "Error during import", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
     }
     
     /**
@@ -618,6 +660,10 @@ public class Ubench {
         return codecManager;
     }
     
+    public ExampleManager getExampleManager() {
+        return exampleManager;
+    }
+    
     /**
      * Sets up a new window after having created 
      * a ubench instance.
@@ -715,7 +761,7 @@ public class Ubench {
 	public boolean isEquationSystemLoaded() {
 		return eqs != null;
 	}
-    
+
 	
 }
 

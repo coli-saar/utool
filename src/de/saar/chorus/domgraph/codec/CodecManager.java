@@ -58,15 +58,12 @@ public class CodecManager {
     
     private Map<Class,Constructor> constructorForClass;
     
-    private Map<String,File> exampleNameToPath;
-    
     public CodecManager() {
         //outputCodecs = new ArrayList<OutputCodec>();
         //inputCodecs = new ArrayList<InputCodec>();
         outputCodecClasses = new ArrayList<Class>();
         inputCodecClasses = new ArrayList<Class>();
         constructorForClass = new HashMap<Class,Constructor>();
-        exampleNameToPath = new HashMap<String,File>();
     }
     
     // TODO - I would like to get rid of the getName methods; codecs should
@@ -731,81 +728,6 @@ public class CodecManager {
         }
     }
     
-    
-    public List<File> getExampleFiles() {
-    	List<File> ret = new ArrayList<File>();
-    	File exampleFolder;
-    	try{URI filelocation = 
-    		Thread.currentThread().getContextClassLoader().
-    		getResource("projects/Domgraph/examples/").toURI();
-    	exampleFolder  = new File(filelocation);
-    	} catch (Exception e) {
-    		exampleFolder  = new File("projects/Domgraph/examples/");
-    	}
-    	 
-    	if(! exampleFolder.isDirectory()) {
-    		
-    		try{URI filelocation = 
-        		Thread.currentThread().getContextClassLoader().
-        		getResource("examples/").toURI();
-        	exampleFolder  = new File(filelocation);
-        	} catch (Exception e) {
-        		exampleFolder = new File("examples/");
-        	}
-    		
-    		if(! exampleFolder.isDirectory()) {
-			return ret;
-    		}
-    	}
-    	
-    	FileFilter exFilter = new InputCodecFilter();
-		File[] exampleFiles = exampleFolder.listFiles(exFilter);
-    	
-		for( int i = 0; i< exampleFiles.length; i++ ) {
-			exampleNameToPath.put(exampleFiles[i].getName(), 
-					exampleFiles[i]);
-			ret.add(exampleFiles[i]);
-		}
-    	
-    	return ret;
-    }
-   
-    
-    private class InputCodecFilter implements FileFilter {
-
-		/* (non-Javadoc)
-		 * @see java.io.FileFilter#accept(java.io.File)
-		 */
-		public boolean accept(File pathname) {
-			
-		
-				String name = pathname.getName();
-				
-				for(String ext : Ubench.getInstance().getCodecManager().getAllInputCodecExtensions() ) {
-					if(name.endsWith(ext)) {
-						return true;
-					}
-				}
-				
-			
-			return false;
-		}
-		
-	}
-    
-    /*
-    public Reader getExampleReader(String exampleName) throws IOException {
-    	
-    	List<File> examples = getExampleFiles();
-    	if(exampleNameToPath.containsKey(exampleName)){
-    		InputStream exstream = new FileInputStream(exampleNameToPath.get(exampleName));
-    		return new InputStreamReader(exstream);
-    		
-    	} else {
-    		return null;
-    	}
-    } 
-    */
     
     private CodecMetadata getCodecAnnotation(Class codecClass) {
         return (CodecMetadata) codecClass.getAnnotation(CodecMetadata.class);

@@ -64,29 +64,6 @@ public abstract class InputCodec {
      */
     public Reader getReaderForSpecification(String spec)
     throws IOException {
-        if( spec.startsWith("ex:")) {
-            // load an example input file that was packaged with the Jar
-            String filename = spec.substring(3);
-            ClassLoader loader = getClass().getClassLoader();
-            
-            
-            InputStream istream = loader.getResourceAsStream("projects/Domgraph/examples/" + filename);
-            
-            if( istream == null ) {
-                istream = loader.getResourceAsStream("examples/" + filename);
-            }
-            
-            if( istream == null ) {
-                throw new IOException("Couldn't find an example file with name " + filename);
-            } else {
-                return new InputStreamReader(istream);
-            }
-            
-           // InputStreamReader ret = 
-            
-        } else {
-            //return new FileReader(spec);
-        	return new InputStreamReader(new FileInputStream(spec));
-        }
+        return new InputStreamReader(new FileInputStream(spec));
     }
 }
