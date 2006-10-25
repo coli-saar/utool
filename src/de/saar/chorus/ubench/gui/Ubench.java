@@ -130,8 +130,8 @@ public class Ubench {
 			} catch (Exception e1) {
 				System.err.println("Ubench running default look and feel");
 			} 
-		} 
-		*/
+		} */
+		
 
         
         eqs = null;
