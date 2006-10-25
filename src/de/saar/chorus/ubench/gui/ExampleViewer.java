@@ -1,6 +1,7 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,20 +10,21 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
@@ -34,18 +36,20 @@ ListSelectionListener, ActionListener {
 	private BorderLayout layout = new BorderLayout();
 	private	File exampleFolder;
 	private JPanel listContents;
-	private JLabel desc;
+	private JTextArea desc;
 	private JLabel prev;
 	private JList files;
 	private String[] exampleNames;
 	private JButton load;
 	private JButton cancel;
+	private JScrollPane descriptionPane;
+	private ExampleManager manager;
 	public ExampleViewer() throws IOException {
 		super("Open Example");
 		setLayout(layout);
 		setAlwaysOnTop(true);
-		
-		exampleNames = Ubench.getInstance().getExampleManager().getExampleNames().toArray(new String[] { });
+		manager = Ubench.getInstance().getExampleManager();
+		exampleNames = manager.getExampleNames().toArray(new String[] { });
 		
 		//exampleNames = Ubench.getInstance().getExampleManager().getExampleNames().toArray();
 		
@@ -79,13 +83,32 @@ ListSelectionListener, ActionListener {
 			
 			listContents.add(preview, BorderLayout.SOUTH);
 			listContents.validate();
-			add(listPane,BorderLayout.WEST);
-			add(preview, BorderLayout.SOUTH);
-			JPanel description = new JPanel();
-			desc = new JLabel("No example selected.");
-			description.add(desc);
 			
-			add(description, BorderLayout.EAST); 
+			JPanel description = new JPanel();
+			desc = new JTextArea("No example selected.");
+			desc.setEditable(false);
+			desc.setAutoscrolls(true);
+			desc.setColumns(30);
+			desc.setBackground(Color.LIGHT_GRAY);
+			desc.setOpaque(false);
+			desc.setLineWrap(true);
+			desc.setWrapStyleWord(true);
+			
+			TitledBorder border = new TitledBorder(
+					new LineBorder(Color.GRAY, 1, true), 
+					"Description",
+					TitledBorder.CENTER,
+					TitledBorder.ABOVE_TOP);
+			
+			
+			description.add(desc, BorderLayout.CENTER);
+			description.setBorder(border);
+			descriptionPane = new JScrollPane(description);
+			files.setAutoscrolls(true);
+			
+			add(files,BorderLayout.WEST);
+			add(preview, BorderLayout.SOUTH);
+			add(descriptionPane, BorderLayout.EAST); 
 			
 			pack();
 			validate();
@@ -96,7 +119,9 @@ ListSelectionListener, ActionListener {
 		//setVisible(true);
 	}
 	
-	
+	private String killWhitespaces(String str) {
+		return str.replaceAll("\\s+", " ");
+	}
 	
 	/* (non-Javadoc)
 	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
@@ -107,9 +132,15 @@ ListSelectionListener, ActionListener {
 		String selected = exampleNames[files.getSelectedIndex()];
 		
 	/*	pack(); */
-		validate(); 
-		desc.setText("Example " + selected);
 		
+		desc.setText(
+				killWhitespaces(
+						manager.getDescriptionForExample(selected)));
+		
+		
+		//descriptionPane.validate();
+		//files.validate();
+		validate();
 	}
 	
 	/* (non-Javadoc)
