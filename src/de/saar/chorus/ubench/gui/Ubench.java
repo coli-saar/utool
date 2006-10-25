@@ -507,10 +507,15 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public JDomGraph genericLoadGraph(Reader reader, String codec, DomGraph graph, NodeLabels nl) {
-        InputCodec inputCodec = 
-            codecManager.getInputCodecForName(codec, "");
-        
+    public JDomGraph genericLoadGraph(Reader reader, String codec, 
+    		DomGraph graph, NodeLabels nl, Map<String, String> options) {
+    	InputCodec inputCodec;
+    	if(options != null ) {
+    		inputCodec = 
+            codecManager.getInputCodecForName(codec, options);
+    	} else {
+    		inputCodec = codecManager.getInputCodecForName(codec, "");
+    	}
         if(inputCodec != null ) {
             try {
                 inputCodec.decode(reader, graph, nl);
@@ -569,11 +574,12 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public JDomGraph genericLoadGraph(String filename, DomGraph graph, NodeLabels nl) {
+    public JDomGraph genericLoadGraph(String filename, DomGraph graph, 
+    		NodeLabels nl, Map<String,String> options) {
         try {
             return genericLoadGraph(new InputStreamReader(new FileInputStream(filename)),
                     codecManager.getInputCodecNameForFilename(filename),
-                    graph, nl);
+                    graph, nl, options);
         } catch (IOException e) {
             JOptionPane
             .showMessageDialog(
@@ -609,7 +615,7 @@ public class Ubench {
         for (String file : getopt.getRemaining()) {
             DomGraph anotherGraph = new DomGraph();
             NodeLabels labels = new NodeLabels();
-            JDomGraph graph = getInstance().genericLoadGraph(file, anotherGraph, labels);
+            JDomGraph graph = getInstance().genericLoadGraph(file, anotherGraph, labels, null);
             if (graph != null) {
                 // DomGraphTConverter conv = new DomGraphTConverter(graph);
                 JDomGraphTab firstTab = getInstance().addNewTab(graph, (new File(file))

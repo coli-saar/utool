@@ -39,7 +39,9 @@ public class DummyCodec extends OutputCodec {
 	@Override
 	public void encode(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException {
 		System.err.println("This is simply not made for encoding graphs, OK?");
-		
+		System.err.println("Option Shape: " + shape);
+		System.err.println("Option dressed: " + dressed);
+		System.err.println("Option color: " + color);
 	}
 
 	/* (non-Javadoc)

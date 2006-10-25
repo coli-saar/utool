@@ -170,7 +170,7 @@ ListSelectionListener, ActionListener {
 					JDomGraph graph = 
                         u.genericLoadGraph(u.getExampleManager().getExampleReader(selected), 
                                 u.getCodecManager().getInputCodecNameForFilename(selected),
-                                theDomGraph, labels);
+                                theDomGraph, labels, null);
 					
 					
 					if( graph != null ) {

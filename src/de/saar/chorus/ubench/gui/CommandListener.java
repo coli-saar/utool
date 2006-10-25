@@ -79,7 +79,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 * Creates a new Instance of <code>CommandListener</code>.
 	 */
 	public CommandListener() {
-		CodecManager codecman = Ubench.getInstance().getCodecManager();
+		CodecManager codecman = Ubench.getInstance().getCodecManager();		
 		ConnectionManager.addListener(this);
 		// initializing fields
 		eventSources = new HashMap<Object,String>();
@@ -168,9 +168,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		} else {
 			// loading any graph file
 			if( command.equals("loadGXL") ) {
-				JFileChooser fc = new JFileChooser(recentPath);
-				
-				
+				final JCodecFileChooser fc = new JCodecFileChooser(recentPath, true);
 				
 				//    fc.addChoosableFileFilter(ffInNativeGxl);
 				for( FileFilter ff : ffInputCodecs ) {
@@ -204,7 +202,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 							// JDomGraph
 							DomGraph theDomGraph = new DomGraph();
 							NodeLabels labels = new NodeLabels();
-							JDomGraph graph = Ubench.getInstance().genericLoadGraph(recentPath, theDomGraph, labels);
+							JDomGraph graph = Ubench.getInstance().genericLoadGraph(recentPath, 
+									theDomGraph, labels, fc.getCodecOptions());
 							
 							
 							if( graph != null ) {
@@ -267,7 +266,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							
 							
 							OutputCodec oc = 
-								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),"");
+								Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions());
 							if( oc != null ) {
 								try {
 									FileWriter writer = new FileWriter(file);
@@ -426,7 +425,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JFileChooser fc = new JFileChooser(recentPath);
+						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
 						for( FileFilter ff : ffOutputCodecs ) {
 							fc.addChoosableFileFilter(ff);
 						}
@@ -455,11 +454,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 								targetfileName = targetFile;
 							}
 							
-							
-							
+							final File outputfile = new File(targetfileName);
+							final OutputCodec oc= Ubench.getInstance().getCodecManager().
+							getOutputCodecForFilename(outputfile.getName(), fc.getCodecOptions());
 							new Thread() {
 								public void run() {
-									File outputfile = new File(targetfileName);
+									
 									recentPath = outputfile.getAbsolutePath();
 									// that's just a guess...
 									
@@ -468,8 +468,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 									progress.beginTask();
 									
 									
-									OutputCodec oc= Ubench.getInstance().getCodecManager().
-									getOutputCodecForFilename(outputfile.getName(), "");
+								
 									
 									
 									
