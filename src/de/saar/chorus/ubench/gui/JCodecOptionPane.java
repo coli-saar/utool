@@ -1,6 +1,8 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,17 +13,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
 
-public class JCodecOptionPane extends JPanel {
+public class JCodecOptionPane extends JComponent {
 
 	private static Map<String, JTextField> texttypes =
 		new HashMap<String, JTextField>();
@@ -39,10 +44,16 @@ public class JCodecOptionPane extends JPanel {
 	public JCodecOptionPane(Map<String,Class> options) {
 		optionTypes = options;
 		constructOptionPanel();
+	
 	}
+	
 	
 
 	
+	
+
+
+
 	private void constructOptionPanel() {
 		setLayout(new GridLayout(0,2));
 		
@@ -85,10 +96,17 @@ public class JCodecOptionPane extends JPanel {
 			}
 		}
 		if(optionnames.isEmpty()) {
+			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 			add(new JLabel("This Codec"));
-					add(new JLabel("has no"));
+		    add(new JLabel("has no"));
 			add(new JLabel("options"));
 			add(new JLabel("to set."));
+		} else {
+			setBorder(new TitledBorder(
+					new LineBorder(Color.GRAY, 1, true), 
+					"Codec\n Options",
+					TitledBorder.CENTER,
+					TitledBorder.ABOVE_TOP));
 		}
 		doLayout();
 		validate();
