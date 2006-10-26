@@ -55,24 +55,7 @@ public class JCodecFileChooser extends JFileChooser
 		//setAccessory(empty);
 	}
 	
-	public JCodecFileChooser(boolean input) {
-		super();
-		this.input = input;
-		
-		manager = Ubench.getInstance().getCodecManager();
-		empty = new JPanel();
-		empty.setLayout(new BoxLayout(empty, BoxLayout.PAGE_AXIS));
-		empty.add(new JLabel("No Codec"));
-		empty.add(new JLabel("Selected."));
-		showOptions = new JButton("Options");
-		showOptions.setEnabled(false);
-		optview = false;
-		button = new JPanel();
-		button.add(showOptions, BorderLayout.CENTER);
-		setAccessory(button);
-		
-		addPropertyChangeListener(this);
-	}
+	
 	
 	
 	public Map<String,String> getCodecOptions() {
@@ -116,20 +99,11 @@ public class JCodecFileChooser extends JFileChooser
 				options = new JCodecOptionPane(manager.getOutputCodecOptionTypes(codecname));
 				newAcc = options;
 			}
-			if(showOptions != null )
+			if(showOptions != null ) {
 				showOptions.setEnabled(true);
+			}
 			if(optview) {
-				JPanel helperPanel = new JPanel();
-				helperPanel.setLayout(new BoxLayout(helperPanel, BoxLayout.PAGE_AXIS));
-				helperPanel.add(newAcc);
-				
-				
-				helperPanel.add(new JLabel("     "));
-				JButton hide = new JButton("Hide");
-				hide.addActionListener(this);
-				hide.setActionCommand("hide");
-				helperPanel.add(hide);
-				setAccessory(helperPanel);
+				showOptionAccess(newAcc);
 			}
 		} 
 		
@@ -140,27 +114,32 @@ public class JCodecFileChooser extends JFileChooser
 	private void setShowAccessory(boolean show) {
 		optview = show;
 		if(show)  {
-			JPanel helperPanel = new JPanel();
-			BoxLayout layout = new BoxLayout(helperPanel, BoxLayout.PAGE_AXIS);
-		
-			helperPanel.setLayout(layout);
-			
-			helperPanel.add(options);
-			
-		
-			helperPanel.add(new JLabel("     "));
-			JButton hide = new JButton("Hide");
-			hide.addActionListener(this);
-			hide.setActionCommand("hide");
-			helperPanel.add(hide);
-			JPanel helper2 = new JPanel();
-			helper2.add(helperPanel);
-			setAccessory(helper2);
+			showOptionAccess(options);
 			
 		} else {
 	
 			setAccessory(button);
 		}
+		validate();
+	}
+	
+	private void showOptionAccess(JComponent optionpane) {
+		JPanel helperPanel = new JPanel();
+		BoxLayout layout = new BoxLayout(helperPanel, BoxLayout.PAGE_AXIS);
+	
+		helperPanel.setLayout(layout);
+		
+		helperPanel.add(optionpane);
+		
+	
+		helperPanel.add(new JLabel("     "));
+		JButton hide = new JButton("Hide");
+		hide.addActionListener(this);
+		hide.setActionCommand("hide");
+		helperPanel.add(hide);
+		JPanel helper2 = new JPanel();
+		helper2.add(helperPanel);
+		setAccessory(helper2);
 		validate();
 	}
 
