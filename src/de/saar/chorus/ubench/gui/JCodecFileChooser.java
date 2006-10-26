@@ -82,11 +82,11 @@ public class JCodecFileChooser extends JFileChooser
 			}
 		} else if(JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(prop)) {
 			FileFilter filter = getFileFilter();
-			try {
+			
+			if(filter instanceof GenericFileFilter) {
 				codecname = ((GenericFileFilter) filter).getName(); 
-			} catch(ClassCastException e) {
-				System.err.println("All Codecs Selected.");
-			}
+			} 
+		
 		} else {
 			return;
 		}
