@@ -897,13 +897,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			infotext.append("The chart is already reduced.");
 			infotext.append(System.getProperty("line.separator"));
 			infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
-					noOfSplits + " Splits");
+					noOfSplits + " Splits ");
 		
 			infotext.append("and has " + noOfSolvedForms + " solved forms.");
 			infotext.append("  ");
 			infotext.append(System.getProperty("line.separator"));
 			infotext.append("The original chart contained " + 
-					chartcopy.countSubgraphs() + " subgraphs," +
+					chartcopy.countSubgraphs() + " subgraphs, " +
 					chartcopy.size() + " splits");
 			infotext.append(System.getProperty("line.separator"));
 			infotext.append("and had " + chartcopy.countSolvedForms() + " solved forms.");
@@ -920,7 +920,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		infotext.append("  ");
 		infotext.append(System.getProperty("line.separator"));
 		if(Ubench.getInstance().isEquationSystemLoaded()) {
-			infotext.append("The equationsystem " + 
+			infotext.append("The equation system " + 
 					Ubench.getInstance().getEqsname() + " is loaded.");
 		} else {
 			infotext.append("There is no equation system loaded.");
