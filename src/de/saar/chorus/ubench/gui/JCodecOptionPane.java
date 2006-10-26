@@ -2,7 +2,6 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
@@ -97,17 +97,15 @@ public class JCodecOptionPane extends JComponent {
 		}
 		if(optionnames.isEmpty()) {
 			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-			add(new JLabel("This Codec"));
-		    add(new JLabel("has no"));
-			add(new JLabel("options"));
-			add(new JLabel("to set."));
-		} else {
-			setBorder(new TitledBorder(
-					new LineBorder(Color.GRAY, 1, true), 
-					"Codec\n Options",
-					TitledBorder.CENTER,
-					TitledBorder.ABOVE_TOP));
-		}
+			add(new JLabel("This Codec has no"));
+			add(new JLabel("options to set."));
+			
+		} 
+		setBorder(new TitledBorder(
+				new LineBorder(Color.GRAY, 1, true), 
+				"Options",
+				TitledBorder.CENTER,
+				TitledBorder.ABOVE_TOP));
 		doLayout();
 		validate();
 	}

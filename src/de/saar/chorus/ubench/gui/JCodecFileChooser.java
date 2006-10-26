@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -16,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
@@ -122,13 +124,15 @@ public class JCodecFileChooser extends JFileChooser
 		}
 		validate();
 	}
-	
+
+ 	
 	private void showOptionAccess(JComponent optionpane) {
 		JPanel helperPanel = new JPanel();
 		BoxLayout layout = new BoxLayout(helperPanel, BoxLayout.PAGE_AXIS);
-	
-		helperPanel.setLayout(layout);
 		
+		helperPanel.setLayout(layout);
+		//helperPanel.add(new JLabel("Codec: " + ((GenericFileFilter) getFileFilter()).getName()));
+		//helperPanel.add(new JLabel(" "));
 		helperPanel.add(optionpane);
 		
 	
