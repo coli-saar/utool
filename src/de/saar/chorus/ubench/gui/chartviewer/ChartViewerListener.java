@@ -117,6 +117,8 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			viewer.resetChart();
 			viewer.setCursor(Cursor.getDefaultCursor());
+		} else if ( command.equals("chartinfo") ) {
+			viewer.showInfoPane();
 		}
 
 	}
@@ -145,7 +147,7 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			EquationSystem eqs = new EquationSystem();
 			try {
 				eqs.read(new FileReader(file));
-				Ubench.getInstance().setEquationSystem(eqs);
+				Ubench.getInstance().setEquationSystem(eqs, file.getName());
 				toReturn = file.getName();
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(viewer,
