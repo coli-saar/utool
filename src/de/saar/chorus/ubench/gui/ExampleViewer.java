@@ -34,10 +34,10 @@ ListSelectionListener, ActionListener {
 	
 	
 	private BorderLayout layout = new BorderLayout();
-	private	File exampleFolder;
+
 	private JPanel listContents;
 	private JTextArea desc;
-	private JLabel prev;
+
 	private JList files;
 	private String[] exampleNames;
 	private JButton load;

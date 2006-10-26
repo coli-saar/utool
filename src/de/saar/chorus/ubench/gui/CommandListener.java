@@ -81,6 +81,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 	public CommandListener() {
 		CodecManager codecman = Ubench.getInstance().getCodecManager();		
 		ConnectionManager.addListener(this);
+		
+		// to debug the Codec Options.
+		try{
+			codecman.registerCodec(DummyCodec.class);
+		} catch (Exception e) {
+			System.err.println("The DummyCodec cannot be registered.");
+			System.err.println(e.getMessage());
+		}
 		// initializing fields
 		eventSources = new HashMap<Object,String>();
 		
