@@ -47,6 +47,7 @@ public class EquationSystem extends DefaultHandler {
         
         currentEquivalenceGroup = null;
         currentEquivalencePartner = null;
+        
     }
     
     /**

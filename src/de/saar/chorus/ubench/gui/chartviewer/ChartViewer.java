@@ -20,10 +20,10 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -108,6 +108,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private int noOfSplits;
 	private int noOfSubgraphs;
 	
+	private String graphName;
 	
 	// the ActionListener responsible for actions
 	// triggered via the Window Menu
@@ -129,6 +130,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		// some initialising
 		super("Chart of " + title);
+		graphName = title;
 		labels = la;
 		listener = new ChartViewerListener(this);
 		chartcopy = c;
@@ -855,8 +857,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if( Ubench.getInstance().isEquationSystemLoaded() ) {
 			iseqs.setText("<html><font color=\"green\">" +
 					"&#8730;</font></html>");
-			iseqs.setToolTipText("Equation System loaded.");
-			es.setToolTipText("Equation System loaded.");
+			iseqs.setToolTipText("Equation System "
+					+ Ubench.getInstance().getEqsname() + " loaded.");
+			es.setToolTipText("Equation System "
+					+ Ubench.getInstance().getEqsname() + " loaded.");
 		} else {
 			iseqs = new JLabel("<html><font color=\"red\">" +
 			"X </font></html>");
@@ -881,6 +885,53 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		validate();
 	}
 	
+	void showInfoPane() {
+		StringBuffer infotext = new StringBuffer();
+		infotext.append("This is the chart of " + graphName + ".");
+		infotext.append(System.getProperty("line.separator"));
+		infotext.append("  ");
+		infotext.append(System.getProperty("line.separator"));
+
+		if(reduced) {
+			
+			infotext.append("The chart is already reduced.");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
+					noOfSplits + " Splits");
+		
+			infotext.append("and has " + noOfSolvedForms + " solved forms.");
+			infotext.append("  ");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("The original chart contained " + 
+					chartcopy.countSubgraphs() + " subgraphs," +
+					chartcopy.size() + " splits");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("and had " + chartcopy.countSolvedForms() + " solved forms.");
+		} else {
+			
+			infotext.append("The chart is not reduced yet.");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
+					noOfSplits + " splits ");
+			
+			infotext.append("and has " + noOfSolvedForms + " solved forms.");
+		}
+		infotext.append(System.getProperty("line.separator"));
+		infotext.append("  ");
+		infotext.append(System.getProperty("line.separator"));
+		if(Ubench.getInstance().isEquationSystemLoaded()) {
+			infotext.append("The equationsystem " + 
+					Ubench.getInstance().getEqsname() + " is loaded.");
+		} else {
+			infotext.append("There is no equation system loaded.");
+		}
+		
+		
+		JOptionPane.showMessageDialog(this, infotext, "Chart Information", 
+				JOptionPane.INFORMATION_MESSAGE);
+		
+	}
+	
 	/**
 	 * The Menu Bar for the chart window.
 	 * 
@@ -894,7 +945,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		JMenu chartmenu, splitmenu;
 		JMenuItem elred, reset, delete, 
 				  firstsolvedform, loadeqs,
-				  autoreduce;
+				  autoreduce, info;
 		
 		ChartViewerMenu(ChartViewerListener li) {
 			
@@ -926,7 +977,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			lis.registerEventSource(autoreduce, "autoreduce");
 			chartmenu.add(autoreduce);
 			
-			elred = new JMenuItem("Eliminate Equivalences");
+			elred = new JMenuItem("Reduce Chart");
 			elred.setActionCommand("elred");
 			elred.addActionListener(lis);
 			elred.setMnemonic(KeyEvent.VK_R);
@@ -940,6 +991,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			reset.setActionCommand("resetchart");
 			reset.addActionListener(lis);
 			chartmenu.add(reset);
+			
+			
+			info = new JMenuItem("Show Chart Info...");
+			info.setActionCommand("chartinfo");
+			info.addActionListener(lis);
+			chartmenu.add(info);
+			
+			
 			chartmenu.validate();
 			add(chartmenu);
 			

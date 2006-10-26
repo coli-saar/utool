@@ -115,6 +115,9 @@ public class Chart implements Cloneable {
         return refcount.get(subgraph).getValue();
     }
     
+    public int countSubgraphs() {
+    	return chart.size();
+    }
 
     /**
      * Sets the splits for a given subgraph. If the subgraph already

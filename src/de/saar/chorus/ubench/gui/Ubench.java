@@ -90,6 +90,7 @@ public class Ubench {
     private boolean useNextTabToResizeFrame;
     
     private EquationSystem eqs;
+    private String eqsname;
     
     public boolean reduceAutomatically;
     
@@ -135,6 +136,7 @@ public class Ubench {
 
         
         eqs = null;
+        eqsname = null;
         reduceAutomatically = false;
         
     }
@@ -782,10 +784,27 @@ public class Ubench {
 	/**
 	 * @param eqs The eqs to set.
 	 */
-	public void setEquationSystem(EquationSystem eqs) {
+	public void setEquationSystem(EquationSystem eqs, String name) {
+		eqsname = name;
 		this.eqs = eqs;
 	}
 	
+	
+	
+	/**
+	 * @return Returns the eqsname.
+	 */
+	public String getEqsname() {
+		return eqsname;
+	}
+
+	/**
+	 * @param eqsname The eqsname to set.
+	 */
+	private void setEqsname(String eqsname) {
+		this.eqsname = eqsname;
+	}
+
 	public boolean isEquationSystemLoaded() {
 		return eqs != null;
 	}
