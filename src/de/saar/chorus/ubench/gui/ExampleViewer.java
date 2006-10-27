@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,7 +36,7 @@ ListSelectionListener, ActionListener {
 	private BorderLayout layout = new BorderLayout();
 
 	private JSplitPane listContents;
-	private JTextArea desc;
+	private JTextPane desc;
 
 	private JList files;
 	private String[] exampleNames;
@@ -76,14 +77,12 @@ ListSelectionListener, ActionListener {
 			cancel.setActionCommand("cancel");
 			preview.add(cancel);
 			
-			desc = new JTextArea("No example selected.");
+			desc = new JTextPane();
+			desc.setContentType("text/html");
+			desc.setText("No example selected.");
 			desc.setEditable(false);
-			desc.setAutoscrolls(true);
-			desc.setColumns(30);
 			desc.setBackground(Color.LIGHT_GRAY);
 			desc.setOpaque(false);
-			desc.setLineWrap(true);
-			desc.setWrapStyleWord(true);
 			descriptionPane = new JScrollPane(desc);
 			descriptionPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			
@@ -91,12 +90,12 @@ ListSelectionListener, ActionListener {
 			listContents.setOneTouchExpandable(true);
 			listContents.setDividerLocation(150);
 
-
-			Dimension minimumSize = new Dimension(100, 50);
-			descriptionPane.setMinimumSize(minimumSize);
-			listPane.setMinimumSize(minimumSize);
-			
-			
+		
+			listPane.setMinimumSize(new Dimension(100, 50));
+			descriptionPane.setPreferredSize(new Dimension(
+					((int) (listPane.getPreferredSize().width * 1.7)), 
+					listPane.getPreferredSize().height ));
+			descriptionPane.setMinimumSize(listPane.getPreferredSize());
 			add(listContents,BorderLayout.CENTER);
 			add(preview, BorderLayout.SOUTH);
 		
@@ -123,13 +122,14 @@ ListSelectionListener, ActionListener {
 		
 	/*	pack(); */
 		
-		desc.setText("Codec: " + 
+		desc.setText("<html><div style='font-family:Arial; font-size:12pt'><b>Codec: " + 
 				Ubench.getInstance().getCodecManager().
 				getInputCodecNameForFilename(selected) +
-				System.getProperty("line.separator") + 
+				"</b><br>"+ 
 				killWhitespaces(
-						manager.getDescriptionForExample(selected)));
-		
+						manager.getDescriptionForExample(selected))
+						+ "</div></html>");
+			
 		
 		//descriptionPane.validate();
 		//files.validate();
