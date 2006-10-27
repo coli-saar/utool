@@ -3,24 +3,23 @@ package de.saar.chorus.ubench.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -35,13 +34,14 @@ ListSelectionListener, ActionListener {
 	
 	private BorderLayout layout = new BorderLayout();
 
-	private JPanel listContents;
+	private JSplitPane listContents;
 	private JTextArea desc;
 
 	private JList files;
 	private String[] exampleNames;
 	private JButton load;
 	private JButton cancel;
+	private JScrollPane listPane;
 	private JScrollPane descriptionPane;
 	private ExampleManager manager;
 	public ExampleViewer() throws IOException {
@@ -58,12 +58,9 @@ ListSelectionListener, ActionListener {
 			files.addListSelectionListener(this);
 			files.addMouseListener(new DoubleClickAdapter());
 			files.addKeyListener(new EnterAdapter());
+			listPane = new JScrollPane(files);
+			listPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			
-			JScrollPane listPane = new JScrollPane(files);
-			
-			listContents = new JPanel();
-			listContents.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-			listContents.add(listPane, BorderLayout.WEST);
 			
 			JPanel preview = new JPanel();
 			preview.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
@@ -79,12 +76,6 @@ ListSelectionListener, ActionListener {
 			cancel.setActionCommand("cancel");
 			preview.add(cancel);
 			
-			
-			
-			listContents.add(preview, BorderLayout.SOUTH);
-			listContents.validate();
-			
-			JPanel description = new JPanel();
 			desc = new JTextArea("No example selected.");
 			desc.setEditable(false);
 			desc.setAutoscrolls(true);
@@ -93,23 +84,22 @@ ListSelectionListener, ActionListener {
 			desc.setOpaque(false);
 			desc.setLineWrap(true);
 			desc.setWrapStyleWord(true);
+			descriptionPane = new JScrollPane(desc);
+			descriptionPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			
-			TitledBorder border = new TitledBorder(
-					new LineBorder(Color.GRAY, 1, true), 
-					"Description",
-					TitledBorder.CENTER,
-					TitledBorder.ABOVE_TOP);
+			listContents = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPane, descriptionPane);
+			listContents.setOneTouchExpandable(true);
+			listContents.setDividerLocation(150);
+
+
+			Dimension minimumSize = new Dimension(100, 50);
+			descriptionPane.setMinimumSize(minimumSize);
+			listPane.setMinimumSize(minimumSize);
 			
 			
-			description.add(desc, BorderLayout.CENTER);
-			description.setBorder(border);
-			descriptionPane = new JScrollPane(description);
-			files.setAutoscrolls(true);
-			
-			add(files,BorderLayout.WEST);
+			add(listContents,BorderLayout.CENTER);
 			add(preview, BorderLayout.SOUTH);
-			add(descriptionPane, BorderLayout.EAST); 
-			
+		
 			pack();
 			validate();
 		} else {
@@ -133,7 +123,10 @@ ListSelectionListener, ActionListener {
 		
 	/*	pack(); */
 		
-		desc.setText(
+		desc.setText("Codec: " + 
+				Ubench.getInstance().getCodecManager().
+				getInputCodecNameForFilename(selected) +
+				System.getProperty("line.separator") + 
 				killWhitespaces(
 						manager.getDescriptionForExample(selected)));
 		
