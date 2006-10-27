@@ -95,20 +95,21 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	// keeping track of the currently marked field
 	private int currentrow;
 	private int currentcolumn;
+	private boolean modified;
 	
 	/*
 	 * Status bar, showing the number of splits, subgraphs
 	 * and solved forms
 	 */
 	private JPanel statusbar; 	// panel on the bottom
-	private JLabel solvedforms, iseqs, isred, es, red; // text on the bottom
+	private JLabel solvedforms, isred, red; // text on the bottom
 	
 	// counting solved forms, splits and subgraphs
 	private int noOfSolvedForms;
 	private int noOfSplits;
 	private int noOfSubgraphs;
 	
-	private String graphName;
+	private String graphName, eqsname;
 	
 	// the ActionListener responsible for actions
 	// triggered via the Window Menu
@@ -137,9 +138,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		chart = (Chart) c.clone();
 		dg = g;
 		jdg = jg;
+		modified = false;
 		
 		if(Ubench.getInstance().reduceAutomatically) {
-			reduceChart();
+			reduceChart(Ubench.getInstance().getEquationSystem(),
+					Ubench.getInstance().getEqsname());
 		} else {
 			reduced = false;
 		}
@@ -206,19 +209,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSplits = chart.size();
 		
 		// the information text on the bottom
-		solvedforms = new JLabel("   This Chart has " + noOfSolvedForms + " solved forms, "
-				+ "contains " + noOfSplits + " splits and " +
-				"" + noOfSubgraphs + " subgraphs.");
+		solvedforms = new JLabel("   This Chart has " 
+				+ noOfSolvedForms + " solved forms.");
+				
 		JPanel chartstate = new JPanel();
-		es = new JLabel("EQS:");
+		
 		red = new JLabel("Red:");
-		iseqs = new JLabel();
 		isred = new JLabel();
 		statusbar = new JPanel(new BorderLayout());
 
 		refreshStatusBar();
-		chartstate.add(es);
-		chartstate.add(iseqs);
 		chartstate.add(red);
 		chartstate.add(isred);
 		statusbar.add(solvedforms, BorderLayout.CENTER);
@@ -773,12 +773,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSolvedForms = chart.countSolvedForms().intValue();
 		noOfSplits = chart.size();
 		
-		solvedforms.setText("   This Chart has " + noOfSolvedForms + " solved forms, "
-				+ "contains " + noOfSplits + " splits and " +
-				"" + noOfSubgraphs + " subgraphs.");
+		solvedforms.setText("   This Chart has " + noOfSolvedForms
+				+ " solved forms.");
+				
 		
-			validate();
-			refreshStatusBar();
+		validate();
+		refreshStatusBar();
+		
+	
 	}
 	
 	/**
@@ -836,8 +838,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	void resetChart() {
 		chart = (Chart) chartcopy.clone();
 		reduced = false;
+		modified = false;
 		if(Ubench.getInstance().reduceAutomatically) {
-			reduceChart();
+			reduceChart(
+					Ubench.getInstance().getEquationSystem(),
+					Ubench.getInstance().getEqsname());
 		}
 		refreshChartWindow();
 		if(reduced) {
@@ -851,22 +856,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			isred.setToolTipText("Equivalences are not eliminated yet.");
 			red.setToolTipText("Equivalences are not eliminated yet.");
 		}
+		
 	}
 	
 	void refreshStatusBar() {
-		if( Ubench.getInstance().isEquationSystemLoaded() ) {
-			iseqs.setText("<html><font color=\"green\">" +
-					"&#8730;</font></html>");
-			iseqs.setToolTipText("Equation System "
-					+ Ubench.getInstance().getEqsname() + " loaded.");
-			es.setToolTipText("Equation System "
-					+ Ubench.getInstance().getEqsname() + " loaded.");
-		} else {
-			iseqs = new JLabel("<html><font color=\"red\">" +
-			"X </font></html>");
-			iseqs.setToolTipText("No Equation System loaded.");
-			es.setToolTipText("No Equation System loaded.");
-		}
+		
 		if(reduced) {
 			isred.setText("<html><font color=\"green\">" +
 			"&#8730;</font></html>");
@@ -882,6 +876,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		setMinimumSize(new Dimension((int) (statusbar.getPreferredSize().width * 1.2),
 				getPreferredSize().height)
 				);
+		
+		if( (noOfSolvedForms != 
+			chartcopy.countSolvedForms().intValue()) ||
+			(noOfSubgraphs != 
+				chartcopy.countSubgraphs()) || 
+				(noOfSplits != chartcopy.size())) {
+			modified = true;
+		}
 		validate();
 	}
 	
@@ -891,46 +893,68 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		infotext.append(System.getProperty("line.separator"));
 		infotext.append("  ");
 		infotext.append(System.getProperty("line.separator"));
-
-		if(reduced) {
-			
-			infotext.append("The chart is already reduced.");
-			infotext.append(System.getProperty("line.separator"));
-			infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
-					noOfSplits + " Splits ");
 		
-			infotext.append("and has " + noOfSolvedForms + " solved forms.");
-			infotext.append("  ");
+		infotext.append("This chart has " + noOfSolvedForms + " solved forms.");
+		infotext.append(System.getProperty("line.separator"));
+		infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
+				noOfSplits + " splits.");
+		infotext.append(System.getProperty("line.separator"));
+		infotext.append(System.getProperty("line.separator"));
+		
+		if(modified) {
+			infotext.append("The chart has been modified,");
 			infotext.append(System.getProperty("line.separator"));
-			infotext.append("The original chart contained " + 
-					chartcopy.countSubgraphs() + " subgraphs, " +
-					chartcopy.size() + " splits");
+			infotext.append("some splits have been deleted.");
 			infotext.append(System.getProperty("line.separator"));
-			infotext.append("and had " + chartcopy.countSolvedForms() + " solved forms.");
-		} else {
-			
-			infotext.append("The chart is not reduced yet.");
-			infotext.append(System.getProperty("line.separator"));
-			infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
-					noOfSplits + " splits ");
-			
-			infotext.append("and has " + noOfSolvedForms + " solved forms.");
 		}
+		if(reduced) {
+			infotext.append("The chart has been reduced with");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("the equation system" + eqsname + ".");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append(System.getProperty("line.separator"));
+		}
+		
+		if( reduced || modified ) {
+			infotext.append("The original chart had " + 
+					chartcopy.countSolvedForms() + " solved forms.");
+			infotext.append(System.getProperty("line.separator"));
+			infotext.append("It contained " + 
+					chartcopy.countSubgraphs() + " subgraphs and " +
+					chartcopy.size() + " splits.");
+			infotext.append(System.getProperty("line.separator"));
+		} 
+		
 		infotext.append(System.getProperty("line.separator"));
 		infotext.append("  ");
-		infotext.append(System.getProperty("line.separator"));
-		if(Ubench.getInstance().isEquationSystemLoaded()) {
-			infotext.append("The equation system " + 
-					Ubench.getInstance().getEqsname() + " is loaded.");
-		} else {
-			infotext.append("There is no equation system loaded.");
-		}
-		
-		
 		JOptionPane.showMessageDialog(this, infotext, "Chart Information", 
 				JOptionPane.INFORMATION_MESSAGE);
-		
 	}
+	
+	void reduceChart(EquationSystem eqs, String eqsn) {
+		//EquationSystem eqs = Ubench.getInstance().getEquationSystem();
+		
+		if(eqs == null ) {
+			/*
+			 * TODO actually, this should never happen,
+			 * hovever it should be handeled in an 
+			 * proper and appropriate way.
+			 */
+			return;
+		}
+		if(! reduced ) {
+		IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
+			(DomGraph) dg.clone(), labels,
+			eqs);
+
+		elim.eliminate(chart);
+		reduced = true;
+		eqsname = eqsn;
+		refreshStatusBar();
+		
+		}
+	}
+
 	
 	/**
 	 * The Menu Bar for the chart window.
@@ -945,7 +969,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		JMenu chartmenu, splitmenu;
 		JMenuItem elred, reset, delete, 
 				  firstsolvedform, loadeqs,
-				  autoreduce, info;
+				  autoreduce, info, close;
 		
 		ChartViewerMenu(ChartViewerListener li) {
 			
@@ -959,23 +983,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			chartmenu.add(firstsolvedform);
 			
 			chartmenu.addSeparator();
-			
-			loadeqs = new JMenuItem("Load Equation System...");
-			loadeqs.setActionCommand("loadeqs");
-			loadeqs.addActionListener(lis);
-			chartmenu.add(loadeqs);
-			
-			autoreduce = new JCheckBoxMenuItem("Reduce Chart Automatically");
-			
-			if(Ubench.getInstance().reduceAutomatically) {
-				autoreduce.setSelected(true);
-			} else {
-				autoreduce.setSelected(false);
-			}
-
-			autoreduce.addItemListener(lis);
-			lis.registerEventSource(autoreduce, "autoreduce");
-			chartmenu.add(autoreduce);
 			
 			elred = new JMenuItem("Reduce Chart");
 			elred.setActionCommand("elred");
@@ -997,6 +1004,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			info.setActionCommand("chartinfo");
 			info.addActionListener(lis);
 			chartmenu.add(info);
+			
+			close = new JMenuItem("Close");
+			close.setActionCommand("closechart");
+			close.addActionListener(lis);
+			chartmenu.add(close);
 			
 			
 			chartmenu.validate();
@@ -1032,27 +1044,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	}
 
 	
-	void reduceChart() {
-		EquationSystem eqs = Ubench.getInstance().getEquationSystem();
-		
-		if(eqs == null ) {
-			/*
-			 * TODO actually, this should never happen,
-			 * hovever it should be handeled in an 
-			 * proper and appropriate way.
-			 */
-			return;
-		}
-		if(! reduced ) {
-		IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
-			(DomGraph) dg.clone(), labels,
-			eqs);
 
-		elim.eliminate(chart);
-		reduced = true;
-		refreshStatusBar();
-		}
-	}
 
 	/**
 	 * @return Returns the reduced.

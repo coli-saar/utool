@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +30,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
@@ -43,6 +43,7 @@ import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -143,7 +144,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		/* Handling the known actions by identifying their command */
 		
 		// picture export
-		if(command.equals("server")) {
+		if(command.equals("loadeqs")){
+			loadEQS();
+		} else if(command.equals("server")) {
 			if(Ubench.getInstance().getMenuBar().isServerButtonPressed())
 			{final  AbstractOptions op = new AbstractOptions();
 			
@@ -808,7 +811,51 @@ ItemListener, ConnectionManager.StateChangeListener {
 							Preferences.setFitToWindow(false);
 						}
 						
-					} 
+					} else if(desc.equals("autoreduce")) {
+						if(e.getStateChange() == ItemEvent.SELECTED ) {
+							Ubench.getInstance().reduceAutomatically = true;
+							if(! Ubench.getInstance().isEquationSystemLoaded() ) {
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+										"You have to specify a xml file that contains your equation system" + 
+										System.getProperty("line.separator") + 
+										" before Utool can eliminate equivalences.",
+										"Please load an equation system",
+										JOptionPane.INFORMATION_MESSAGE);
+								loadEQS();
+							}
+							
+						} else {
+							Ubench.getInstance().reduceAutomatically = false;
+						}
+					}
+	}
+	
+	private void loadEQS() {
+		JFileChooser fc = new JFileChooser(recentPath);
+		fc.setDialogTitle("Choose the equation system input file");
+		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
+		
+		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
+		
+		if(fcVal == JFileChooser.APPROVE_OPTION){
+			
+			
+			
+			File file = fc.getSelectedFile();
+			
+			try {
+				EquationSystem eqs = new EquationSystem();
+				eqs.read(new FileReader(file));
+				Ubench.getInstance().setEquationSystem(eqs, file.getName());
+			} catch( Exception ex ) {
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"The Equation System cannot be parsed." + 
+						System.getProperty("line.separator") + 
+						"Either the input file is not valid or it contains syntax errors.",
+						"Error while Loading Equation System",
+						JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
 	
 	/**

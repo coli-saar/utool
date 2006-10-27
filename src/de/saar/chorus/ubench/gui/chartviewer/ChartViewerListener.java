@@ -32,14 +32,16 @@ import de.saar.chorus.ubench.gui.Ubench;
  * @author Michaela Regneri
  *
  */
-public class ChartViewerListener implements ActionListener, ItemListener {
+public class ChartViewerListener implements ActionListener {
 
 	private ChartViewer viewer;
 	private Map<Object, String> eventSources;
+	private File lastpath;
 	
 	ChartViewerListener(ChartViewer cv) {
 		viewer = cv;
 		eventSources = new HashMap<Object,String>();
+		lastpath = new File(System.getProperty("user.dir"));
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -67,39 +69,44 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 				}
 				
 			}
-		} else if (command.equals("loadeqs")) {
-			
-			boolean askforreduction = true;
-			if(Ubench.getInstance().isEquationSystemLoaded()) {
-				askforreduction = false;
-			}
-			String eqsname = loadEquationSystem(false);
-			if( eqsname != null && askforreduction ) {
-				int yesno = JOptionPane.showConfirmDialog(viewer, 
-						"The Equation System " + eqsname + " is loaded now." + 
-						System.getProperty("line.separator") + 
-						"Would you like to eliminate the equivalences immediately?", 
-						"Ready to Eliminate Equivalences", JOptionPane.YES_NO_OPTION, 
-						JOptionPane.QUESTION_MESSAGE);
-				if(yesno == JOptionPane.YES_OPTION) {
-					viewer.reduceChart();
-					viewer.refreshChartWindow();
+		} else if( command.equals("elred")) {
+				EquationSystem eqs; 
+				String name;
+				if(Ubench.getInstance().isEquationSystemLoaded() ) {
+					
+					int yesno = JOptionPane.showConfirmDialog(viewer, 
+							"The equation system " + 
+							Ubench.getInstance().getEqsname() + " is loaded," + 
+							System.getProperty("line.separator") + 
+							"would you like to use it to reduce the chart?" + 
+							System.getProperty("line.separator") + 
+							"Press \"Yes\" to use " + 
+							Ubench.getInstance().getEqsname() + " to reduce the chart,"  + 
+							System.getProperty("line.separator") + 
+									" press \"No\" to load another equation system.", 
+							"Ready to Eliminate Equivalences", JOptionPane.YES_NO_OPTION, 
+							JOptionPane.QUESTION_MESSAGE);
+					if(yesno == JOptionPane.YES_OPTION ) {
+						eqs = Ubench.getInstance().getEquationSystem();
+						name = Ubench.getInstance().getEqsname();
+					} else {
+						eqs = new EquationSystem();
+						 name = loadEquationSystem(true, eqs);
+					}
+				} else {
+					eqs = new EquationSystem();
+					name = loadEquationSystem(true, eqs);
 				}
-			}
-			
-		}else if( command.equals("elred")) {
-			 
-				if(! Ubench.getInstance().isEquationSystemLoaded() ) {
-					loadEquationSystem(true);
-				}
-				viewer.reduceChart();
+				
+				
+				viewer.reduceChart(eqs, name);
 				viewer.refreshChartWindow();
 				
 		} else if( command.equals("solvechart")) {
 			Chart chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
 			SolvedFormIterator sfi = new SolvedFormIterator(chart,firstForm);
-			firstForm.setDominanceEdges(sfi.next());
+			firstForm = firstForm.withDominanceEdges(sfi.next());
 			
 			DomGraphTConverter conv = new DomGraphTConverter(firstForm, viewer.getLabels());
 			JDomGraph domSolvedForm = conv.getJDomGraph();
@@ -119,11 +126,13 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			viewer.setCursor(Cursor.getDefaultCursor());
 		} else if ( command.equals("chartinfo") ) {
 			viewer.showInfoPane();
+		} else if ( command.equals("closechart") ) {
+			viewer.setVisible(false);
 		}
 
 	}
 	
-	private String loadEquationSystem(boolean preliminary) {
+	private String loadEquationSystem(boolean preliminary, EquationSystem eqs) {
 		String toReturn = null;
 		if(preliminary) {
 			JOptionPane.showMessageDialog(viewer,
@@ -133,7 +142,7 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 					"Please load an equation system",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
-		JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+		JFileChooser fc = new JFileChooser(lastpath);
 		fc.setDialogTitle("Choose the equation system input file");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
 		
@@ -144,19 +153,20 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			
 			File file = fc.getSelectedFile();
-			EquationSystem eqs = new EquationSystem();
+			
 			try {
 				eqs.read(new FileReader(file));
-				Ubench.getInstance().setEquationSystem(eqs, file.getName());
+				//Ubench.getInstance().setEquationSystem(eqs, file.getName());
 				toReturn = file.getName();
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(viewer,
 						"The Equation System cannot be parsed." + 
 						System.getProperty("line.separator") + 
 						"Either the input file is not valid or it contains syntax errors.",
-						"Error while Loading Equation System",
+						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}
+			lastpath = file.getParentFile();
 			viewer.setCursor(Cursor.getDefaultCursor());
 			viewer.refreshStatusBar();
 		}
@@ -174,22 +184,6 @@ public class ChartViewerListener implements ActionListener, ItemListener {
 	/* (non-Javadoc)
 	 * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
 	 */
-	public void itemStateChanged(ItemEvent e) {
-		String command = lookupEventSource(e.getSource());
-		if(command.equals("autoreduce")) {
-			if(e.getStateChange() == ItemEvent.SELECTED ) {
-				Ubench.getInstance().reduceAutomatically = true;
-				if(! Ubench.getInstance().isEquationSystemLoaded() ) {
-					loadEquationSystem(true);
-				}
-				if(! viewer.isReduced() ) {
-					viewer.reduceChart();
-					viewer.refreshChartWindow();
-				}
-			} else {
-				Ubench.getInstance().reduceAutomatically = false;
-			}
-		}
-	}
+	
 
 }

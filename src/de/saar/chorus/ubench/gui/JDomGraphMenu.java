@@ -70,7 +70,9 @@ public class JDomGraphMenu extends JMenuBar {
 					  loadExample,
 					  saveAll,
 					  displayChart,
-					  displayCodecs;
+					  displayCodecs,
+					  loadeqs,
+					  autoreduce;
     
 	private JToggleButton server;
 	
@@ -225,6 +227,7 @@ public class JDomGraphMenu extends JMenuBar {
 		displayChart.setAccelerator(KeyStroke.getKeyStroke("alt C"));
 		displayChart.setActionCommand("chartView");
 		displayChart.addActionListener(listener);
+		graphSpecificItems.add(displayChart);
 		viewMenu.add(displayChart);
 		
 		viewMenu.validate();
@@ -285,9 +288,27 @@ public class JDomGraphMenu extends JMenuBar {
         utoolMenu.add(next);
         utoolMenu.add(previous);
         
-       
+        utoolMenu.addSeparator();
         
-        
+        loadeqs = new JMenuItem("Load Equation System...");
+		loadeqs.setActionCommand("loadeqs");
+		loadeqs.addActionListener(listener);
+		utoolMenu.add(loadeqs);
+			
+		
+		autoreduce = new JCheckBoxMenuItem("Reduce Chart Automatically");
+		
+		if(Ubench.getInstance().reduceAutomatically) {
+			autoreduce.setSelected(true);
+		} else {
+			autoreduce.setSelected(false);
+		}
+
+
+		autoreduce.addItemListener(listener);
+		listener.registerEventSource(autoreduce, "autoreduce");
+		utoolMenu.add(autoreduce);
+		
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
         
