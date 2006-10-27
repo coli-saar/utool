@@ -3,6 +3,9 @@ package de.saar.chorus.ubench.gui.chartviewer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -14,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -103,6 +106,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	private JPanel statusbar; 	// panel on the bottom
 	private JLabel solvedforms, isred, red; // text on the bottom
+	private JButton solve;
 	
 	// counting solved forms, splits and subgraphs
 	private int noOfSolvedForms;
@@ -209,21 +213,49 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSplits = chart.size();
 		
 		// the information text on the bottom
-		solvedforms = new JLabel("   This Chart has " 
+		GridBagLayout layout = new GridBagLayout();
+		statusbar = new JPanel(layout);
+		solvedforms = new JLabel("This Chart has " 
 				+ noOfSolvedForms + " solved forms.");
-				
-		JPanel chartstate = new JPanel();
 		
+		solve = new JButton("SOLVE");
+		solve.addActionListener(listener);
+		solve.setActionCommand("solvechart");
+		
+		GridBagConstraints solveConstraints = new GridBagConstraints();
+		solveConstraints.weightx = 0;
+		solveConstraints.weighty = 0;
+		solveConstraints.anchor = GridBagConstraints.WEST;
+		solveConstraints.insets = new Insets(2,5,2,10);
+		
+		layout.setConstraints(solve, solveConstraints);
+		statusbar.add(solve);
+		
+		GridBagConstraints nofConstraint = new GridBagConstraints();
+		nofConstraint.fill = GridBagConstraints.HORIZONTAL;
+		nofConstraint.weightx = 1.0;
+		nofConstraint.weighty = 1.0;
+		nofConstraint.anchor = GridBagConstraints.CENTER;
+	
+		
+		layout.setConstraints(solvedforms, nofConstraint);
+		statusbar.add(solvedforms);
+		
+		
+		JPanel chartstate = new JPanel();
 		red = new JLabel("Red:");
 		isred = new JLabel();
-		statusbar = new JPanel(new BorderLayout());
-
 		refreshStatusBar();
 		chartstate.add(red);
 		chartstate.add(isred);
-		statusbar.add(solvedforms, BorderLayout.CENTER);
+		GridBagConstraints classConstraints = new GridBagConstraints();
+		classConstraints.anchor = GridBagConstraints.EAST;
+		classConstraints.weightx = 0;
+		classConstraints.weighty = 0;
 		
-		statusbar.add(chartstate,BorderLayout.EAST);
+		
+		layout.setConstraints(chartstate,classConstraints);
+		statusbar.add(chartstate);
 		add(statusbar,BorderLayout.SOUTH);
 		
 		
@@ -932,7 +964,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	}
 	
 	void reduceChart(EquationSystem eqs, String eqsn) {
-		//EquationSystem eqs = Ubench.getInstance().getEquationSystem();
 		
 		if(eqs == null ) {
 			/*
