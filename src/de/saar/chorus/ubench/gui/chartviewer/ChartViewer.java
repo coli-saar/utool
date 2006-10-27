@@ -213,58 +213,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSplits = chart.size();
 		
 		// the information text on the bottom
-		GridBagLayout layout = new GridBagLayout();
-		statusbar = new JPanel(layout);
-		solvedforms = new JLabel("This Chart has " 
-				+ noOfSolvedForms + " solved forms.");
-		
-		solve = new JButton("SOLVE");
-		solve.addActionListener(listener);
-		solve.setActionCommand("solvechart");
-		
-		GridBagConstraints solveConstraints = new GridBagConstraints();
-		solveConstraints.weightx = 0;
-		solveConstraints.weighty = 0;
-		solveConstraints.anchor = GridBagConstraints.WEST;
-		solveConstraints.insets = new Insets(2,5,2,10);
-		
-		layout.setConstraints(solve, solveConstraints);
-		statusbar.add(solve);
-		
-		GridBagConstraints nofConstraint = new GridBagConstraints();
-		nofConstraint.fill = GridBagConstraints.HORIZONTAL;
-		nofConstraint.weightx = 1.0;
-		nofConstraint.weighty = 1.0;
-		nofConstraint.anchor = GridBagConstraints.CENTER;
-	
-		
-		layout.setConstraints(solvedforms, nofConstraint);
-		statusbar.add(solvedforms);
-		
-		
-		JPanel chartstate = new JPanel();
-		red = new JLabel("Red:");
-		isred = new JLabel();
-		refreshStatusBar();
-		chartstate.add(red);
-		chartstate.add(isred);
-		GridBagConstraints classConstraints = new GridBagConstraints();
-		classConstraints.anchor = GridBagConstraints.EAST;
-		classConstraints.weightx = 0;
-		classConstraints.weighty = 0;
-		
-		
-		layout.setConstraints(chartstate,classConstraints);
-		statusbar.add(chartstate);
-		add(statusbar,BorderLayout.SOUTH);
-		
-		
-		
-		
-		
-		
-	
-		
+		makeStatusBar();
 		
 		// menu.
 		setJMenuBar(new ChartViewerMenu(listener));
@@ -278,6 +227,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		setVisible(true);
 		
+	}
+	
+	void refreshTitle() {
+		if(reduced) {
+			setTitle("Chart of " + graphName+ " (reduced)");
+		} else if(modified) {
+			setTitle("Chart of " + graphName + " (modified)");
+		} else {
+			setTitle("Chart of " + graphName);
+		}
 	}
 	
 	/**
@@ -796,7 +755,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		lastIndex = -1;
 		subgraphs.clear();
 		noOfSubgraphs = 0;
-		
+	
 		// rebuilding the data structure
 		calculateChartTable();
 		initColumnSizes();
@@ -808,9 +767,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		solvedforms.setText("   This Chart has " + noOfSolvedForms
 				+ " solved forms.");
 				
-		
+		refreshTitleAndStatus();
 		validate();
-		refreshStatusBar();
+		
 		
 	
 	}
@@ -891,7 +850,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 	
-	void refreshStatusBar() {
+	void refreshTitleAndStatus() {
 		
 		if(reduced) {
 			isred.setText("<html><font color=\"green\">" +
@@ -916,6 +875,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				(noOfSplits != chartcopy.size())) {
 			modified = true;
 		}
+		refreshTitle();
 		validate();
 	}
 	
@@ -981,7 +941,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		elim.eliminate(chart);
 		reduced = true;
 		eqsname = eqsn;
-		refreshStatusBar();
+		refreshTitleAndStatus();
 		
 		}
 	}
@@ -1075,8 +1035,54 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	}
 
 	
-
-
+	private void makeStatusBar() {
+		
+		GridBagLayout layout = new GridBagLayout();
+		statusbar = new JPanel(layout);
+		solvedforms = new JLabel("This Chart has " 
+				+ noOfSolvedForms + " solved forms.");
+		
+		solve = new JButton("SOLVE");
+		solve.addActionListener(listener);
+		solve.setActionCommand("solvechart");
+		
+		GridBagConstraints solveConstraints = new GridBagConstraints();
+		solveConstraints.weightx = 0;
+		solveConstraints.weighty = 0;
+		solveConstraints.anchor = GridBagConstraints.WEST;
+		solveConstraints.insets = new Insets(2,5,2,10);
+		
+		layout.setConstraints(solve, solveConstraints);
+		statusbar.add(solve);
+		
+		GridBagConstraints nofConstraint = new GridBagConstraints();
+		nofConstraint.fill = GridBagConstraints.HORIZONTAL;
+		nofConstraint.weightx = 1.0;
+		nofConstraint.weighty = 1.0;
+		nofConstraint.anchor = GridBagConstraints.CENTER;
+		
+		
+		layout.setConstraints(solvedforms, nofConstraint);
+		statusbar.add(solvedforms);
+		
+		
+		JPanel chartstate = new JPanel();
+		red = new JLabel("Red:");
+		isred = new JLabel();
+		refreshTitleAndStatus();
+		chartstate.add(red);
+		chartstate.add(isred);
+		GridBagConstraints classConstraints = new GridBagConstraints();
+		classConstraints.anchor = GridBagConstraints.EAST;
+		classConstraints.weightx = 0;
+		classConstraints.weighty = 0;
+		
+		
+		layout.setConstraints(chartstate,classConstraints);
+		statusbar.add(chartstate);
+		add(statusbar,BorderLayout.SOUTH);
+		
+	}
 	/**
 	 * @return Returns the reduced.
 	 */
