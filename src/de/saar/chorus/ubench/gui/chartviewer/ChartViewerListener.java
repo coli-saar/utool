@@ -168,7 +168,7 @@ public class ChartViewerListener implements ActionListener {
 			}
 			lastpath = file.getParentFile();
 			viewer.setCursor(Cursor.getDefaultCursor());
-			viewer.refreshStatusBar();
+			viewer.refreshTitleAndStatus();
 		}
 		
 		return toReturn;
