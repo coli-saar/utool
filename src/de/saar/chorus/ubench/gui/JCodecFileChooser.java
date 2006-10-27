@@ -143,6 +143,7 @@ public class JCodecFileChooser extends JFileChooser
 		helperPanel.add(hide);
 		JPanel helper2 = new JPanel();
 		helper2.add(helperPanel);
+ 
 		setAccessory(helper2);
 		validate();
 	}
