@@ -72,7 +72,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  displayChart,
 					  displayCodecs,
 					  loadeqs,
-					  autoreduce;
+					  autoreduce,
+					  preferences;
     
 	private JToggleButton server;
 	
@@ -329,6 +330,12 @@ public class JDomGraphMenu extends JMenuBar {
         about.setMnemonic(KeyEvent.VK_A);
         
         helpMenu.add(about);
+        
+        preferences = new JMenuItem("Settings...");
+        preferences.setActionCommand("preferences");
+        preferences.addActionListener(listener);
+        helpMenu.add(preferences);
+        
         add(helpMenu);
         
         URL picurl = null;
