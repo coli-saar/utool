@@ -101,11 +101,7 @@ public class JCodecOptionPane extends JComponent {
 			add(new JLabel("options to set."));
 			
 		} 
-		setBorder(new TitledBorder(
-				new LineBorder(Color.GRAY, 1, true), 
-				"Options",
-				TitledBorder.CENTER,
-				TitledBorder.ABOVE_TOP));
+		
 		doLayout();
 		validate();
 	}

@@ -127,7 +127,8 @@ ListSelectionListener, ActionListener {
 				getInputCodecNameForFilename(selected) +
 				"</b><br>"+ 
 				killWhitespaces(
-						manager.getDescriptionForExample(selected))
+						manager.getDescriptionForExample(selected)
+						)
 						+ "</div></html>");
 			
 		
