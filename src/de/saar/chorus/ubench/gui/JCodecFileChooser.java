@@ -2,7 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -17,7 +17,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
@@ -92,7 +91,7 @@ public class JCodecFileChooser extends JFileChooser
 		}
 		
 		if(codecname != null) {
-		
+			
 			if(input) {
 				options = new JCodecOptionPane(manager.getInputCodecOptionTypes(codecname));
 				
@@ -107,7 +106,12 @@ public class JCodecFileChooser extends JFileChooser
 			if(optview) {
 				showOptionAccess(newAcc);
 			}
-		} 
+		}  else {
+			showOptions.setEnabled(false);
+			if(optview) {
+				showOptionAccess(empty);
+			}
+		}
 		
 		validate();
 		codecname = null;
@@ -133,8 +137,26 @@ public class JCodecFileChooser extends JFileChooser
 		helperPanel.setLayout(layout);
 		//helperPanel.add(new JLabel("Codec: " + ((GenericFileFilter) getFileFilter()).getName()));
 		//helperPanel.add(new JLabel(" "));
+
+		String  codecname = ((GenericFileFilter) getFileFilter()).getName();
+		String title;
+		if(codecname == null) {
+			title = "Options";
+		} else {
+			title = "Options: " + codecname;
+		}
+		
+		optionpane.setBorder(new TitledBorder(
+				new LineBorder(Color.GRAY, 1, true), 
+				title,
+				TitledBorder.CENTER,
+				TitledBorder.ABOVE_TOP));
 		helperPanel.add(optionpane);
 		
+		// doesn't work...
+		optionpane.setMinimumSize(new Dimension(
+				getTextLabelWidth(title), 
+				optionpane.getMinimumSize().height)); 
 	
 		helperPanel.add(new JLabel("     "));
 		JButton hide = new JButton("Hide");
@@ -145,6 +167,7 @@ public class JCodecFileChooser extends JFileChooser
 		helper2.add(helperPanel);
  
 		setAccessory(helper2);
+	
 		validate();
 	}
 
@@ -158,6 +181,17 @@ public class JCodecFileChooser extends JFileChooser
 			setShowAccessory(false);
 		}
 		
+	}
+	
+	/**
+	 * TODO ganz boeser hack. mach das anders.
+	 * 
+	 * @param text
+	 * @return
+	 */
+	private int getTextLabelWidth(String text) {
+		JLabel ruler = new JLabel(text);
+		return ruler.getMaximumSize().width;
 	}
 }
 
