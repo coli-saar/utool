@@ -52,6 +52,7 @@ import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.ServerOptions;
 
 /**
  * The main <code>ActionListener</code> and <code>ItemListener</code> 
@@ -144,16 +145,18 @@ ItemListener, ConnectionManager.StateChangeListener {
 		/* Handling the known actions by identifying their command */
 		
 		// picture export
-		if(command.equals("loadeqs")){
+		if( command.equals("preferences") ) {
+			Ubench.getInstance().setPreferenceDialogVisible(true);
+		} else if(command.equals("loadeqs")){
 			loadEQS();
 		} else if(command.equals("server")) {
 			if(Ubench.getInstance().getMenuBar().isServerButtonPressed())
 			{final  AbstractOptions op = new AbstractOptions();
 			
-			op.setOptionLogging(true);
-			op.setLogWriter(new PrintWriter(System.err, true));
-			op.setOptionWarmup(false);
-			op.setPort(2802);
+			op.setOptionLogging(ServerOptions.isLogging());
+			op.setLogWriter(ServerOptions.getLogwriter());
+			op.setOptionWarmup(ServerOptions.isWarmup());
+			op.setPort(ServerOptions.getPort());
 			
 			
 			new Thread() {
@@ -162,8 +165,10 @@ ItemListener, ConnectionManager.StateChangeListener {
 			            ConnectionManager.startServer(op);
 			        }
 			        catch( IOException ex ) {
-			            System.err.println("Internal Server Error.");
-			            ex.printStackTrace();
+			        	JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+								ex.getMessage(),
+								"Server Error",
+								JOptionPane.ERROR_MESSAGE);
 			        }
 			    }
 			}.start();

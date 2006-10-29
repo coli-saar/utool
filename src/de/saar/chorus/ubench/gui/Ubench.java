@@ -4,10 +4,8 @@
  */
 package de.saar.chorus.ubench.gui;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -20,15 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -92,6 +84,8 @@ public class Ubench {
     private EquationSystem eqs;
     private String eqsname;
     
+    private JDomGraphPreferencePane settings;
+    
     public boolean reduceAutomatically;
     
     /**
@@ -139,7 +133,7 @@ public class Ubench {
         eqs = null;
         eqsname = null;
         reduceAutomatically = false;
-        
+        settings = new JDomGraphPreferencePane();
     }
     
     /**
@@ -149,6 +143,10 @@ public class Ubench {
         if (getVisibleGraph() != null) {
             getVisibleTab().resetSlider();
         }
+    }
+    
+    public void setPreferenceDialogVisible(boolean visible) {
+    	settings.setVisible(visible);
     }
     
     /**
