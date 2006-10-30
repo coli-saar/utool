@@ -281,6 +281,7 @@ class ServerThread extends Thread {
                 Ubench.getInstance();
                 out.println("<result code='0' />");
             }
+            Ubench.getInstance().getWindow().toFront();
             break;
             
             
