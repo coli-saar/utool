@@ -177,6 +177,10 @@ public class CodecManager {
     }
     
     private Object constructCodecWithOptions(Class codecClass, Map<String,String> optionMap) {
+    	if( codecClass == null ) {
+    		return null;
+    	}
+    	
         Constructor con = constructorForClass.get(codecClass);
         Class[] parameterTypes = con.getParameterTypes();
         Object[] args = new Object[parameterTypes.length];
@@ -227,7 +231,7 @@ public class CodecManager {
     }
     
     private Object constructCodecWithOptions(Class codecClass, String options) {
-        return constructCodecWithOptions(codecClass, tokenizeOptions(options));
+        return constructCodecWithOptions(codecClass, tokenizeOptions(options == null ? "" : options));
     }
 
 
@@ -384,6 +388,9 @@ public class CodecManager {
     }
     
     private Class getInputCodecClassForName(String codecname) {
+    	if( codecname == null )
+    		return null;
+    	
         for( Class codec : inputCodecClasses ) {
             if( codecname.equals(getCodecName(codec)) ) {
                 return codec;
@@ -394,7 +401,10 @@ public class CodecManager {
     }
     
     private Class getOutputCodecClassForName(String codecname) {
-        for( Class codec : outputCodecClasses ) {
+    	if( codecname == null )
+    		return null;
+    	
+    	for( Class codec : outputCodecClasses ) {
             if( codecname.equals(getCodecName(codec)) ) {
                 return codec;
             }
@@ -404,6 +414,9 @@ public class CodecManager {
     }
     
     private Class getInputCodecClassForFilename(String filename) {
+        if( filename == null )
+        	return null;
+        
         for( Class codec : inputCodecClasses ) {
             String ext = getCodecExtension(codec);
             if( (ext != null) && filename.endsWith(ext) ) {
@@ -415,6 +428,9 @@ public class CodecManager {
     }
     
     private Class getOutputCodecClassForFilename(String filename) {
+    	if( filename == null )
+        	return null;
+    	
         for( Class codec : outputCodecClasses ) {
             String ext = getCodecExtension(codec);
             if( (ext != null) && filename.endsWith(ext) ) {
