@@ -159,6 +159,11 @@ class XmlParser extends DefaultHandler {
                 throw new SAXException(new AbstractOptionsParsingException("You must specify an input codec for the USR!", ExitCodes.NO_INPUT_CODEC_SPECIFIED));
             }
             
+            if( attributes.getValue("string") == null ) {
+            	throw new SAXException(new AbstractOptionsParsingException("You must specify an USR!", ExitCodes.NO_INPUT));
+            }
+            
+            
             // obtain input codec
             String inputCodecOptions = mydecode(attributes.getValue("codec-options"));
             String codecName = attributes.getValue("codec");
@@ -289,3 +294,10 @@ class XmlParser extends DefaultHandler {
     }
 
 }
+
+
+/*
+ * Unit tests:
+ * - wrong element names
+ * - missing attributes
+ */
