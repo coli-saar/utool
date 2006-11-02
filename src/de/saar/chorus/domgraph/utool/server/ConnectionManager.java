@@ -169,6 +169,7 @@ public class ConnectionManager {
     				// gets here, and so it will just do nothing.
     				try {
 						ssock.close();
+						
 		    			ssock = null;
 					} catch (IOException e) {
 						// At this point, we really don't care.

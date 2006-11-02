@@ -154,21 +154,25 @@ public class JCodecFileChooser extends JFileChooser
 		helperPanel.add(optionpane);
 		
 		// doesn't work...
-		optionpane.setMinimumSize(new Dimension(
-				getTextLabelWidth(title), 
-				optionpane.getMinimumSize().height)); 
+		
 	
 		helperPanel.add(new JLabel("     "));
 		JButton hide = new JButton("Hide");
 		hide.addActionListener(this);
 		hide.setActionCommand("hide");
 		helperPanel.add(hide);
-		JPanel helper2 = new JPanel();
-		helper2.add(helperPanel);
- 
-		setAccessory(helper2);
+		 
+		setAccessory(helperPanel);
 	
 		validate();
+		
+		Dimension dim = new Dimension(
+				getTextLabelWidth(title) + 3, 
+				optionpane.getMinimumSize().height);
+		optionpane.setMinimumSize(dim);
+		optionpane.setPreferredSize(dim);
+		optionpane.revalidate();
+		revalidate();
 	}
 
 	/* (non-Javadoc)

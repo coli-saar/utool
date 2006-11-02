@@ -1,8 +1,8 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -20,9 +20,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.domgraph.codec.CodecManager;
 
@@ -37,14 +34,33 @@ public class JCodecOptionPane extends JComponent {
 	private static Map<String, JComboBox> enums =
 		new HashMap<String,JComboBox>();
 	
-	
+	private GridBagLayout layout;
+	private GridBagConstraints left, right;
 	
 	private Map<String, Class> optionTypes;
+	int x;
 	
 	public JCodecOptionPane(Map<String,Class> options) {
 		optionTypes = options;
+
+		layout = new GridBagLayout();
+		setLayout(layout);
+		left = new GridBagConstraints();
+		left.anchor = GridBagConstraints.LAST_LINE_START;
+		left.weightx = 0;
+		left.weighty = 0;
+		left.gridx = 0;
+		left.fill = GridBagConstraints.HORIZONTAL;
+		
+		right = new GridBagConstraints();
+		right.anchor = GridBagConstraints.LINE_END;
+		right.weightx = 1;
+		right.weighty = 0;
+		right.gridx = 1;
+		right.fill = GridBagConstraints.HORIZONTAL;
+		
+		x = 0;
 		constructOptionPanel();
-	
 	}
 	
 	
@@ -55,7 +71,7 @@ public class JCodecOptionPane extends JComponent {
 
 
 	private void constructOptionPanel() {
-		setLayout(new GridLayout(0,2));
+		
 		
 		// to make sure that the panel always looks
 		// the same way
@@ -64,11 +80,16 @@ public class JCodecOptionPane extends JComponent {
 		
 		for( String opt : optionnames ) {
 			Class optclass = optionTypes.get(opt);
-					
+			left.gridy = x;
+			right.gridy = x;
 			if( optclass == Boolean.TYPE ) {
 				
 				JCheckBox box = new JCheckBox();
-				add(new JLabel(opt));
+				JLabel label = new JLabel(opt);
+				
+				layout.setConstraints(label, left);
+				add(label);
+				layout.setConstraints(box, right);
 				add(box);
 				
 				
@@ -77,30 +98,52 @@ public class JCodecOptionPane extends JComponent {
 			
 				//optpan.add(new JPanel();
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
-				add(new JLabel(opt + ":"));
+				JLabel label = new JLabel(opt + ":");
+				layout.setConstraints(label, left);
+				add(label);
 				Object[] constants = optclass.getEnumConstants();
 				Vector<String> stringvals = new Vector<String>(constants.length);
 				for( Object cos : constants )  {
 					stringvals.add(cos.toString());
 				}
 				JComboBox box = new JComboBox(stringvals);
+				layout.setConstraints(box, right);
 				add(box);
 				enums.put(opt,box);
 			} else {
 				
 				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
-				add(new JLabel(opt + ":"));
+				JLabel label = new JLabel(opt + ":");
+				layout.setConstraints(label, left);
+				add(label);
 				JTextField line = new JTextField();
+				layout.setConstraints(line,right);
 				add(line);
 				texttypes.put(opt,line);
 			}
+			x++;
 		}
 		if(optionnames.isEmpty()) {
-			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-			add(new JLabel("This Codec has no"));
-			add(new JLabel("options to set."));
+			
+			
+			GridBagConstraints empty = new GridBagConstraints();
+			empty.anchor = GridBagConstraints.CENTER;
+			empty.fill = GridBagConstraints.VERTICAL;
+			empty.gridy = 0;
+			
+			JLabel firstline = new JLabel("This Codec has no");
+			layout.setConstraints(firstline, empty);
+			add(firstline);
+			
+			empty.gridy = 1;
+			JLabel secondline = new JLabel("options to set.");
+			layout.setConstraints(secondline, empty);
+			
+			add(firstline);
+			add(secondline);
 			
 		} 
+		
 		
 		doLayout();
 		validate();

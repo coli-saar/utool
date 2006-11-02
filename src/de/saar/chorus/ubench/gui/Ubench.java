@@ -749,6 +749,7 @@ public class Ubench {
         window.setTitle("Underspecification Workbench");
         
         window.doLayout();
+        window.setFocusable(true);
         window.setVisible(true);
         
         useNextTabToResizeFrame = true;

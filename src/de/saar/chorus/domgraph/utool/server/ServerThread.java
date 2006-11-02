@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph.utool.server;
 
+import java.awt.KeyboardFocusManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -268,20 +269,23 @@ class ServerThread extends Thread {
             
             
         case display:
-            if( options.getGraph() != null ) {
+        	
+        	if( options.getGraph() != null ) {
                 if(Ubench.getInstance().addNewTab(
                         options.getInputName(),
                         options.getGraph(),
                         options.getLabels()))  {
+                	Ubench.getInstance().getWindow().toFront();
                     out.println("<result code='0' />");
                 } else {
                     sendError(out, ExitCodes.GRAPH_DRAWING_ERROR, "An error occurred while drawing the graph.");
                 }
             } else {
                 Ubench.getInstance();
+                Ubench.getInstance().getWindow().toFront();
                 out.println("<result code='0' />");
             }
-            Ubench.getInstance().getWindow().toFront();
+        	Ubench.getInstance().getWindow().toFront();
             break;
             
             
@@ -384,6 +388,7 @@ class ServerThread extends Thread {
 
     public void closeSocket() throws IOException {
         socket.close();
+        
     }
 }
 

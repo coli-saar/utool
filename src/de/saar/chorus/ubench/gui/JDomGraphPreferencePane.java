@@ -190,7 +190,7 @@ public class JDomGraphPreferencePane extends JFrame
 				FileWriter writer = 
 					new FileWriter(new File(logfilepath), true);
 				ServerOptions.setLogwriter(new PrintWriter(writer));
-				
+				writer.write("Hallo ich bin der ServerWriter.");
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 						e.getMessage(),
