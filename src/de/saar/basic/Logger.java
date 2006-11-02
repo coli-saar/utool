@@ -25,6 +25,7 @@ public class Logger {
     public void log(String x) {
         if( logging ) {
             logTo.println(x);
+            logTo.flush();
         }
     }
 
