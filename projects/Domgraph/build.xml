@@ -58,22 +58,6 @@
 
 
 	<!-- Jars -->
-	<target name="utool-compact" depends="compile-all">
-		<classfileset id="domgraph.required.classes" dir="${build.classes}">
-			<root classname="de.saar.chorus.domgraph.utool.Utool" />
-			<exclude name="**/*$UnitTests.class" />	
-		</classfileset>
-				
-		<jar jarfile="${domgraph-compact.jar}">
-			<fileset refid="domgraph.required.classes" />
-			<fileset dir="${build.classes}" includes="**/*.properties" />
-			<fileset dir="." includes="pictures/**/*"/>
-			<manifest>
-				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
-			</manifest>
-		</jar>
-	</target>
-	
 	<target name="utool" depends="compile-all">
 		<jar jarfile="${domgraph.jar}">
 			<fileset dir="${build.classes}"
