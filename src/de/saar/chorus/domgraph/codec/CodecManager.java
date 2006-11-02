@@ -7,7 +7,8 @@
 
 package de.saar.chorus.domgraph.codec;
 
-import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -20,7 +21,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.testng.annotations.Configuration;
 import org.testng.annotations.Test;
@@ -53,12 +55,25 @@ public class CodecManager {
     
     private Map<Class,Constructor> constructorForClass;
     
+    private boolean allowExperimentalCodecs;
+    
+    private Pattern codecNamePattern;
+    
+    
     public CodecManager() {
         //outputCodecs = new ArrayList<OutputCodec>();
         //inputCodecs = new ArrayList<InputCodec>();
         outputCodecClasses = new ArrayList<Class>();
         inputCodecClasses = new ArrayList<Class>();
         constructorForClass = new HashMap<Class,Constructor>();
+        
+        allowExperimentalCodecs = false;
+        
+        codecNamePattern = Pattern.compile("^\\s*([a-zA-Z0-9_.]+).*");
+    }
+    
+    public void setAllowExperimentalCodecs(boolean val) {
+    	allowExperimentalCodecs = val;
     }
     
     // TODO - I would like to get rid of the getName methods; codecs should
@@ -320,6 +335,10 @@ public class CodecManager {
      * specified above.
      */
     public void registerCodec(Class codecClass) throws CodecRegistrationException {
+    	if( codecClass == null ) {
+    		return;
+    	}
+    	
         // ensure that class can be instantiated
         if( (codecClass.getModifiers() & (Modifier.ABSTRACT | Modifier.INTERFACE)) > 0 ) {
             throw new CodecRegistrationException("Codec " + codecClass + " is not an instantiable type.");
@@ -328,6 +347,11 @@ public class CodecManager {
         // ensure that codec class has CodecMetadata annotation
         if( !codecClass.isAnnotationPresent(CodecMetadata.class)) {
             throw new CodecRegistrationException("Codec " + codecClass + " has no CodecMetadata annotation.");
+        }
+        
+        // if the codec is marked as "experimental", ignore it silently
+        if( getCodecAnnotation(codecClass).experimental() && !allowExperimentalCodecs ) {
+        	return;
         }
 
         // ensure that there is exactly one codec constructor
@@ -583,11 +607,7 @@ public class CodecManager {
         }
         
         formatString = "    %1$-" + max_strlen + "s             %2$-" + (max_extension_strlen+2) + "s%3$s";
-        
-        
         Collections.sort(inputCodecNames);
-        Collections.sort(outputCodecNames);
-        
         
         out.println("Installed input codecs:");
         for( String inputCodecName : inputCodecNames ) {
@@ -757,13 +777,15 @@ public class CodecManager {
 
             while( urls.hasMoreElements() ) {
                 URL url = urls.nextElement();
-                InputStream is = url.openStream();
-
-                Properties props = new Properties();
-                props.load(is);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                String line = null;
                 
-                for( Object name : props.keySet() ) {
-                    registerCodec(Class.forName((String) name));
+                while( (line = reader.readLine()) != null ) {
+                	Matcher matcher = codecNamePattern.matcher(line);
+                	
+                	if( matcher.matches() ) {
+                		registerCodec(Class.forName(matcher.group(1)));
+                	}
                 }
             }
         } catch(Exception e) {

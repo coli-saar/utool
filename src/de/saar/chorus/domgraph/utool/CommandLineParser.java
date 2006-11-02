@@ -18,6 +18,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import de.saar.chorus.domgraph.ExampleManager;
+import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -44,7 +45,7 @@ class CommandLineParser {
     
     public CommandLineParser() {
         codecManager = new CodecManager();
-        //codecManager.registerAllVisibleCodecs();
+        codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
         registerAllCodecs(codecManager);
         
         try {

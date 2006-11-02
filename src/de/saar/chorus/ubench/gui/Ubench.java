@@ -24,6 +24,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import de.saar.chorus.domgraph.ExampleManager;
+import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -95,9 +96,11 @@ public class Ubench {
      *
      */
     private Ubench() {
-//      register codecs
+    	// register codecs
         codecManager = new CodecManager();
+        codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
         registerAllCodecs(codecManager);
+        
         lastPath = new File(System.getProperty("user.home"));
         try {
             exampleManager = new ExampleManager();

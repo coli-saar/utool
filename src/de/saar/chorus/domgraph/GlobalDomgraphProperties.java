@@ -65,5 +65,11 @@ public class GlobalDomgraphProperties {
         return (String) props.get("utool.homepage");
     }
     
+    public static boolean allowExperimentalCodecs() {
+    	String entry = (String) props.get("utool.allowExperimentalCodecs");
+    	
+    	return entry == null ? false : Boolean.valueOf(entry);
+    }
+    
 
 }
