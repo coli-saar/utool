@@ -191,20 +191,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 		} else {
 			// loading any graph file
 			if( command.equals("loadGXL") ) {
-				final JCodecFileChooser fc = new JCodecFileChooser(recentPath, true);
+				final JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.OPEN);
+				fc.addCodecFileFilters(ffInputCodecs);
 				
-				//    fc.addChoosableFileFilter(ffInNativeGxl);
-				for( FileFilter ff : ffInputCodecs ) {
-					fc.addChoosableFileFilter(ff);
-				}
-				fc.addChoosableFileFilter(showAll);
-				
-				
-					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-				
-				
+				fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 				int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());
-				
+
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
 					File file = fc.getSelectedFile();
@@ -249,14 +241,10 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
+						JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.EXPORT);
+						fc.addCodecFileFilters(ffOutputCodecs);
 						
-						for( FileFilter ff : ffOutputCodecs ) {
-								fc.addChoosableFileFilter(ff);
-						}
-						
-						
-							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 						
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
@@ -436,16 +424,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
-						for( FileFilter ff : ffMultiOutputCodecs ) {
-							fc.addChoosableFileFilter(ff);
-						}
-						fc.setAcceptAllFileFilterUsed(false);
+						JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.EXPORT_SOLVED_FORMS);
+						fc.addCodecFileFilters(ffMultiOutputCodecs);
+
 						fc.setSelectedFile(new File(Ubench.getInstance().
 								getVisibleTab().getDefaultName() + 
 						"_solvedForms"));
 						
-							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 
 						
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());

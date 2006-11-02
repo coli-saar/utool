@@ -52,7 +52,7 @@ public class GenericFileFilter extends FileFilter implements Comparable {
 	 */
     @Override
 	public String getDescription() {
-		return "*" + extension + " (" + desc + ")";
+		return desc + " files (*" + extension + ")";
 	}
     
 	public String getName() {
