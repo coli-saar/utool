@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry including="projects/Domgraph/**" kind="src" path=""/>
+	<classpathentry including="projects/Domgraph/examples/*|projects/Domgraph/pictures/*" kind="src" path=""/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="packages/EXML.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/itext-1.3.1.jar"/>
