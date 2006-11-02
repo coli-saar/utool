@@ -36,12 +36,11 @@ public class ChartViewerListener implements ActionListener {
 
 	private ChartViewer viewer;
 	private Map<Object, String> eventSources;
-	private File lastpath;
+	
 	
 	ChartViewerListener(ChartViewer cv) {
 		viewer = cv;
 		eventSources = new HashMap<Object,String>();
-		lastpath = new File(System.getProperty("user.dir"));
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -142,10 +141,11 @@ public class ChartViewerListener implements ActionListener {
 					"Please load an equation system",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
-		JFileChooser fc = new JFileChooser(lastpath);
+		JFileChooser fc = new JFileChooser();
+
 		fc.setDialogTitle("Choose the equation system input file");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
-		
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		int fcVal = fc.showOpenDialog(viewer);	
 		
 		if(fcVal == JFileChooser.APPROVE_OPTION){
@@ -166,7 +166,9 @@ public class ChartViewerListener implements ActionListener {
 						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}
-			lastpath = file.getParentFile();
+
+
+			Ubench.getInstance().setLastPath(file.getParentFile());
 			viewer.setCursor(Cursor.getDefaultCursor());
 			viewer.refreshTitleAndStatus();
 		}

@@ -48,6 +48,7 @@ import de.saar.getopt.ConvenientGetopt;
 public class Ubench {
     private static Ubench instance = null;
     
+    private File lastPath;
     // the tabs in their order of insertion
     private ArrayList<JGraphTab> tabs = new ArrayList<JGraphTab>();
     
@@ -96,7 +97,7 @@ public class Ubench {
 //      register codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
-        
+        lastPath = new File(System.getProperty("user.dir"));
         try {
             exampleManager = new ExampleManager();
             exampleManager.addAllExamples("examples");
@@ -809,6 +810,20 @@ public class Ubench {
 
 	public boolean isEquationSystemLoaded() {
 		return eqs != null;
+	}
+
+	/**
+	 * @return Returns the lastPath.
+	 */
+	public File getLastPath() {
+		return lastPath;
+	}
+
+	/**
+	 * @param lastPath The lastPath to set.
+	 */
+	public void setLastPath(File lastPath) {
+		this.lastPath = lastPath;
 	}
 
 	

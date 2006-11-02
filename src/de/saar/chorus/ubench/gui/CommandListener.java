@@ -66,7 +66,7 @@ import de.saar.chorus.ubench.ServerOptions;
  */
 public class CommandListener implements ActionListener, 
 ItemListener, ConnectionManager.StateChangeListener {
-	private File lastPath = new File(System.getProperty("user.dir"));
+
 	private String recentPath = ".", recentFile="";
 	
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
@@ -203,9 +203,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 				}
 				fc.addChoosableFileFilter(showAll);
 				
-				if(! (lastPath == null) ) {
-					fc.setCurrentDirectory(lastPath);
-				}
+				
+					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+				
 				
 				int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());
 				
@@ -218,7 +218,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					recentFile = file.getName();
 					
 					// updating the last chosen path
-					lastPath = file.getParentFile();
+					Ubench.getInstance().setLastPath(file.getParentFile());
 					
 					// a new thread for loading and layouting the
 					// graph
@@ -260,15 +260,13 @@ ItemListener, ConnectionManager.StateChangeListener {
 						}
 						
 						
-						if(! (lastPath == null) ) {
-							fc.setCurrentDirectory(lastPath);
-						}
+							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 						
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
-							lastPath = file.getParentFile();
+							Ubench.getInstance().setLastPath( file.getParentFile() );
 							String targetFile = file.getAbsolutePath();
 							String defaultExtension = ((GenericFileFilter) 
 									fc.getFileFilter()).getExtension();
@@ -451,13 +449,16 @@ ItemListener, ConnectionManager.StateChangeListener {
 								getVisibleTab().getDefaultName() + 
 						"_solvedForms"));
 						
+							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+
+						
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						
 						
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
-							lastPath = file.getParentFile();
+							Ubench.getInstance().setLastPath(file.getParentFile());
 							String targetFile = file.getAbsolutePath();
 							
 							String defaultExtension = ((GenericFileFilter) 
@@ -633,9 +634,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					fc.setFileFilter(bmpFilter);
 					
 					
-					if(! (lastPath == null) ) {
-						fc.setCurrentDirectory(lastPath);
-					}
+						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
 					int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Export Picture");
 					
@@ -648,7 +647,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						final String dir = file.getAbsolutePath();
 						
 						// updating the last chosen path
-						lastPath = file.getParentFile();
+						Ubench.getInstance().setLastPath(file.getParentFile());
 						
 						final String picDesc = ((GenericFileFilter) fc.getFileFilter()).getExtension();
 						
@@ -692,9 +691,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						// if there was any path chosen before, the
 						// file chooser will start in the related directory
-						if(! (lastPath == null) ) {
-							fc.setCurrentDirectory(lastPath);
-						}
+						
+							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 						
 						// configuring button and window texts
 						int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Print PDF");
@@ -708,7 +706,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							String dir = file.getAbsolutePath();
 							
 							// updating the last chosen path
-							lastPath = file.getParentFile();
+							Ubench.getInstance().setLastPath(file.getParentFile());
 							
 							// if the file was named withoud pdf-extension,
 							// the extension is added
@@ -842,6 +840,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		fc.setDialogTitle("Choose the equation system input file");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
 		
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
 		
 		if(fcVal == JFileChooser.APPROVE_OPTION){
