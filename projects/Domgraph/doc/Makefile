@@ -182,11 +182,11 @@ count:
 # also type: export HEVEADIR=c:/Programme/hevea
 
 
-HEVEAHOME=c:/Programme/hevea
-HEVEADIR=${HEVEAHOME}
+#HEVEAHOME=c:/Programme/hevea
+#HEVEADIR=${HEVEAHOME}
 
-HEVEA=${HEVEAHOME}/hevea.exe
-HACHA=${HEVEAHOME}/hacha.exe
+HEVEA=hevea
+HACHA=hacha
 SCP=scp
 
 index.html: ${START}.html

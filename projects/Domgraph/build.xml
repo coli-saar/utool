@@ -203,13 +203,15 @@
 					storepass="${keystore.password}"	keystore="${keystore}"/>
 	</target>
 	
+	<!-- compile the manual
+	   Note that hevea and hacha must be on the PATH when you call this target
+	-->
 	<target name="make-manual">
 		<exec executable="make" dir="doc">
 			<arg line="0.pdf" />
 		</exec>
 
 		<exec executable="make" dir="doc">
-			<env key="HEVEADIR" value='c:/Programme/hevea/' />
 			<arg line="index.html" />
 		</exec>
 	</target>
