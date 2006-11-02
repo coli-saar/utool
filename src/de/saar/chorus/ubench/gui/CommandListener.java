@@ -74,8 +74,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 	private List<GenericFileFilter> ffOutputCodecs;
 	private List<GenericFileFilter> ffMultiOutputCodecs;
 	
-	private OverallFileFilter showAll;
-	
 	
 	private Map<Object,String> eventSources;
 	
@@ -99,14 +97,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 		ffInputCodecs = new ArrayList<GenericFileFilter>();
 		ffOutputCodecs = new ArrayList<GenericFileFilter>();
 		ffMultiOutputCodecs = new ArrayList<GenericFileFilter>();
-		showAll = new OverallFileFilter();
 		
 		for( String codecname : codecman.getAllInputCodecs() ) {
 			String extension = codecman.getInputCodecExtension(codecname);
 			
 			if( (codecname != null) && (extension != null)) {
 				ffInputCodecs.add(new GenericFileFilter(extension, codecname));
-				showAll.addExtension(extension);
 			}
 		}
 		
