@@ -9,10 +9,10 @@ package de.saar.chorus.domgraph.codec;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import de.saar.chorus.domgraph.codec.basic.Chain;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -51,12 +51,11 @@ public abstract class InputCodec {
      * Determines a <code>Reader</code> from which the USR specified
      * by the <code>spec</code> will be read. In this default implementation,
      * <code>spec</code> is a filename, and the reader will be a
-     * <code>FileReader</code> for this file. In the special case where
-     * <code>spec</code> starts with the prefix <code>ex:</code>, the rest
-     * of the string is interpreted as a filename relative to the directories
-     * <code>projects/Domgraph/examples</code> and <code>examples</code>, which
-     * may be anywhere on the classpath (or in the Jar). 
-     * TODO perhaps removing this to another class (CodecManager?)
+     * <code>FileReader</code> for this file. You may override this method
+     * with your own implementation; the <code>spec</code> that is passed to
+     * your method will then be what the user specified in the command-line
+     * call "utool solve -I yourcodec &lt;spec&gt;". See the {@link de.saar.chorus.domgraph.codec.basic.Chain}
+     * for an example. 
      * 
      * @param spec a filename
      * @return a reader for reading from this file

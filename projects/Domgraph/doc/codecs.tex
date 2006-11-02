@@ -26,17 +26,16 @@ output codecs for reading the solutions as terms or translating them
 into graph file formats that can be displayed using external viewers.
 
 In addition, the Codec API is quite simple, and writing your own codec
-doesn't require a deep knowledge of the rest of the Utool system. As
-long as you observe certain rules about the labelled dominance graph
-that your input codec computes for your own underspecification
-formalism, the rest of the Utool system will simply cooperate with
+requires almost no knowledge of the rest of the Utool system. As
+long as you observe certain rules that codecs have to follow, the rest of the Utool system will simply cooperate with
 your new codec. In fact, you don't even have to recompile Utool to
 make your new codec available to it -- you can simply package your own
 codec into a Jar file and add it to the classpath when running Utool.
 
 Below, we will go through the input and output codecs in the current
 Utool distribution one by one, explain the formal background and the
-concrete syntax we assume, and discuss their limitations.
+concrete syntax we assume, and discuss their limitations. Then we will
+explain how to write your own codec.
 
 
 
@@ -405,7 +404,7 @@ feed Utool's output to uDraw(Graph) via a pipe instead of writing the
 graph to a file and then opening this file from uDraw(Graph), like so:
 
 \begin{verbatim}
-utool convert foo.clls -O domgraph-udraw --output-codec-options pipe \
+utool convert foo.clls -O domgraph-udraw --output-codec-options pipe=true \
    | uDrawGraph -pipe
 \end{verbatim}
 
@@ -533,72 +532,156 @@ Although Utool comes with a collection of codecs that cover many
 existing popular underspecification formalisms, there are some
 formalisms we don't support (yet), and we can expect that other
 formalisms will be developed in the future. To this end, it may be
-helpful for you to write your own codec. You can do this -- without
-even touching the original Utool source code -- as follows.
+helpful for you to write your own codec. 
 
-\begin{enumerate}
-\item \emph{Derive from base classes.} A codec is a class that is
-derived from one of the abstract base classes \verb?InputCodec?,
-\verb?GraphOutputCodec?, or \verb?PluggingOutputCodec?, all of which
-are in the package
-\verb?de.saar.chorus.domgraph.codec?.\footnote{Notice that we will
-likely deprecate \texttt{PluggingOutputCodec} in the near future, so
-we recommend that you derive output codecs from
-\texttt{GraphOutputCodec}.}  Your own codec can be in any package you
-like. You never need to create objects of your codec class; Utool
-creates objects of your class as needed.
+\paragraph{Codec classes.}
+A codec is a public, non-abstract class that is derived from one of the abstract base classes
+\verb?InputCodec? (if it is an input codec) or \verb?OutputCodec? (for an output codec). Codecs
+are typically not instantiated directly by the programmer. They are registered in
+a \emph{codec manager} (an object of class \verb?CodecManager?),
+which has methods for querying and instantiating codecs. The codec
+manager separates codecs from the rest of the Utool system and enforces
+a uniform interface that makes sure that all components of the system
+interact properly with the codecs: Once you have implemented and
+registered a new codec, it will automatically be usable from the command
+line, the server, and the GUI.
 
-\item \emph{Implement methods.} Your codec class has the task of
-writing a representation of a labelled dominance graph to a Java
-\verb?Writer?  (if it is an output codec) or of reading such a
-representation from a Java \verb?Reader? and initialising a labelled
-dominance graph (if it is an input codec). In order to do this, you
-must implement certain abstract methods that depend on the respective
-base class. This is documented in more detail in the API documentation
-of the codec base classes on the website, which is also distributed
-with the Utool package.
+The abstract base class \verb?InputCodec? defines a method \verb?decode?,
+which you must implement when you develop an input codec. The method
+takes a \verb?Reader?, a \verb?DomGraph?, and a \verb?NodeLabels? object
+as arguments. Its job is to read an USR from the \verb?Reader?, translate it
+into a labelled dominance graph, and then change the \verb?DomGraph? and
+the \verb?NodeLabels? to this graph. If an error occurs during this decoding
+process, it may throw an \verb?IOException?, a \verb?ParserException? (if the
+USR was syntactically not well-formed), or a \verb?MalformedDomgraphException?
+(if the USR could not be translated to a dominance graph for semantic reasons).
+The Utool exit codes (see Section \ref{sec:operations-exitcodes}) 
+corresponding to these errors are 128 for the I/O error,
+192 for the parse error, and $192+N$ for the semantic errors, where $N$ is
+an integer between 1 and 31 (inclusive) which you can specify when you construct
+the exception.
 
-\item \emph{Reporting errors.} Your (input) codec can report a parsing
-error by throwing an exception of type
-\url{de.saar.chorus.domgraph.codec.ParserException}. Utool will
-generally report an error code of 192 in this case. Both input and
-output codecs can also report semantic errors by throwing a
-\url{de.saar.chorus.domgraph.codec.MalformedDomgraphException}. You
-can (and should) pass a local error code $N$ between 1 and 31,
-inclusively, in this case. Utool will then report an error code of
-$192 + N$ for input codecs and $224 + N$ for output codecs. You can
-also encapsulate detailed error messages and original exceptions in
-both types of exceptions.
+Conversely, the class \verb?OutputCodec? defines a method \verb?encode?, which
+accepts a \verb?DomGraph? and a \verb?NodeLabels?, translates them into your
+output format, and writes the result to a \verb?Writer?. The method may throw
+\verb?IOException?s and \verb?MalformedDomgraphException?s, with the same meaning
+as above. The exit codes available to an output codec are 128 for I/O errors
+and $224 + N$ for semantic errors. 
+In addition, the codec must implement the methods \verb?print_header? and
+\verb?print_footer?, which are called by Utool at the very beginning and end of the
+encoding process; the builtin codecs use them to print a version header at the beginning 
+of the output files. It is a good idea to call \verb?flush()? on the writer in the footer method.
 
-\item \emph{Constructors.} Your class must have either a public
-constructor that takes no arguments, or a public constructor that
-takes a single argument of type \verb?String?. If it defines the
-second type of constructor, Utool will pass the codec options string
-to your constructor if any were specified on the command line or in
-the XML command. If no codec options were specified, it will pass the
-value \verb?null?. Utool will always call the \verb?String?
-constructor if it exists, and fall back to the argumentless
-constructor if it doesn't.
+If your output codec supports the output of multiple USRs into the same file,
+it should be derived from the class \verb?MultiOutputCodec?, which is itself
+derived from \verb?OutputCodec?. Only \verb?MultiOutputCodec?s can be used
+as the output codec of a \verb?solve? command on the command line, or
+the "Export Solved Forms" menu enry in Ubench. \verb?MultiOutputCodec? inherits
+all abstract methods from \verb?OutputCodec? and adds three more: The methods \verb?print_start_list? and \verb?print_end_list? are
+called before printing the first solved form (but after \verb?print_header?) 
+and after printing the last solved form (but before \verb?print_footer?), and \verb?print_list_separator?
+is called between any two \verb?encode? calls for subsequent solved forms. Notice
+that \verb?print_start_list? and \verb?print_end_list? are called only for results of
+\verb?solve? and "Export Solved Forms", whereas \verb?print_header? and \verb?print_footer?
+are called in these cases and also for the \verb?convert? and "Export" commands.
 
-\item \emph{Codec identification methods.} Your codec class is
-expected to implement the public static methods \verb?getName()?  and
-\verb?getExtension()?, both with return type \verb?String?.  These
-methods should return the codec name and the filename extension that
-you want to associate with your codec. \verb?getName? must generally
-return a non-null value.
 
-\item \emph{Making Utool aware of your codec.}  The final step of the
+\paragraph{Annotations.}
+Every codec class must be annotated with a \verb?@CodecMetadata? annotation. This 
+annotation has two required arguments \verb?name? and \verb?extension?, both of
+which are of type \verb?String?. The former specifies the codec's name; there may be no
+two input codecs and no two output codecs of the same name. The latter enables Utool
+to associate filenames with codecs: A file whose name ends with the specified extension
+will be automatically processed with this codec. If you pass an empty string for the extension,
+your codec will not be associated with any filename. In addition, you may mark your
+codec as experimental by passing the option \verb?experimental=true? to the metadata
+annotation.
+
+Thus, a typical declaration of an input codec would look as follows:
+
+\begin{verbatim}
+@CodecMetadata(name="mrs-prolog", extension=".mrs.pl")
+public class MrsInputCodec extends InputCodec {
+ ...
+\end{verbatim}
+
+The next requirement is that each codec must declare exactly one \emph{codec constructor},
+which will be used whenever the codec manager wants to create a new instance of the
+codec.
+If the codec class has exactly one public constructor, this constructor is used as the
+codec constructor. (If the class declares no constructors at all, the argumentless default
+constructor will do.) On the other hand, if the class declares more than
+one public constructor, exactly one of them must be annotated with \verb?@CodecConstructor?,
+and this annotated constructor will be used as the codec constructor. The codec constructor
+must not be declared as throwing any checked exceptions. In addition, each parameter
+of the codec constructor must have an \verb?@CodecOption? annotation. This annotation
+takes a required string argument \verb?name?, which gives this particular parameter
+a public name. It may also take an argument \verb?defaultValue?, which defines a default value
+for when the user doesn't specify an explicit value. If you specify no \verb?defaultValue?, the
+empty string will be used.
+
+Thus, a typical declaration of a codec constructor would look as follows:
+
+\begin{verbatim}
+@CodecConstructor
+public MrsInputCodec(@CodecOption(name="normalise", defaultValue="false") 
+                     boolean normalise) {
+ ...
+\end{verbatim}
+ 
+This way of declaring codec constructors and codec options looks a bit complicated
+at first sight, but is quite convenient in various respects. For one thing, Utool
+is aware of the codec options, and will decode them automatically. If you select
+the File/Open menu entry in Ubench and choose the mrs-prolog input codec, you
+will be offered a button "Option", which will reveal an option selection panel.
+This panel will contain a checkbox with the label "normalise", because your
+codec constructor has a parameter with name "normalise" and type \verb?boolean?;
+that is, it uses information about the parameter types to offer the user
+appropriate input forms. 
+Similarly, the Utool command-line tool will be able to parse an argument
+\verb?--input-codec-options normalise=true?, and the server will likewise deal
+with the option; these modes use the parameter types to decode the argument
+strings into appropriate values. For this reason, every parameter of the
+codec constructor must have one of the following types:
+
+\begin{itemize}
+\item any primitive datatype except for \verb?void? and \verb?char?; these are
+presented as text fields or checkboxes (for boolean) in the GUI, and are decoded
+using the \verb?valueOf? method of the respective wrapper class on the command
+line and in the server ;
+\item any enumeration type; these are presented as dropdown menus in the GUI,
+and are decoded by mapping the string representations to the enum values of the
+same name otherwise;
+\item the class \verb?String?.
+\end{itemize}
+
+On the other hand, the way that codecs represent metadata stays out of your way
+if you don't need it. Every constructor must have a \verb?@CodecMetadata? annotation.
+But beyond that, there is no need for a \verb?@CodecConstructor? annotation if there
+is a unique public constructor to begin with; and if the constructor has no parameters,
+nothing needs to be annotated with \verb?@CodecOption?. The latter situation
+accounts for the majority of the builtin codecs.
+
+\paragraph{Registration.}
+The final step of the
 story is to make Utool aware of your new codec. This is handled by
 creating a file
 \url{de/saar/chorus/domgraph/codec/codecclasses.properties} somewhere
 in your classpath. In this file, you list the fully qualified
 classname(s) of your new codec(s), one per line. Utool will then
-automatically read this file and load your codecs.
+automatically read this file and try to register your codecs. If
+a codec fails to register (typically because an annotation was missing),
+Utool will be terminated with an error message and exit code 142.
 
 For instance, let's say that you have implemented and compiled a codec
 class \url{foo.bar.MyCodec}. You would then create a
-\url{codecclasses.properties} file that contains just one line that
-reads ``\url{foo.bar.MyCodec}'', and start a MyCodec-enhanced version
+\url{codecclasses.properties} file with the following contents:
+
+\begin{verbatim}
+foo.bar.MyCodec
+\end{verbatim}
+
+Then you would start a  MyCodec-enhanced version
 of Utool as follows:
 
 
@@ -607,10 +690,8 @@ $ jar cf mycodec.jar foo/bar/MyCodec.class \
     de/saar/chorus/domgraph/codec/codecclasses.properties
 $ java -cp Utool.jar:mycodec.jar de.saar.chorus.domgraph.utool.Utool -d
 \end{verbatim}
-%$
 
-This will display your new codec along with the standard Utool ones.
-\end{enumerate}
+
 
 
 
