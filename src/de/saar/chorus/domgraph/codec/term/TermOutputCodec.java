@@ -18,7 +18,7 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -45,7 +45,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public class TermOutputCodec extends OutputCodec {
+public class TermOutputCodec extends MultiOutputCodec {
     public static final int ERROR_NOT_SIMPLE_SOLVED_FORM = 1;
     
     protected String separator;
@@ -138,22 +138,27 @@ public class TermOutputCodec extends OutputCodec {
         }
     }
 
-
-    
+    @Override
     public void print_header(Writer writer) {
     }
 
+    @Override
     public void print_footer(Writer writer) {
     }
 
-    public void print_start_list(Writer writer) {
+    @Override
+    public void print_start_list(Writer writer) throws IOException {
+    	writer.write("[");
     }
 
-    public void print_end_list(Writer writer) {
+    @Override
+    public void print_end_list(Writer writer) throws IOException {
+    	writer.write("]");
     }
 
+    @Override
     public void print_list_separator(Writer writer) throws IOException {
-        writer.write("\n");
+        writer.write(separator + "\n");
     }
 
 }

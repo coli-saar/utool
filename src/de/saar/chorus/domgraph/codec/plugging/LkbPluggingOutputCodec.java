@@ -16,7 +16,7 @@ import java.util.List;
 import de.saar.basic.StringTools;
 import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -37,7 +37,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  *
  */
 @CodecMetadata(name="plugging-lkb", extension=".lkbplug.lisp")
-public class LkbPluggingOutputCodec extends OutputCodec {
+public class LkbPluggingOutputCodec extends MultiOutputCodec {
     @Override
     public void encode(DomGraph graph, NodeLabels labels, Writer writer) 
     throws IOException, MalformedDomgraphException {
@@ -57,22 +57,26 @@ public class LkbPluggingOutputCodec extends OutputCodec {
     }
 
     
-
+    @Override
     public void print_header(Writer writer) throws IOException {
     }
 
+    @Override
     public void print_footer(Writer writer) throws IOException {
         writer.flush();
     }
 
+    @Override
     public void print_start_list(Writer writer) throws IOException {
         writer.write("(");
     }
 
+    @Override
     public void print_end_list(Writer writer) throws IOException {
         writer.write(")");
     }
 
+    @Override
     public void print_list_separator(Writer writer) throws IOException {
     }
 }

@@ -44,14 +44,6 @@ public class DummyCodec extends OutputCodec {
 		System.err.println("Option color: " + color);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.saar.chorus.domgraph.codec.OutputCodec#print_end_list(java.io.Writer)
-	 */
-	@Override
-	public void print_end_list(Writer writer) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/* (non-Javadoc)
 	 * @see de.saar.chorus.domgraph.codec.OutputCodec#print_footer(java.io.Writer)
@@ -71,22 +63,5 @@ public class DummyCodec extends OutputCodec {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see de.saar.chorus.domgraph.codec.OutputCodec#print_list_separator(java.io.Writer)
-	 */
-	@Override
-	public void print_list_separator(Writer writer) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see de.saar.chorus.domgraph.codec.OutputCodec#print_start_list(java.io.Writer)
-	 */
-	@Override
-	public void print_start_list(Writer writer) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

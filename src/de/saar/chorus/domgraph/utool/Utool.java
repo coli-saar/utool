@@ -17,6 +17,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -128,7 +129,14 @@ public class Utool {
             
         case solve:
             DomGraph compactGraph = null;
-
+            
+            if( (options.getOperation() == Operation.solve)
+            		&& ! (options.getOutputCodec() instanceof MultiOutputCodec)
+            		&& ! options.hasOptionNoOutput() ) {
+            	System.err.println("This output codec doesn't support the printing of multiple solved forms!");
+            	System.exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
+            }
+            		
             if( options.hasOptionStatistics() ) {
                 System.err.println();
             }
@@ -170,6 +178,9 @@ public class Utool {
             long time_solver = end_solver - start_solver;
             
             if( solvable ) {
+            	MultiOutputCodec outputcodec = 
+            		options.hasOptionNoOutput() ? null : (MultiOutputCodec) options.getOutputCodec();
+            	
                 if( options.hasOptionStatistics() ) {
                     System.err.println("it is solvable.");
                     printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), compactGraph);
@@ -180,8 +191,8 @@ public class Utool {
                 if( options.getOperation() == Operation.solve ) {
                     try {
                         if( !options.hasOptionNoOutput() ) {
-                            options.getOutputCodec().print_header(options.getOutput());
-                            options.getOutputCodec().print_start_list(options.getOutput());
+                            outputcodec.print_header(options.getOutput());
+                            outputcodec.print_start_list(options.getOutput());
                         }
                         
                         // extract solved forms
@@ -194,17 +205,18 @@ public class Utool {
                             
                             if( !options.hasOptionNoOutput() ) {
                                 if( count > 1 ) {
-                                    options.getOutputCodec().print_list_separator(options.getOutput());
+                                    outputcodec.print_list_separator(options.getOutput());
                                 }
-                                options.getOutputCodec().encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), options.getOutput());
+                                outputcodec.encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), options.getOutput());
                             }
                         }
                         long end_extraction = System.currentTimeMillis();
                         long time_extraction = end_extraction - start_extraction;
                         
                         if( !options.hasOptionNoOutput() ) {
-                            options.getOutputCodec().print_end_list(options.getOutput());
-                            options.getOutputCodec().print_footer(options.getOutput());
+                            outputcodec.print_end_list(options.getOutput());
+                            outputcodec.print_footer(options.getOutput());
+                            options.getOutput().flush();
                         }
                         
                         if( options.hasOptionStatistics() ) {

@@ -82,22 +82,5 @@ public class DotOutputCodec extends OutputCodec {
 
     }
 
-    @Override
-    public void print_start_list(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void print_end_list(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void print_list_separator(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
-    }
 
 }
