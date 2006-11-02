@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +41,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomEdge;
@@ -72,6 +72,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
 	private List<GenericFileFilter> ffInputCodecs;
 	private List<GenericFileFilter> ffOutputCodecs;
+	private List<GenericFileFilter> ffMultiOutputCodecs;
+	
 	private OverallFileFilter showAll;
 	
 	
@@ -96,6 +98,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		ffInputCodecs = new ArrayList<GenericFileFilter>();
 		ffOutputCodecs = new ArrayList<GenericFileFilter>();
+		ffMultiOutputCodecs = new ArrayList<GenericFileFilter>();
 		showAll = new OverallFileFilter();
 		
 		for( String codecname : codecman.getAllInputCodecs() ) {
@@ -112,6 +115,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 			
 			if( (codecname != null) && (extension != null)) {
 				ffOutputCodecs.add(new GenericFileFilter(extension, codecname));
+			}
+		}
+		
+		for( String codecname : codecman.getAllMultiOutputCodecs() ) {
+			String extension = codecman.getOutputCodecExtension(codecname);
+			
+			if( (codecname != null) && (extension != null)) {
+				ffMultiOutputCodecs.add(new GenericFileFilter(extension, codecname));
 			}
 		}
 		
@@ -244,18 +255,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 					if( graph != null) {
 						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
 						
-						// show plugging codecs just for solved forms.
-						// TODO perhaps find a more aesthetic solution here.
-						if( Ubench.getInstance().getVisibleTab() instanceof JSolvedFormTab) {
-							for( FileFilter ff : ffOutputCodecs ) {
+						for( FileFilter ff : ffOutputCodecs ) {
 								fc.addChoosableFileFilter(ff);
-							}
-						} else {
-							for( FileFilter ff : ffOutputCodecs ) {
-								if(! ff.getDescription().contains("plugging") ) {
-									fc.addChoosableFileFilter(ff);
-								}
-							}
 						}
 						
 						
@@ -442,7 +443,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					if( graph != null) {
 						JCodecFileChooser fc = new JCodecFileChooser(recentPath, false);
-						for( FileFilter ff : ffOutputCodecs ) {
+						for( FileFilter ff : ffMultiOutputCodecs ) {
 							fc.addChoosableFileFilter(ff);
 						}
 						fc.setAcceptAllFileFilterUsed(false);
@@ -471,8 +472,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 							}
 							
 							final File outputfile = new File(targetfileName);
-							final OutputCodec oc= Ubench.getInstance().getCodecManager().
-							getOutputCodecForFilename(outputfile.getName(), fc.getCodecOptions());
+							final MultiOutputCodec oc = 
+								(MultiOutputCodec) Ubench.getInstance().getCodecManager().
+								getOutputCodecForFilename(outputfile.getName(), fc.getCodecOptions());
 							new Thread() {
 								public void run() {
 									

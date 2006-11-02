@@ -130,6 +130,7 @@ public class DomgraphUdrawOutputCodec extends OutputCodec {
 		writer.write(")");
 	}
 	
+	@Override
 	public void print_header(Writer writer) throws IOException
 	{
 		if (pipe) {
@@ -139,6 +140,7 @@ public class DomgraphUdrawOutputCodec extends OutputCodec {
 		}
 	}
 	
+	@Override
 	public void print_footer(Writer writer) throws IOException
 	{
 		if (pipe) {
@@ -149,15 +151,4 @@ public class DomgraphUdrawOutputCodec extends OutputCodec {
 		writer.flush();
 	}
 	
-	public void print_start_list(Writer writer) throws IOException
-	{
-	}
-	
-	public void print_end_list(Writer writer) throws IOException
-	{
-	}
-	
-	public void print_list_separator(Writer writer) throws IOException
-	{
-	}
 }

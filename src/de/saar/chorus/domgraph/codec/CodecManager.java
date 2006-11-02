@@ -690,6 +690,24 @@ public class CodecManager {
         return ret;
     }
     
+    /**
+     * Returns the list of all registered output codecs that support
+     * the output of multiple solved forms into one file.
+     * 
+     * @return the list of all such output codecs
+     */
+    public List<String> getAllMultiOutputCodecs() {
+    	List<String> ret = new ArrayList<String>(outputCodecClasses.size());
+        
+        for( Class codecC : outputCodecClasses ) {
+        	if( MultiOutputCodec.class.isAssignableFrom(codecC) ) {
+        		ret.add(getCodecName(codecC));
+        	}
+        }
+        
+        return ret;
+    }
+    
     
     
     /**

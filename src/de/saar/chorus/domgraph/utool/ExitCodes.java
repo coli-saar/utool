@@ -51,6 +51,7 @@ public class ExitCodes {
 
     public static final int NO_OUTPUT_CODEC_SPECIFIED = 160;
     public static final int NO_SUCH_OUTPUT_CODEC = 161;
+    public static final int OUTPUT_CODEC_NOT_MULTI = 162;
 
     public static final int EQUIVALENCE_READING_ERROR = 170;
     
