@@ -126,10 +126,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 			}
 		}
 		
-		Collections.sort(ffInputCodecs);
-		Collections.reverse(ffInputCodecs);
-		Collections.sort(ffOutputCodecs);
-		Collections.reverse(ffInputCodecs);
 	}
 	
 	/**
