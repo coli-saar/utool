@@ -242,11 +242,12 @@ public class ConnectionManager {
      * more efficiently.<p>
      * 
      * At the moment, the warmup command enumerates all solved forms of the
-     * pure chain of length 10, three times.
+     * pure chain of length 12, two times. This seems to be sufficient on
+     * Java 1.6 Beta on MacOS in server mode.
      * 
      */
     private static void warmup() {
-        final int PASSES = 3;
+        final int PASSES = 2;
         DomGraph graph = new DomGraph();
         NodeLabels labels = new NodeLabels();
         makeWarmupGraph(graph, labels);
@@ -269,7 +270,13 @@ public class ConnectionManager {
     }
 
 
-    public static void makeWarmupGraph(DomGraph graph, NodeLabels labels) {
+    /**
+     * Generates the chain of length 12.
+     * 
+     * @param graph
+     * @param labels
+     */
+    private static void makeWarmupGraph(DomGraph graph, NodeLabels labels) {
         graph.clear();
         labels.clear();
 
