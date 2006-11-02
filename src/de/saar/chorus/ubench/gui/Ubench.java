@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -110,24 +111,14 @@ public class Ubench {
 
             System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
         }
-        
-        /*
-         * this is what it should look like in theory -- in practice
-         * the GTK L&F is really ugly, even on 1.6 Beta. Why? 
-         *
-        // set look and feel
-        System.setProperty("swing.aatext","true");
+
+        // Set look and feel. Currently we are only setting the Windows L&F, as
+        // the GTK L&F (for Linux) looks ugly even on Java 6.0, and on MacOS even
+        // the standard L&F looks good.
         try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-			System.err.println("Ubench running Windows look and feel");
 		} catch (Exception e) {
-			try {
-				UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-				System.err.println("Ubench running GTK look and feel");
-			} catch (Exception e1) {
-				System.err.println("Ubench running default look and feel");
-			} 
-		} */
+		}
 		
 
         
