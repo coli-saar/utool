@@ -97,7 +97,7 @@ public class Ubench {
 //      register codecs
         codecManager = new CodecManager();
         registerAllCodecs(codecManager);
-        lastPath = new File(System.getProperty("user.dir"));
+        lastPath = new File(System.getProperty("user.home"));
         try {
             exampleManager = new ExampleManager();
             exampleManager.addAllExamples("examples");
