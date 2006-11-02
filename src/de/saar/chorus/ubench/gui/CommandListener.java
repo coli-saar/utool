@@ -16,13 +16,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -862,82 +858,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		return eventSources.get(source);
 	}
 	
-	/**
-	 * A <code>FileFilter</code> designed to 
-	 * accept a succesively added collection of
-	 * extensions.
-	 * 
-	 * @author Michaela Regneri
-	 *
-	 */
-	private class OverallFileFilter extends FileFilter {
-		
-		Set<String> extensions;
-		
-		/**
-		 *  Empty constructor (just for initialising).
-		 *
-		 */
-		OverallFileFilter() {
-			extensions = new HashSet<String>();
-		}
-		
-		/**
-		 * Initialise the Filter with a list of 
-		 * extensions to accept.
-		 * Please make sure to have a Collection of
-		 * extension strings starting with "." !
-		 * 
-		 * @param ext
-		 */
-		OverallFileFilter(Collection<String> ext) {
-			extensions = new HashSet<String>(ext);
-		}
-		
-		/**
-		 * Add a file extension that shall be accepted
-		 * by the filter
-		 * 
-		 * @param extension the new extension
-		 */
-		public void addExtension(String extension) {
-			if( extension.startsWith(".") ) {
-				extensions.add(extension);
-			} else {
-				extensions.add("."+ extension);
-			}
-		}
-		
-		/**
-		 * 
-		 * @return true if the file has an extension
-		 *        contained here or is a folder
-		 */
-		public boolean accept(File f) {
-			
-			String fileName = f.getName();
-			
-			if( f.isDirectory() ) {
-				return true;
-			} 
-			
-			for(String extension : extensions ) {
-				if(fileName.endsWith(extension) ) {
-					return true;
-				}
-				
-			}
-			return false;
-		}
-		
-		/**
-		 * 
-		 */
-		public String getDescription() {
-			return "All known file types";
-		}
-		
-	}
+	
 	
 	
 	/**
