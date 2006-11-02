@@ -83,7 +83,7 @@ public class ChartViewerListener implements ActionListener {
 							"Press \"Yes\" to use " + 
 							Ubench.getInstance().getEqsname() + " to reduce the chart,"  + 
 							System.getProperty("line.separator") + 
-									" press \"No\" to load another equation system.", 
+									"press \"No\" to load another equation system.", 
 							"Ready to Eliminate Equivalences", JOptionPane.YES_NO_OPTION, 
 							JOptionPane.QUESTION_MESSAGE);
 					if(yesno == JOptionPane.YES_OPTION ) {
@@ -91,7 +91,7 @@ public class ChartViewerListener implements ActionListener {
 						name = Ubench.getInstance().getEqsname();
 					} else {
 						eqs = new EquationSystem();
-						 name = loadEquationSystem(true, eqs);
+						name = loadEquationSystem(false, eqs);
 					}
 				} else {
 					eqs = new EquationSystem();

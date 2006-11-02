@@ -893,16 +893,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		infotext.append(System.getProperty("line.separator"));
 		infotext.append(System.getProperty("line.separator"));
 		
-		if(modified) {
+		if( modified && (! reduced) ) {
 			infotext.append("The chart has been modified,");
 			infotext.append(System.getProperty("line.separator"));
 			infotext.append("some splits have been deleted.");
 			infotext.append(System.getProperty("line.separator"));
 		}
-		if(reduced) {
+		if( reduced ) {
 			infotext.append("The chart has been reduced with");
 			infotext.append(System.getProperty("line.separator"));
-			infotext.append("the equation system" + eqsname + ".");
+			infotext.append("the equation system " + eqsname + ".");
 			infotext.append(System.getProperty("line.separator"));
 			infotext.append(System.getProperty("line.separator"));
 		}
