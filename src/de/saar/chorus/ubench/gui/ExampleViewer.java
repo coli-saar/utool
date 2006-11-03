@@ -37,7 +37,7 @@ ListSelectionListener, ActionListener {
 
 	private JSplitPane listContents;
 	private JTextPane desc;
-
+	private String fontname;
 	private JList files;
 	private String[] exampleNames;
 	private JButton load;
@@ -76,9 +76,14 @@ ListSelectionListener, ActionListener {
 			cancel.addActionListener(this);
 			cancel.setActionCommand("cancel");
 			preview.add(cancel);
-			
+			fontname = cancel.getFont().getFamily();
 			desc = new JTextPane();
-			desc.setContentType("text/html");
+			//desc.setContentType("text/html");
+			
+			desc.setFont(cancel.getFont());
+			//desc.setText("<html><div style='font-family:Arial; font-size:12pt'>" +
+			//		"No example selected.</div></html>");
+			
 			desc.setText("No example selected.");
 			desc.setEditable(false);
 			desc.setBackground(Color.LIGHT_GRAY);
@@ -122,10 +127,12 @@ ListSelectionListener, ActionListener {
 		
 	/*	pack(); */
 		
-		desc.setText("<html><div style='font-family:Arial; font-size:12pt'><b>Codec: " + 
+		desc.setContentType("text/html");
+		desc.setText("<html><div style='font-family:" + fontname + "; font-size:12pt'><b>Example " 
+				 + selected + "</b><br>(Codec: " + 
 				Ubench.getInstance().getCodecManager().
 				getInputCodecNameForFilename(selected) +
-				"</b><br>"+ 
+				")<br><br>"+ 
 				killWhitespaces(
 						manager.getDescriptionForExample(selected)
 						)

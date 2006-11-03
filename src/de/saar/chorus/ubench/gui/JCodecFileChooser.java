@@ -66,6 +66,7 @@ public class JCodecFileChooser extends JFileChooser
 		input = type.isInput;
 		
 		allKnownTypesFileFilter = new SeveralExtensionsFilter();
+	
 		
 		if( input ) {
 			setAcceptAllFileFilterUsed(true);
@@ -250,7 +251,6 @@ public class JCodecFileChooser extends JFileChooser
 	 * accept a succesively added collection of
 	 * extensions.
 	 * 
-	 * @author Michaela Regneri
 	 *
 	 */
 	private static class SeveralExtensionsFilter extends FileFilter {
