@@ -76,15 +76,18 @@ ListSelectionListener, ActionListener {
 			cancel.addActionListener(this);
 			cancel.setActionCommand("cancel");
 			preview.add(cancel);
-			fontname = cancel.getFont().getFamily();
+			
 			desc = new JTextPane();
 			//desc.setContentType("text/html");
 			
-			desc.setFont(cancel.getFont());
+			
 			//desc.setText("<html><div style='font-family:Arial; font-size:12pt'>" +
 			//		"No example selected.</div></html>");
 			
+		//	desc.setFont(cancel.getFont());
 			desc.setText("No example selected.");
+			//desc.setText("<html><div style='font-family:Arial; font-size:12pt'>No example selected.</div></html>");
+			
 			desc.setEditable(false);
 			desc.setBackground(Color.LIGHT_GRAY);
 			desc.setOpaque(false);
@@ -95,7 +98,8 @@ ListSelectionListener, ActionListener {
 			listContents.setOneTouchExpandable(true);
 			listContents.setDividerLocation(150);
 
-		
+			desc.setFont(cancel.getFont());
+			fontname = cancel.getFont().getFamily();
 			listPane.setMinimumSize(new Dimension(100, 50));
 			descriptionPane.setPreferredSize(new Dimension(
 					((int) (listPane.getPreferredSize().width * 1.7)), 

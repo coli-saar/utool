@@ -328,11 +328,11 @@ public class Ubench {
     			tabbedPane.setSelectedIndex(index);
     		}
     		
-    		if(tabs.size() == 1) {
+    		/*if(tabs.size() == 1) {
     			tab.setMinimumSize(tab.getGraph().getSize());
     			window.pack();
     			window.validate();
-    		}
+    		}*/
     		
     		tabbedPane.validate();
     		
@@ -701,8 +701,13 @@ public class Ubench {
     	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
         window.setLayout(layout);
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		window.setMaximizedBounds(env.getMaximumWindowBounds());
+       
+		
+        GraphicsEnvironment env =
+        	GraphicsEnvironment.getLocalGraphicsEnvironment();
+        	window.setMaximizedBounds(env.getMaximumWindowBounds ());
+        	window.setExtendedState(window.getExtendedState() | window.MAXIMIZED_BOTH);
+       
         window.setMaximumSize(
         		new Dimension(env.getMaximumWindowBounds().width,
         				env.getMaximumWindowBounds().height));
