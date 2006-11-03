@@ -408,6 +408,8 @@ utool convert foo.clls -O domgraph-udraw --output-codec-options pipe=true \
    | uDrawGraph -pipe
 \end{verbatim}
 
+The \verb|domgraph-dot| codec accepts the codec option \verb|enforceEdgeOrder|. If this option is set to \verb|true|, the codec will compute a representation of the dominance graph in which the left-to-right order of the outgoing edges of each node is respected. This is meaningful for outgoing tree edges because their relative order corresponds to e.g.\ the restriction and scope of a quantifier. However, because of limitations in the dot format, the ordering constraint will also apply to dominance edges. This is not only unnecessary (there is no meaningful order between outgoing dominance edges), but it is also inconvenient, as the graph layout for nontrivial graphs will typically not be pretty. The \verb|enforceEdgeOrder| option is thus set to \verb|false| by default.
+
 Both codecs are able to encode any labelled dominance graph, even if
 it is not weakly normal, thus they never report any semantic
 errors. The \verb|domgraph-udraw| codec is associated with the
