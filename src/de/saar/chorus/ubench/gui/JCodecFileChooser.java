@@ -39,6 +39,11 @@ public class JCodecFileChooser extends JFileChooser
 	private SeveralExtensionsFilter allKnownTypesFileFilter;
 	private FileFilter defaultFileFilter;
 	
+	// The name of the currently selected codec. It starts out as "null" (for no
+	// selection) and is updated every time the user chooses a specific codec from
+	// the dropdown menu or selects a file whose extension is associated with a codec.
+	private String currentCodec;
+	
 	public static enum Type {
 		OPEN                 ("Open USR", true),
 		EXPORT               ("Export dominance graph", false),
@@ -88,6 +93,8 @@ public class JCodecFileChooser extends JFileChooser
 		button.add(showOptions, BorderLayout.CENTER);
 		setAccessory(button);
 		//setAccessory(empty);
+		
+		currentCodec = null;
 	}
 	
 	public void addCodecFileFilters(List<GenericFileFilter> filters) {
@@ -99,69 +106,62 @@ public class JCodecFileChooser extends JFileChooser
 				defaultFileFilter = ff;
 			}
 		}
-		
+
 		if( defaultFileFilter != null ) {
 			setFileFilter(defaultFileFilter);
 		}
 	}
-	
-	
+
+
 	public Map<String,String> getCodecOptions() {
 		if( options != null) {
 			return options.getOptionMap();
 		} else return new HashMap<String,String>();
 	}
-	
+
 	public void propertyChange(PropertyChangeEvent evt) {
 		String prop = evt.getPropertyName();
 		String codecname = null;
-		JComponent newAcc = new JPanel();
-		if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
-			File file = (File) evt.getNewValue();
-			
-			if(file != null) {
-				if(input) {
-					codecname = manager.getInputCodecNameForFilename(file.getName());
-				} else {
-					codecname = manager.getOutputCodecNameForFilename(file.getName());
+
+		if( isShowing() ) {  // ignore all events that occur before the dialog is displayed
+			if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
+				// If the user selected a file which is associated to a codec, switch
+				// the option display to that codec.
+				File file = (File) evt.getNewValue();
+				
+				if( file != null ) {
+					if( input ) {
+						codecname = manager.getInputCodecNameForFilename(file.getName());
+					} else {
+						codecname = manager.getOutputCodecNameForFilename(file.getName());
+					}
+				}
+
+			} else if(JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(prop)) {
+				// If the user selected a single codec in the dropdown menu, switch
+				// to that codec.
+				FileFilter filter = getFileFilter();
+
+				if(filter instanceof GenericFileFilter) {
+					codecname = ((GenericFileFilter) filter).getName(); 
 				}
 			}
-		} else if(JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(prop)) {
-			FileFilter filter = getFileFilter();
 			
-			if(filter instanceof GenericFileFilter) {
-				codecname = ((GenericFileFilter) filter).getName(); 
-			} 
-		
-		} else {
-			return;
-		}
-		
-		if(codecname != null) {
-			
-			if(input) {
-				options = new JCodecOptionPane(manager.getInputCodecOptionTypes(codecname));
-				
-				newAcc = options;
-			} else {
-				options = new JCodecOptionPane(manager.getOutputCodecOptionTypes(codecname));
-				newAcc = options;
-			}
-			if(showOptions != null ) {
+			if( codecname != null ) {
+				// Switch the option pane to that codec and enable the options button.
 				showOptions.setEnabled(true);
-			}
-			if(optview) {
-				showOptionAccess(newAcc);
-			}
-		}  else {
-			showOptions.setEnabled(false);
-			if(optview) {
-				showOptionAccess(empty);
+				currentCodec = codecname;
+				options = new JCodecOptionPane(
+						input ? manager.getInputCodecOptionTypes(codecname) 
+							  : manager.getOutputCodecOptionTypes(codecname));
+				
+				if( optview ) {
+					showOptionAccess(options);
+				}
+				
+				validate();
 			}
 		}
-		
-		validate();
-		codecname = null;
 	}
 	
 	private void setShowAccessory(boolean show) {
@@ -185,7 +185,7 @@ public class JCodecFileChooser extends JFileChooser
 		//helperPanel.add(new JLabel("Codec: " + ((GenericFileFilter) getFileFilter()).getName()));
 		//helperPanel.add(new JLabel(" "));
 
-		String  codecname = ((GenericFileFilter) getFileFilter()).getName();
+		String  codecname = currentCodec;
 		String title;
 		if(codecname == null) {
 			title = "Options";
