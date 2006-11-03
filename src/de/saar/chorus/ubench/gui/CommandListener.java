@@ -28,6 +28,8 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import de.saar.basic.ExportUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
@@ -237,11 +239,15 @@ ItemListener, ConnectionManager.StateChangeListener {
 						fc.addCodecFileFilters(ffOutputCodecs);
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+						fc.setAcceptAllFileFilterUsed(false);
 						
+						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
+							
 							Ubench.getInstance().setLastPath( file.getParentFile() );
 							String targetFile = file.getAbsolutePath();
 							String defaultExtension = ((GenericFileFilter) 
@@ -421,7 +427,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 
 						fc.setSelectedFile(new File(Ubench.getInstance().
 								getVisibleTab().getDefaultName() + 
-						"_solvedForms"));
+						"_solvedForms" + 
+						((GenericFileFilter) fc.getFileFilter()).getExtension()));
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 

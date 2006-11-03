@@ -5,6 +5,7 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -355,6 +356,19 @@ public class Ubench {
     	
     			window.pack();
     			window.validate();
+    		
+    			if(window.getMaximizedBounds().height < 
+    			window.getHeight()) {
+    				window.setExtendedState(Frame.MAXIMIZED_VERT);
+    				if(window.getMaximizedBounds().width < 
+        					window.getWidth()) {
+        				window.setExtendedState(Frame.MAXIMIZED_BOTH);
+        			}
+    				
+    			} else if(window.getMaximizedBounds().width < 
+    					window.getWidth()) {
+    				window.setExtendedState(Frame.MAXIMIZED_HORIZ);
+    			}
     			
     			useNextTabToResizeFrame = false;
     		}
