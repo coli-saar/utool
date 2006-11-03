@@ -98,8 +98,8 @@ ListSelectionListener, ActionListener {
 			listContents.setOneTouchExpandable(true);
 			listContents.setDividerLocation(150);
 
-			desc.setFont(cancel.getFont());
-			fontname = cancel.getFont().getFamily();
+			desc.setFont(files.getFont());
+			fontname = files.getFont().getFamily();
 			listPane.setMinimumSize(new Dimension(100, 50));
 			descriptionPane.setPreferredSize(new Dimension(
 					((int) (listPane.getPreferredSize().width * 1.7)), 
