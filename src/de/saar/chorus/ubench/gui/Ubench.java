@@ -4,6 +4,8 @@
  */
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -350,7 +352,7 @@ public class Ubench {
     		refresh();
     		
     		if( useNextTabToResizeFrame  ) {
-    			window.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+    	
     			window.pack();
     			window.validate();
     			
@@ -699,7 +701,11 @@ public class Ubench {
     	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
         window.setLayout(layout);
-       
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		window.setMaximizedBounds(env.getMaximumWindowBounds());
+        window.setMaximumSize(
+        		new Dimension(env.getMaximumWindowBounds().width,
+        				env.getMaximumWindowBounds().height));
         
         listener = new CommandListener();
         tabbedPane = new JDomTabbedPane(listener);
