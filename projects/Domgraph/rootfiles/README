@@ -2,8 +2,8 @@
         Utool: The Swiss Army Knife of Underspecification
       http://www.coli.uni-saarland.de/projects/chorus/utool/
 
-                          Version 3.0
-                         19 June, 2006
+                          Version 3.1
+                       11 November, 2006
 
 
 This package is a tool for performing various tasks that arise in the
@@ -15,10 +15,8 @@ algorithm is the fastest one known today.
 
 Utool was created within the CHORUS project of the DFG Collaborative
 Research Centre (SFB) 378 "Ressource-adaptive cognitive processes" at
-Saarland University in Saarbrücken, Germany. The current version 3.0
-is implemented in Java, and is more stable, more portable, and more
-efficient than earlier versions. It is distributed under the GPL (see
-the file COPYING in this directory).
+Saarland University in Saarbruecken, Germany. It is distributed under
+the GPL (see the file COPYING in this directory).
 
 
 System requirements
@@ -40,7 +38,7 @@ Running Utool
 Assuming that you have installed Java and it is in your PATH, you can
 run Utool as follows:
 
-   java -jar Utool-3.0.jar
+   java -jar Utool-3.1.jar
 
 This will display some information about the available commands.
 
@@ -51,7 +49,7 @@ We distribute some documentation in the "docs" subdirectory. The file
 manual.pdf in this directory is a manual which describes the use of
 Utool in detail. You can also view a HTML version of this manual at
 
-http://www.coli.uni-saarland.de/projects/chorus/utool/docs/3.0/manual/
+http://www.coli.uni-saarland.de/projects/chorus/utool/docs/3.1/manual/
 
 The directory "docs/api" contains the full Javadocs of the Utool
 package.

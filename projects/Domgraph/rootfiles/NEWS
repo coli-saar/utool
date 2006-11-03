@@ -1,12 +1,25 @@
 unreleased  3.1
-    - New functionality: Ubench now allows you to inspect and
-      modify the chart for a dominance graph, and eliminate
-      redundancies from the GUI.
+    - Much more of the functionality of Utool is now also
+      available from Ubench.  This includes a GUI for working
+      with dominance charts, codec options, and control over
+      the Utool Server.
+      
+    - Ubench can now be started directly via a link from the
+      website (Java Webstart).
+      
+    - The Utool Server now no longer waits for the client to
+      close its socket, but starts working immediately after
+      recognising a command.  This makes it easier to access
+      from programming environments that don't support the
+      socket shutdown function.
 
     - Architecture change: Codecs now contain metadata as Java 5.0
       annotations. This reduces the amount of boilerplate code
       in a codec class, and allows us to use codec options in a
       uniform way, both from the command line and from Ubench.
+      
+    - Many minor improvements and bug fixes.
+      
 
 2006-06-19  3.0
     - This is a complete reimplementation of Utool in Java, which
