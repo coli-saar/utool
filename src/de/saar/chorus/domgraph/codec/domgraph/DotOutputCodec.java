@@ -13,6 +13,7 @@ import java.io.Writer;
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
+import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -35,21 +36,32 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  */
 @CodecMetadata(name="domgraph-dot", extension=".dg.dot")
 public class DotOutputCodec extends OutputCodec {
+	private boolean enforceEdgeOrder;
+	
+	public DotOutputCodec(@CodecOption(name="enforceEdgeOrder", defaultValue="false") boolean enf) {
+		enforceEdgeOrder = enf;
+	}
+	
     @Override
     public void encode(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
         
         writer.write("digraph domgraph {\n");
-        writer.write("node [shape=plaintext];\n");
+        
+        if( enforceEdgeOrder ) {
+        	writer.write("ordering=out;\n");
+        }
         
         for( String node : graph.getAllNodes() ) {
             switch(graph.getData(node).getType()) {
             case LABELLED:
+            	writer.write("node [shape=plaintext];\n");
                 writer.write("   " + node + " [label=\"" + labels.getLabel(node) + "\"];\n");
                 break;
                 
             case UNLABELLED:
-                writer.write("   " + node + " [height=0, width=0, label=\"\"];\n");
+            	writer.write("node [shape=point, label=\"\"];\n");
+                writer.write("   " + node + ";\n");
                 break;
             }
         }
@@ -57,11 +69,11 @@ public class DotOutputCodec extends OutputCodec {
         for( Edge edge : graph.getAllEdges() ) {
             switch(graph.getData(edge).getType() ) {
             case TREE:
-                writer.write("   " + edge.getSource() + " -> " + edge.getTarget() + ";\n");
+                writer.write("   " + edge.getSource() + " -> " + edge.getTarget() + " [arrowhead=nonenone];\n");
                 break;
                 
             case DOMINANCE:
-                writer.write("   " + edge.getSource() + " -> " + edge.getTarget() + " [style=dotted];\n");
+                writer.write("   " + edge.getSource() + " -> " + edge.getTarget() + " [arrowhead=nonenone, style=dotted];\n");
                 break;
             }
         }
