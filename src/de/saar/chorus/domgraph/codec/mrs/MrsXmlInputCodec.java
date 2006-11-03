@@ -16,6 +16,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
+import de.saar.chorus.domgraph.codec.CodecConstructor;
+import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
@@ -26,10 +28,14 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 public class MrsXmlInputCodec extends InputCodec {
 	
 	private MrsCodec codec;
-	
-	public MrsXmlInputCodec()
+	private boolean normalise;
+
+	@CodecConstructor
+	public MrsXmlInputCodec(
+		@CodecOption(name="normalise", defaultValue="true") boolean normalise)
 	{
 		super();
+		this.normalise = normalise;
 	}
 	
 	
@@ -135,7 +141,7 @@ public class MrsXmlInputCodec extends InputCodec {
 	
 	public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) throws MalformedDomgraphException, IOException, ParserException
 	{
-		codec = new MrsCodec(graph, labels);
+		codec = new MrsCodec(graph, labels, normalise);
 		
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();

@@ -56,7 +56,6 @@ foreach my $file (@ARGV) {
   $input =~ s['][&apos;]sg;
   $input =~ s[<][&lt;]sg;
   $input =~ s[>][&gt;]sg;
-#"
 
   # send stuff to server
   if (defined $outcodec) {
@@ -67,7 +66,7 @@ foreach my $file (@ARGV) {
   print $socket "<usr name='$file' codec='$incodec' string='$input'/>";
   print $socket "</utool>";
 
-#  $socket->shutdown(1);
+  $socket->shutdown(1);
 
   while( <$socket> ) {
       $answer .= $_;

@@ -25,18 +25,21 @@ import de.saar.chorus.domgraph.codec.mrs.*;
 @CodecMetadata(name="mrs-prolog", extension=".mrs.pl")
 public class MrsPrologInputCodec extends InputCodec
 {
+	private boolean normalise;
     private MrsCodec codec;
  
-   @CodecConstructor
-    public MrsPrologInputCodec()
+    @CodecConstructor
+    public MrsPrologInputCodec(
+    	@CodecOption(name="normalise", defaultValue="true") boolean normalise)
     {
 		this((Reader) null);
+		this.normalise = normalise;
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
 		throws IOException, ParserException, MalformedDomgraphException
     {
-		codec = new MrsCodec(graph, labels);
+		codec = new MrsCodec(graph, labels, normalise);
 
 		try {
 		    ReInit(inputStream);
@@ -89,12 +92,13 @@ TOKEN :
 		"x" (["0" - "9"])* >
 
   | <OTHER : 
-		"e" (["0" - "9"])* 
+	    "e" (["0" - "9"])* 
       | "u" (["0" - "9"])* 
       | "i" (["0" - "9"])* >
 
   | <SYMBOL :
-		"\'" (~["\'"])* "\'" >
+        "*TOP*"
+	  | "\'" (~["\'"])* "\'" >
 }
 
 //
@@ -106,7 +110,7 @@ void Input() throws MalformedDomgraphException:
     String handle;
 }
 {
-    <PSOA> "(" handle = Handle() "," Other() "," RelList() "," QeqList() ")"
+    <PSOA> "(" handle = Handle() "," (Other() | Variable()) "," RelList() "," QeqList() ")"
 	{
 	    codec.setTopHandleAndFinish(handle);
 	}

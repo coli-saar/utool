@@ -1,4 +1,5 @@
 
+
 package de.saar.chorus.domgraph.codec.mrs;
 
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.TreeMap;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -37,17 +39,20 @@ class MrsCodec {
 	
 	private NodeLabels labels;
 	
+	private boolean normalise;
+	
 	//
 	//
 	//
 	
-	public MrsCodec(DomGraph graph, NodeLabels labels)
+	public MrsCodec(DomGraph graph, NodeLabels labels, boolean normalise)
 	{
 		this.graph = graph;
 		this.labels = labels;
 		this.sig = new TreeMap<String,Type>();
 		this.binder = new TreeMap<String,String>();
 		this.bound = new TreeMap<String,Set<String>>();
+		this.normalise = normalise;
 	}
 	
 	public void tellVariable(String name) throws MalformedDomgraphException
@@ -242,7 +247,7 @@ class MrsCodec {
                                     ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
 						}
 					}
-				}
+				} 
 
 				Collection<String> holes = graph.getOpenHoles(root);
 				
@@ -265,9 +270,13 @@ class MrsCodec {
 	{
 		StringBuffer errorText = new StringBuffer();
 
-		this.addBindingEdges();
-		this.setTopHandle(handle);
-		this.normalise();
+		addBindingEdges();
+		setTopHandle(handle);
+		
+		if (!normalise)
+			return;
+		
+		normalise();
 		
 		int errorCode = 0;
 		
