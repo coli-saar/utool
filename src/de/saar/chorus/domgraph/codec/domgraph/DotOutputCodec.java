@@ -84,14 +84,10 @@ public class DotOutputCodec extends OutputCodec {
 
     @Override
     public void print_header(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void print_footer(Writer writer) throws IOException {
-        // TODO Auto-generated method stub
-
     }
 
 
