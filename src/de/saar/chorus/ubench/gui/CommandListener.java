@@ -64,7 +64,7 @@ import de.saar.chorus.ubench.ServerOptions;
 public class CommandListener implements ActionListener, 
 ItemListener, ConnectionManager.StateChangeListener {
 
-	private String recentPath = ".", recentFile="";
+
 	
 	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
 	private List<GenericFileFilter> ffInputCodecs;
@@ -184,7 +184,10 @@ ItemListener, ConnectionManager.StateChangeListener {
 		} else {
 			// loading any graph file
 			if( command.equals("loadGXL") ) {
-				final JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.OPEN);
+				final JCodecFileChooser fc = new JCodecFileChooser(
+						Ubench.getInstance().getLastPath().getAbsolutePath(),
+						JCodecFileChooser.Type.OPEN);
+				
 				fc.addCodecFileFilters(ffInputCodecs);
 				
 				fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
@@ -198,12 +201,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
-					File file = fc.getSelectedFile();
+					final File file = fc.getSelectedFile();
 					
-					// resolving the file's path
-					recentPath = file.getAbsolutePath();
-					recentFile = file.getName();
-					
+								
 					// updating the last chosen path
 					Ubench.getInstance().setLastPath(file.getParentFile());
 					
@@ -216,7 +216,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							// JDomGraph
 							DomGraph theDomGraph = new DomGraph();
 							NodeLabels labels = new NodeLabels();
-							JDomGraph graph = Ubench.getInstance().genericLoadGraph(recentPath, 
+							JDomGraph graph = Ubench.getInstance().genericLoadGraph(file.getAbsolutePath(), 
 									theDomGraph, labels, fc.getCodecOptions());
 							
 							
@@ -226,7 +226,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								
 								// setting up a new graph tab.
 								// the graph is painted and shown at once.
-								Ubench.getInstance().addNewTab(graph, recentFile, theDomGraph, true, true, labels);
+								Ubench.getInstance().addNewTab(graph, file.getName(), theDomGraph, true, true, labels);
 							}
 						}
 					}.start();
@@ -240,7 +240,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.EXPORT);
+						JCodecFileChooser fc = new JCodecFileChooser(
+								Ubench.getInstance().getLastPath().getAbsolutePath(),
+								JCodecFileChooser.Type.EXPORT);
 						fc.addCodecFileFilters(ffOutputCodecs);
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
@@ -253,7 +255,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						} else {
 							owner = Ubench.getInstance().getWindow();
 						}
-						int fcVal = fc.showOpenDialog(owner);	
+						int fcVal = fc.showSaveDialog(owner);	
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
@@ -268,8 +270,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								file = new File(targetFile);
 							}
 							
-							recentPath = file.getAbsolutePath();
-							
+												
 							
 							
 							OutputCodec oc = 
@@ -432,7 +433,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
-						JCodecFileChooser fc = new JCodecFileChooser(recentPath, JCodecFileChooser.Type.EXPORT_SOLVED_FORMS);
+						JCodecFileChooser fc = new JCodecFileChooser(
+								Ubench.getInstance().getLastPath().getAbsolutePath(),
+								JCodecFileChooser.Type.EXPORT_SOLVED_FORMS);
 						fc.addCodecFileFilters(ffMultiOutputCodecs);
 
 						fc.setSelectedFile(new File(Ubench.getInstance().
@@ -476,16 +479,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 							new Thread() {
 								public void run() {
 									
-									recentPath = outputfile.getAbsolutePath();
+									
 									// that's just a guess...
 									
 									WaitingDialog progress = new WaitingDialog("Printing Solutions",
 											Ubench.getInstance().getWindow());
 									progress.beginTask();
-									
-									
-								
-									
 									
 									
 									Chart chart = new Chart();
@@ -719,12 +718,13 @@ ItemListener, ConnectionManager.StateChangeListener {
 							// updating the last chosen path
 							Ubench.getInstance().setLastPath(file.getParentFile());
 							
+							final String filepath;
 							// if the file was named withoud pdf-extension,
 							// the extension is added
 							if(dir.indexOf(".pdf") > 0) {
-								recentPath = dir;
+								filepath = dir;
 							} else {
-								recentPath = dir + ".pdf";
+								filepath = dir + ".pdf";
 							}
 							
 							
@@ -740,7 +740,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 									
 									try {
 										// the actual PDF-printing
-										ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), recentPath);
+										ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), filepath);
 									} catch (IOException io) {
 										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 												"The output file can't be opened.",
