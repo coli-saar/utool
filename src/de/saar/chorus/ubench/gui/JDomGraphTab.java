@@ -513,16 +513,8 @@ public class JDomGraphTab extends JGraphTab  {
 		if( isSolvedYet ) {
 			
 			// setting up the first solved form:
-			
-			// cloning the recent DomGraph
-			DomGraph firstForm = (DomGraph) domGraph.clone();
-			
-			// solving and starting to enumerate
 			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
-			
-			// the first solved form is the recent graph
-			// with the dominance edges of the first solved form...
-			firstForm.setDominanceEdges(solvedFormIterator.next());
+			DomGraph firstForm = domGraph.withDominanceEdges(solvedFormIterator.next());
 			
 			// converting the graph into a JDomGraph
 			DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);

@@ -1020,13 +1020,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		// extracting the wanted solved form
 		SolvedFormIterator solver = Ubench.getInstance().getVisibleTab().getSolvedFormIterator();
 		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels();
-		
-		de.saar.chorus.domgraph.graph.DomGraph nextForm =   (de.saar.chorus.domgraph.graph.DomGraph) Ubench.getInstance().getVisibleTab().getDomGraph().clone();
-		
 		List<DomEdge> domEdges = solver.getSolvedForm((int) no-1);
-		if( domEdges != null ) {
-			nextForm.setDominanceEdges(domEdges);
-		}
+		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getDomGraph().withDominanceEdges(domEdges);
+		
 		int toInsertHere = Ubench.getInstance().getVisibleTabIndex();
 		
 		// converting the form to a JDomGraph
