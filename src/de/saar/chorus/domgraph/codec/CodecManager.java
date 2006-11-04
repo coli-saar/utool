@@ -170,6 +170,68 @@ public class CodecManager {
         
         return ret;
     }
+    
+    /**
+     * Returns the default value for a codec parameter of an output codec. The default value is encoded
+     * as a string and can be decoded e.g. using {@link #stringToValue(String, Class)}.
+     * 
+     * @param codecname the name of an output codec
+     * @param parametername the name of a parameter of this codec's codec constructor,
+     * as specified in its CodecOption annotation
+     * @return the default value of this parameter, or <code>null</code> if there is no
+     * output codec with this name, or its codec constructor doesn't have a parameter of
+     * this name. If you didn't specify a default value for the parameter,
+     * the system assumes a default value of "" (the empty string).
+     */
+    public String getOutputCodecParameterDefaultValue(String codecname, String parametername) {
+    	Class codecClass = getOutputCodecClassForName(codecname);
+    	Constructor con = codecClass == null ? null : constructorForClass.get(codecClass);
+    	
+    	if( con == null ) { 
+    		return null;
+    	}
+    	
+    	for( int i = 0; i < con.getParameterTypes().length; i++ ) {
+    		CodecOption metadata = getParameterMetadata(con, i);
+    		
+    		if( parametername.equals(metadata.name()) ) {
+    			return metadata.defaultValue();
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * Returns the default value for a codec parameter of an input codec. The default value is encoded
+     * as a string and can be decoded e.g. using {@link #stringToValue(String, Class)}.
+     * 
+     * @param codecname the name of an input codec
+     * @param parametername the name of a parameter of this codec's codec constructor,
+     * as specified in its CodecOption annotation
+     * @return the default value of this parameter, or <code>null</code> if there is no
+     * input codec with this name, or its codec constructor doesn't have a parameter of
+     * this name. If you didn't specify a default value for the parameter,
+     * the system assumes a default value of "" (the empty string).
+     */
+    public String getInputCodecParameterDefaultValue(String codecname, String parametername) {
+    	Class codecClass = getInputCodecClassForName(codecname);
+    	Constructor con = codecClass == null ? null : constructorForClass.get(codecClass);
+    	
+    	if( con == null ) { 
+    		return null;
+    	}
+    	
+    	for( int i = 0; i < con.getParameterTypes().length; i++ ) {
+    		CodecOption metadata = getParameterMetadata(con, i);
+    		
+    		if( parametername.equals(metadata.name()) ) {
+    			return metadata.defaultValue();
+    		}
+    	}
+    	
+    	return null;
+    }
 
     /**
      * Finds the CodecOption annotation of a constructor parameter.
@@ -257,7 +319,22 @@ public class CodecManager {
     }
 
 
-    private Object stringToValue(String valueAsString, Class asClass) {
+    /**
+     * Converts a string representation of a datatype that is admissible as the type of
+     * a codec option into that type. For instance, it will convert the string "false"
+     * into the Boolean object for the value "false".<p>
+     * 
+     * Admissible datatypes (i.e., values for the <code>asClass</code> parameter are: 
+     * all wrapper classes for the primitive datatypes, except for void and char; all
+     * enum types; and the datatype <code>String</code>. 
+     * 
+     * @param valueAsString the value, encoded as a string
+     * @param asClass the datatype into which the value should be converted
+     * @return an object of the type <code>asClass</code> with the value corresponding
+     * to the first parameter, or <code>null</code> if the value could not be
+     * converted or the datatype is unsupported.
+     */
+    public Object stringToValue(String valueAsString, Class asClass) {
         if( asClass == String.class ) {
             return valueAsString;
         } else if( asClass.isPrimitive() ) {
@@ -831,6 +908,12 @@ public class CodecManager {
             assert "domgraph-udraw".equals(manager.getOutputCodecNameForFilename("foo.dg.udg"));
             
             assert manager.getOutputCodecNameForFilename("does.not.exist") == null;
+        }
+        
+        public void getParameterDefaultValues() {
+        	assert "false".equals(manager.getOutputCodecParameterDefaultValue("domgraph-udraw", "pipe"));
+        	assert manager.getOutputCodecParameterDefaultValue("domgraph-udraw", "does not exist") == null;
+        	assert manager.getOutputCodecParameterDefaultValue("does not exist", "foo") == null;
         }
     }
 

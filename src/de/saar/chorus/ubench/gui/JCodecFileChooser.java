@@ -105,6 +105,7 @@ public class JCodecFileChooser extends JFileChooser
 			
 			if( !input && (defaultFileFilter == null)) {
 				defaultFileFilter = ff;
+				enableOptions(ff.getName());
 			}
 		}
 
@@ -150,21 +151,25 @@ public class JCodecFileChooser extends JFileChooser
 			
 			if( codecname != null ) {
 				// Switch the option pane to that codec and enable the options button.
-				showOptions.setEnabled(true);
-				currentCodec = codecname;
-				options = new JCodecOptionPane(
-						input ? manager.getInputCodecOptionTypes(codecname) 
-							  : manager.getOutputCodecOptionTypes(codecname));
-				
-				if( optview ) {
-					showOptionAccess(options);
-				}
-				
-				validate();
+				enableOptions(codecname);
 			}
 		}
 	}
 	
+	private void enableOptions(String codecname) {
+		showOptions.setEnabled(true);
+		currentCodec = codecname;
+		options = new JCodecOptionPane(
+				input ? manager.getInputCodecOptionTypes(codecname) 
+					  : manager.getOutputCodecOptionTypes(codecname));
+		
+		if( optview ) {
+			showOptionAccess(options);
+		}
+		
+		validate();
+	}
+
 	private void setShowAccessory(boolean show) {
 		optview = show;
 		if(show)  {
