@@ -725,13 +725,14 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			
 			// the recent root
 			 DefaultGraphCell root = getFragRoot(frag);
-			 
 			 // computing the x-positions, dependent on the _direct_
 			 // parent
+			
+			
 			 GraphLayoutCursor layCursor = new GraphLayoutCursor(root, this, graph, frag.getNodes());
 		     PostOrderNodeVisitor postVisitor = new PostOrderNodeVisitor(layCursor);
 		     postVisitor.run();
-			 
+			
 			 // another DFS computes the y- and x-positions relativ to the
 			 // _root_
 			 GraphDrawingCursor drawCursor = new GraphDrawingCursor(root, this, graph, frag.getNodes());
