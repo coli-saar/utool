@@ -350,22 +350,21 @@ public class Ubench {
     		refresh();
     		
     		if( useNextTabToResizeFrame  ) {
-    	
+    			// This is the first tab we're opening; use its size to resize the Ubench window.
+    			// We try to make the window just big enough to fit the graph, but no bigger
+    			// than the screen size.
+    			
+    			GraphicsEnvironment env =
+    	        	GraphicsEnvironment.getLocalGraphicsEnvironment();
+    			Rectangle bounds = env.getMaximumWindowBounds();
+    			
     			window.pack();
+    			
+    			Dimension graphsize = window.getSize();
+    			Dimension windowsize = new Dimension(Math.min(bounds.width, graphsize.width), Math.min(bounds.height, graphsize.height));
+    			
+    			window.setSize(windowsize);
     			window.validate();
-    		
-    			if(window.getMaximizedBounds().height < 
-    			window.getHeight()) {
-    				window.setExtendedState(Frame.MAXIMIZED_VERT);
-    				if(window.getMaximizedBounds().width < 
-        					window.getWidth()) {
-        				window.setExtendedState(Frame.MAXIMIZED_BOTH);
-        			}
-    				
-    			} else if(window.getMaximizedBounds().width < 
-    					window.getWidth()) {
-    				window.setExtendedState(Frame.MAXIMIZED_HORIZ);
-    			}
     			
     			useNextTabToResizeFrame = false;
     		}
@@ -712,16 +711,6 @@ public class Ubench {
     	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
         window.setLayout(layout);
-       
-		
-        GraphicsEnvironment env =
-        	GraphicsEnvironment.getLocalGraphicsEnvironment();
-        	window.setMaximizedBounds(env.getMaximumWindowBounds ());
-        	window.setExtendedState(window.getExtendedState() | window.MAXIMIZED_BOTH);
-       
-        window.setMaximumSize(
-        		new Dimension(env.getMaximumWindowBounds().width,
-        				env.getMaximumWindowBounds().height));
         
         listener = new CommandListener();
         tabbedPane = new JDomTabbedPane(listener);

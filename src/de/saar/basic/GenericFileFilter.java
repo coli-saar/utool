@@ -47,6 +47,8 @@ public class GenericFileFilter extends FileFilter implements Comparable {
 	}
 	
 	/**
+	 * Returns the description of this file filter, as displayed in the
+	 * dropdown list.
 	 * 
 	 * @return
 	 */
@@ -55,10 +57,21 @@ public class GenericFileFilter extends FileFilter implements Comparable {
 		return desc + " files (*" + extension + ")";
 	}
     
+	/**
+	 * Returns the name of the file type (e.g., the codec name, not the
+	 * extension) of this file filter.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return desc;
 	}
 	
+	/**
+	 * Returns the filename extension associated with this file filter.
+	 * 
+	 * @return
+	 */
 	public String getExtension() {
 		return extension;
 	}
