@@ -145,25 +145,25 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		modified = false;
 		reduced = false;
 		if(Ubench.getInstance().reduceAutomatically) {
-		if( ! dg.isNormal() ) {
-			JOptionPane.showMessageDialog(this,
-					"This chart represents a graph which is not normal," + 
-					System.getProperty("line.separator") + 
-					"thus Utool cannot eliminate redundancies.",
-					"Server Error",
-					JOptionPane.ERROR_MESSAGE);
-		} else if( ! dg.isHypernormallyConnected()) {
-			JOptionPane.showMessageDialog(this,
-					"This chart represents a graph which is not hypernormally" + 
-					System.getProperty("line.separator") + 
-					"connected, thus Utool cannot eliminate redundancies.",
-					"Server Error",
-					JOptionPane.ERROR_MESSAGE);
-		} else {
-			reduceChart(Ubench.getInstance().getEquationSystem(),
-					Ubench.getInstance().getEqsname());
+			if( ! dg.isNormal() ) {
+				JOptionPane.showMessageDialog(this,
+						"This chart represents a graph which is not normal," + 
+						System.getProperty("line.separator") + 
+						"thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+			} else if( ! dg.isHypernormallyConnected()) {
+				JOptionPane.showMessageDialog(this,
+						"This chart represents a graph which is not hypernormally" + 
+						System.getProperty("line.separator") + 
+						"connected, thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
+				reduceChart(Ubench.getInstance().getEquationSystem(),
+						Ubench.getInstance().getEqsname());
+			}
 		}
-		
 		
 		nameToSplit = new HashMap<Split,String>();
 		rootsToSubgraphs = new HashMap<Set<String>, Set<String>>();
