@@ -725,26 +725,6 @@ public class DomGraph implements Cloneable {
         return ret;
     }
 	
-	/**
-	 * Sets the dominance edges of the graph to the given collection,
-	 * possibly removing any existing dominance edges first.
-	 * Dominance edges are specified as {@link DomEdge} objects.<p>
-     * 
-     * This destructive method is deprecated as of Utool 3.1.
-     * Use {@link #withDominanceEdges(Collection)} instead.
-	 * 
-	 * @param domedges the new dominance edges.
-	 */
-    @Deprecated
-	public void setDominanceEdges(Collection<DomEdge> domedges) {
-		removeAllDominanceEdges();
-		
-		for( DomEdge e : domedges ) {
-			addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
-		}
-        
-        cachedResults = null;
-	}
 	
     /**
      * Returns a dominance graph that is just like the current graph,
