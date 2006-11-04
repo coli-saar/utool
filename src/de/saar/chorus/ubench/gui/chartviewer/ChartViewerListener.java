@@ -46,7 +46,12 @@ public class ChartViewerListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		
-		if( command.equals("delSplit") ) {
+		if( command.equals("elredglobal") ) {
+			viewer.reduceChart(
+					Ubench.getInstance().getEquationSystem(), 
+					Ubench.getInstance().getEqsname());
+			viewer.refreshChartWindow();
+		} else if( command.equals("delSplit") ) {
 			Split selectedSplit = viewer.getSelectedSplit();
 			if( selectedSplit != null ) {
 				try {
@@ -69,9 +74,30 @@ public class ChartViewerListener implements ActionListener {
 				
 			}
 		} else if( command.equals("elred")) {
+			if( ! viewer.getDg().isNormal() ) {
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"This chart represents a graph which is not normal," + 
+						System.getProperty("line.separator") + 
+						"thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+				
+				return;
+			}
+			
+			if( ! viewer.getDg().isHypernormallyConnected()) {
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"This chart represents a graph which is not hypernormally" + 
+						System.getProperty("line.separator") + 
+						"connected, thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+				
+				return;
+			}
 				EquationSystem eqs; 
 				String name;
-				if(Ubench.getInstance().isEquationSystemLoaded() ) {
+			/*	if(Ubench.getInstance().isEquationSystemLoaded() ) {
 					
 					int yesno = JOptionPane.showConfirmDialog(viewer, 
 							"The equation system " + 
@@ -92,10 +118,10 @@ public class ChartViewerListener implements ActionListener {
 						eqs = new EquationSystem();
 						name = loadEquationSystem(false, eqs);
 					}
-				} else {
+				} else {*/
 					eqs = new EquationSystem();
 					name = loadEquationSystem(true, eqs);
-				}
+				//}
 				
 				
 				viewer.reduceChart(eqs, name);

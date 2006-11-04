@@ -40,7 +40,7 @@ public class JDomGraphPreferencePane extends JFrame
 	
 	public JDomGraphPreferencePane() {
 		super("Settings");
-		
+		setAlwaysOnTop(true);
 		tabs = new JTabbedPane();
 		servertab = new JPanel();
 		servertab.setLayout(new GridLayout(0,1));

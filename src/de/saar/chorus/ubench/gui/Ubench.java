@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFrame;
@@ -329,11 +330,7 @@ public class Ubench {
     			tabbedPane.setSelectedIndex(index);
     		}
     		
-    		/*if(tabs.size() == 1) {
-    			tab.setMinimumSize(tab.getGraph().getSize());
-    			window.pack();
-    			window.validate();
-    		}*/
+    		
     		
     		tabbedPane.validate();
     		
@@ -845,6 +842,9 @@ public class Ubench {
 		this.lastPath = lastPath;
 	}
 
+	List<JGraphTab> getTabs() {
+		return tabs;
+	}
 	
 }
 
