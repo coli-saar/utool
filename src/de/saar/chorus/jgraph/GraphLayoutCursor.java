@@ -76,20 +76,26 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 	     */
 	    public void processCurrentNode() {
 	        DefaultGraphCell currentNode = getVisualNode();
+	       
 			if( graph.isRoot(currentNode) || (! nodes.contains(graph.getParents(currentNode).get(0)))) {
                 layout.addRelXtoParent(currentNode,0);
 			}
             
 			Extent extent = new Extent(layout.getNodeWidth(currentNode));
 			Shape shape;
-			if ( graph.isLeaf(currentNode) || (! nodes.contains(graph.getChildren(currentNode).get(0)))) {
+			List<DefaultGraphCell> children = graph.getChildren(currentNode);
+			children.retainAll(nodes);
+			if ( graph.isLeaf(currentNode) || children.isEmpty()) {
 				shape = new Shape(extent);
 			} else {
 				ShapeList childShapes = new ShapeList(nodeXDistance);
-                List<DefaultGraphCell> children = graph.getChildren(currentNode);
+              //  List<DefaultGraphCell> children = graph.getChildren(currentNode);
                 for( DefaultGraphCell nextChild : children ) {
+                	if(nodes.contains(nextChild)) {
 					childShapes.add(layout.getNodesToShape(nextChild));
-				}
+				
+                	}
+                }
                 
 				Shape subtreeShape = childShapes.getMergedShape();
 				subtreeShape.extend(- extent.extentL, - extent.extentR);
