@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.Color;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -386,6 +387,16 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		return (cv != null  && cv.isVisible() == true);
 	}
 
+	public JFrame getChartViewer() {
+		return cv;
+	}
+	
+	void enableGlobalEQS(boolean en) {
+		if(cv != null ) {
+			cv.setEQSLoaded(true);
+		}
+	}
+	
 	public void focusChart() {
 		if(cv != null) 
 			cv.toFront();

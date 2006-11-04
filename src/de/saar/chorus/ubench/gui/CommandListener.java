@@ -7,6 +7,7 @@
 
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -27,8 +28,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
-
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import de.saar.basic.ExportUtilities;
 import de.saar.basic.GenericFileFilter;
@@ -189,7 +188,13 @@ ItemListener, ConnectionManager.StateChangeListener {
 				fc.addCodecFileFilters(ffInputCodecs);
 				
 				fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-				int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());
+				Component owner;
+				if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+					owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+				} else {
+					owner = Ubench.getInstance().getWindow();
+				}
+				int fcVal = fc.showOpenDialog(owner);	
 
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
@@ -242,8 +247,13 @@ ItemListener, ConnectionManager.StateChangeListener {
 						fc.setAcceptAllFileFilterUsed(false);
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
+						Component owner;
+						if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+							owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+						} else {
+							owner = Ubench.getInstance().getWindow();
+						}
+						int fcVal = fc.showOpenDialog(owner);	
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
@@ -432,8 +442,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 
+						Component owner;
+						if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+							owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+						} else {
+							owner = Ubench.getInstance().getWindow();
+						}
 						
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
+						int fcVal = fc.showSaveDialog(owner);
 						
 						
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
@@ -617,7 +633,15 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
-					int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Export Picture");
+						
+						Component owner;
+						if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+							owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+						} else {
+							owner = Ubench.getInstance().getWindow();
+						}
+						
+					int fcVal =  fc.showDialog(owner, "Export Picture");
 					
 					
 //					proceed with a chosen file
@@ -674,9 +698,15 @@ ItemListener, ConnectionManager.StateChangeListener {
 						// file chooser will start in the related directory
 						
 							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-						
+							Component owner;
+							if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+								owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+							} else {
+								owner = Ubench.getInstance().getWindow();
+							}
+							
 						// configuring button and window texts
-						int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Print PDF");
+						int fcVal =  fc.showDialog(owner, "Print PDF");
 						fc.setApproveButtonText("Print!");
 						
 						// proceed with a chosen file
@@ -817,16 +847,21 @@ ItemListener, ConnectionManager.StateChangeListener {
 	}
 	
 	private void loadEQS() {
-		JFileChooser fc = new JFileChooser(recentPath);
+		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle("Choose the equation system input file");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
 		
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
+		
+		Component owner;
+		if(Ubench.getInstance().getVisibleTab().hasVisibleChartViewer()) {
+			owner = Ubench.getInstance().getVisibleTab().getChartViewer();
+		} else {
+			owner = Ubench.getInstance().getWindow();
+		}
+		int fcVal = fc.showOpenDialog(owner);	
 		
 		if(fcVal == JFileChooser.APPROVE_OPTION){
-			
-			
 			
 			File file = fc.getSelectedFile();
 			
@@ -834,12 +869,16 @@ ItemListener, ConnectionManager.StateChangeListener {
 				EquationSystem eqs = new EquationSystem();
 				eqs.read(new FileReader(file));
 				Ubench.getInstance().setEquationSystem(eqs, file.getName());
+				for(JGraphTab tab : Ubench.getInstance().getTabs() ) {
+					tab.enableGlobalEQS(true);
+				}
+			
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 						"The Equation System cannot be parsed." + 
 						System.getProperty("line.separator") + 
 						"Either the input file is not valid or it contains syntax errors.",
-						"Error while Loading Equation System",
+						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}
 		}

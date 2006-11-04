@@ -78,15 +78,8 @@ ListSelectionListener, ActionListener {
 			preview.add(cancel);
 			
 			desc = new JTextPane();
-			//desc.setContentType("text/html");
 			
-			
-			//desc.setText("<html><div style='font-family:Arial; font-size:12pt'>" +
-			//		"No example selected.</div></html>");
-			
-		//	desc.setFont(cancel.getFont());
 			desc.setText("No example selected.");
-			//desc.setText("<html><div style='font-family:Arial; font-size:12pt'>No example selected.</div></html>");
 			
 			desc.setEditable(false);
 			desc.setBackground(Color.LIGHT_GRAY);
@@ -102,8 +95,8 @@ ListSelectionListener, ActionListener {
 			fontname = files.getFont().getFamily();
 			listPane.setMinimumSize(new Dimension(100, 50));
 			descriptionPane.setPreferredSize(new Dimension(
-					((int) (listPane.getPreferredSize().width * 1.7)), 
-					listPane.getPreferredSize().height ));
+					((int) (listPane.getPreferredSize().width * 2)), 
+					descriptionPane.getPreferredSize().height ));
 			descriptionPane.setMinimumSize(listPane.getPreferredSize());
 			add(listContents,BorderLayout.CENTER);
 			add(preview, BorderLayout.SOUTH);

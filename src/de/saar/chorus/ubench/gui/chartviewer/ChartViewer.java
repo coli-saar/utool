@@ -118,7 +118,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	// the ActionListener responsible for actions
 	// triggered via the Window Menu
 	private ChartViewerListener listener;
-	
+	private ChartViewerMenu menu;
 	
 	/**
 	 * A new ChartViewer
@@ -216,7 +216,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		makeStatusBar();
 		
 		// menu.
-		setJMenuBar(new ChartViewerMenu(listener));
+		menu = new ChartViewerMenu(listener);
+		setJMenuBar(menu);
 		
 		//TODO modify this so as to be only on top within Ubench
 		setAlwaysOnTop(true);
@@ -947,6 +948,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	}
 
 	
+	public void setEQSLoaded(boolean isloaded) {
+		menu.setGlobalEQSenabled(isloaded);
+	}
+	
 	/**
 	 * The Menu Bar for the chart window.
 	 * 
@@ -959,8 +964,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		ChartViewerListener lis;
 		JMenu chartmenu, splitmenu;
 		JMenuItem elred, reset, delete, 
-				  firstsolvedform, loadeqs,
-				  autoreduce, info, close;
+				  firstsolvedform, 
+				  elredglobal, info, close;
 		
 		ChartViewerMenu(ChartViewerListener li) {
 			
@@ -982,7 +987,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			elred.setAccelerator(KeyStroke.getKeyStroke("alt R"));
 			chartmenu.add(elred);
 			
-			
+			elredglobal = new JMenuItem("Reduce with global EQS");
+			elredglobal.addActionListener(lis);
+			elredglobal.setActionCommand("elredglobal");
+			elredglobal.setEnabled(Ubench.getInstance().isEquationSystemLoaded());
+			chartmenu.add(elredglobal);
 			
 			chartmenu.addSeparator();
 			reset = new JMenuItem("Reset Chart");
@@ -1017,6 +1026,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			splitmenu.validate();
 			add(splitmenu);
 			
+		}
+		
+		void setGlobalEQSenabled(boolean en) {
+			elredglobal.setEnabled(en);
 		}
 	}
 	
@@ -1096,4 +1109,6 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	void setReduced(boolean reduced) {
 		this.reduced = reduced;
 	}
+	
+	
 }
