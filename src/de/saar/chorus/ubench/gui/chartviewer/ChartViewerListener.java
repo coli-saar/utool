@@ -47,6 +47,27 @@ public class ChartViewerListener implements ActionListener {
 		String command = e.getActionCommand();
 		
 		if( command.equals("elredglobal") ) {
+			if( ! viewer.getDg().isNormal() ) {
+				JOptionPane.showMessageDialog(viewer,
+						"This chart represents a graph which is not normal," + 
+						System.getProperty("line.separator") + 
+						"thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+				
+				return;
+			}
+			
+			if( ! viewer.getDg().isHypernormallyConnected()) {
+				JOptionPane.showMessageDialog(viewer,
+						"This chart represents a graph which is not hypernormally" + 
+						System.getProperty("line.separator") + 
+						"connected, thus Utool cannot eliminate redundancies.",
+						"Server Error",
+						JOptionPane.ERROR_MESSAGE);
+				
+				return;
+			}
 			viewer.reduceChart(
 					Ubench.getInstance().getEquationSystem(), 
 					Ubench.getInstance().getEqsname());
@@ -75,7 +96,7 @@ public class ChartViewerListener implements ActionListener {
 			}
 		} else if( command.equals("elred")) {
 			if( ! viewer.getDg().isNormal() ) {
-				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not normal," + 
 						System.getProperty("line.separator") + 
 						"thus Utool cannot eliminate redundancies.",
@@ -86,7 +107,7 @@ public class ChartViewerListener implements ActionListener {
 			}
 			
 			if( ! viewer.getDg().isHypernormallyConnected()) {
-				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not hypernormally" + 
 						System.getProperty("line.separator") + 
 						"connected, thus Utool cannot eliminate redundancies.",
