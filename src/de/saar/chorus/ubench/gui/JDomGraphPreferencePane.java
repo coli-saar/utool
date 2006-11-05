@@ -27,6 +27,14 @@ import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.ubench.ServerOptions;
 
+
+/**
+ * A window to show and edit options for utool.
+ * Up to now, there are only server options to set.
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class JDomGraphPreferencePane extends JFrame
 				implements ActionListener {
 	
@@ -34,14 +42,23 @@ public class JDomGraphPreferencePane extends JFrame
 	private static final long serialVersionUID = 2688760547399503949L;
 	
 	
-	JTabbedPane tabs;
-	JPanel servertab;
+	JTabbedPane tabs;	// several tabs for different option typs
+	JPanel servertab;	// tab for server options
+	
+	// checkboxes for server warmup and server logging
 	JCheckBox warmup, logging;
+	
+	
 	JRadioButton port2802, systemerrout, ownport, ownlog;
 	JTextField port, logfile;
 	JButton ok, apply, cancel, browse;
 	String logfilepath;
 	
+	/**
+	 * A new always-on-top window for showing und 
+	 * editing the settings.
+	 *
+	 */
 	public JDomGraphPreferencePane() {
 		super("Settings");
 		setAlwaysOnTop(true);
@@ -149,6 +166,10 @@ public class JDomGraphPreferencePane extends JFrame
 		validate();
 	}
 	
+	/**
+	 * Initialisation according to the 
+	 * values already set.
+	 */
 	private void initValues() {
 		if(ServerOptions.isWarmup()) {
 			warmup.setSelected(true);
@@ -174,6 +195,10 @@ public class JDomGraphPreferencePane extends JFrame
 		
 	}
 	
+	/**
+	 * Updating the settings wherever the changes 
+	 * made by the user may be relevant.
+	 */
 	public void applySettings() {
 		ServerOptions.setWarmup(warmup.isSelected());
 		ServerOptions.setLogging(logging.isSelected());
@@ -191,10 +216,11 @@ public class JDomGraphPreferencePane extends JFrame
 				logfilepath = logfile.getText();
 			}
 			try {
+				// this appends the logs to the end of the file.
 				FileWriter writer = 
 					new FileWriter(new File(logfilepath), true);
 				ServerOptions.setLogwriter(new PrintWriter(writer));
-				writer.write("Hallo ich bin der ServerWriter.");
+
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 						e.getMessage(),
@@ -205,19 +231,27 @@ public class JDomGraphPreferencePane extends JFrame
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	/**
+	 * This processes the events of applying the settings,
+	 * closing the window or do both (in reverse order).
+	 * Additionally, it shows a file chooser if a logfile
+	 * shall be chosen.
+	 * 
 	 */
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		if(command.equals("ok")) {
+			// apply the settings and close the window
 			applySettings();
 			setVisible(false);
 		} else if(command.equals("apply")) {
+			// just apply the settings
 			applySettings();
 		} else if(command.equals("cancel")) {
+			// just close the window
 			setVisible(false);
 		} else if(command.equals("browse")) {
+			// chose a logfile
 			JFileChooser fc = 
 				new JFileChooser(System.getProperty("user.dir"));
 			int ret = fc.showOpenDialog(this);
