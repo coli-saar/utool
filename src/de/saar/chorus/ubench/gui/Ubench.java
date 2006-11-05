@@ -849,7 +849,7 @@ public class Ubench {
  * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
  * id="baz" label="Baz Baz" /></node><node id="X1"><type xlink:href="hole" /><popup
  * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="x-x1"><type
+ * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="gridy-x1"><type
  * xlink:href="solid" /></edge><!-- OF 2 --><node id="Y"><type
  * xlink:href="root" /><attr name="label"><string>g</string></attr><popup
  * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
@@ -868,7 +868,7 @@ public class Ubench {
  * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
  * id="baz" label="Baz Baz" /></node><node id="X1"><type xlink:href="hole" /><popup
  * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="x-x1"><type
+ * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="gridy-x1"><type
  * xlink:href="solid" /></edge><!-- OF 2 --><node id="Y"><type
  * xlink:href="root" /><attr name="label"><string>h</string></attr></node><node
  * id="Y1"><type xlink:href="hole" /><popup id="foo" label="Foo Foo" /><popup

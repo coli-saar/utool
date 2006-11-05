@@ -37,7 +37,7 @@ public class JCodecOptionPane extends JComponent {
 	private GridBagConstraints left, right;
 	
 	private Map<String, Class> optionTypes;
-	int x;
+	int gridy;
 	
 	public JCodecOptionPane(Map<String,Class> options) {
 		optionTypes = options;
@@ -58,14 +58,25 @@ public class JCodecOptionPane extends JComponent {
 		right.gridx = 1;
 		right.fill = GridBagConstraints.HORIZONTAL;
 		
-		x = 0;
+		gridy = 0;
 		constructOptionPanel();
 	}
 	
 	
 
 	
-	
+	public void setDefault(String parameter, String value) {
+		if(value != null) {
+			if( booleans.containsKey(parameter) ) {
+				booleans.get(parameter).setSelected(
+						Boolean.parseBoolean(value));
+			} else if( enums.containsKey(parameter)) {
+				enums.get(parameter).setSelectedItem(value);
+			} else if ( texttypes.containsKey(parameter) ) {
+				texttypes.get(parameter).setText(value);
+			}
+		}
+	}
 
 
 
@@ -79,8 +90,8 @@ public class JCodecOptionPane extends JComponent {
 		
 		for( String opt : optionnames ) {
 			Class optclass = optionTypes.get(opt);
-			left.gridy = x;
-			right.gridy = x;
+			left.gridy = gridy;
+			right.gridy = gridy;
 			if( optclass == Boolean.TYPE ) {
 				
 				JCheckBox box = new JCheckBox();
@@ -120,7 +131,7 @@ public class JCodecOptionPane extends JComponent {
 				add(line);
 				texttypes.put(opt,line);
 			}
-			x++;
+			gridy++;
 		}
 		if(optionnames.isEmpty()) {
 			
@@ -199,41 +210,5 @@ public class JCodecOptionPane extends JComponent {
 		
 		return ret.toString();
 	}
-	// this is to debug the Pane
-	public static void main(String[] args) {
-		Ubench.getInstance();
-		CodecManager codecmanager = Ubench.getInstance().getCodecManager();
-		System.err.println(codecmanager.getOutputCodecNameForFilename("rondane-1.mrs.pl"));
-		try{
-			codecmanager.registerCodec(DummyCodec.class);
-		} catch(Exception e) {
-			e.printStackTrace();
-			return;
-		}
-
-		JFrame window = new JFrame("dummy-codec" + "(out)");
-		JCodecOptionPane dummypane = new JCodecOptionPane(codecmanager.getOutputCodecOptionTypes("dummy-codec"));
-		window.add(dummypane);
-		JButton ok = new JButton("print command");
-		ok.addActionListener(dummypane.new DebugListener());
-		ok.setActionCommand("tr");
-		window.add(ok, BorderLayout.SOUTH);
-		window.pack();
-		window.validate();
-		window.setVisible(true);
-		
-	}
-
-	private class DebugListener implements ActionListener {
 	
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		if( e.getActionCommand().equals("tr")) {
-			System.err.println(getOptionString());
-		}
-	}
-	
-	}
 }

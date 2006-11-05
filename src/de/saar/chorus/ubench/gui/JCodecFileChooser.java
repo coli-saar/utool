@@ -162,6 +162,17 @@ public class JCodecFileChooser extends JFileChooser
 		options = new JCodecOptionPane(
 				input ? manager.getInputCodecOptionTypes(codecname) 
 					  : manager.getOutputCodecOptionTypes(codecname));
+		if( input ) {
+			for( String parameter : manager.getInputCodecOptionTypes(codecname).keySet() ) {
+				options.setDefault(parameter, 
+						manager.getInputCodecParameterDefaultValue(codecname, parameter));
+			}
+		} else {
+			for( String parameter : manager.getOutputCodecOptionTypes(codecname).keySet() ) {
+				options.setDefault(parameter, 
+						manager.getOutputCodecParameterDefaultValue(codecname, parameter));
+			}
+		}
 		
 		if( optview ) {
 			showOptionAccess(options);
