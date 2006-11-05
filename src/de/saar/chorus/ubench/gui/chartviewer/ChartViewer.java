@@ -244,6 +244,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 	
+	/**
+	 * Refreshes the title of this window depending on
+	 * whether or not the chart is modified / reduced.
+	 *
+	 */
 	void refreshTitle() {
 		if(reduced) {
 			setTitle("Chart of " + graphName+ " (reduced)");
@@ -894,6 +899,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		validate();
 	}
 	
+	/**
+	 * Shows some information on the displayed chart.
+	 * This concerns number of subgraphs, splits, solved
+	 * forms, status of modification / reduction and names.
+	 *
+	 */
 	void showInfoPane() {
 		StringBuffer infotext = new StringBuffer();
 		infotext.append("This is the chart of " + graphName + ".");
@@ -938,6 +949,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 	
+	/**
+	 * Reduces the chart of this viewer with the
+	 * given equation system which has the given title.
+	 * 
+	 * @param eqs the equation system
+	 * @param eqsn the name of the equation system
+	 */
 	void reduceChart(EquationSystem eqs, String eqsn) {
 		
 		if(eqs == null ) {
@@ -961,7 +979,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		}
 	}
 
-	
+	/**
+	 * This is to activate / deactivate the
+	 * menu item for reducing the chart with a
+	 * globally loaded equation system.
+	 * 
+	 * @param isloaded if set to true, the item is enabled
+	 */
 	public void setEQSLoaded(boolean isloaded) {
 		menu.setGlobalEQSenabled(isloaded);
 	}
@@ -1047,6 +1071,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		}
 	}
 	
+	/**
+	 * This listener makes sure that the visible graph
+	 * is marked according to the chart window 
+	 * that becomes focused.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
 	private class ChartViewerFocusListener implements WindowFocusListener {
 
 		public void windowGainedFocus(WindowEvent e) {
@@ -1061,7 +1093,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 	}
 
-	
+	/**
+	 * Responsible for the appearance of the
+	 * status bar at the bottom.
+	 *
+	 */
 	private void makeStatusBar() {
 		
 		GridBagLayout layout = new GridBagLayout();
