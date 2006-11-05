@@ -22,10 +22,10 @@ public class DummyCodec extends OutputCodec {
 	private String color;
 	
 	public DummyCodec (@CodecOption
-			(name="shape", defaultValue="Shape.CIRCLE")
+			(name="shape", defaultValue="SCHNAPPI")
 			Shape shape,
-			@CodecOption(name="color") String color,
-			@CodecOption(name="dressed", defaultValue="false")
+			@CodecOption(name="color", defaultValue="purple") String color,
+			@CodecOption(name="dressed", defaultValue="true")
 			boolean dressed) {
         this.shape = shape;
         this.dressed = dressed;
