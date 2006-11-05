@@ -15,6 +15,19 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+
+/**
+ * This represents a UI for selecting or entering values of different
+ * types (according to possible codec options).
+ * Enums are displayed as drop-down menus, boolean values
+ * as checkboxes and everything else as text field.
+ * Default Values can be set. 
+ * This also provides a method to return the values selected is provided.
+ * 
+ * @author Michaela Regneri
+ * @see de.saar.chorus.domgraph.codec.CodecConstructor
+ *
+ */
 public class JCodecOptionPane extends JComponent {
 
 	
@@ -35,6 +48,13 @@ public class JCodecOptionPane extends JComponent {
 	private Map<String, Class> optionTypes;
 	int gridy;
 	
+	/**
+	 * A new <code>JCodecOptionPane</code> initalised
+	 * with some parameters given in a Map with the
+	 * parameter names and their types as classes.
+	 * 
+	 * @param options
+	 */
 	public JCodecOptionPane(Map<String,Class> options) {
 		optionTypes = options;
 
@@ -59,8 +79,12 @@ public class JCodecOptionPane extends JComponent {
 	}
 	
 	
-
-	
+	/**
+	 * Sets the default value of a certain parameter.
+	 * 
+	 * @param parameter the parameter name
+	 * @param value the default value as string
+	 */
 	public void setDefault(String parameter, String value) {
 		if(value != null) {
 			if( booleans.containsKey(parameter) ) {
@@ -75,7 +99,15 @@ public class JCodecOptionPane extends JComponent {
 	}
 
 
-
+	/**
+	 * This constructs the panel by iterating over
+	 * the parameters and their classes and assinging each
+	 * parameter an appropriate SWING component.
+	 * The left side in the grid always consists of a 
+	 * label containing the parameter name, the right side
+	 * is filled with the according SWING component.
+	 *
+	 */
 	private void constructOptionPanel() {
 		
 		
@@ -84,12 +116,15 @@ public class JCodecOptionPane extends JComponent {
 		List<String> optionnames = new ArrayList<String>(optionTypes.keySet());
 		Collections.sort(optionnames);
 		
+		// for each parameter...
 		for( String opt : optionnames ) {
+	
+			// retrieve its type
 			Class optclass = optionTypes.get(opt);
 			left.gridy = gridy;
 			right.gridy = gridy;
 			if( optclass == Boolean.TYPE ) {
-				
+				// represent a boolean as checkbox 
 				JCheckBox box = new JCheckBox();
 				JLabel label = new JLabel(opt);
 				
@@ -101,12 +136,13 @@ public class JCodecOptionPane extends JComponent {
 				
 				booleans.put(opt, box);
 			} else if( optclass.isEnum() ) {
-			
-				//optpan.add(new JPanel();
-				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
+				
 				JLabel label = new JLabel(opt + ":");
 				layout.setConstraints(label, left);
 				add(label);
+				
+				// fill all the enum constans of a enum
+				// type in a drop down menu
 				Object[] constants = optclass.getEnumConstants();
 				Vector<String> stringvals = new Vector<String>(constants.length);
 				for( Object cos : constants )  {
@@ -118,7 +154,7 @@ public class JCodecOptionPane extends JComponent {
 				enums.put(opt,box);
 			} else {
 				
-				//optview.setLayout(new BoxLayout(optview, BoxLayout.PAGE_AXIS));	
+				// assing everything else a text field
 				JLabel label = new JLabel(opt + ":");
 				layout.setConstraints(label, left);
 				add(label);
@@ -131,7 +167,8 @@ public class JCodecOptionPane extends JComponent {
 		}
 		if(optionnames.isEmpty()) {
 			
-			
+			// construct a field indicating that there
+			// are no options
 			GridBagConstraints empty = new GridBagConstraints();
 			empty.anchor = GridBagConstraints.CENTER;
 			empty.fill = GridBagConstraints.VERTICAL;
@@ -155,6 +192,12 @@ public class JCodecOptionPane extends JComponent {
 		validate();
 	}
 	
+	/**
+	 * Returns the user selected options in 
+	 * String representation.
+	 * 
+	 * @return a Map containg the parameter names and their values as string
+	 */
 	public Map<String,String> getOptionMap() {
 		Map<String,String> ret = new HashMap<String,String>();
 		
@@ -173,6 +216,12 @@ public class JCodecOptionPane extends JComponent {
 		return ret;
 	}
 	
+	/**
+	 * Constructs a command line string out of 
+	 * the parameters and their values.
+	 * 
+	 * @return
+	 */
 	public String getOptionString() {
 		StringBuffer ret = new StringBuffer();
 		boolean first = true;
