@@ -64,7 +64,7 @@ public class FormatManager {
 		Color.CYAN		
 	};
 	
-	// keepint track of the last subgraph color used.
+	// keeping track of the last subgraph color used.
 	private static int subgraphcolorindex = 0;
 	
 	// storing html representations calculated before.
@@ -77,6 +77,7 @@ public class FormatManager {
 	
 	
 	/**
+	 * Mark a node with the given color
 	 * 
 	 * @param node
 	 * @param color
@@ -90,6 +91,7 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Mark an edge with the given color
 	 * 
 	 * @param edge
 	 * @param color
@@ -103,9 +105,10 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Reset a node's color to the default color
 	 * 
 	 * @param node
-	 * @param b
+	 * @param graph the graph the node belongs to
 	 */
 	private static void unmarkNode(DefaultGraphCell node, JDomGraph graph) {
 		
@@ -119,9 +122,10 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Reset an edge's color to the default color
 	 * 
 	 * @param edge
-	 * @param b
+	 * @param graph the graph the edge belongs to
 	 */
 	private static void unmarkEdge(DefaultEdge edge, JDomGraph graph) {
 		
@@ -144,8 +148,10 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Reset a whole graph's color to the default
+	 * colors.
 	 * 
-	 * @param b
+	 * @param graph the graph
 	 */
 	public static void unmark(JDomGraph graph) {
 		
@@ -159,12 +165,28 @@ public class FormatManager {
 		refreshGraphLayout(graph);
 	}
 	
+	
+	/**
+	 * Mark a subgraph of the given graph according
+	 * to the index with the next mark-up color.
+	 * 
+	 * @param roots the roots of the fragments to mark
+	 * @param graph	the graph
+	 * @param subgraphindex the index indicating which color index to use
+	 */
 	public static void markSubgraph(Set<String> roots, JDomGraph graph, int subgraphindex) {
 		int color = subgraphindex % subgraphcolors.length;
 		
 		markSubgraph(roots, subgraphcolors[color], graph, false);
 	}
 	
+	/**
+	 * Mark a subgraph of the given graph
+	 * with the default marking color.
+	 * 
+	 * @param roots
+	 * @param graph
+	 */
 	public static void markSubgraph(Set<String> roots, JDomGraph graph) {
 		
 		markSubgraph(roots, subgraphcolors[subgraphcolorindex],
@@ -175,9 +197,13 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Generates a HTML string to represent a subgraph.
+	 * This "colors" the html string according to the colors
+	 * that would be used to mark the nodes in the "real"
+	 * graph.
 	 * 
-	 * @param subgraph
-	 * @return
+	 * @param subgraph the set of nodes to mark
+	 * @return a HTML representation of the colored nodes
 	 */
 	public static String getHTMLforMarkedSubgraph(Set<String> subgraph) {
 		if( subgraphToMarkedHTML.containsKey(subgraph) ) {
@@ -193,6 +219,10 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Generates a HTML string to represent a split.
+	 * This "colors" the HTML string according to the colors
+	 * that would be used to mark the split in the "real"
+	 * graph.
 	 * 
 	 * @param split
 	 * @param roots
@@ -259,11 +289,12 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Mark a subgraph with the given color.
 	 * 
-	 * @param roots
-	 * @param color
-	 * @param graph
-	 * @param shadeRemaining
+	 * @param roots the roots of the fragments to color
+	 * @param color the color
+	 * @param graph the parent graph
+	 * @param shadeRemaining if set to true the remaining graph is colored grey.
 	 */
 	private static void markSubgraph(Set<String> roots, Color color, 
 			JDomGraph graph, boolean shadeRemaining) {
@@ -314,6 +345,7 @@ public class FormatManager {
 	}
 	
 	/**
+	 * Mark the whole graph with a given color.
 	 * 
 	 * @param color
 	 * @param graph
@@ -332,6 +364,7 @@ public class FormatManager {
 	
 	
 	/**
+	 * Colors the graph in a light grey.
 	 * 
 	 * @param graph
 	 */
@@ -350,9 +383,11 @@ public class FormatManager {
 	}
 	
 	/**
+	 * This colors the root fragment of a split
+	 * (which always gets a special color).
 	 * 
-	 * @param root
-	 * @param graph
+	 * @param root the root fragment
+	 * @param graph the parent graph
 	 */
 	public static void markRootFragment(Fragment root, JDomGraph graph) {
 		for( DefaultGraphCell rfn : root.getNodes()) {
@@ -364,6 +399,8 @@ public class FormatManager {
 	}
 	
 	/**
+	 * This relayouts the graph so as to make the color
+	 * changes visible. 
 	 * 
 	 * @param graph
 	 */

@@ -14,6 +14,16 @@ import org.jgraph.layout.JGraphLayoutAlgorithm;
 
 import de.saar.chorus.ubench.JDomGraph;
 
+/**
+ * A <code>JGraphLayoutAlgorithm</code> designed to
+ * leave the node and edge positions unchanged but 
+ * triggers the refreshing of the <code>JGraph</code>'s
+ * appearance so as to make color or font changes
+ * visible.
+ *  
+ * @author Michaela Regneri
+ *
+ */
 public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 
 	private JDomGraph graph;
@@ -26,7 +36,7 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 	 * places a node at a given position and remembers
 	 * the information in a given Attribute Map.
 	 * @param node, the node to place
-	 * @param gridy the gridy-value of the upper left corner
+	 * @param x the x-value of the upper left corner
 	 * @param y the y-value of the upper left corner
 	 * @param viewMap hte viewMap to save the position in
 	 */
@@ -49,9 +59,8 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 	
 	/**
 	 * places the nodes in the graph model.
-	 * Not meaningful without having computed
-	 * the fragment graph as well as the relative
-	 * gridy- and y-positions.
+	 * This just moves one node one pixel to the right and
+	 * onw pixel down - and back again.
 	 */
 	private void placeNodes() {
 		//the view map to save all the node's positions.

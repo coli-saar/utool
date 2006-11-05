@@ -28,25 +28,41 @@ import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
 
 /**
+ * This <code>ActionListener</code> processes all actions
+ * of one (and only one) <code>ChartViewer</code>. 
  * 
+ * @see de.saar.chorus.ubench.gui.chartviewer.ChartViewer
  * @author Michaela Regneri
  *
  */
 public class ChartViewerListener implements ActionListener {
 
+	// the chart viewer
 	private ChartViewer viewer;
-	private Map<Object, String> eventSources;
+
 	
-	
+	/**
+	 * A new <code>ChartViewerListener</code>
+	 * initalised with its <code>ChartViewer</code>.
+	 * 
+	 * @param cv the chart viewer
+	 */
 	ChartViewerListener(ChartViewer cv) {
 		viewer = cv;
-		eventSources = new HashMap<Object,String>();
 	}
 	
+	/**
+	 * This processes all events occuring within
+	 * the <code>ChartViewer</code>.
+	 */
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		
+		// redundancy elimination with the globally
+		// loaded equation system
 		if( command.equals("elredglobal") ) {
+			
+			// the graph is not normal
 			if( ! viewer.getDg().isNormal() ) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not normal," + 
@@ -58,6 +74,7 @@ public class ChartViewerListener implements ActionListener {
 				return;
 			}
 			
+			// the graph is not hypernormally connected
 			if( ! viewer.getDg().isHypernormallyConnected()) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not hypernormally" + 
@@ -68,14 +85,23 @@ public class ChartViewerListener implements ActionListener {
 				
 				return;
 			}
+			
+			// reduce the chart with the loaded system.
+			// this event cannot occur when there is no
+			// system loaded in ubench.
 			viewer.reduceChart(
 					Ubench.getInstance().getEquationSystem(), 
 					Ubench.getInstance().getEqsname());
+			
+			// refreshing the chart
 			viewer.refreshChartWindow();
 		} else if( command.equals("delSplit") ) {
+			// a Split was deleted
+			
 			Split selectedSplit = viewer.getSelectedSplit();
 			if( selectedSplit != null ) {
 				try {
+					// remove the split from the chart itself
 					Chart chart = viewer.getChart();
 					Set<String> subgraph = viewer.getSubgraphForMarkedSplit();
 					List<Split> splits = new ArrayList<Split>(chart.getSplitsFor(subgraph));
@@ -85,6 +111,7 @@ public class ChartViewerListener implements ActionListener {
 					viewer.refreshChartWindow();
 					
 				} catch(UnsupportedOperationException ex) {
+					// a split which may not been removed
 					JOptionPane.showMessageDialog(viewer,
 							"You cannot delete the selected Split." + 
 							System.getProperty("line.separator") + 
@@ -95,6 +122,9 @@ public class ChartViewerListener implements ActionListener {
 				
 			}
 		} else if( command.equals("elred")) {
+			// reduce the chart with any equation system
+			
+			// the graph is not normal
 			if( ! viewer.getDg().isNormal() ) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not normal," + 
@@ -106,6 +136,7 @@ public class ChartViewerListener implements ActionListener {
 				return;
 			}
 			
+			// the graph is not hnc
 			if( ! viewer.getDg().isHypernormallyConnected()) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not hypernormally" + 
@@ -116,39 +147,23 @@ public class ChartViewerListener implements ActionListener {
 				
 				return;
 			}
-				EquationSystem eqs; 
-				String name;
-			/*	if(Ubench.getInstance().isEquationSystemLoaded() ) {
-					
-					int yesno = JOptionPane.showConfirmDialog(viewer, 
-							"The equation system " + 
-							Ubench.getInstance().getEqsname() + " is loaded," + 
-							System.getProperty("line.separator") + 
-							"would you like to use it to reduce the chart?" + 
-							System.getProperty("line.separator") + 
-							"Press \"Yes\" to use " + 
-							Ubench.getInstance().getEqsname() + " to reduce the chart,"  + 
-							System.getProperty("line.separator") + 
-									"press \"No\" to load another equation system.", 
-							"Ready to Eliminate Equivalences", JOptionPane.YES_NO_OPTION, 
-							JOptionPane.QUESTION_MESSAGE);
-					if(yesno == JOptionPane.YES_OPTION ) {
-						eqs = Ubench.getInstance().getEquationSystem();
-						name = Ubench.getInstance().getEqsname();
-					} else {
-						eqs = new EquationSystem();
-						name = loadEquationSystem(false, eqs);
-					}
-				} else {*/
-					eqs = new EquationSystem();
-					name = loadEquationSystem(true, eqs);
-				//}
+			
+			
+			// create a new equation systems and
+			// fill it with a file to select
+			
+				EquationSystem eqs = new EquationSystem();
+				String name  = loadEquationSystem(true, eqs);			
 				
-				
+				// reduce the chart with the system built
+				if(eqs != null && name != null) {
 				viewer.reduceChart(eqs, name);
 				viewer.refreshChartWindow();
+				}
 				
 		} else if( command.equals("solvechart")) {
+			// display the first solved form of the chart
+			
 			Chart chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
 			SolvedFormIterator sfi = new SolvedFormIterator(chart,firstForm);
@@ -167,17 +182,31 @@ public class ChartViewerListener implements ActionListener {
 			
 			Ubench.getInstance().addTab(sFTab, true);
 		} else if ( command.equals("resetchart") ) {
+			// display the original chart again
+			
 			viewer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			viewer.resetChart();
 			viewer.setCursor(Cursor.getDefaultCursor());
 		} else if ( command.equals("chartinfo") ) {
+			// display information on the chart
+			
 			viewer.showInfoPane();
 		} else if ( command.equals("closechart") ) {
+			// close the window
+			
 			viewer.setVisible(false);
 		}
 
 	}
 	
+	/**
+	 * This loads a xml file and reads the content
+	 * to a xml file.
+	 * 
+	 * @param preliminary indicates whether or not to show the info message
+	 * @param eqs the equation system to fill
+	 * @return the (file) name of the equation system loaded
+	 */
 	private String loadEquationSystem(boolean preliminary, EquationSystem eqs) {
 		String toReturn = null;
 		if(preliminary) {
@@ -223,16 +252,6 @@ public class ChartViewerListener implements ActionListener {
 		return toReturn;
 	}
 
-	public void registerEventSource(Object source, String command) {
-		eventSources.put(source, command);
-	}
-	
-	private String lookupEventSource(Object source) {
-		return eventSources.get(source);
-	}
-	/* (non-Javadoc)
-	 * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
-	 */
-	
+
 
 }
