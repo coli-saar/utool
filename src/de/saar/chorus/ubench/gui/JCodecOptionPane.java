@@ -1,10 +1,7 @@
 package de.saar.chorus.ubench.gui;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,17 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import de.saar.chorus.domgraph.codec.CodecManager;
-
 public class JCodecOptionPane extends JComponent {
+
+	
+	private static final long serialVersionUID = 5201435318585726488L;
 
 	private static Map<String, JTextField> texttypes =
 		new HashMap<String, JTextField>();
