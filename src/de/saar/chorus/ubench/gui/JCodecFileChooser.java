@@ -28,15 +28,39 @@ import javax.swing.filechooser.FileFilter;
 import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.CodecManager;
 
+/**
+ * A class representing a <code>JFileChooser</code> which can
+ * display and control options for Input and Output codecs used
+ * in Utool.
+ * 
+ * This class is responsible for displaying the right kind
+ * of dialog and options according to the type of codec (either
+ * input or output) and to do display the correct options when
+ * the codec selection has changed.
+ * 
+ * 
+ * @author Alexander Koller
+ * @author Michaela Regneri
+ *
+ */
 public class JCodecFileChooser extends JFileChooser
 			implements PropertyChangeListener, ActionListener {
-	private JPanel empty, button;
-	private boolean input, optview;
-	private CodecManager manager;
-	private JCodecOptionPane options;
-	private JButton showOptions;
+	private JPanel empty,	// if there is no codec selected
+				   button;  // the panel shown when options are hidden
 	
+	private boolean input, 				// input codec or not?
+					optview;  			// options visible or not?
+	
+	private CodecManager manager; 		// the active codec manager
+	
+	private JCodecOptionPane options; 	// the current options panel
+	
+	private JButton showOptions;		// the button to access the option panel
+	
+	// a file filter accepting all known codec extensions
 	private SeveralExtensionsFilter allKnownTypesFileFilter;
+	
+	// the default selected file filter
 	private FileFilter defaultFileFilter;
 	
 	// The name of the currently selected codec. It starts out as "null" (for no
@@ -44,6 +68,14 @@ public class JCodecFileChooser extends JFileChooser
 	// the dropdown menu or selects a file whose extension is associated with a codec.
 	private String currentCodec;
 	
+	/**
+	 * The enum class representing the
+	 * three diffent file chooser types for the
+	 * three different tasks.
+	 * 
+	 * @author Alexander Koller
+	 *
+	 */
 	public static enum Type {
 		OPEN                 ("Open USR", true),
 		EXPORT               ("Export dominance graph", false),
@@ -59,6 +91,13 @@ public class JCodecFileChooser extends JFileChooser
 	}
 	
 
+	/**
+	 * A new <code>JCodecFileChooser</code> initialised
+	 * with the folder to display and its task type.
+	 * 
+	 * @param path the path for the file view
+	 * @param type the task type 
+	 */
 	public JCodecFileChooser(String path, Type type) {
 		super(path);
 		
@@ -98,6 +137,12 @@ public class JCodecFileChooser extends JFileChooser
 		currentCodec = null;
 	}
 	
+	/**
+	 * Add all the file filters for codecs this 
+	 * file chooser shall accept.
+	 * 
+	 * @param filters the <code>List</code> of file filters
+	 */
 	public void addCodecFileFilters(List<GenericFileFilter> filters) {
 		for( GenericFileFilter ff : filters ) {
 			addChoosableFileFilter(ff);
@@ -115,12 +160,25 @@ public class JCodecFileChooser extends JFileChooser
 	}
 
 
+	/**
+	 * Returns the selected values of the codec
+	 * options in string representation. The map returned 
+	 * can be forwarded to the <code>CodecManager</code>
+	 * to construct a codec initialised with these options.
+	 * 
+	 * @return the user selection of options
+	 */
 	public Map<String,String> getCodecOptions() {
 		if( options != null) {
 			return options.getOptionMap();
 		} else return new HashMap<String,String>();
 	}
 
+	/**
+	 * This is responsible for showing the options 
+	 * belonging to the selected codec and for listening
+	 * on codec selection changes.
+	 */
 	public void propertyChange(PropertyChangeEvent evt) {
 		String prop = evt.getPropertyName();
 		String codecname = null;
@@ -156,6 +214,12 @@ public class JCodecFileChooser extends JFileChooser
 		}
 	}
 	
+	/**
+	 * This constructs and shows an JCodecOptionPane of the 
+	 * a certain codec.
+	 * 
+	 * @param codecname the name of the codec
+	 */
 	private void enableOptions(String codecname) {
 		showOptions.setEnabled(true);
 		currentCodec = codecname;
@@ -181,6 +245,12 @@ public class JCodecFileChooser extends JFileChooser
 		validate();
 	}
 
+	/**
+	 * Switches between option view and hidden option
+	 * view (with the button giving access to the options.)
+	 * 
+	 * @param show if true, options are shown
+	 */
 	private void setShowAccessory(boolean show) {
 		optview = show;
 		if(show)  {
@@ -194,6 +264,12 @@ public class JCodecFileChooser extends JFileChooser
 	}
 
  	
+	/**
+	 * Displays a <code>JComponent</code> as accessory
+	 * of this file chooser.
+	 * 
+	 * @param optionpane
+	 */
 	private void showOptionAccess(JComponent optionpane) {
 		JPanel helperPanel = new JPanel();
 		BoxLayout layout = new BoxLayout(helperPanel, BoxLayout.PAGE_AXIS);
@@ -231,7 +307,8 @@ public class JCodecFileChooser extends JFileChooser
 		validate();
 		
 		Dimension dim = new Dimension(
-				getTextLabelWidth(title) + 3, 
+				Math.max(getTextLabelWidth(title), 
+						optionpane.getPreferredSize().width),
 				optionpane.getMinimumSize().height);
 		optionpane.setMinimumSize(dim);
 		optionpane.setPreferredSize(dim);
@@ -239,7 +316,9 @@ public class JCodecFileChooser extends JFileChooser
 		revalidate();
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * This reactc when either the "Options" or the "Hide" button
+	 * is pressed.
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	public void actionPerformed(ActionEvent e) {
@@ -252,7 +331,7 @@ public class JCodecFileChooser extends JFileChooser
 	}
 	
 	/**
-	 * TODO ganz boeser hack. mach das anders.
+	 * An estimate of the label with of the codec.
 	 * 
 	 * @param text
 	 * @return
