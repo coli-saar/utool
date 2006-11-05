@@ -30,6 +30,10 @@ import de.saar.chorus.ubench.ServerOptions;
 public class JDomGraphPreferencePane extends JFrame
 				implements ActionListener {
 	
+	
+	private static final long serialVersionUID = 2688760547399503949L;
+	
+	
 	JTabbedPane tabs;
 	JPanel servertab;
 	JCheckBox warmup, logging;
@@ -72,7 +76,7 @@ public class JDomGraphPreferencePane extends JFrame
 		portgroup.add(ownport);
 		port = new JTextField(4);
 		portpanel.add(ownport);
-		JPanel help1 = new JPanel();
+		
 		portpanel.add(port);
 		portsettings.add(portpanel);
 		

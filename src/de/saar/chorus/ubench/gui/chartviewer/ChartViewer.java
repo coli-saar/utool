@@ -62,6 +62,10 @@ import de.saar.chorus.ubench.gui.Ubench;
 public class ChartViewer extends JFrame implements ListSelectionListener  {
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2614540458877105512L;
 	private JTable prettyprint;	// the chart as JTable
 	private Chart chart; 		// the chart to work with
 	private Chart chartcopy; 	// a safety copy
@@ -184,6 +188,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		// initialising and customising the JTable
 		prettyprint = new JTable(new ChartTableModel()) {
+			
+			private static final long serialVersionUID = 1L;
+
 			public String getToolTipText(MouseEvent e) {
 				java.awt.Point p = e.getPoint();
 				int rowIndex = rowAtPoint(p);
@@ -621,6 +628,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	class ChartTableModel extends AbstractTableModel {
 		
 		
+		
+		private static final long serialVersionUID = -7173102655466766081L;
+
 		/**
 		 * The column headers.
 		 */
@@ -999,6 +1009,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	class ChartViewerMenu extends JMenuBar {
 		
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5447306859976469307L;
 		ChartViewerListener lis;
 		JMenu chartmenu, splitmenu;
 		JMenuItem elred, reset, delete, 
