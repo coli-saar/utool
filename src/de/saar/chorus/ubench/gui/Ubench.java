@@ -692,10 +692,18 @@ public class Ubench {
         
     }
     
+    /**
+     * 
+     * @return the codecManager
+     */
     public CodecManager getCodecManager() {
         return codecManager;
     }
     
+    /**
+     * 
+     * @return the exampleManager
+     */
     public ExampleManager getExampleManager() {
         return exampleManager;
     }
@@ -831,6 +839,10 @@ public class Ubench {
 		this.lastPath = lastPath;
 	}
 
+	/**
+	 * 
+	 * @return a list of all the tabs loaded
+	 */
 	List<JGraphTab> getTabs() {
 		return tabs;
 	}

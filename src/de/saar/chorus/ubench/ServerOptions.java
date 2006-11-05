@@ -2,11 +2,19 @@ package de.saar.chorus.ubench;
 
 import java.io.PrintWriter;
 
+/**
+ * Class storing the server options set
+ * in Ubench.
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class ServerOptions {
 	private static boolean logging = true;
 	private static boolean warmup = false;
 	private static int port = 2802;
 	private static PrintWriter logwriter = new PrintWriter(System.err, true);
+	
 	/**
 	 * @return Returns the logging.
 	 */

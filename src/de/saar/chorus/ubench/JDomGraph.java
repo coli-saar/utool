@@ -6,7 +6,6 @@ package de.saar.chorus.ubench;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -24,11 +23,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
