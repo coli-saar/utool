@@ -176,6 +176,7 @@ public class ShapeList {
             
             Shape currentShapeL = (Shape) shapes.get(0);
             Shape currentShapeR = (Shape) shapes.get(numberOfShapes - 1);
+            
             for (int i = 1; i < numberOfShapes; i++) {
                 // Merge left-to-right.  Note that due to the asymmetry of the
                 // merge operation, nextAlphaL is the distance between the
