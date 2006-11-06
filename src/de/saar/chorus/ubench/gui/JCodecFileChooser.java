@@ -318,7 +318,12 @@ public class JCodecFileChooser extends JFileChooser
 						optionscrollpane.getPreferredSize().height);
 		optionpane.setMinimumSize(dim);
 		optionpane.setPreferredSize(dim);
+	
+		helperPanel.setPreferredSize( new Dimension(
+				dim.width + (int) optionscrollpane.getVerticalScrollBar().getWidth(),
+				dim.height) );
 		optionpane.revalidate();
+		optionscrollpane.revalidate();
 		revalidate();
 	}
 

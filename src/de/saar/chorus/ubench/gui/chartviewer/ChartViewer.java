@@ -139,6 +139,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		// some initialising
 		super("Chart of " + title);
+
 		graphName = title;
 		labels = la;
 		listener = new ChartViewerListener(this);
