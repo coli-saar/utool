@@ -17,6 +17,7 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
+import de.saar.chorus.ubench.ServerOptions;
 
 
 /**
@@ -353,7 +354,7 @@ public class JDomGraphMenu extends JMenuBar {
          
         server.setToolTipText("Click here to start a server " + 
     			System.getProperty("line.separator") + 
-    			"on port 2802.");
+    			"on port " + ServerOptions.getPort() + ".");
         
         server.setActionCommand("server");
         server.addActionListener(listener);
@@ -377,6 +378,10 @@ public class JDomGraphMenu extends JMenuBar {
     		cSolvForms.setEnabled(b);
     }
 	
+    /**
+     * Allows to press the server button or release it.
+     * @param b
+     */
     void setServerButtonPressed(boolean b) {
         server.setSelected(b);
         if(b) {
@@ -386,10 +391,14 @@ public class JDomGraphMenu extends JMenuBar {
         } else {
         	server.setToolTipText("Click here to start a server " + 
         			System.getProperty("line.separator") + 
-        			"on port 2802.");
+        			"on port "  + ServerOptions.getPort() + ".");
         }
     }
     
+    /**
+     * 
+     * @return true if the server button is selected
+     */
     boolean isServerButtonPressed() {
     	return server.isSelected();
     }
@@ -413,17 +422,30 @@ public class JDomGraphMenu extends JMenuBar {
 		}
     }
 	
+	/**
+	 * Enables or disables the menu item for solving.
+	 * @param b
+	 */
 	public void setSolvingEnabled(boolean b) {
 		solve.setEnabled(b);
 		if(! countAndSolve.isSelected() )
 			cSolvForms.setEnabled(b);
 	}
 	
+	/**
+	 * Enables the buttons that allow browsing solved forms
+	 * @param plus enables or disables the "forward" button
+	 * @param minus enalbes or disables the "backward" button
+	 */
 	public void setPlusMinusEnabled(boolean plus, boolean minus) {
 		next.setEnabled(plus);
 		previous.setEnabled(minus);
 	}
 	
+	/**
+	 * Enables or disables export of solved forms.
+	 * @param b if set to true, the menu item for solved form export is enabled
+	 */
 	public void setSaveAllEnables(boolean b) {
 		saveAll.setEnabled(b);
 	}

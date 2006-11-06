@@ -25,6 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
 
 
@@ -208,6 +209,11 @@ public class JDomGraphPreferencePane extends JFrame
 			ServerOptions.setPort(Integer.parseInt
 					(port.getText()));
 		}
+		
+		// TODO figure out how to do this properly
+		Ubench.getInstance().getMenuBar().setServerButtonPressed(
+			ConnectionManager.getState() == ConnectionManager.State.RUNNING);
+		
 		if(systemerrout.isSelected()) {
 			ServerOptions.setLogwriter( 
 					new PrintWriter(System.err, true));
