@@ -25,7 +25,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 public class GraphScroller extends JPanel implements ActionListener {
-    private String apptitle;
+  
+	private static final long serialVersionUID = -143970333537067054L;
+	private String apptitle;
     private IGraphSource graphs;
     private Map<ImprovedJGraph,JScrollPane> seen;
     private ImprovedJGraph current;

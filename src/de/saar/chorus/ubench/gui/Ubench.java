@@ -12,7 +12,6 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -834,13 +833,7 @@ public class Ubench {
 		return eqsname;
 	}
 
-	/**
-	 * @param eqsname The eqsname to set.
-	 */
-	private void setEqsname(String eqsname) {
-		this.eqsname = eqsname;
-	}
-
+	
 	public boolean isEquationSystemLoaded() {
 		return eqs != null;
 	}

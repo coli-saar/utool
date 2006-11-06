@@ -7,7 +7,6 @@
 
 package de.saar.chorus.domgraph.utool.server;
 
-import java.awt.KeyboardFocusManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

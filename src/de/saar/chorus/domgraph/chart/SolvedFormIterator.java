@@ -446,6 +446,11 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     
 
     private static class Agenda extends Stack<AgendaEntry> {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7426236767126350134L;
     }
 
 }

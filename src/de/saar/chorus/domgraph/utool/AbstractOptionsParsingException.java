@@ -8,7 +8,10 @@
 package de.saar.chorus.domgraph.utool;
 
 public class AbstractOptionsParsingException extends Exception {
-    private int exitcode = 0;
+  
+	private static final long serialVersionUID = 3527362476007640864L;
+
+	private int exitcode = 0;
     
     private boolean haveCause;
     private boolean haveMessage;

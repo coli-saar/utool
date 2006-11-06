@@ -7,7 +7,6 @@
 
 package de.saar.chorus.ubench.gui;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -601,8 +600,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					JFileChooser fc = new JFileChooser();
 					
-					List<GenericFileFilter> pictureFilters = 
-						new ArrayList<GenericFileFilter>();
 					
 					
 					GenericFileFilter bmpFilter = 
