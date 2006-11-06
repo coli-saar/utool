@@ -5,9 +5,13 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 /**
- * TODO comment me!
+ * A <code>FileFilter</code> which can be customised with an
+ * arbitrary file type and which generates a standard
+ * description do appear in a </code>JFileChooser</code>. 
  * 
  * @author Alexander Koller
+ * @see javax.swing.JFileChooser
+ * @see javax.swing.filechooser.FileFilter
  *
  */
 public class GenericFileFilter extends FileFilter implements Comparable {
@@ -15,9 +19,11 @@ public class GenericFileFilter extends FileFilter implements Comparable {
 	private String desc;
 	
 	/**
+	 * Create a <code>GenericFileFilter</code> accepting
+	 * the file type described.
 	 * 
-	 * @param extension
-	 * @param desc
+	 * @param extension the extension of the file type
+	 * @param desc a description of the file type
 	 */
 	public GenericFileFilter(String extension, String desc) {
 		if( extension.startsWith(".") )
@@ -52,8 +58,7 @@ public class GenericFileFilter extends FileFilter implements Comparable {
 	 * 
 	 * @return
 	 */
-    @Override
-	public String getDescription() {
+	public  String getDescription() {
 		return desc + " files (*" + extension + ")";
 	}
     
