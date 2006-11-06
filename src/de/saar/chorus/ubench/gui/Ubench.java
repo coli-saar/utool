@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
@@ -53,6 +54,8 @@ import de.saar.getopt.ConvenientGetopt;
  */
 public class Ubench {
     private static Ubench instance = null;
+    
+
     
     private File lastPath;
     // the tabs in their order of insertion
@@ -636,6 +639,7 @@ public class Ubench {
         
     }
     
+   
     /**
      * Create a new JFrame window. The application will be terminated once this
      * window is closed.
@@ -650,6 +654,7 @@ public class Ubench {
                 System.exit(0);
             }
         });
+       
         return f;
     }
     
