@@ -13,10 +13,10 @@ import javax.swing.event.ChangeListener;
 
 import org.jgraph.JGraph;
 
-import de.saar.chorus.ubench.gui.Ubench;
-
 public class JGraphSlider extends JSlider implements ChangeListener {
-    private JGraph graph;
+    
+	private static final long serialVersionUID = -1714437093647356459L;
+	private JGraph graph;
     
     public JGraphSlider(JGraph graph) {
         super(JSlider.VERTICAL, 0, 100, 100);

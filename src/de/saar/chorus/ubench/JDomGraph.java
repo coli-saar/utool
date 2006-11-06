@@ -72,7 +72,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	
 	private boolean hnc;
 	
-	private boolean marked;
 	
 	private List<Set<DefaultGraphCell>> wccs;
 	
@@ -145,7 +144,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		nodeToFragment = new HashMap<DefaultGraphCell,Fragment>();
 		dominanceEdges = new HashSet<DefaultEdge>();
 		edgeToFragment = new HashMap<DefaultEdge,Fragment>();
-		marked = false;
 		// set up popup handling
 		popupListeners = new HashSet<DomGraphPopupListener>();
 		addMouseListener(new PopupListener());		
