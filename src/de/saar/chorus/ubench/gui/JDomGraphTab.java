@@ -72,7 +72,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		if(! (origin.isNormal() || origin.isWeaklyNormal())) {
 			empty = true;
-			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+			JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
 					"The graph you are trying to load is not weakly normal.\n"
 					+ "Unfortunately, we can neither solve nor display\n " +
 					"graphs that are not at least weakly normal.",
@@ -133,6 +133,7 @@ public class JDomGraphTab extends JGraphTab  {
 						+ "so Ubench unfortunately cannot display it.",
 						"Error during layout",
 						JOptionPane.ERROR_MESSAGE);
+				
 			}
 			
 			statusBar = new DominanceGraphBar();
