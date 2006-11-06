@@ -9,7 +9,12 @@ package de.saar.basic;
 
 public class XmlDecodingException extends Exception {
 
-    public XmlDecodingException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7183568847584750846L;
+
+	public XmlDecodingException() {
         super();
     }
 

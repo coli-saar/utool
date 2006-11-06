@@ -25,9 +25,23 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 
 
-
+/**
+ * This Class provides some utilities for printing SWING components.
+ * Components can be printed to a picture file, to a PDF or to a 
+ * printer.
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class ExportUtilities  {
 
+	/**
+	 * This class provides everything needed for
+	 * printer support.
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
 	private static class PrintUtilities implements Printable {
 		
 		private Component componentToBePrinted;
@@ -36,6 +50,9 @@ public class ExportUtilities  {
 			this.componentToBePrinted = componentToBePrinted;
 		}
 		
+		/**
+		 * Print the component to a Graphics context
+		 */
 		public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
 			if (pageIndex > 0) {
 				return(NO_SUCH_PAGE);
@@ -57,6 +74,10 @@ public class ExportUtilities  {
 			}
 		}
 		
+		/**
+		 * Does the actual printing job
+		 *
+		 */
 		public void print() {
 			PrinterJob printJob = PrinterJob.getPrinterJob();
 			printJob.setPrintable(this);
@@ -70,28 +91,46 @@ public class ExportUtilities  {
 	}
 	
 
-	/* (non-Javadoc)
-	 * @see java.awt.print.Printable#print(java.awt.Graphics, java.awt.print.PageFormat, int)
+	/**
+	 * Print a component with a printer.
+	 * The standard printer dialog will be opened first.
+	 * 
+	 * @param c the component to print
 	 */
-	
-	
 	public static void printComponent(Component c) {
 		new PrintUtilities(c).print();
 	}
 	
 
-	
+	/**
+	 * This is to retain the component's appearance 
+	 * during printing process and make sure that only
+	 * the component itself appears in the printing.
+	 * 
+	 * @param c
+	 */
 	private static void disableDoubleBuffering(Component c) {
 		RepaintManager currentManager = RepaintManager.currentManager(c);
 		currentManager.setDoubleBufferingEnabled(false);
 	}
 	
+	/**
+	 * 
+	 * @param c
+	 */
 	private static void enableDoubleBuffering(Component c) {
 		RepaintManager currentManager = RepaintManager.currentManager(c);
 		currentManager.setDoubleBufferingEnabled(true);
 	}
 	
 	
+	/**
+	 * Prints a <code>JComponent</code> to a PDF.
+	 * 
+	 * @param component the component to print
+	 * @param filename the filename of the PDF (has to end with .pdf)
+	 * @throws IOException
+	 */
 	public static void exportPDF(JComponent component, String filename)
 			throws IOException {
 
@@ -153,6 +192,16 @@ public class ExportUtilities  {
 		}
 	}
 
+	/**
+	 * Creates a picture out of a SWING component.
+	 * 
+	 * @param comp the component to export
+	 * @param name the filename of the picture
+	 * @param ext the picture type (the formats supported depend
+	 * 								on platform and java version used)
+	 * @throws IOException
+	 * @see ImageIO.getWriterFormatNames
+	 */
 	public static void exportPicture(JComponent comp, String name, String ext)
 			throws IOException {
 
@@ -184,6 +233,6 @@ public class ExportUtilities  {
 		ImageIO.write(bi, picExt, file);
 		graphCont.dispose();
 		currentManager.setDoubleBufferingEnabled(true);
-		//		System.out.println("File: " + filename + " Ext: " + pointedExtension +" picext:" + picExt);
+		
 	}
 }

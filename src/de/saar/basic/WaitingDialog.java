@@ -10,14 +10,35 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-
+/**
+ * This class represents a <code>JDialog</code> with a Generic progress bar.
+ * When the dialog appears (probably before a presumably longer task
+ * starts), a indeterminated progress bar appears.
+ * 
+ * When the task is meant to be finished and the dialog is notified,
+ * the progress bar will stop at its maximum length and an "OK" button
+ * will be enabled to end the dialog.
+ * 
+ * @author Michaela Regneri
+ *
+ */
 public class WaitingDialog extends JDialog implements ActionListener {
+	
+	private static final long serialVersionUID = -8877214779756381415L;
 	
 	private final int tasklength = 1000;
 	private JProgressBar progressBar;
 	private JButton ok;
 	private JPanel dialogPane;
 		
+	/**
+	 * A new <code>WaitingDialog</code> initalised
+	 * with its parent frame and the text to appear
+	 * as dialog title.
+	 * 
+	 * @param text the dialog title
+	 * @param owner the parent component
+	 */
 	public WaitingDialog(String text, Frame owner) {
 		super(owner, text, false);
 		dialogPane = new JPanel();
@@ -38,6 +59,7 @@ public class WaitingDialog extends JDialog implements ActionListener {
 		add(dialogPane);
 		pack();
 		validate();
+		
 //		 locating the panel centered
 		setLocation((owner.getWidth() - getWidth())/2,
 				(owner.getHeight() - getHeight())/2); 
@@ -45,6 +67,14 @@ public class WaitingDialog extends JDialog implements ActionListener {
 
 	}
 	
+	/**
+	 * To be called before the task starts.
+	 * This will make the dialog visible and start the
+	 * indeterminate progress bar.
+	 * While the task is running, the "OK" button will
+	 * be disabled.
+	 *
+	 */
 	public void beginTask() {
 	
 		progressBar.setString(""); 
@@ -54,6 +84,12 @@ public class WaitingDialog extends JDialog implements ActionListener {
 		
 	}
 	
+	/**
+	 * To be called when the task is finished.
+	 * This will stop the progress bar end enable
+	 * the ok button. Whenn OK is pressed, the dialog window
+	 * will disappear.
+	 */
 	public void endTask() {
 		progressBar.setMaximum(100);
 		progressBar.setIndeterminate(false);
@@ -70,8 +106,10 @@ public class WaitingDialog extends JDialog implements ActionListener {
 		ok.setEnabled(true);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	
+	/**
+	 * This closes the window when the OK button has
+	 * been pressed.
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().equals("ok")) {
