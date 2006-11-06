@@ -71,16 +71,8 @@ The command, options, and arguments in this XML element correspond to
 the command, options, and arguments of a single run of the
 command-line tool.
 
-\item The client shuts down the half of the socket that is responsible
-for sending data to the server (i.e.\ the ``output'' direction). Many
-socket libraries (e.g.\ the standard libraries for C and Perl) offer a
-\verb?shutdown? function for this purpose. Notice that \verb?shutdown?
-is different from \verb?close? because it only closes one direction of
-the socket; you can't close the socket yet because you still need to
-receive the response from the server.
 
-\item Once the client-to-server socket is shut down, the Utool Server
-processes the command.
+\item Once you have transmitted a complete \verb|utool| element (i.e., after the closing \verb|</utool>| tag), the Utool Server processes the command. You may optionally close your side of the socket using the \verb?shutdown? function to notify the server that you're finished writing, but this is no longer necessary. Notice that you don't want to \verb?close? the socket yet at this point.
 
 \item If the command is executed successfully, the server will respond
 with a message of the following form:
@@ -112,6 +104,9 @@ dramatically more efficient to keep a single Utool Server process
 running and send the commands to the server (see
 Section~\ref{sec:practice-some-practical-tips}). We present a demo
 client for the Utool Server in Section~\ref{sec:practice-client}.
+
+Notice that you'll need to use XML character entities when you send your USR to the server, and conversely decode the result that you get back. See Section \ref{sec:practice-some-practical-tips} for some more hints on this.
+
 
 
 \subsection{Passing USRs}
@@ -182,6 +177,7 @@ exit code & meaning \\\hline
 140 & error while configuring an (XML) parser \\
 141 & the command you specified was not recognised \\
 142 & error while registering a codec \\
+143 & error while parsing a builtin example \\
 
 150 & you didn't specify a USR, but the command requires one \\
 151 & you didn't specify an input codec, and Utool cannot guess it \\
@@ -190,6 +186,7 @@ exit code & meaning \\\hline
 
 160 & you didn't specify an output codec, and Utool cannot guess it \\
 161 & there is no output codec of the name you specified \\
+162 & the specified output codec can't output multiple USRs \\
 
 170 & error while parsing an equivalence specification
 \end{tabular}
