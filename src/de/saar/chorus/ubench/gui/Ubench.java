@@ -5,13 +5,14 @@
 package de.saar.chorus.ubench.gui;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -92,6 +93,8 @@ public class Ubench {
     private String eqsname;
     
     private JDomGraphPreferencePane settings;
+    
+    private Window topmostWindow;
     
     public boolean reduceAutomatically;
     
@@ -708,7 +711,23 @@ public class Ubench {
         return exampleManager;
     }
     
+    
+    
     /**
+	 * @return Returns the topmostWindow.
+	 */
+	public Window getTopmostWindow() {
+		return topmostWindow;
+	}
+
+	/**
+	 * @param topmostWindow The topmostWindow to set.
+	 */
+	public void setTopmostWindow(Window topmostWindow) {
+		this.topmostWindow = topmostWindow;
+	}
+
+	/**
      * Sets up a new window after having created 
      * a ubench instance.
      *
@@ -718,6 +737,7 @@ public class Ubench {
     	
     	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
+        topmostWindow = window;
         window.setLayout(layout);
         
         listener = new CommandListener();
@@ -846,6 +866,8 @@ public class Ubench {
 	List<JGraphTab> getTabs() {
 		return tabs;
 	}
+	
+
 	
 }
 
