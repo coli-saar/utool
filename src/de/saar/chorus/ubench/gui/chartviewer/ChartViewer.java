@@ -1100,6 +1100,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			int row = prettyprint.getSelectedRow();
 			int col = prettyprint.getSelectedColumn();
 			markGraph(row,col);
+			Ubench.getInstance().setTopmostWindow(e.getWindow());
 		}
 
 		public void windowLostFocus(WindowEvent e) {
