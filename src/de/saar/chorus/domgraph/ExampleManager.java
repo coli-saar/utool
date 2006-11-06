@@ -170,7 +170,10 @@ public class ExampleManager extends DefaultHandler {
      */
     public static class ParserException extends Exception {
 
-        public ParserException() {
+        
+		private static final long serialVersionUID = 2728280775395157375L;
+
+		public ParserException() {
             super();
             // TODO Auto-generated constructor stub
         }

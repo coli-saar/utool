@@ -1,14 +1,12 @@
 package de.saar.chorus.ubench.gui;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
-import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -26,7 +24,29 @@ public class DummyCodec extends OutputCodec {
 			Shape shape,
 			@CodecOption(name="color", defaultValue="purple") String color,
 			@CodecOption(name="dressed", defaultValue="true")
-			boolean dressed) {
+			boolean dressed,
+			@CodecOption(name="dressed2", defaultValue="true")
+			boolean dressed2,
+			@CodecOption(name="dressed3", defaultValue="true")
+			boolean dressed3,
+			@CodecOption(name="dressed4", defaultValue="true")
+			boolean dressed4,
+			@CodecOption(name="dressed5", defaultValue="true")
+			boolean dressed5,
+			@CodecOption(name="dressed6", defaultValue="true")
+			boolean dressed6,
+			@CodecOption(name="dressed7", defaultValue="true")
+			boolean dressed7,
+			@CodecOption(name="dressed8", defaultValue="true")
+			boolean dressed8,
+			@CodecOption(name="dressed9", defaultValue="true")
+			boolean dressed9,
+			@CodecOption(name="dressed10", defaultValue="true")
+			boolean dressed10,
+			@CodecOption(name="dressed11", defaultValue="true")
+			boolean dressed11,
+			@CodecOption(name="dressed12", defaultValue="true")
+			boolean dressed12) {
         this.shape = shape;
         this.dressed = dressed;
         this.color = color;
