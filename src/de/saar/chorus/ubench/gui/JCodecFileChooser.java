@@ -21,6 +21,9 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
@@ -291,7 +294,10 @@ public class JCodecFileChooser extends JFileChooser
 				title,
 				TitledBorder.CENTER,
 				TitledBorder.ABOVE_TOP));
-		helperPanel.add(optionpane);
+		JScrollPane optionscrollpane = new JScrollPane(optionpane);
+		optionscrollpane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		optionscrollpane.setBorder(new EmptyBorder(0,0,0,0));
+		helperPanel.add(optionscrollpane);
 		
 		// doesn't work...
 		
@@ -308,8 +314,8 @@ public class JCodecFileChooser extends JFileChooser
 		
 		Dimension dim = new Dimension(
 				Math.max(getTextLabelWidth(title), 
-						optionpane.getPreferredSize().width),
-				optionpane.getMinimumSize().height);
+						optionscrollpane.getPreferredSize().width),
+						optionscrollpane.getPreferredSize().height);
 		optionpane.setMinimumSize(dim);
 		optionpane.setPreferredSize(dim);
 		optionpane.revalidate();
