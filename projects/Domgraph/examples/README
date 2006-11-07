@@ -54,6 +54,18 @@ rondane-650.mrs.pl:
 	solved forms (run 'utool solve -s -n examples/rondane-650.mrs.pl'
         on a Linux system to get a runtime estimation).
 
+rondane-1262.mrs.pl
+rondane-892.mrs.pl
+	The MRS descriptions for the following two sentences,
+	extracted from the Rondane treebank (Jan 2006).
+
+	  "For travellers going to Finnmark there is a bus service
+	  from Oslo to Alta through Sweden." (Rondane 1262)
+	
+	  "We quickly put up the tents in the lee of a small hillside and cook
+  	  for the first time in the open." (Rondane 892)
+
+
 holesemantics-14.hs.pl:
 	A Hole Semantics USR from the Hole Semantics testsuite
 	available as part of the software package at
