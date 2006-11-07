@@ -191,18 +191,13 @@ public class Ubench {
      */
     public double getTabHeight() {
         int index = tabbedPane.getSelectedIndex();
-        double windowScale = 1;
-        if (window.getState() != JFrame.NORMAL)
-            windowScale = (double) window.getHeight()
-            / window.getMaximizedBounds().height;
-        
         if (index > -1) {
             Rectangle tabRect = tabbedPane.getBoundsAt(tabbedPane
                     .getSelectedIndex());
-            return tabbedPane.getHeight() * windowScale - tabRect.height;
+            return tabbedPane.getHeight() - tabRect.height;
         }
         
-        return (window.getHeight() - 100) * windowScale;
+        return window.getHeight() - 100;
     }
     
     /**
