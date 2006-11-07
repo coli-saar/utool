@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,7 +114,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private JButton solve;
 	
 	// counting solved forms, splits and subgraphs
-	private long noOfSolvedForms;
+	private BigInteger noOfSolvedForms;
 	private int noOfSplits;
 	private int noOfSubgraphs;
 	
@@ -231,7 +232,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		JScrollPane printPane = new JScrollPane(prettyprint);
 		add(printPane);
 		
-		noOfSolvedForms = chart.countSolvedForms().intValue();
+		noOfSolvedForms = chart.countSolvedForms();
 		noOfSplits = chart.size();
 		
 		// the information text on the bottom
@@ -792,7 +793,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		initColumnSizes();
 		
 		// refreshing the status bar
-		noOfSolvedForms = chart.countSolvedForms().longValue();
+		noOfSolvedForms = chart.countSolvedForms();
 		noOfSplits = chart.size();
 		
 		solvedforms.setText("   This Chart has " + noOfSolvedForms
@@ -899,8 +900,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				getPreferredSize().height)
 				);
 		
-		if( (noOfSolvedForms != 
-			chartcopy.countSolvedForms().longValue()) ||
+		if( (! noOfSolvedForms.equals(chartcopy.countSolvedForms())) ||
 			(noOfSubgraphs != 
 				chartcopy.countSubgraphs()) || 
 				(noOfSplits != chartcopy.size())) {
