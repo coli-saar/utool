@@ -113,7 +113,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private JButton solve;
 	
 	// counting solved forms, splits and subgraphs
-	private int noOfSolvedForms;
+	private long noOfSolvedForms;
 	private int noOfSplits;
 	private int noOfSubgraphs;
 	
@@ -792,7 +792,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		initColumnSizes();
 		
 		// refreshing the status bar
-		noOfSolvedForms = chart.countSolvedForms().intValue();
+		noOfSolvedForms = chart.countSolvedForms().longValue();
 		noOfSplits = chart.size();
 		
 		solvedforms.setText("   This Chart has " + noOfSolvedForms
@@ -900,7 +900,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				);
 		
 		if( (noOfSolvedForms != 
-			chartcopy.countSolvedForms().intValue()) ||
+			chartcopy.countSolvedForms().longValue()) ||
 			(noOfSubgraphs != 
 				chartcopy.countSubgraphs()) || 
 				(noOfSplits != chartcopy.size())) {
