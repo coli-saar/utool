@@ -654,7 +654,12 @@ public class Ubench {
                 System.exit(0);
             }
         });
-       
+        
+        GraphicsEnvironment env =
+        	GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle bounds = env.getMaximumWindowBounds();
+		f.setMaximizedBounds(bounds);
+		
         return f;
     }
     
