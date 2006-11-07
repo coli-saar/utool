@@ -16,7 +16,7 @@ of the system.}
 
 
 \begin{verbatim}
-$ java -jar Utool-3.0.jar
+$ java -jar Utool-3.1.jar
 Usage: java -jar Utool.jar <subcommand> [options] [args]
 Type `utool help <subcommand>' for help on a specific subcommand.
 Type `utool --help-options' for a list of global options.
@@ -43,7 +43,7 @@ alias for calling Utool more conveniently if you like, e.g. as
 follows (on a bash shell):
 
 \begin{verbatim}
-$ alias utool='java -jar /usr/local/Utool-3.0.jar'
+$ alias utool='java -jar /usr/local/Utool-3.1.jar'
 $ utool
 Usage: java -jar Utool.jar <subcommand> [options] [args]
 Type `utool help <subcommand>' for help on a specific subcommand.
@@ -55,21 +55,81 @@ Type `utool --display-codecs' for a list of supported codecs.
 For the rest of this tutorial, we will only write \verb?utool? for
 the call to the Utool main program, for easier readability. You can
 either define the alias, or expand \verb?utool? to the appropriate
-\verb?java -jar Utool-3.0.jar? call yourself.
+\verb?java -jar Utool-3.1.jar? call yourself.
 
-Next to the compiled Java classes, the Jar contains a collection of
-example files that we will use in this tutorial. You don't usually
-need to unpack the Jar to use it, but for the purposes of this
-tutorial, start by running the following command:
+
+
+
+\subsection{The Underspecification Workbench}
+
+The most convenient way to work with Utool is via Ubench, the Underspecification Workbench. This is a GUI that will visualise USRs for you and offers access to almost the entire functionality of Ubench. 
+
+
+\subsubsection{Opening examples}
+
+You can start Ubench in the following way:
 
 \begin{verbatim}
-$ jar xf Utool-3.0.jar
+$ utool display
 \end{verbatim}
-%$
 
-This will unpack the contents of the Jar file into the current
-directory. Most importantly, it will create the directory
-\verb?examples?, which contains the example files we will use below.
+This will open a window that looks as follows:
+
+\begin{quotation}
+%HEVEA \begin{latexonly}
+\includegraphics[width=6cm]{ubench-empty.png}
+%HEVEA \end{latexonly}
+%HEVEA \imgsrc{ubench-empty.png}
+\end{quotation}
+
+Now let's have a look at an example. Utool comes with a number of built-in examples, which you can access from Ubench via the File/Open Example menu. So go to this menu, and load the example \verb?holesemantics-14.hs.pl?. This is a Hole Semantics USR for the sentence "Every man in a restaurant knows a woman with a car", in the format used in the Blackburn and Bos textbook \cite{blackburn05:_repres_infer_natur_languag}. Ubench will internally convert this USR into a labelled dominance graph and then draw it as follows:
+
+\begin{quotation}
+%HEVEA \begin{latexonly}
+\includegraphics[width=10cm]{ubench-holesem.png}
+%HEVEA \end{latexonly}
+%HEVEA \imgsrc{ubench-holesem.png}
+\end{quotation}
+
+The window displays some interesting information below the dominance graph. In the lower right corner, you will see the letters "N c L H". These letters express the membership of the graph in a number of graph classes: If you mouse-over the letters, you will see that the graph is normal, compactifiable, leaf-labelled, and hypernormally connected. (These notions are explained e.g.\ in \citeNP{Koller04}.)
+
+
+\subsubsection{Solving dominance graphs}
+
+In addition, the status bar claims that this dominance graph has 14 solved forms (each of which corresponds to a reading of the original sentence). You can look at them by clicking on the "Solve" button in the lower left. The result will look as follows:
+
+\begin{quotation}
+%HEVEA \begin{latexonly}
+\includegraphics[width=10cm]{ubench-holesem-sf.png}
+%HEVEA \end{latexonly}
+%HEVEA \imgsrc{ubench-holesem-sf.png}
+\end{quotation}
+
+As you can see, Ubench opened a new tab "holesemantics-14.hs.pl SF \#1". This tab displays the first solved form of the graph, i.e.\ an arrangement of the little tree fragments of the dominance graph into a tree, in such a way that the dominance relation is preserved. In linguistic terms, the solved form represents one of the scope readings, in which the\cite{KolNieTha03} different quantifiers have been assigned one particular scoping.
+
+Notice that the status bar of a solved form is different than that of an unsolved dominance graph: It now displays the index of the solved form among all solved forms of this graph, and arrows for moving back and forth between the different solved forms. Go ahead and look at some solved forms.
+
+
+\subsubsection{Exporting graphs and solved forms}
+
+As we have said above, Ubench works internally with labelled dominance graphs. It is able to read a Hole Semantics USR because it has an \emph{input codec} which can parse Hole Semantics USRs and translate them into dominance graphs \cite{KolNieTha03}. There are also other input codecs for reading various versions of dominance graphs and for MRS.
+
+We can reverse this encoding process and output a labelled dominance graph in a different format using an \emph{output codec}. Go back to the "holesemantics-14.hs.pl" tab, and choose File/Export from the menu. From this dialog you can e.g.\ select the output codec "domgraph-dot" to export the current dominance graph in the "dot" graph format, which can be read by many graph-drawing tools, such as Graphviz.
+
+Alternatively, you can have Ubench write all solved forms of the current dominance graph into a file. Choose File/Export Solved Forms from the menu and choose, for instance, the "term-prolog" output codec. This will save all solved forms of the graph as a list of Prolog terms, as they would e.g.\ be computed by the Blackburn and Bos USR solver.
+
+
+
+\subsubsection{Redundancy elimination}
+
+
+
+\subsection{Running Utool from the command line}
+
+
+\subsection{Running Utool as a server}
+
+
 
 
 
@@ -129,7 +189,7 @@ bash shell, you can display this exit code with the command
 
 As you can see, the Utool command line consists of four parts:
 \begin{itemize}
-\item \verb?utool? (or \verb?java -jar Utool-3.0.jar?): This instructs
+\item \verb?utool? (or \verb?java -jar Utool-3.1.jar?): This instructs
 Java to load the Jar file and run its main class. You can pass further
 arguments to the Java VM by putting them before the \verb?-jar?
 option.
@@ -235,7 +295,7 @@ Oz syntax (output codec \verb?domcon-oz?).
 
 \begin{verbatim}
 $ utool convert examples/rondane-1.mrs.pl -O domcon-oz
-%% autogenerated by Utool 3.0 (see www.coli.uni-sb.de/projects/chorus/utool for details)
+%% autogenerated by Utool 3.1 (see www.coli.uni-sb.de/projects/chorus/utool for details)
 [label(h54 named) label(h51 proper_q(h52 h53)) label(h45 '_of_p&_part_n&_and_c'(
 h43 h47)) label(h47 '_western_a') label(h43 '_eastern_a') label(h40 '_the_q'(h42
  h41)) label(h36 '_between_p&_route_n&_main_a') label(h33 '_the_q'(h35 h34)) lab
