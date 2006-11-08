@@ -357,4 +357,12 @@
 		
 		<antcall target="clean" />
 	</target>
+        
+        <!-- Run target for Netbeans -->
+        <target name="run" depends="utool">
+            <input message="Utool command-line parameters:" addproperty="params" />
+            <java fork="true" jar="${domgraph.jar}">
+                <arg value="${params}" />
+            </java>
+        </target>
 </project>
