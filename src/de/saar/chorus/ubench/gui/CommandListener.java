@@ -775,6 +775,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 					} else {
 						if( (Ubench.getInstance().getMenuBar() != null) && 
+								Ubench.getInstance().getVisibleTab() != null &&
 								Ubench.getInstance().getVisibleTab().getClass() != JSolvedFormTab.class) {
 							Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
 						}

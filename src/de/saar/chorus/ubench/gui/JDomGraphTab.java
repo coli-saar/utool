@@ -101,6 +101,9 @@ public class JDomGraphTab extends JGraphTab  {
 					compactifiable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
 				}
+			} else {
+				compactifiable =
+					domGraph.isCompactifiable();
 			}
 			
 			try {
