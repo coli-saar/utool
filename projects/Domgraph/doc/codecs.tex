@@ -243,6 +243,12 @@ syntactic constraints, for instance, if it contains a variable
 this terminology departs from \cite{CopFliSag97}'s terminology: in
 that paper, a well-formed MRS must additionally be solvable.
 
+Both MRS codecs accept the codec option `--input-codec-option normalise=false.'
+If this option is specified, the codecs output an intermediate result of the
+translation into dominance graphs, and does not perform error checks. This is
+particularly useful if you want to display MRS structures that are not, say,
+hypernormally connected, but you should note that the operations on the MRS
+(e.g., solving) are not guaranteed to produce reliable results.
 
 The input codec is associated with the filename extension \verb|.mrs.pl|.
 
