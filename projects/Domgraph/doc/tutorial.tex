@@ -96,7 +96,7 @@ The window displays some interesting information below the dominance graph. In t
 
 \subsubsection{Solving dominance graphs}
 
-In addition, the status bar claims that this dominance graph has 14 solved forms (each of which corresponds to a reading of the original sentence). You can look at them by clicking on the "Solve" button in the lower left. The result will look as follows:
+In addition, the status bar claims that this dominance graph has 14 solved forms (each of which corresponds to a reading of the original sentence). You can look at them by clicking on the ``Solve'' button in the lower left. The result will look as follows:
 
 \begin{quotation}
 %HEVEA \begin{latexonly}
@@ -105,9 +105,15 @@ In addition, the status bar claims that this dominance graph has 14 solved forms
 %HEVEA \imgsrc{ubench-holesem-sf.png}
 \end{quotation}
 
-As you can see, Ubench opened a new tab "holesemantics-14.hs.pl SF \#1". This tab displays the first solved form of the graph, i.e.\ an arrangement of the little tree fragments of the dominance graph into a tree, in such a way that the dominance relation is preserved. In linguistic terms, the solved form represents one of the scope readings, in which the\cite{KolNieTha03} different quantifiers have been assigned one particular scoping.
+As you can see, Ubench opened a new tab ``holesemantics-14.hs.pl SF \#1''. This tab displays the first solved form of the graph, i.e.\ an arrangement of the little tree fragments of the dominance graph into a tree, in such a way that the dominance relation is preserved. In linguistic terms, the solved form represents one of the scope readings, in which the\cite{KolNieTha03} different quantifiers have been assigned one particular scoping.
 
 Notice that the status bar of a solved form is different than that of an unsolved dominance graph: It now displays the index of the solved form among all solved forms of this graph, and arrows for moving back and forth between the different solved forms. Go ahead and look at some solved forms.
+
+Notice also that by default all USRs are solved automatically when they are
+loaded. Usually, this does not take much time, but if the USR is very complex,
+you will experience a short delay (up to several seconds). You can disable the
+automatic solving by unchecking the corresponding checkbox in the ``Solver''
+menu.
 
 
 \subsubsection{Exporting graphs and solved forms}
