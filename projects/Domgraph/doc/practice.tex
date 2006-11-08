@@ -54,6 +54,28 @@ for those cases where more memory is needed (e.g.\
 $2 \cdot 10^{12}$ solved forms), you can allow Java to use more heap
 space by calling it with the \verb?-Xmx512m? option.
 
+\item \textit{Character encoding.} Utool displays characters using the default
+character encoding of your system. At the momemnt, you cannot specify a different encoding directly, but the following ``trick'' does the job, at least on Linux machines. Assume that we want to display a latin-1 encoded USR, and the default character set of your machine is utf-8:
+\begin{verbatim}
+env LANG=en_GB.utf-8 utool display some-usr
+\end{verbatim}
+If you are using the bash, you can alternatively type
+\begin{verbatim}
+LANG=en_GB.utf-8 utool display some-usr
+\end{verbatim}
+
+Note that character encodings are only an issue if you want to display
+underspecified representations. If you want to solve an USR, or convert it
+into other formalisms, then utool produces outputs based on the same encoding as
+the input.
+
+Note that if you are using Utool in combination with the LKB system (see below),
+then it might be possible that the above trick doesn't work. This is probably
+due to a bug in the lisp code that establishes the client-server connection
+between LKB and utool and accidentally converts the MRS into a wrong encoding.
+As a work-around, you might experiment with running utool with different
+character encodings (latin1 is a good choice to start).
+
 \item \textit{XML character entities.} The Utool Server takes commands
 as well-formed XML strings, so it expects you to encode special
 characters in the USR as XML character entities. You are probably
