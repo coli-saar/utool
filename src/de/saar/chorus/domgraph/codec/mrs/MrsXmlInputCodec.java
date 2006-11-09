@@ -28,11 +28,11 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 public class MrsXmlInputCodec extends InputCodec {
 	
 	private MrsCodec codec;
-	private MrsCodecOptions.Normalisation normalisation;
+	private Normalisation normalisation;
 
 	@CodecConstructor
 	public MrsXmlInputCodec(
-		@CodecOption(name="normalisation", defaultValue="nets") MrsCodecOptions.Normalisation normalisation)
+		@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation)
 	{
 		super();
 		this.normalisation = normalisation;

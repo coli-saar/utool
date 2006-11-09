@@ -792,6 +792,11 @@ public class Ubench {
         
         useNextTabToResizeFrame = true;
         window.pack();
+        
+        // start the window at a default window size that's not totally empty
+        // (it will be resized once the first tab is opened)
+        window.setSize(300,200);
+        
         window.validate();
     }
     
