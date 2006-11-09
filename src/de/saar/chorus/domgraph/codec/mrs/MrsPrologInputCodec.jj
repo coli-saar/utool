@@ -25,21 +25,21 @@ import de.saar.chorus.domgraph.codec.mrs.*;
 @CodecMetadata(name="mrs-prolog", extension=".mrs.pl")
 public class MrsPrologInputCodec extends InputCodec
 {
-	private boolean normalise;
+	private MrsCodecOptions.Normalisation normalisation;
     private MrsCodec codec;
  
     @CodecConstructor
     public MrsPrologInputCodec(
-    	@CodecOption(name="normalise", defaultValue="true") boolean normalise)
+    	@CodecOption(name="normalisation", defaultValue="true") MrsCodecOptions.Normalisation normalisation)
     {
 		this((Reader) null);
-		this.normalise = normalise;
+		this.normalisation = normalisation;
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
 		throws IOException, ParserException, MalformedDomgraphException
     {
-		codec = new MrsCodec(graph, labels, normalise);
+		codec = new MrsCodec(graph, labels, normalisation);
 
 		try {
 		    ReInit(inputStream);

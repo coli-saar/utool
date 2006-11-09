@@ -28,14 +28,14 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 public class MrsXmlInputCodec extends InputCodec {
 	
 	private MrsCodec codec;
-	private boolean normalise;
+	private MrsCodecOptions.Normalisation normalisation;
 
 	@CodecConstructor
 	public MrsXmlInputCodec(
-		@CodecOption(name="normalise", defaultValue="true") boolean normalise)
+		@CodecOption(name="normalisation", defaultValue="nets") MrsCodecOptions.Normalisation normalisation)
 	{
 		super();
-		this.normalise = normalise;
+		this.normalisation = normalisation;
 	}
 	
 	
@@ -141,7 +141,7 @@ public class MrsXmlInputCodec extends InputCodec {
 	
 	public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) throws MalformedDomgraphException, IOException, ParserException
 	{
-		codec = new MrsCodec(graph, labels, normalise);
+		codec = new MrsCodec(graph, labels, normalisation);
 		
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
