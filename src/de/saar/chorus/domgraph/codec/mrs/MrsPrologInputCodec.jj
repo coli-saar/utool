@@ -30,7 +30,7 @@ public class MrsPrologInputCodec extends InputCodec
  
     @CodecConstructor
     public MrsPrologInputCodec(
-    	@CodecOption(name="normalisation", defaultValue="true") MrsCodecOptions.Normalisation normalisation)
+    	@CodecOption(name="normalisation", defaultValue="nets") MrsCodecOptions.Normalisation normalisation)
     {
 		this((Reader) null);
 		this.normalisation = normalisation;
