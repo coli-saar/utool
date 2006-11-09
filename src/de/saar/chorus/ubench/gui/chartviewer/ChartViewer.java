@@ -796,8 +796,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		noOfSolvedForms = chart.countSolvedForms();
 		noOfSplits = chart.size();
 		
-		solvedforms.setText("   This Chart has " + noOfSolvedForms
-				+ " solved forms.");
+		solvedforms.setText("   This chart has " + noOfSolvedForms
+				+ " solved form" + (BigInteger.ONE.equals(noOfSolvedForms) ? "" : "s")
+				+ ".");
 				
 		refreshTitleAndStatus();
 		validate();
@@ -1026,34 +1027,34 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			
 			chartmenu = new JMenu("Chart");
 			
-			firstsolvedform = new JMenuItem("Show first Solved Form");
+			firstsolvedform = new JMenuItem("Show first solved form");
 			firstsolvedform.setActionCommand("solvechart");
 			firstsolvedform.addActionListener(lis);
 			chartmenu.add(firstsolvedform);
 			
 			chartmenu.addSeparator();
 			
-			elred = new JMenuItem("Reduce Chart");
+			elred = new JMenuItem("Reduce chart...");
 			elred.setActionCommand("elred");
 			elred.addActionListener(lis);
 			elred.setMnemonic(KeyEvent.VK_R);
 			elred.setAccelerator(KeyStroke.getKeyStroke("alt R"));
 			chartmenu.add(elred);
 			
-			elredglobal = new JMenuItem("Reduce with global EQS");
+			elredglobal = new JMenuItem("Reduce with global equation system");
 			elredglobal.addActionListener(lis);
 			elredglobal.setActionCommand("elredglobal");
 			elredglobal.setEnabled(Ubench.getInstance().isEquationSystemLoaded());
 			chartmenu.add(elredglobal);
 			
 			chartmenu.addSeparator();
-			reset = new JMenuItem("Reset Chart");
+			reset = new JMenuItem("Reset to original chart");
 			reset.setActionCommand("resetchart");
 			reset.addActionListener(lis);
 			chartmenu.add(reset);
 			
 			
-			info = new JMenuItem("Show Chart Info...");
+			info = new JMenuItem("Show chart info...");
 			info.setActionCommand("chartinfo");
 			info.addActionListener(lis);
 			chartmenu.add(info);
@@ -1070,7 +1071,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			splitmenu = new JMenu("Split");
 			
 			
-			delete = new JMenuItem("Delete Marked Split");
+			delete = new JMenuItem("Delete marked split");
 			delete.setActionCommand("delSplit");
 			delete.setMnemonic(KeyEvent.VK_DELETE);
 			delete.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
