@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 import org._3pq.jgrapht.Edge;
 
-import de.saar.chorus.domgraph.codec.CodecMetadata;
+//import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -39,20 +39,20 @@ class MrsCodec {
 	
 	private NodeLabels labels;
 	
-	private boolean normalise;
+	private MrsCodecOptions.Normalisation normalisation;
 	
 	//
 	//
 	//
 	
-	public MrsCodec(DomGraph graph, NodeLabels labels, boolean normalise)
+	public MrsCodec(DomGraph graph, NodeLabels labels, MrsCodecOptions.Normalisation normalisation)
 	{
 		this.graph = graph;
 		this.labels = labels;
 		this.sig = new TreeMap<String,Type>();
 		this.binder = new TreeMap<String,String>();
 		this.bound = new TreeMap<String,Set<String>>();
-		this.normalise = normalise;
+		this.normalisation = normalisation;
 	}
 	
 	public void tellVariable(String name) throws MalformedDomgraphException
@@ -235,16 +235,16 @@ class MrsCodec {
 					for (int j = i + 1; j < edgeArray.length; ++j) {
 						String ni = (String) ((Edge)edgeArray[i]).getTarget();
 						String nj = (String) ((Edge)edgeArray[j]).getTarget();
-					
+
 						Set<String> rootSet = new TreeSet<String>(); 
 						rootSet.add(root);
-						
+
 						if (! graph.isHypernormallyReachable(ni, nj, rootSet)) {
-							// XXX -- check error code
 							throw new MalformedDomgraphException(
-                                    "The dominance children " + ni + " and " + nj
-                                    + " of the root " + root + " are not hypernormally connected with each other.",
-                                    ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
+									"The dominance children " + ni + " and " + nj + 
+									" of the root " + root + 
+									" are not hypernormally connected with each other.",
+									ErrorCodes.NOT_HYPERNORMALLY_CONNECTED);
 						}
 					}
 				} 
@@ -273,31 +273,33 @@ class MrsCodec {
 		addBindingEdges();
 		setTopHandle(handle);
 		
-		if (!normalise)
+		switch (normalisation) {
+		case none:
 			return;
-		
-		normalise();
-		
-		int errorCode = 0;
-		
-		if (! graph.isWeaklyNormal())
-			throw new MalformedDomgraphException("The graph is not weakly normal.\n", ErrorCodes.NOT_WEAKLY_NORMAL);
-			
-		if (! graph.isNormal()) {
-			errorCode |= ErrorCodes.NOT_NORMAL;
-			errorText.append("The graph is not normal.\n");
-		} 
-		if (! graph.isLeafLabelled()) {
-			errorCode |= ErrorCodes.NOT_LEAF_LABELLED;
-			errorText.append("The graph is not leaf-labelled.\n");
+		case nets:
+			normalise();
+
+			int errorCode = 0;
+
+			if (! graph.isWeaklyNormal())
+				throw new MalformedDomgraphException("The graph is not weakly normal.\n", ErrorCodes.NOT_WEAKLY_NORMAL);
+
+			if (! graph.isNormal()) {
+				errorCode |= ErrorCodes.NOT_NORMAL;
+				errorText.append("The graph is not normal.\n");
+			} 
+			if (! graph.isLeafLabelled()) {
+				errorCode |= ErrorCodes.NOT_LEAF_LABELLED;
+				errorText.append("The graph is not leaf-labelled.\n");
+			}
+			if (! graph.isHypernormallyConnected()) {
+				errorCode |= ErrorCodes.NOT_HYPERNORMALLY_CONNECTED;
+				errorText.append("The graph is not hypernormally connected.\n");
+			}
+
+			if (errorCode != 0)
+				throw new MalformedDomgraphException(errorText.toString(), errorCode);
 		}
-		if (! graph.isHypernormallyConnected()) {
-			errorCode |= ErrorCodes.NOT_HYPERNORMALLY_CONNECTED;
-			errorText.append("The graph is not hypernormally connected.\n");
-		}
-		
-		if (errorCode != 0)
-			throw new MalformedDomgraphException(errorText.toString(), errorCode);
 	}
 	
 	boolean ignore(String attr)
