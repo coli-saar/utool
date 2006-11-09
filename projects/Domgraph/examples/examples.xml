@@ -40,6 +40,28 @@
 			treebank; it has about 2.4 trillion solved forms. We estimate
 			that utool would need more than a year to enumerate all these
 			solved forms."/>
+			
+	<example filename="rondane-1262.mrs.pl"
+		description="The MRS description of the Rondane Treebank (VERSION)
+			sentence #1262:
+			&quot; For travellers going to Finnmark there is a bus 
+service from Oslo to Alta through Sweden.&quot;
+			According to the ERG annotation, this sentence has 3960 readings,
+			but they only differ in the relative scope of proper names, and thus
+			they are all semantically equivalent, and can be reduced by the
+			redundany elimination algorithm." />
+			
+	<example filename="rondane-892.mrs.pl"
+		description="The MRS description of the Rondane Treebank (VERSION)
+			sentence #892:
+			&quot;We quickly put up the tents in the lee of a 
+			small hillside and cook for the first time in 
+			the open.&quot;
+			According to the ERG annotation, this sentence has 480 readings,
+			but intuitively there are only two non-equivalent classes of
+			readings, which are distinguished by the relative scope of
+			&quot;the lee&quot; and &quot;a small hillside&quot;. The readings
+			can be reduced by the redundancy elimination algorithm." />
 	
 	<example filename="holesemantics-14.hs.pl"
 		description="A Hole Semantics USR from the Hole Semantics testsuite
