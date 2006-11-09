@@ -176,7 +176,7 @@ public class JSolvedFormTab extends JGraphTab {
    		formScroll.add(sRight);
    		
    		
-   		of = new JLabel("of " + String.valueOf(numOfSolvForms) + " (Graph: " + gN + ")");
+   		of = new JLabel("of " + String.valueOf(numOfSolvForms) + " (Source: " + gN + ")");
    		
    		
    		formScroll.add(of);

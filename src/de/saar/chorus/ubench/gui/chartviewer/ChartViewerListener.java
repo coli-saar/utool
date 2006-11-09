@@ -53,43 +53,55 @@ public class ChartViewerListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		
-		// redundancy elimination with the globally
-		// loaded equation system
-		if( command.equals("elredglobal") ) {
+		// redundancy elimination 
+		if( command.equals("elredglobal") || command.equals("elred") ) {
+			EquationSystem eqs = null;
+			String name = null;
 			
-			// the graph is not normal
+			// if the graph is not normal, abort with error message
 			if( ! viewer.getDg().isNormal() ) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not normal," + 
 						System.getProperty("line.separator") + 
-						"thus Utool cannot eliminate redundancies.",
+						"so Utool cannot eliminate redundancies.",
 						"Server Error",
 						JOptionPane.ERROR_MESSAGE);
 				
 				return;
 			}
 			
-			// the graph is not hypernormally connected
+			// if the graph is not hnc, abort with error message
 			if( ! viewer.getDg().isHypernormallyConnected()) {
 				JOptionPane.showMessageDialog(viewer,
 						"This chart represents a graph which is not hypernormally" + 
 						System.getProperty("line.separator") + 
-						"connected, thus Utool cannot eliminate redundancies.",
+						"connected, so Utool cannot eliminate redundancies.",
 						"Server Error",
 						JOptionPane.ERROR_MESSAGE);
 				
 				return;
 			}
 			
-			// reduce the chart with the loaded system.
-			// this event cannot occur when there is no
-			// system loaded in ubench.
-			viewer.reduceChart(
-					Ubench.getInstance().getEquationSystem(), 
-					Ubench.getInstance().getEqsname());
+			// obtain the equation system and its name
+			if( command.equals("elredglobal")) {
+				// if the command was "reduce with global eq. system", get them from
+				// Ubench
+				eqs = Ubench.getInstance().getEquationSystem();
+				name = Ubench.getInstance().getEqsname();
+			} else {
+				// otherwise, display a dialog that prompts for a filename and load
+				// it from there
+				eqs = new EquationSystem();
+				name = loadEquationSystem(false, eqs);
+			}
 			
-			// refreshing the chart
-			viewer.refreshChartWindow();
+			// finally, reduce the chart and refresh the display
+			if( (eqs != null) && (name != null)) {
+				viewer.reduceChart(eqs, name);
+				viewer.refreshChartWindow();
+			}
+			
+			
 		} else if( command.equals("delSplit") ) {
 			// a Split was deleted
 			
@@ -116,45 +128,7 @@ public class ChartViewerListener implements ActionListener {
 				}
 				
 			}
-		} else if( command.equals("elred")) {
-			// reduce the chart with any equation system
-			
-			// the graph is not normal
-			if( ! viewer.getDg().isNormal() ) {
-				JOptionPane.showMessageDialog(viewer,
-						"This chart represents a graph which is not normal," + 
-						System.getProperty("line.separator") + 
-						"thus Utool cannot eliminate redundancies.",
-						"Server Error",
-						JOptionPane.ERROR_MESSAGE);
-				
-				return;
-			}
-			
-			// the graph is not hnc
-			if( ! viewer.getDg().isHypernormallyConnected()) {
-				JOptionPane.showMessageDialog(viewer,
-						"This chart represents a graph which is not hypernormally" + 
-						System.getProperty("line.separator") + 
-						"connected, thus Utool cannot eliminate redundancies.",
-						"Server Error",
-						JOptionPane.ERROR_MESSAGE);
-				
-				return;
-			}
-			
-			
-			// create a new equation systems and
-			// fill it with a file to select
-			
-				EquationSystem eqs = new EquationSystem();
-				String name  = loadEquationSystem(true, eqs);			
-				
-				// reduce the chart with the system built
-				if(eqs != null && name != null) {
-				viewer.reduceChart(eqs, name);
-				viewer.refreshChartWindow();
-				}
+	
 				
 		} else if( command.equals("solvechart")) {
 			// display the first solved form of the chart
@@ -204,6 +178,8 @@ public class ChartViewerListener implements ActionListener {
 	 */
 	private String loadEquationSystem(boolean preliminary, EquationSystem eqs) {
 		String toReturn = null;
+		
+		/** TODO Why would we ever want to display this warning dialog?? - AK **/
 		if(preliminary) {
 			JOptionPane.showMessageDialog(viewer,
 					"You have to specify a xml file that contains your equation system" + 
@@ -212,9 +188,11 @@ public class ChartViewerListener implements ActionListener {
 					"Please load an equation system",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
+		
+		
 		JFileChooser fc = new JFileChooser();
 
-		fc.setDialogTitle("Choose the equation system input file");
+		fc.setDialogTitle("Select the equation system");
 		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		int fcVal = fc.showOpenDialog(viewer);	
@@ -231,9 +209,9 @@ public class ChartViewerListener implements ActionListener {
 				toReturn = file.getName();
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(viewer,
-						"The Equation System cannot be parsed." + 
+						"The equation system cannot be parsed." + 
 						System.getProperty("line.separator") + 
-						"Either the input file is not valid or it contains syntax errors.",
+						"Either the input file is not readable, or it contains syntax errors.",
 						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}
