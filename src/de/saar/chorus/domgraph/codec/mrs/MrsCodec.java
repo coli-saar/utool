@@ -39,13 +39,13 @@ class MrsCodec {
 	
 	private NodeLabels labels;
 	
-	private MrsCodecOptions.Normalisation normalisation;
+	private Normalisation normalisation;
 	
 	//
 	//
 	//
 	
-	public MrsCodec(DomGraph graph, NodeLabels labels, MrsCodecOptions.Normalisation normalisation)
+	public MrsCodec(DomGraph graph, NodeLabels labels, Normalisation normalisation)
 	{
 		this.graph = graph;
 		this.labels = labels;

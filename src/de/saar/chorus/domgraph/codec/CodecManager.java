@@ -683,7 +683,7 @@ public class CodecManager {
             outputCodecClassMap.put(getCodecName(codec), codec);
         }
         
-        formatString = "    %1$-" + max_strlen + "s             %2$-" + (max_extension_strlen+2) + "s%3$s";
+        formatString = "  %1$s %2$-" + max_strlen + "s             %3$-" + (max_extension_strlen+2) + "s%4$s";
         Collections.sort(inputCodecNames);
         
         out.println("Installed input codecs:");
@@ -695,6 +695,8 @@ public class CodecManager {
         for( String outputCodecName : outputCodecNames ) {
             displayOneCodec(outputCodecClassMap.get(outputCodecName), formatString, out);
         }
+        
+        out.println("\n(1 = output codec can only print a single solved form; don't use with 'solve')");
     }
     
     /**
@@ -735,11 +737,13 @@ public class CodecManager {
         String name = getCodecName(codec);
         String ext = getCodecExtension(codec);
         String experimentalString = getCodecAnnotation(codec).experimental() ? " (EXPERIMENTAL!)" : "";
+        String multiString = 
+        	(OutputCodec.class.isAssignableFrom(codec) && !MultiOutputCodec.class.isAssignableFrom(codec)) ? "1" : " ";
         
         if( ext == null ) {
-            out.println(String.format(formatString, name, "", experimentalString));
+            out.println(String.format(formatString, multiString, name, "", experimentalString));
         } else {
-            out.println(String.format(formatString, name, "(" + ext + ")", experimentalString));
+            out.println(String.format(formatString, multiString, name, "(" + ext + ")", experimentalString));
         }
     
         

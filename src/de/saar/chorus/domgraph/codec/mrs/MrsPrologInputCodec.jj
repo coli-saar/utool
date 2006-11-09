@@ -25,12 +25,12 @@ import de.saar.chorus.domgraph.codec.mrs.*;
 @CodecMetadata(name="mrs-prolog", extension=".mrs.pl")
 public class MrsPrologInputCodec extends InputCodec
 {
-	private MrsCodecOptions.Normalisation normalisation;
+	private Normalisation normalisation;
     private MrsCodec codec;
  
     @CodecConstructor
     public MrsPrologInputCodec(
-    	@CodecOption(name="normalisation", defaultValue="nets") MrsCodecOptions.Normalisation normalisation)
+    	@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation)
     {
 		this((Reader) null);
 		this.normalisation = normalisation;
