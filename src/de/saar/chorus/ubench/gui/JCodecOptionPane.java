@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,12 +61,14 @@ public class JCodecOptionPane extends JComponent {
 
 		layout = new GridBagLayout();
 		setLayout(layout);
+		
 		left = new GridBagConstraints();
 		left.anchor = GridBagConstraints.LAST_LINE_START;
 		left.weightx = 0;
 		left.weighty = 0;
 		left.gridx = 0;
 		left.fill = GridBagConstraints.HORIZONTAL;
+		left.insets = new Insets(0,0,0,5);
 		
 		right = new GridBagConstraints();
 		right.anchor = GridBagConstraints.LINE_END;
@@ -73,7 +76,7 @@ public class JCodecOptionPane extends JComponent {
 		right.weighty = 0;
 		right.gridx = 1;
 		right.fill = GridBagConstraints.HORIZONTAL;
-		
+		right.insets = new Insets(0,5,0,0);
 		gridy = 0;
 		constructOptionPanel();
 	}
