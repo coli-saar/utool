@@ -381,7 +381,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
 							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
-							
+							+ System.getProperty("line.separator")
+							+ "http://www.coli.uni-saarland.de/projects/chorus/utool/"
 							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
 							
 							"JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
@@ -556,6 +557,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 				} else if(command.equals("showcodecs")) {
 					JFrame cf = new JFrame("Codecs in Utool");
 					JLabel cp = new JLabel();
+					CodecManager manager =
+						Ubench.getInstance().getCodecManager();
 					
 					StringBuffer codecList = new StringBuffer();
 					codecList.append("<html>Input Codecs:<br><br>" + 
@@ -563,6 +566,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					// TODO avoid doubling here
 					for( GenericFileFilter filter : ffInputCodecs ) {
+						String codec =
+							manager.getInputCodecNameForFilename(
+									"foo" + filter.getExtension());
+							
+						
 						codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
 								+ filter.getExtension() +
 						")</td></tr>");
