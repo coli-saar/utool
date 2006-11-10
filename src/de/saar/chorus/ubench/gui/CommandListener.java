@@ -158,7 +158,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						ConnectionManager.startServer(op);
 					}
 					catch( IOException ex ) {
-						JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+						JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 								ex.getMessage(),
 								"Server Error",
 								JOptionPane.ERROR_MESSAGE);
@@ -185,7 +185,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 				
 				fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 				
-				int fcVal = fc.showOpenDialog(Ubench.getInstance().getTopmostWindow());	
+				int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
 				
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
@@ -238,7 +238,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 						
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getTopmostWindow());	
+						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());	
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
@@ -380,7 +380,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					}.start();
 					
 				} else if (command.equals("about") ) {
-					JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
 							+ System.getProperty("line.separator")
@@ -407,7 +407,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						ExampleViewer exview = new ExampleViewer();
 						exview.setVisible(true);
 					} catch(IOException ex) {
-						JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+						JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 								ex.getMessage(),
 								"Error during example loading",
 								JOptionPane.ERROR_MESSAGE);
@@ -431,7 +431,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						
 						
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getTopmostWindow());
+						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
 						
 						
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
@@ -512,7 +512,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 											if( total_time > 0 ) {
 												interTime = (int) Math.floor(count * 1000.0 / total_time) + " sfs/sec; ";
 											}
-											JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"Found " + count + " solved forms." 
 													+ System.getProperty("line.separator") + 
 													"Time spent on extraction: " + time_extraction + " ms" + 
@@ -524,17 +524,17 @@ ItemListener, ConnectionManager.StateChangeListener {
 											
 											
 										} catch (IOException ex) {
-											JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"The specified file cannot be created.",
 													"Error during output",
 													JOptionPane.ERROR_MESSAGE);
 										} catch (MalformedDomgraphException md) {
-											JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"The output codec doesn't support output of this graph:\n" + md,
 													"Error during output",
 													JOptionPane.ERROR_MESSAGE);
 										} catch (UnsupportedOperationException uE) {
-											JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													uE.getMessage(),
 													"Error during output",
 													JOptionPane.ERROR_MESSAGE);
@@ -636,7 +636,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
 					
-					int fcVal =  fc.showDialog(Ubench.getInstance().getTopmostWindow(), "Export Picture");
+					int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Export Picture");
 					
 					
 //					proceed with a chosen file
@@ -658,7 +658,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							public void run() {
 								
 								WaitingDialog progress = new WaitingDialog(	
-										"Printing Picture...", (JFrame) Ubench.getInstance().getTopmostWindow());
+										"Printing Picture...", (JFrame) Ubench.getInstance().getWindow());
 								progress.beginTask();
 								// that's just a guess...
 								
@@ -669,7 +669,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 									
 									
 								} catch (IOException exc) {
-									JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+									JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 											"The output file can't be opened.",
 											"Error while creating image",
 											JOptionPane.ERROR_MESSAGE);
@@ -696,7 +696,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						
 						// configuring button and window texts
-						int fcVal =  fc.showDialog(Ubench.getInstance().getTopmostWindow(), "Print PDF");
+						int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Print PDF");
 						fc.setApproveButtonText("Print!");
 						
 						// proceed with a chosen file
@@ -725,7 +725,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							new Thread() {
 								public void run() {
 									WaitingDialog progress = new WaitingDialog(	
-											"Printing PDF...", (JFrame) Ubench.getInstance().getTopmostWindow());
+											"Printing PDF...", (JFrame) Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
 									
@@ -733,7 +733,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 										// the actual PDF-printing
 										ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), filepath);
 									} catch (IOException io) {
-										JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 												"The output file can't be opened.",
 												"Error from PDF printer",
 												JOptionPane.ERROR_MESSAGE);
@@ -823,7 +823,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						if(e.getStateChange() == ItemEvent.SELECTED ) {
 							Ubench.getInstance().reduceAutomatically = true;
 							if(! Ubench.getInstance().isEquationSystemLoaded() ) {
-								JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 										"You have to specify a xml file that contains your equation system" + 
 										System.getProperty("line.separator") + 
 										" before Utool can eliminate equivalences.",
@@ -845,7 +845,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		
-		int fcVal = fc.showOpenDialog(Ubench.getInstance().getTopmostWindow());	
+		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
 		
 		if(fcVal == JFileChooser.APPROVE_OPTION){
 			
@@ -860,7 +860,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 				}
 				
 			} catch( Exception ex ) {
-				JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 						"The Equation System cannot be parsed." + 
 						System.getProperty("line.separator") + 
 						"Either the input file is not valid or it contains syntax errors.",
