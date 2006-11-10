@@ -252,11 +252,11 @@ public class ConnectionManager {
         NodeLabels labels = new NodeLabels();
         makeWarmupGraph(graph, labels);
         
-        logger.log("Warming up the server (" + PASSES + " passes) ... ");
+        System.err.println("Warming up the server (" + PASSES + " passes) ... ");
         
         for( int i = 0; i < PASSES; i++ ) {
             Chart chart = new Chart();
-            logger.log("  - pass " + (i+1));
+            System.err.println("  - pass " + (i+1));
             
             ChartSolver.solve(graph, chart);
             SolvedFormIterator it = new SolvedFormIterator(chart,graph);
@@ -266,7 +266,7 @@ public class ConnectionManager {
         }
         
         
-        logger.log("Utool is now warmed up.");
+        System.err.println("Utool is now warmed up.");
     }
 
 
