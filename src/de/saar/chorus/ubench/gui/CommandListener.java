@@ -137,15 +137,22 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		/* Handling the known actions by identifying their command */
 		
-		// picture export
+		
 		if( command.equals("preferences") ) {
+			// show settings (so far only server settings)
 			Ubench.getInstance().setPreferenceDialogVisible(true);
-		} else if(command.equals("loadeqs")){
+		}  else if(command.equals("loadeqs")){
+			// load global equation system
 			loadEQS();
 		} else if(command.equals("server")) {
-			if(Ubench.getInstance().getMenuBar().isServerButtonPressed())
-			{final  AbstractOptions op = new AbstractOptions();
+			// start / stop server
 			
+			
+			if(Ubench.getInstance().getMenuBar().isServerButtonPressed()) {
+			//start server
+				
+			final  AbstractOptions op = new AbstractOptions();
+				//	fetching server settings
 			op.setOptionLogging(ServerOptions.isLogging());
 			op.setLogWriter(ServerOptions.getLogwriter());
 			op.setOptionWarmup(ServerOptions.isWarmup());
@@ -166,9 +173,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 				}
 			}.start();
 			} else {
+				// stop server
 				ConnectionManager.stopServer();
 			}
 		} else if(command.equals("print")) {
+			// print the graph
 			WaitingDialog progress = new WaitingDialog("Printing Graph...", 
 					Ubench.getInstance().getWindow());
 			progress.beginTask();
@@ -223,7 +232,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 				
 			} else 
 				
-				// exporting the visible graph.
+				// exporting the visible graph to a file.
 				if( command.equals("saveUtool")) {
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
@@ -403,6 +412,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 							"About the Underspecification Workbench", 
 							JOptionPane.INFORMATION_MESSAGE);
 				} else if (command.equals("loadExample")) {
+					// open one of the standard examples
+					// in the utool example directory
 					try{
 						ExampleViewer exview = new ExampleViewer();
 						exview.setVisible(true);
@@ -413,13 +424,16 @@ ItemListener, ConnectionManager.StateChangeListener {
 								JOptionPane.ERROR_MESSAGE);
 					}
 				} else if (command.equals("saveAll")) {
-					//JChooseFrame frame = new JChooseFrame();
+					
+					// export the solved forms of a graph
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
 					if( graph != null) {
 						JCodecFileChooser fc = new JCodecFileChooser(
 								Ubench.getInstance().getLastPath().getAbsolutePath(),
 								JCodecFileChooser.Type.EXPORT_SOLVED_FORMS);
+						
+						// only MultiOutputCodecs are suitable here
 						fc.addCodecFileFilters(ffMultiOutputCodecs);
 						
 						fc.setSelectedFile(new File(Ubench.getInstance().
@@ -436,6 +450,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
+							// retrieving the selected file
 							File file = fc.getSelectedFile();
 							Ubench.getInstance().setLastPath(file.getParentFile());
 							String targetFile = file.getAbsolutePath();
@@ -452,24 +467,30 @@ ItemListener, ConnectionManager.StateChangeListener {
 							}
 							
 							final File outputfile = new File(targetfileName);
+							
+							// retrieving the output codec
 							final MultiOutputCodec oc = 
 								(MultiOutputCodec) Ubench.getInstance().getCodecManager().
 								getOutputCodecForFilename(outputfile.getName(), fc.getCodecOptions());
 							new Thread() {
 								public void run() {
 									
-									
+									// display a progress bar
 									WaitingDialog progress = new WaitingDialog("Printing Solutions",
 											Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
-									
+									// retrieving the solved forms by
+									// filling a new chart 
 									Chart chart = new Chart();
 									DomGraph cgraph = Ubench.getInstance().
 									getVisibleTab().getDomGraph().compactify();
 									
+									// the recent graph
 									DomGraph graph = Ubench.getInstance().
 									getVisibleTab().getDomGraph();
+									
+									// solving the chart and measuring the time it takes
 									long start_solver = System.currentTimeMillis();
 									ChartSolver.solve(cgraph, chart);
 									long end_solver = System.currentTimeMillis();
@@ -479,13 +500,20 @@ ItemListener, ConnectionManager.StateChangeListener {
 									
 									if(oc != null) {
 										try {
+											// enumerating the solved forms
+											// to the file
+											
 											FileWriter writer = new FileWriter(outputfile);
 											long start_extraction = System.currentTimeMillis();
 											long count = 0;
+											
+											
 											SolvedFormIterator it = new SolvedFormIterator(chart,graph);
 											
 											oc.print_header(writer);
 											oc.print_start_list(writer);
+											
+											// enumerating the forms
 											while( it.hasNext() ) {
 												List<DomEdge> domedges = it.next();
 												count++;
@@ -494,6 +522,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 												if( count > 1 ) {
 													oc.print_list_separator(writer);
 												}
+												
+												// let the outputcodec write the solved form
+												// to a file
 												oc.encode(graph.withDominanceEdges(domedges), 
 														Ubench.getInstance().getVisibleTab().getNodeLabels(), 
 														writer);
@@ -504,14 +535,18 @@ ItemListener, ConnectionManager.StateChangeListener {
 											oc.print_end_list(writer);
 											oc.print_footer(writer);
 											
+											// hiding progress bar
 											progress.endTask();
 											progress.setVisible(false);
+											
 											// new text
 											long total_time = time_extraction + time_solver;
 											String interTime = null;
 											if( total_time > 0 ) {
 												interTime = (int) Math.floor(count * 1000.0 / total_time) + " sfs/sec; ";
 											}
+											
+											// statistics
 											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"Found " + count + " solved forms." 
 													+ System.getProperty("line.separator") + 
@@ -523,7 +558,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 													JOptionPane.INFORMATION_MESSAGE);
 											
 											
-										} catch (IOException ex) {
+										} catch (IOException ex) { 
 											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"The specified file cannot be created.",
 													"Error during output",
@@ -550,6 +585,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 					}
 				} else if(command.equals(("chartView"))) {
+					
+					// open a chart window with the visible
+					// graph's chart.
 					new Thread() {
 						public void run() {
 							Ubench.getInstance().getVisibleTab().displayChart();
@@ -557,23 +595,27 @@ ItemListener, ConnectionManager.StateChangeListener {
 					}.run();
 					
 				} else if(command.equals("showcodecs")) {
-					
+					// show a list of all codecs installed
 					Set<String> seen = new HashSet<String>();
 					CodecManager manager =
 						Ubench.getInstance().getCodecManager();
 					
 					StringBuffer codecList = new StringBuffer();
+					
+					// initialising a big HTML table
 					codecList.append("<html><table border=\"0\">" +
 					"<tr><th colspan=\"4\" align=\"left\">Input Codecs:</th></td>");
 					
+					// insert the input codecs first
 					for( GenericFileFilter filter : ffInputCodecs ) {
 						String codecname = 
 							filter.getName();
 						
 						if(! seen.contains(codecname)) {
-							
 							seen.add(codecname);
 							
+							// if a codec it's experimental,
+							// this is displayed
 							String exp = 
 								manager.isExperimentalInputCodec(codecname) ? "(EXPERIMENTAL!)" : "";
 							
@@ -587,16 +629,19 @@ ItemListener, ConnectionManager.StateChangeListener {
 					codecList.append("<tr><td colspan=\"4\"></td></tr>");
 					codecList.append("<tr><th colspan=\"4\" align=\"left\">Output Codecs:</th></tr>");
 					
-					
+					// the output codecs
 					for( GenericFileFilter filter : ffOutputCodecs ) {
 						String codecname = 
 							filter.getName();
 						
 						if(! seen.contains(codecname)) {
 							seen.add(codecname);
+							
+							// experimental codec?
 							String exp = 
 								manager.isExperimentalOutputCodec(codecname) ? "  (EXPERIMENTAL!)" : "";
 							
+							// multi-output-codec?
 							String multi = 
 								manager.isMultiOutputCodec(codecname) ? 
 										"[M]" : "";
@@ -618,6 +663,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 				
 				} else if(command.equals("pic")) {
+					// picture export
 					
 					JFileChooser fc = new JFileChooser();
 					
@@ -660,7 +706,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								WaitingDialog progress = new WaitingDialog(	
 										"Printing Picture...", (JFrame) Ubench.getInstance().getWindow());
 								progress.beginTask();
-								// that's just a guess...
+							
 								
 								try {
 									JDomGraph toDraw = Ubench.getInstance().getVisibleTab().getGraph();

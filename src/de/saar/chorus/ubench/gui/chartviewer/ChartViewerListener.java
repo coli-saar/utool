@@ -205,7 +205,6 @@ public class ChartViewerListener implements ActionListener {
 			
 			try {
 				eqs.read(new FileReader(file));
-				//Ubench.getInstance().setEquationSystem(eqs, file.getName());
 				toReturn = file.getName();
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(viewer,
