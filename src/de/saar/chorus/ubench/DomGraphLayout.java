@@ -1542,7 +1542,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			xStart += costBestRoot.getMaxBoxWidth() + DomGraphLayoutParameters.fragmentXDistance;
 		}
 		
-		// if there is exactly one root with exactly one hole,
+		// if there is exactly one root,
 		// it's assumed that it should be placed centred.
 		if(getFragmentGraphRoots().size() == 1) {
 			Fragment root = getFragmentGraphRoots().get(0);
@@ -1591,9 +1591,26 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		
 		for(Fragment frag : fragments) {
 			if(getFragInEdges(frag).size() == 0) {
+				boolean free = true;
+				for(DefaultEdge edge : getFragOutEdges(frag)) {
+					Fragment target =
+						graph.getTargetFragment(edge);
+						if(getFragInEdges(target).size()
+								!= 1 ) {
+							free = false;
+							
+							break;
+						}
+				}
+
+				
+				if(free) {
 				roots.add(frag);
-			}
+				}
+				
+			} 
 		}
+		
 		return roots;
 	}
 	
