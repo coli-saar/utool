@@ -732,6 +732,24 @@ public class CodecManager {
             return getCodecName(cc);
         }
     }
+    
+    public boolean isExperimentalInputCodec(String codecname) {
+    	Class codec = getInputCodecClassForName(codecname);
+    	return getCodecAnnotation(codec).experimental();
+    }
+    
+    public boolean isExperimentalOutputCodec(String codecname) {
+    	Class codec = getOutputCodecClassForName(codecname);
+    	return getCodecAnnotation(codec).experimental();
+    }
+    
+   
+    
+    public boolean isMultiOutputCodec(String codecname) {
+    	Class codec = getOutputCodecClassForName(codecname);
+    	return MultiOutputCodec.class.isAssignableFrom(codec);
+    	
+    }
 
     private void displayOneCodec(Class codec, String formatString, PrintStream out) {
         String name = getCodecName(codec);
