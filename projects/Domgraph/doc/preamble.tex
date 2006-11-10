@@ -20,7 +20,7 @@
 
 %\usepackage{picin/picins}
 
-
+\usepackage{covington}
 
 %% \usepackage{pst-tree,pst-node}
 %% \usepackage{amsmath,amsthm,amssymb,amscd,amsfonts}
@@ -30,17 +30,17 @@
 %% %\usepackage{german}
 
 %\usepackage{covington}
-\makeatletter
-\newcounter{@@equationsave}
-\newenvironment{examples}{%
-  \begin{list}{(\theequation)}{%
-      \setcounter{@@equationsave}{\arabic{equation}}%
-      \usecounter{equation}%
-      \setcounter{equation}{\arabic{@@equationsave}}% 
-      \def\makelabel##1{##1\hfil}}}{
-  \end{list}}
-%\newenvironment{example}{\begin{examples}\item}{\end{examples}}
-\makeatother
+%\makeatletter
+%\newcounter{@@equationsave}
+%\newenvironment{examples}{%
+%  \begin{list}{(\theequation)}{%
+%      \setcounter{@@equationsave}{\arabic{equation}}%
+%      \usecounter{equation}%
+%      \setcounter{equation}{\arabic{@@equationsave}}% 
+%      \def\makelabel##1{##1\hfil}}}{
+%  \end{list}}
+%%\newenvironment{example}{\begin{examples}\item}{\end{examples}}
+%\makeatother
 
 
 
