@@ -31,23 +31,23 @@ public class CodecTools {
      * @return the string possibly surrounded with quotes
      */
     public static String atomify(String label) {
-        boolean must_atomify = false;
-        
-        for( int i = 0; i < label.length(); i++ ) {
-            if( !Character.isLetterOrDigit(label.charAt(i)) && (label.charAt(i) != '_') ) {
-                must_atomify = true;
-            }
-        }
-        
-        if( Character.isUpperCase(label.charAt(0)) ||
-                Character.isDigit(label.charAt(0)) ||
-                (label.charAt(0) == '_') ) {
-            must_atomify = true;
-        }
-        
-        return must_atomify ? ("\'" + label + "'") : label;
+    	// check first character    	
+    	if (label.charAt(0) < 'a' || label.charAt(0) > 'z')
+    		return ("'" + label + "'");
+
+    	// check rest
+    	for (int i = 1; i < label.length(); ++i) {
+    		// we cannot use Character.isLetterOrDigit here because the result of this
+    		// method depends on the encoding (i.e., possibly treats umlauts etc. as letters).
+    		if ((label.charAt(0) < 'a' || label.charAt(0) > 'z') &&
+    			(label.charAt(0) < 'A' || label.charAt(0) > 'Z') &&
+    			(label.charAt(0) < '0' || label.charAt(0) > '9') &&
+    			(label.charAt(0) != '_'))
+    			return ("'" + label + "'");    		
+    	}
+     	return label;	
     }
-    
+
     /**
      * Computes a string that is a valid Prolog variable from
      * the argument. If the argument starts with an uppercase
