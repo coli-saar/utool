@@ -253,6 +253,7 @@ information will be written to standard error.
 \end{itemize}
 
 \todo{document input and output codec options}
+\todo{Stefan: habe unten was dazu geschrieben}
 
 
 \subsubsection{Solve}
@@ -504,6 +505,22 @@ options:
 \end{itemize}
 
 
+\subsection{Input and Output-Codec Options}
+
+In addition to the options discussed above, the above commands also accept the
+two options `--input-codec-option option=value' and `--output-codec-option
+option=value' which can be used to modify the behaviour of the input (or output)
+codec used to read the underspecified representation (or to print the results).
+For instance, the two codecs that deal with underspecified descriptions based
+upon Minimal Recursion Semantics (see Section \ref{sec:codecs-mrs}) provide the
+option `normalisation' which can be either `nets' (the default) or `none'. So
+for instance
+
+\begin{verbatim}
+utool display ex:rondane-1.mrs.pl --input-codec-option normalisation=none
+\end{verbatim}
+
+instructs the input codec to perform only a partial translation into dominance graphs, which is useful in particular in combination with the display command (as it allows to inspect underspecified representations for which utool would otherwise report an error as they cannot be correctly translated).
 
 
 \subsection{Pseudo-commands}
