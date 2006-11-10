@@ -207,12 +207,8 @@ public class Ubench {
      * @return the width
      */
     public double getTabWidth() {
-        double windowScale = 1;
-        if (window.getState() != JFrame.NORMAL)
-            windowScale = (double) window.getWidth()
-            / window.getMaximizedBounds().width;
-        
-        return tabbedPane.getWidth() * windowScale;
+       
+        return tabbedPane.getWidth();
     }
     
     /**

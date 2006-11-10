@@ -64,8 +64,6 @@ public class CommandListener implements ActionListener,
 ItemListener, ConnectionManager.StateChangeListener {
 
 
-	
-	//private FileFilter ffInNativeGxl = new GenericFileFilter("dc.xml", "Domcon/GXL");
 	private List<GenericFileFilter> ffInputCodecs;
 	private List<GenericFileFilter> ffOutputCodecs;
 	private List<GenericFileFilter> ffMultiOutputCodecs;
@@ -463,8 +461,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 							new Thread() {
 								public void run() {
 									
-									
-									// that's just a guess...
 									
 									WaitingDialog progress = new WaitingDialog("Printing Solutions",
 											Ubench.getInstance().getWindow());
