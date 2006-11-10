@@ -2,16 +2,17 @@
 
 \section{Using Utool}  \label{sec:operations}
 
+As you have seen in the tutorial, the Ubench GUI is rather straightforward to use. The tutorial has walked you through most of its functionality, and while it is by no means a complete documentation and there are various other aspects that we have not mentioned, it is probably enough for you to find your way around the rest by yourself.
+
+However, the command-line and server modes of Utool are less self-explanatory. This chapter documents how to use them in more detail. 
+
 In the current release, Utool supports six commands: \verb?solve?,
-\verb?solvable?, \verb?classify?, \verb?convert?, \verb?server?,
+\verb?solvable?, \verb?classify?, \verb?convert?, \verb?server?, and
 \verb?display?. Each of these commands can be used from the
 command-line or in the Utool Server (but running the \verb?server?
 command in the Utool Server doesn't do anything). In addition, Utool
 supports several auxiliary pseudo-commands, which display help
 information. 
-
-In this section, we describe these commands in some detail.
-
 
 \subsection{Command-line interface}
 When Utool is run from the command-line, it executes the single
@@ -20,12 +21,12 @@ the following call executes one \verb?solvable? command and outputs
 some information about it:
 
 \begin{verbatim}
-$ utool solvable -s examples/chain-3.clls
+$ utool solvable -s examples/chain3.clls
 \end{verbatim}
 % $
 
 Commands typically require \emph{arguments} (in the example, the
-filename \verb?chain-3.clls? of the USR that we want to solve), and
+filename \verb?chain3.clls? of the USR that we want to solve), and
 accept certain \emph{options} (here, the \verb?-s? option, which
 instructs Utool to display statistical information). These arguments
 and options are written after the command on the command line.
@@ -48,7 +49,7 @@ $ utool server
 \end{verbatim}
 %$
 
-The server doesn't output anything on the console on which you started
+Alternatively, you can also click the server button in the top right corner of a Ubench window to start or stop a server thread. The server doesn't output anything on the console on which you started
 it -- unless you specified the \verb?--logging? command-line option
 and no name for the logfile, in which case it will write some
 information to standard error. 
@@ -115,12 +116,9 @@ Most commands require the user to specify an USR that should be
 processed.
 
 In command-line mode, you pass a specification of the USR as a
-command-line argument. Most input codecs interpret this specification
-string as the filename from which the USR should be read; in the
-example above, we used the file name \verb?chain-3.clls?. However, it
-is up to the input codec to decide how the argument string should be
-interpreted; the \verb?chain? codec, for example, interprets the
-string as the chain length and not as a filename.
+command-line argument. If this specification starts with \verb?ex:?, it is taken to represent one of the USRs that come bundled with Utool. For instance, when we used the specification \verb?ex:holesemantics-14.hs.pl? in the tutorial, this instructed Utool to look for an example with the name \verb?holesemantics-14.hs.pl? in the Jar file.
+
+If the specification doesn't start with \verb?ex:?, then it is up to the input codec how to interpret it. Most codecs take it to be a filename, and will attempt to read the USR from the file with this name. This is what happens when you unpack the Jar file and then execute \verb?utool solvable examples/chain3.clls?. The only codec that is currently distributed with Utool that interprets its input specification differently is the \verb?chain? codec, which interprets the string as the numeric chain length and not as a filename.
 
 In server mode, you can't pass a filename because the server may run
 on a different machine than the client and may not have access to its
@@ -134,7 +132,7 @@ like so:
 </utool>
 \end{verbatim}
 
-Notice that the attribute values must be valid XML attribute
+The \verb?ex:? syntax is not available in server mode. Notice that the attribute values must be valid XML attribute
 strings. This means that you must replace special characters by
 their respective character entities (see also
 Section~\ref{sec:practice} for tips on this).
@@ -196,7 +194,7 @@ exit code & meaning \\\hline
 
 \subsection{The commands supported by Utool}
 
-We will now go through the seven main commands and describe what each
+We will now go through the six main commands and describe what each
 command does and what options it takes.
 
 
@@ -205,14 +203,14 @@ command does and what options it takes.
 This command converts the input USR into a dominance graph and checks
 whether this graph is solvable, i.e.\ has any solved
 forms. Linguistically, this corresponds to checking whether the
-sentence has any readings (ideally, it should!).
+sentence has any readings (ideally, it should!). 
 
 Solvability is determined by computing a dominance chart as described
 in \cite{KolTha05b}. This is typically much more efficient than
 actually \emph{solving} the graph, i.e.\ enumerating its solved forms,
 because the chart is exponentially smaller than the set of all solved
 forms. This command only makes a yes/no decision about solvability and
-thus doesn't have to enumerate all the solved forms. If you want them,
+thus doesn't have to enumerate all the solved forms; it does, however, compute the total number of solved forms based on the chart. If you want the individual solved forms,
 see the ``solve'' command below.
 
 
@@ -246,14 +244,19 @@ In command-line mode, specify the input codec with the option
 mode, specify it as the \verb?codec? attribute of the \verb?usr?
 element.
 
+\item \textbf{input-codec-options:} Some input codecs will accept options. For instance, the \verb?mrs-prolog? input codec has an option that tells it whether you want to \emph{normalise} the dominance graph it computes from an USR in MRS format. You typically want this, but you can switch off the normalisation by passing the value \verb?none? in the \verb?normalisation? codec option.
+
+In command-line mode, you can specify input codec options with the option \verb?--input-codec-options <options>?, where \verb?<options>? is a comma-separated list of option-value pairs. In the example of the MRS codec above, you could pass the option \verb?--input-codec-options normalisation=none? to switch off the normalisation. In server mode, you can set codec options by passing this comma-separated option list in the \verb?codec-options? attribtue of the \verb?usr? element.
+
 \item \textbf{display-statistics:} You can make Utool display more detailed
 statistics when you call it on the command-line by passing the
 \verb?--display-statistics? or \verb?-s? option. All such statistics
-information will be written to standard error.
+information will be written to standard error. This will do nothing in server mode; the server transmits statistical information in any case.
+
+\item \textbf{nochart:} If you are \emph{only} interested in checking solvability of an USR, you can speed up the answer by passing the \verb?--nochart? option on the command line. In server mode, you achieve the same effect by passing \verb?true? in the \verb?nochart? attribute of the main \verb?utool? element. This will make Utool compute an incomplete chart which is sufficient for determining solvability, but not for computing the number of solved forms. As a consequence, Utool will not print or return any statistics about chart size or number of solved forms.
 \end{itemize}
 
-\todo{document input and output codec options}
-\todo{Stefan: habe unten was dazu geschrieben}
+
 
 
 \subsubsection{Solve}
@@ -291,6 +294,7 @@ attribute value strings.
 The \verb?solve? command can take the following options:
 \begin{itemize}
 \item \textbf{input-codec:} see \verb?solvable?
+\item \textbf{input-codec-options:} see \verb?solvable?
 \item \textbf{output-codec:} You can specify the output codec which
 should be used to encode the solved forms. If you don't specify the
 output codec explicitly, the command-line tool will first try to guess
@@ -303,6 +307,8 @@ In command-line mode, specify the output codec with the option
 \verb?--output-codec <codecname>? or \verb?-O <codecname>?. In server
 mode, specify it by passing the codec name as the \verb?output-codec?
 attribute of the main \verb?utool? element.
+
+\item \textbf{output-codec-options:} Some output codecs will accept options, in a way that works exactly the same as for input codecs. You can specify output codec options on the command line using the option \verb?--output-codec-options <options>?. In server mode, you can pass the output codec options in the \verb?output-codec-options? attribute of the main \verb?utool? element.
 
 \item \textbf{output:} By default, the command-line tool will write
 the encoded solved forms to standard output. You can override this by
@@ -352,7 +358,9 @@ the attribute value strings.
 The \verb?convert? command can take the following options:
 \begin{itemize}
 \item \textbf{input-codec:} see \verb?solvable? 
+\item \textbf{input-codec-options:} see \verb?solvable? 
 \item \textbf{output-codec:} see \verb?solve? 
+\item \textbf{output-codec-options:} see \verb?solve? 
 \item \textbf{output:} see \verb?solve?
 \item \textbf{no-output:} see \verb?solve?
 \item \textbf{display-statistics:} see \verb?solvable?
@@ -365,7 +373,7 @@ The \verb?convert? command can take the following options:
 
 The \verb?classify? command checks whether a dominance graph belongs
 to certain particularly well-behaved classes. It currently
-distinguishes the following classes:
+recongises the following classes:
 
 \begin{itemize}
 \item \emph{weakly normal}: A dominance graph is weakly normal
@@ -385,16 +393,14 @@ a graph is compactifiable, it is guaranteed that there is a one-to-one
 correspondence between the solved forms of the compactified graph and
 the solved forms of the original graph.
 \item \emph{hypernormally connected:} A normal graph is hypernormally
-connected \cite{KolNieTha03,Koller04} if any pair of nodes is
+connected \cite{KolNieTha03,Koller04} if each pair of nodes is
 connected by a simple hypernormal path, where a hypernormal path is an
 undirected path that uses no two dominance edges that are adjacent to
 the same hole. This graph class is a bit abstract, but immensely
 useful because these graphs (a) have a lot of nice structural
 properties, and (b) we believe that all graphs that are currently used
 in underspecification are or should be hypernormally connected
-\cite{FucKolNieTha04}. Because of (a), the translations of MRS and
-Hole Semantics into dominance graphs only work for USRs that translate
-into hypernormally connected graphs.
+\cite{FucKolNieTha04}. The translations of MRS and Hole Semantics into dominance graphs are only defined for USRs that translate into hypernormally connected graphs because they rely on the structural properties mentioned in (a).
 \item \emph{leaf-labelled:} A weakly normal graph is leaf-labelled
 \cite{KolNieTha03} if every (unlabelled) hole has an outgoing
 dominance edge. If a graph is both hypernormally connected and
@@ -436,6 +442,7 @@ attributes are either \verb?true? or \verb?false?.
 The \verb?classify? command can take the following options:
 \begin{itemize}
 \item \textbf{input-codec:} see \verb?solvable? 
+\item \textbf{input-codec-options:} see \verb?solvable? 
 \item \textbf{display-statistics:} see \verb?solvable?
 \end{itemize}
 
@@ -450,7 +457,7 @@ if Utool is already running in server mode; it can only be run from
 the command line.
 
 \paragraph{Result.} This command doesn't terminate by itself; you have
-to shut down the server process by hand.
+to shut down the server process by hand. Alternatively, if you have an open Ubench window (by running the \verb?display? command), you can shut the server down by clicking on the server button in the top right corner.
 
 \paragraph{Options.} The \verb?server? command can take the following
 options:
@@ -467,6 +474,8 @@ the option \verb?--logging? (or \verb?-l?) by itself, the log messages
 will be written to standard error. Alternatively, you can log the
 messages into a file by specifying the filename:
 \verb?--logging <filename>? or \verb?-l <filename>?.
+
+\item \textbf{warmup:} If you pass the option \verb?--warmup? to the server, it will solve a number of dominance graphs before doing anything else. The effect of this is to encourage the Java Virtual Machine to compile parts of the solver to native machine code, so when you solve USRs that you are actually interested in, Utool will do this faster and in a more predictable time. Utool will keep you informed about the warmup process, and will print the message ``Utool is now warmed up'' when the warmup is finished.
 \end{itemize}
 
 
@@ -487,40 +496,35 @@ an empty Ubench window is displayed; you can still open USRs from the
 File/Open menu or by sending further \verb?display? commands to the
 Utool Server.
 
-Ubench offers a large subset of Utool's functionality from within a
-convenient GUI. However, some functions are not accessible from Ubench
--- for example, Ubench doesn't support codec options yet, and you
-can't use it to write all solved forms of a USR to a file in one
-go. We plan to make this functionality available in Version 3.1.
-
 
 \paragraph{Result.} This command doesn't terminate by itself; you have
-to quit Ubench by choosing the File/Quit menu entry.
+to quit Ubench by choosing the File/Quit menu entry or closing the main window.
 
 \paragraph{Options.} The \verb?display? command can take the following
 options:
 
 \begin{itemize}
-\item \textbf{input-codec:} see \verb?solvable? 
+\item \textbf{input-codec:} see \verb?solvable?
+\item \textbf{input-codec-options:} see \verb?solvable?
 \end{itemize}
 
 
-\subsection{Input and Output-Codec Options}
+%\subsection{Input and Output-Codec Options}
 
-In addition to the options discussed above, the above commands also accept the
-two options `--input-codec-option option=value' and `--output-codec-option
-option=value' which can be used to modify the behaviour of the input (or output)
-codec used to read the underspecified representation (or to print the results).
-For instance, the two codecs that deal with underspecified descriptions based
-upon Minimal Recursion Semantics (see Section \ref{sec:codecs-mrs}) provide the
-option `normalisation' which can be either `nets' (the default) or `none'. So
-for instance
+%In addition to the options discussed above, the above commands also accept the
+%two options `--input-codec-option option=value' and `--output-codec-option
+%option=value' which can be used to modify the behaviour of the input (or output)
+%codec used to read the underspecified representation (or to print the results).
+%For instance, the two codecs that deal with underspecified descriptions based
+%upon Minimal Recursion Semantics (see Section \ref{sec:codecs-mrs}) provide the
+%option `normalisation' which can be either `nets' (the default) or `none'. So
+%for instance
 
-\begin{verbatim}
-utool display ex:rondane-1.mrs.pl --input-codec-option normalisation=none
-\end{verbatim}
+%\begin{verbatim}
+%utool display ex:rondane-1.mrs.pl --input-codec-option normalisation=none
+%\end{verbatim}
 
-instructs the input codec to perform only a partial translation into dominance graphs, which is useful in particular in combination with the display command (as it allows to inspect underspecified representations for which utool would otherwise report an error as they cannot be correctly translated).
+%instructs the input codec to perform only a partial translation into dominance graphs, which is useful in particular in combination with the display command (as it allows to inspect underspecified representations for which utool would otherwise report an error as they cannot be correctly translated).
 
 
 \subsection{Pseudo-commands}
@@ -732,6 +736,21 @@ runtimes. All statistics information is written to standard error.}
 as a child of the \texttt{utool} element}
 {\texttt{solvable}, \texttt{solve}}
 {Run a redundancy elimination algorithm on the chart (see  Section~\ref{sec:redund-elim}).} 
+
+\optiondesc{\texttt{-\strut -nochart}}
+{pass the attribute \texttt{nochart="true"} in the main \texttt{utool} element}
+{\texttt{solvable}}
+{Don't compute a complete chart to determine solvability. This is much faster, but makes it impossible for Utool to count solved forms.}
+
+
+\optiondesc{\texttt{-\strut -warmup}}
+{n/a}
+{\texttt{server}}
+{Warm up the JVM by solving a number of USRs before accepting commands.}
+
+
+
+
 \end{itemize}
 
 
