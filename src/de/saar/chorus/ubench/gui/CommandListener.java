@@ -17,8 +17,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -62,8 +64,8 @@ import de.saar.chorus.ubench.ServerOptions;
  */
 public class CommandListener implements ActionListener, 
 ItemListener, ConnectionManager.StateChangeListener {
-
-
+	
+	
 	private List<GenericFileFilter> ffInputCodecs;
 	private List<GenericFileFilter> ffOutputCodecs;
 	private List<GenericFileFilter> ffMultiOutputCodecs;
@@ -151,17 +153,17 @@ ItemListener, ConnectionManager.StateChangeListener {
 			
 			
 			new Thread() {
-			    public void run() {
-			        try {
-			            ConnectionManager.startServer(op);
-			        }
-			        catch( IOException ex ) {
-			        	JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
+				public void run() {
+					try {
+						ConnectionManager.startServer(op);
+					}
+					catch( IOException ex ) {
+						JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
 								ex.getMessage(),
 								"Server Error",
 								JOptionPane.ERROR_MESSAGE);
-			        }
-			    }
+					}
+				}
 			}.start();
 			} else {
 				ConnectionManager.stopServer();
@@ -184,12 +186,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 				fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 				
 				int fcVal = fc.showOpenDialog(Ubench.getInstance().getTopmostWindow());	
-
+				
 				// proceeding the selected file
 				if (fcVal == JFileChooser.APPROVE_OPTION) {
 					final File file = fc.getSelectedFile();
 					
-								
+					
 					// updating the last chosen path
 					Ubench.getInstance().setLastPath(file.getParentFile());
 					
@@ -251,7 +253,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								file = new File(targetFile);
 							}
 							
-												
+							
 							
 							
 							OutputCodec oc = 
@@ -419,14 +421,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 								Ubench.getInstance().getLastPath().getAbsolutePath(),
 								JCodecFileChooser.Type.EXPORT_SOLVED_FORMS);
 						fc.addCodecFileFilters(ffMultiOutputCodecs);
-
+						
 						fc.setSelectedFile(new File(Ubench.getInstance().
 								getVisibleTab().getDefaultName() + 
-						"_solvedForms" + 
-						((GenericFileFilter) fc.getFileFilter()).getExtension()));
+								"_solvedForms" + 
+								((GenericFileFilter) fc.getFileFilter()).getExtension()));
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-
+						
 						
 						
 						int fcVal = fc.showSaveDialog(Ubench.getInstance().getTopmostWindow());
@@ -557,33 +559,59 @@ ItemListener, ConnectionManager.StateChangeListener {
 				} else if(command.equals("showcodecs")) {
 					JFrame cf = new JFrame("Codecs in Utool");
 					JLabel cp = new JLabel();
+					Set<String> seen = new HashSet<String>();
 					CodecManager manager =
 						Ubench.getInstance().getCodecManager();
 					
 					StringBuffer codecList = new StringBuffer();
-					codecList.append("<html>Input Codecs:<br><br>" + 
-					"<table border=\"0\">");
+					codecList.append("<html><table border=\"0\">" +
+					"<tr><th colspan=\"4\" align=\"left\">Input Codecs:</th></td>");
 					
-					// TODO avoid doubling here
 					for( GenericFileFilter filter : ffInputCodecs ) {
-						String codec =
-							manager.getInputCodecNameForFilename(
-									"foo" + filter.getExtension());
-							
+						String codecname = 
+							filter.getName();
 						
-						codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
-								+ filter.getExtension() +
-						")</td></tr>");
+						if(! seen.contains(codecname)) {
+							
+							seen.add(codecname);
+							
+							String exp = 
+								manager.isExperimentalInputCodec(codecname) ? "(EXPERIMENTAL!)" : "";
+							
+							codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
+									+ filter.getExtension() +
+									")</td><td></td><td>" + exp +
+							"</td></tr>");
+						}
 					}
-					codecList.append("</table><br><br><br>Output Codecs:<br><br>" + 
-					"<table border=\"0\">");
+					seen.clear();
+					codecList.append("<tr><td colspan=\"4\"></td></tr>");
+					codecList.append("<tr><th colspan=\"4\" align=\"left\">Output Codecs:</th></tr>");
+					
+					
 					for( GenericFileFilter filter : ffOutputCodecs ) {
-						codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
-								+ filter.getExtension() +
-						")</td></tr>");
+						String codecname = 
+							filter.getName();
+						
+						if(! seen.contains(codecname)) {
+							seen.add(codecname);
+							String exp = 
+								manager.isExperimentalOutputCodec(codecname) ? "  (EXPERIMENTAL!)" : "";
+							
+							String multi = 
+								manager.isMultiOutputCodec(codecname) ? 
+										"[M]" : "";
+							
+							codecList.append("<tr><td>" + filter.getName() + "</td><td> ("
+									+ filter.getExtension() +
+									")</td><td>" + multi +
+									"</td><td>" + exp +
+							"</td></tr>");
+						}
 					}
 					
-					codecList.append("</ul></html>");
+					codecList.append("</table><br><br>[M]: Allows output of " +
+					"multiple graphs (applicable for solved form export)</html>");
 					cp.setText(codecList.toString());
 					cp.setBorder(
 							BorderFactory.createEmptyBorder(
@@ -610,9 +638,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 					fc.setFileFilter(bmpFilter);
 					
 					
-						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
-						
+					
 					int fcVal =  fc.showDialog(Ubench.getInstance().getTopmostWindow(), "Export Picture");
 					
 					
@@ -669,9 +697,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 						// if there was any path chosen before, the
 						// file chooser will start in the related directory
 						
-							fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-							
-							
+						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+						
+						
 						// configuring button and window texts
 						int fcVal =  fc.showDialog(Ubench.getInstance().getTopmostWindow(), "Print PDF");
 						fc.setApproveButtonText("Print!");
@@ -835,7 +863,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 				for(JGraphTab tab : Ubench.getInstance().getTabs() ) {
 					tab.enableGlobalEQS(true);
 				}
-			
+				
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getTopmostWindow(),
 						"The Equation System cannot be parsed." + 
