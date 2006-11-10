@@ -557,8 +557,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					}.run();
 					
 				} else if(command.equals("showcodecs")) {
-					JFrame cf = new JFrame("Codecs in Utool");
-					JLabel cp = new JLabel();
+					
 					Set<String> seen = new HashSet<String>();
 					CodecManager manager =
 						Ubench.getInstance().getCodecManager();
@@ -612,16 +611,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					codecList.append("</table><br><br>[M]: Allows output of " +
 					"multiple graphs (applicable for solved form export)</html>");
-					cp.setText(codecList.toString());
-					cp.setBorder(
-							BorderFactory.createEmptyBorder(
-									25,25,25,50));
-					cf.add(cp);
 					
-					cf.setAlwaysOnTop(true);
-					cf.pack();
-					cf.validate();
-					cf.setVisible(true);
+					
+					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+							codecList, "Codecs in Utool", JOptionPane.INFORMATION_MESSAGE);
+					
+				
 				} else if(command.equals("pic")) {
 					
 					JFileChooser fc = new JFileChooser();
