@@ -260,7 +260,7 @@ public class ExampleViewer extends JFrame implements
 	 * This provides the possibility to press
 	 * "enter" to load an example (instead of pressing
 	 * the "load" button).
-	 * @author Nermal
+	 * @author Michaela Regneri
 	 *
 	 */
 	private class EnterAdapter extends KeyAdapter {
