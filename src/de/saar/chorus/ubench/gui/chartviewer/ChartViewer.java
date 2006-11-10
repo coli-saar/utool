@@ -140,7 +140,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		// some initialising
 		super("Chart of " + title);
-
+		
 		graphName = title;
 		labels = la;
 		listener = new ChartViewerListener(this);
@@ -150,8 +150,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		jdg = jg;
 		modified = false;
 		reduced = false;
+		
+		// automatical chart reduction is selected
 		if(Ubench.getInstance().reduceAutomatically) {
 			if( ! dg.isNormal() ) {
+				// error if a not normal graph is loaded
 				JOptionPane.showMessageDialog(this,
 						"This chart represents a graph which is not normal," + 
 						System.getProperty("line.separator") + 
@@ -159,6 +162,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						"Server Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else if( ! dg.isHypernormallyConnected()) {
+				// error if a not hnc graph is loaded
 				JOptionPane.showMessageDialog(this,
 						"This chart represents a graph which is not hypernormally" + 
 						System.getProperty("line.separator") + 
@@ -192,13 +196,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		prettyprint = new JTable(new ChartTableModel()) {
 			
 			private static final long serialVersionUID = 1L;
-
+			
 			public String getToolTipText(MouseEvent e) {
 				java.awt.Point p = e.getPoint();
 				int rowIndex = rowAtPoint(p);
 				int colIndex = columnAtPoint(p);
 				int realColumnIndex = convertColumnIndexToModel(colIndex);
 				
+				// Tooltips for subgraphs
 				if(realColumnIndex == 0) {
 					Set<String> subgraph = subgraphs.get(rowIndex);
 					if( subgraph != null && (! subgraph.isEmpty())) {
@@ -631,7 +636,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		
 		private static final long serialVersionUID = -7173102655466766081L;
-
+		
 		/**
 		 * The column headers.
 		 */
@@ -786,7 +791,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		lastIndex = -1;
 		subgraphs.clear();
 		noOfSubgraphs = 0;
-	
+		
 		// rebuilding the data structure
 		calculateChartTable();
 		initColumnSizes();
@@ -798,12 +803,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		solvedforms.setText("   This chart has " + noOfSolvedForms
 				+ " solved form" + (BigInteger.ONE.equals(noOfSolvedForms) ? "" : "s")
 				+ ".");
-				
+		
 		refreshTitleAndStatus();
 		validate();
 		
 		
-	
+		
 	}
 	
 	/**
@@ -898,12 +903,12 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		setMinimumSize(new Dimension((int) (statusbar.getPreferredSize().width * 1.2),
 				getPreferredSize().height)
-				);
+		);
 		
 		if( (! noOfSolvedForms.equals(chartcopy.countSolvedForms())) ||
-			(noOfSubgraphs != 
-				chartcopy.countSubgraphs()) || 
-				(noOfSplits != chartcopy.size())) {
+				(noOfSubgraphs != 
+					chartcopy.countSubgraphs()) || 
+					(noOfSplits != chartcopy.size())) {
 			modified = true;
 		}
 		refreshTitle();
@@ -923,7 +928,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		infotext.append("  ");
 		infotext.append(System.getProperty("line.separator"));
 		
-		infotext.append("This chart has " + noOfSolvedForms + " solved forms.");
+		infotext.append("This chart has " + noOfSolvedForms + " solved form" +
+				(BigInteger.ONE.equals(noOfSolvedForms)? "" : "s") +
+				".");
 		infotext.append(System.getProperty("line.separator"));
 		infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
 				noOfSplits + " splits.");
@@ -978,18 +985,18 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			return;
 		}
 		if(! reduced ) {
-		IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
-			(DomGraph) dg.clone(), labels,
-			eqs);
-
-		elim.eliminate(chart);
-		reduced = true;
-		eqsname = eqsn;
-		refreshTitleAndStatus();
-		
+			IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
+					(DomGraph) dg.clone(), labels,
+					eqs);
+			
+			elim.eliminate(chart);
+			reduced = true;
+			eqsname = eqsn;
+			refreshTitleAndStatus();
+			
 		}
 	}
-
+	
 	/**
 	 * This is to activate / deactivate the
 	 * menu item for reducing the chart with a
@@ -1017,8 +1024,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		ChartViewerListener lis;
 		JMenu chartmenu, splitmenu;
 		JMenuItem elred, reset, delete, 
-				  firstsolvedform, 
-				  elredglobal, info, close;
+		firstsolvedform, 
+		elredglobal, info, close;
 		
 		ChartViewerMenu(ChartViewerListener li) {
 			
@@ -1095,19 +1102,19 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 *
 	 */
 	private class ChartViewerFocusListener implements WindowFocusListener {
-
+		
 		public void windowGainedFocus(WindowEvent e) {
-
+			
 			int row = prettyprint.getSelectedRow();
 			int col = prettyprint.getSelectedColumn();
 			markGraph(row,col);
 		}
-
+		
 		public void windowLostFocus(WindowEvent e) {
 		}
 		
 	}
-
+	
 	/**
 	 * Responsible for the appearance of the
 	 * status bar at the bottom.
@@ -1118,7 +1125,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		GridBagLayout layout = new GridBagLayout();
 		statusbar = new JPanel(layout);
 		solvedforms = new JLabel("This Chart has " 
-				+ noOfSolvedForms + " solved forms.");
+				+ noOfSolvedForms + " solved form" +
+				(BigInteger.ONE.equals(noOfSolvedForms)? "" : "s") + ".");
 		
 		solve = new JButton("SOLVE");
 		solve.addActionListener(listener);
@@ -1167,7 +1175,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	boolean isReduced() {
 		return reduced;
 	}
-
+	
 	/**
 	 * @param reduced The reduced to set.
 	 */

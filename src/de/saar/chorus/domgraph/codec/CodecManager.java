@@ -733,20 +733,56 @@ public class CodecManager {
         }
     }
     
+    /**
+     * Determines whether or not an input codec has the 
+     * status "EXPERIMENTAL".
+     * If the codecname does not exist or is no input
+     * codec, false is returned.
+     * 
+     * @param codecname the codec's String representation
+     * @return true if the codec is experimental
+     */
     public boolean isExperimentalInputCodec(String codecname) {
     	Class codec = getInputCodecClassForName(codecname);
+    	if(codec == null) {
+    		return false;
+    	}
     	return getCodecAnnotation(codec).experimental();
     }
     
+    /**
+     * Determines whether or not an output codec has the 
+     * status "EXPERIMENTAL".
+     * If the codecname does not exist or is no output
+     * codec, false is returned.
+     * 
+     * @param codecname the codec's String representation
+     * @return true if the codec is experimental
+     */
     public boolean isExperimentalOutputCodec(String codecname) {
     	Class codec = getOutputCodecClassForName(codecname);
+    	
+    	if(codec == null) {
+    		return false;
+    	}
     	return getCodecAnnotation(codec).experimental();
     }
     
    
-    
+    /**
+     * Determines whether or not an output codec supports
+     * the output of multiple solved forms into one file.
+     * If the codecname does not exist or is no output
+     * codec, false is returned.
+     * 
+     * @param codecname the codec's String representation
+     * @return true if the codec allows the output of multiple solved forms
+     */
     public boolean isMultiOutputCodec(String codecname) {
     	Class codec = getOutputCodecClassForName(codecname);
+    	if(codec == null) {
+    		return false;
+    	}
     	return MultiOutputCodec.class.isAssignableFrom(codec);
     	
     }
