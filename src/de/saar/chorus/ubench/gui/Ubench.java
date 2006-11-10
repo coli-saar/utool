@@ -113,10 +113,12 @@ public class Ubench {
             exampleManager.addAllExamples("projects/Domgraph/examples");
          
         } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
-            System.err.println("A parsing error occurred " +
-            		"while reading an examples declaration.");
-            System.err.println(e + " (cause: " + e.getCause() + ")");
-
+            JOptionPane.showMessageDialog(window,
+            		"A parsing error occurred " +
+            		"while reading an examples declaration." + 
+            		System.getProperty("line.separator") + 
+            		e + " (cause: " + e.getCause() + ")");
+        	
             System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
         }
 
@@ -683,9 +685,14 @@ public class Ubench {
         try {
             codecManager.registerAllDeclaredCodecs();
         } catch(Exception e) {
-            System.err.println("An error occurred trying to register a codec.");
-            System.err.println(e + " (cause: " + e.getCause() + ")");
-
+        	JOptionPane.showMessageDialog(window,
+        			"An error occurred trying to register a codec." +
+        			System.getProperty("line.separator") + 
+        			e + " (cause: " + e.getCause() + ")",
+        			"Codec error",
+        			JOptionPane.ERROR_MESSAGE
+        			);
+           
             System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
         
