@@ -268,8 +268,7 @@ public class FragmentTower {
      */
     public Rectangle getBox() {
         if( placedAtX < 0 ) {
-            // not placed yet
-            System.err.println("WARNING: getBox() for unplaced tower!");
+          
             return new Rectangle(0, 0, maximalWidth, getHeight());
         } else {
             return new Rectangle(placedAtX, placedAtY, maximalWidth, getHeight());

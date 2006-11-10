@@ -186,7 +186,6 @@ public class Fragment extends DomGraphPopupTarget {
      */
     boolean isLeaf(DefaultGraphCell node) {
     	if(getChildren(node) == null) {
-    		System.err.println("falscher knoten!!"); //debug
     		return false;
     	}
     	return getChildren(node).isEmpty();
