@@ -1,11 +1,9 @@
-unreleased  3.1
+2006-11-13  3.1
     - Much more of the functionality of Utool is now also
-      available from Ubench.  This includes a GUI for working
-      with dominance charts, codec options, and control over
-      the Utool Server.
-      
-    - Ubench can now be started directly via a link from the
-      website (Java Webstart).
+      available from Ubench.  For instance, Ubench now supports
+      codec options and offers simple control over the Utool
+      Server.  Moreover, Ubench now has a GUI for displaying
+      and modifying dominance charts and supports printing.
       
     - The Utool Server now no longer waits for the client to
       close its socket, but starts working immediately after
@@ -17,6 +15,13 @@ unreleased  3.1
       annotations. This reduces the amount of boilerplate code
       in a codec class, and allows us to use codec options in a
       uniform way, both from the command line and from Ubench.
+      
+    - The examples that come bundled with Utool can now be
+      accessed as "ex:examplename", i.e. they can be used without
+      unpacking the Utool Jar file.
+      
+    - Ubench can now be started directly via a link from the
+      website (Java Webstart).
       
     - Many minor improvements and bug fixes.
       
@@ -43,7 +48,7 @@ unreleased  3.1
         Prolog and Oz syntax.
       * domgraph-dot outputs labelled dominance graphs using the "dot"
         graph description language, which can be used from a variety
-	of tools such as graphviz.
+	    of tools such as graphviz.
 
     - Licence change: The entire Utool package is now distributed
       under the GPL because it is linked against Getopt. We might
