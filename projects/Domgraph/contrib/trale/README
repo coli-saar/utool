@@ -1,0 +1,16 @@
+
+           Integrating Utool with Trale
+           ----------------------------
+           
+This folder contains some files that can be used to integrate the
+functionality of Utool into the Trale system.  Trale is a grammar
+development system for HPSG grammars (see http://www.sfs.uni-tuebingen.de/hpsg/archive/projects/trale/).
+
+This integration was contributed by Stefan MŸller (Stefan.Mueller@cl.uni-bremen.de).
+
+The individual files can be used as follows:
+ *
+ * DOCUMENT THIS
+ *
+ 
+ 
