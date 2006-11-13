@@ -48,7 +48,7 @@
 	
 	<!-- parameters for the distribution -->
 	<property name="domgraph-dist.jar" value="${build.lib}/Utool-src-${domgraph.version}.jar" />
-	<property name="distribution.exclude" value="" />
+	<property name="distribution.exclude" value="**/testsuite/**" />
 	
 	<!-- deployment -->
 	<property name="${deploy.dir}" value="/web/www.coli.uni-saarland.de/html/projects/chorus/utool" />
@@ -63,7 +63,7 @@
 			<fileset dir="${build.classes}"
 		         includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
 								   ${getopt.unpacked.classes},${itext.unpacked.classes}"
-					excludes="**/*$UnitTests.class" />
+					excludes="**/*$UnitTests.class,**/testsuite/**" />
 			<fileset dir="." includes="examples/**/*, pictures/**/*" />
 			<manifest>
 				<attribute name="Main-Class"
@@ -107,9 +107,9 @@
 
 		<!-- buildfile, rootfiles, apidoc -->
 		<copy todir="tmp_Domgraph">
-			<fileset dir="${prefix}/projects/Domgraph/" includes="build.xml,examples/**/*,tools/**/*" excludes="*~" />
+			<fileset dir="${prefix}/projects/Domgraph/" includes="build.xml,examples/**/*,pictures/**/*,tools/**/*,contrib/**/*" excludes="*~" />
 			<fileset dir="${prefix}/projects/Domgraph/rootfiles" includes="*" excludes="*~" />
-			<fileset dir="${prefix}" includes="docs/**/*" />
+			<fileset dir="${prefix}" includes="docs/**/*" excludes="${distribution.exclude}" />
 		</copy>
 		
 		<replace file="tmp_Domgraph/build.xml" 
@@ -130,7 +130,7 @@
              basedir="${build.classes}"
              includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},
 			${itext.unpacked.classes},${jgraph.unpacked.classes}"
-					excludes="**/*$UnitTests.class">
+					excludes="**/*$UnitTests.class,**/testsuite/**">
 
 			<manifest>
 				<attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
@@ -298,10 +298,12 @@
 	<!-- Javadoc -->
 
 	<target name="javadoc" depends="compile-all">
-		<javadoc destdir="${doc.api}" access="public" noqualifier="all">
+		<javadoc destdir="${doc.api}" access="public" noqualifier="all" maxmemory="512m"
+			excludepackagenames="de.saar.chorus.domgraph.testsuite.*">
 			<fileset dir="${source}" 
 				includes="${domgraph.allsourcefiles}" 
-				excludes="**/*.jj, **/*.properties" />
+				excludes="**/*.jj, **/*.properties, **/testsuite/**/*" />
+			
 			<classpath>
 				<pathelement path="${build.classes}" />
 				<pathelement path="${testng.jar}" />
