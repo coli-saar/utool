@@ -391,7 +391,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
 							+ System.getProperty("line.separator") + System.getProperty("line.separator") 
-							+ "http://www.coli.uni-saarland.de/projects/chorus/utool/"
+							+ "http://" + GlobalDomgraphProperties.getHomepage()
 							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
 							
 							"JGraph version 1.0.3 & JGraphAddons version 1.0" + System.getProperty("line.separator") + 
