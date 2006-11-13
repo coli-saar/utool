@@ -36,11 +36,14 @@ public class AbstractOptions {
                 "can be specified with the -I and -O options. If only an input codec\n" +
                 "is specified, and an output codec of the same name exists, this codec\n" +
                 "is used for output. `utool --display-codecs' will display a list of\n" +
-                "input and output codecs.\n\n" +
+                "input and output codecs. Note that the output codec must support\n" +
+                "the output of multiple solved forms.\n\n" +
                 "Valid options:\n" +
                 "  --output, -o filename           Write solutions to a file.\n" +
                 "  --input-codec, -I codecname     Specify the input codec.\n" +
-        "  --output-codec, -O codecname    Specify the output codec (default: same as input).\n",
+                "  --input-codec-options options   Specify the input codec options.\n" +
+                "  --output-codec, -O codecname    Specify the output codec (default: same as input).\n" +
+                "  --output-codec-options options  Specify the output codec options.\n",
         true, true),
         
         solvable   
@@ -60,7 +63,9 @@ public class AbstractOptions {
                 "can be specified with the -I option. `utool --display-codecs'\n" +
                 "will display a list of valid input codecs.\n\n" +
                 "Valid options:\n" +
-        "  --input-codec, -I codecname     Specify the input codec.\n",
+                "  --input-codec, -I codecname     Specify the input codec.\n" +
+                "  --input-codec-options options   Specify the input codec options.\n" +
+                "  --nochart                       Don't compute the full chart.\n",
         true, false),
         
         
@@ -76,7 +81,9 @@ public class AbstractOptions {
                 "Valid options:\n" +
                 "  --output, -o filename           Write solutions to a file.\n" +
                 "  --input-codec, -I codecname     Specify the input codec.\n" +
-        "  --output-codec, -O codecname    Specify the output codec (default: same as input).\n",
+                "  --input-codec-options options   Specify the input codec options.\n" +
+                "  --output-codec, -O codecname    Specify the output codec (default: same as input).\n" +
+                "  --output-codec-options options  Specify the output codec options.\n",
         true, true),
         
         
@@ -97,7 +104,8 @@ public class AbstractOptions {
                 "Note that the notion of hypernormal connectedness only makes sense\n" +
                 "for normal graphs (although utool will test for it anyway).\n\n" +
                 "Valid options:\n" +
-        "  --input-codec, -I codecname     Specify the input codec.\n",
+                "  --input-codec, -I codecname     Specify the input codec.\n" +
+                "  --input-codec-options options   Specify the input codec options.\n",
         true, false),      
         
         display
@@ -109,7 +117,8 @@ public class AbstractOptions {
                 "Alternatively, you may leave the filename away; this will then bring\n" +
                 "up an empty Underspecification Workbench window.\n\n" +
                 "Valid options:\n" +
-                "  --input-codec, -I codecname     Specify the input codec.\n",
+                "  --input-codec, -I codecname     Specify the input codec.\n" +
+                "  --input-codec-options options   Specify the input codec options.\n",
                 false, false),      
                 
         server
@@ -120,7 +129,9 @@ public class AbstractOptions {
                 "Valid options:\n" +
                 "  --port, -p port           Accept connections at this port (default: 2802)\n" +
                 "  --logging, -l [filename]  Write log messages to this file; if no filename\n" +
-                "                            is given, write to stderr.\n",
+                "                            is given, write to stderr.\n" +
+                "  --warmup                  Before starting the server, warm up the JVM by\n" +
+                "                            solving a number of USRs first.",
                 false, false),
         
         help       
