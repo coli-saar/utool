@@ -426,6 +426,18 @@ ItemListener, ConnectionManager.StateChangeListener {
 					// export the solved forms of a graph
 					JDomGraph graph = Ubench.getInstance().getVisibleTab().getGraph();
 					
+					final JDomGraphTab tab;
+					
+					if( Ubench.getInstance().getVisibleTab() instanceof JDomGraphTab ) {
+						tab = (JDomGraphTab) Ubench.getInstance().getVisibleTab();
+					} else {
+						JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(), 
+								"I can't export the solved forms of a solved form.",
+								"Cannot export single solved form",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					
 					if( graph != null) {
 						JCodecFileChooser fc = new JCodecFileChooser(
 								Ubench.getInstance().getLastPath().getAbsolutePath(),
@@ -473,26 +485,35 @@ ItemListener, ConnectionManager.StateChangeListener {
 							new Thread() {
 								public void run() {
 									
+									
+									
 									// display a progress bar
 									WaitingDialog progress = new WaitingDialog("Exporting solved forms",
 											Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
-									// retrieving the solved forms by
-									// filling a new chart 
-									Chart chart = new Chart();
-									DomGraph cgraph = Ubench.getInstance().
-									getVisibleTab().getDomGraph().compactify();
 									
+
 									// the recent graph
 									DomGraph graph = Ubench.getInstance().
 									getVisibleTab().getDomGraph();
 									
-									// solving the chart and measuring the time it takes
+									// retrieving the solved forms by
+									// filling a new chart
 									long start_solver = System.currentTimeMillis();
-									ChartSolver.solve(cgraph, chart);
-									long end_solver = System.currentTimeMillis();
-									long time_solver = end_solver - start_solver;
+									
+									if( !tab.isSolvedYet() ) {
+										tab.solve();
+									}
+									
+									Chart chart = tab.getChart();
+									
+									if( chart == null) {
+										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(), 
+												"An error occurred while computing the chart.", 
+												"Solver error", JOptionPane.ERROR_MESSAGE);
+										return;
+									}
 									
 									
 									
@@ -529,7 +550,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 												
 											}
 											long end_extraction = System.currentTimeMillis();
-											long time_extraction = end_extraction - start_extraction;
 											oc.print_end_list(writer);
 											oc.print_footer(writer);
 											
@@ -538,7 +558,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 											progress.setVisible(false);
 											
 											// new text
-											long total_time = time_extraction + time_solver;
+											long total_time = end_extraction - start_solver;
 											String interTime = null;
 											if( total_time > 0 ) {
 												interTime = (int) Math.floor(count * 1000.0 / total_time) + " sfs/sec; ";
@@ -548,8 +568,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 											JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 													"Found " + count + " solved forms." 
 													+ System.getProperty("line.separator") + 
-													"Time spent on extraction: " + time_extraction + " ms" + 
-													System.getProperty("line.separator") +
 													"Total runtime: " + total_time + " ms (" + interTime + 
 													1000 * total_time / count + " microsecs/sf)",
 													"Solver Statistics",
