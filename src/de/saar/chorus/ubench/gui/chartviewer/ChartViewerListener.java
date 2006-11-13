@@ -61,7 +61,7 @@ public class ChartViewerListener implements ActionListener {
 			// if the graph is not normal, abort with error message
 			if( ! viewer.getDg().isNormal() ) {
 				JOptionPane.showMessageDialog(viewer,
-						"This chart represents a graph which is not normal," + 
+						"This is the chart of a graph which is not normal," + 
 						System.getProperty("line.separator") + 
 						"so Utool cannot eliminate redundancies.",
 						"Server Error",
@@ -73,7 +73,7 @@ public class ChartViewerListener implements ActionListener {
 			// if the graph is not hnc, abort with error message
 			if( ! viewer.getDg().isHypernormallyConnected()) {
 				JOptionPane.showMessageDialog(viewer,
-						"This chart represents a graph which is not hypernormally" + 
+						"This is the chart of a graph which is not hypernormally" + 
 						System.getProperty("line.separator") + 
 						"connected, so Utool cannot eliminate redundancies.",
 						"Server Error",

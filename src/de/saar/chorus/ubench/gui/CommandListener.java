@@ -22,10 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
@@ -392,7 +390,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
-							+ System.getProperty("line.separator")
+							+ System.getProperty("line.separator") + System.getProperty("line.separator") 
 							+ "http://www.coli.uni-saarland.de/projects/chorus/utool/"
 							+ System.getProperty("line.separator") +System.getProperty("line.separator") +
 							
@@ -476,7 +474,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								public void run() {
 									
 									// display a progress bar
-									WaitingDialog progress = new WaitingDialog("Printing Solutions",
+									WaitingDialog progress = new WaitingDialog("Exporting solved forms",
 											Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
@@ -666,7 +664,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					// picture export
 					
 					JFileChooser fc = new JFileChooser();
-					
+					fc.setDialogTitle("Export USR as Image");
 					
 					
 					GenericFileFilter bmpFilter = 
@@ -682,7 +680,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
 					
-					int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Export Picture");
+					int fcVal =  fc.showSaveDialog(Ubench.getInstance().getWindow());
 					
 					
 //					proceed with a chosen file
@@ -704,7 +702,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							public void run() {
 								
 								WaitingDialog progress = new WaitingDialog(	
-										"Printing Picture...", (JFrame) Ubench.getInstance().getWindow());
+										"Exporting Image...", (JFrame) Ubench.getInstance().getWindow());
 								progress.beginTask();
 							
 								
@@ -734,6 +732,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						// file chooser with PDF-filter 
 						JFileChooser fc = new JFileChooser();
 						fc.setFileFilter(new PDFFilter());
+						fc.setDialogTitle("Export USR as PDF");
 						
 						// if there was any path chosen before, the
 						// file chooser will start in the related directory
@@ -742,7 +741,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						
 						// configuring button and window texts
-						int fcVal =  fc.showDialog(Ubench.getInstance().getWindow(), "Print PDF");
+						int fcVal =  fc.showSaveDialog(Ubench.getInstance().getWindow());
 						fc.setApproveButtonText("Print!");
 						
 						// proceed with a chosen file
@@ -771,7 +770,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							new Thread() {
 								public void run() {
 									WaitingDialog progress = new WaitingDialog(	
-											"Printing PDF...", (JFrame) Ubench.getInstance().getWindow());
+											"Exporting PDF...", (JFrame) Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
 									
@@ -870,9 +869,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 							Ubench.getInstance().reduceAutomatically = true;
 							if(! Ubench.getInstance().isEquationSystemLoaded() ) {
 								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-										"You have to specify a xml file that contains your equation system" + 
+										"You must load a global equation system before Utool can" +
 										System.getProperty("line.separator") + 
-										" before Utool can eliminate equivalences.",
+										"automatically eliminate equivalences. You can select one" +
+										System.getProperty("line.separator") +
+										"in the following dialog.",
 										"Please load an equation system",
 										JOptionPane.INFORMATION_MESSAGE);
 								loadEQS();
@@ -907,9 +908,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 				
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-						"The Equation System cannot be parsed." + 
+						"The equation system cannot be parsed." + 
 						System.getProperty("line.separator") + 
-						"Either the input file is not valid or it contains syntax errors.",
+						"Either the input file is not readable, or it contains syntax errors.",
 						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}

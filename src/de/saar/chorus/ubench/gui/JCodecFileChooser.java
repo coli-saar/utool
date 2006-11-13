@@ -81,7 +81,7 @@ public class JCodecFileChooser extends JFileChooser
 	 */
 	public static enum Type {
 		OPEN                 ("Open USR", true),
-		EXPORT               ("Export dominance graph", false),
+		EXPORT               ("Export USR", false),
 		EXPORT_SOLVED_FORMS  ("Export solved forms", false);
 		
 		public String dialogTitle;
