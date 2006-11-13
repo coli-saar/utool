@@ -52,8 +52,8 @@ public class JDomGraphTab extends JGraphTab  {
 	private static final long serialVersionUID = 1L;
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet, compactifiable; 
-	Chart chart;
-	DomGraph compactGraph;
+	private Chart chart;
+	private DomGraph compactGraph;
 	
 	/**
 	 * Constructor to set up a tab with a dominance graph.
@@ -539,6 +539,14 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		
 		
+	}
+
+	public Chart getChart() {
+		return chart;
+	}
+
+	public DomGraph getCompactGraph() {
+		return compactGraph;
 	}
 	
 	
