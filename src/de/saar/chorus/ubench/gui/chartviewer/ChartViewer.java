@@ -156,17 +156,17 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			if( ! dg.isNormal() ) {
 				// error if a not normal graph is loaded
 				JOptionPane.showMessageDialog(this,
-						"This chart represents a graph which is not normal," + 
+						"This is the chart of a graph which is not normal," + 
 						System.getProperty("line.separator") + 
-						"thus Utool cannot eliminate redundancies.",
+						"so Utool cannot eliminate redundancies.",
 						"Server Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else if( ! dg.isHypernormallyConnected()) {
 				// error if a not hnc graph is loaded
 				JOptionPane.showMessageDialog(this,
-						"This chart represents a graph which is not hypernormally" + 
+						"This is the chart of a graph which is not hypernormally" + 
 						System.getProperty("line.separator") + 
-						"connected, thus Utool cannot eliminate redundancies.",
+						"connected, so Utool cannot eliminate redundancies.",
 						"Server Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
@@ -876,13 +876,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if(reduced) {
 			isred = new JLabel("<html><font color=\"green\">" +
 			"&#8730;</font></html>");
-			isred.setToolTipText("Equivalences are eliminated.");
-			red.setToolTipText("Equivalences are eliminated.");
+			isred.setToolTipText("Redundancy has been eliminated.");
+			red.setToolTipText("Redundancy has been eliminated.");
 		} else {
 			isred= new JLabel("<html><font color=\"red\">" +
 			"X</font></html>");
-			isred.setToolTipText("Equivalences are not eliminated yet.");
-			red.setToolTipText("Equivalences are not eliminated yet.");
+			isred.setToolTipText("Redundancy has not been eliminated.");
+			red.setToolTipText("Redundancy has not been eliminated.");
 		}
 		
 	}
@@ -892,13 +892,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if(reduced) {
 			isred.setText("<html><font color=\"green\">" +
 			"&#8730;</font></html>");
-			isred.setToolTipText("Equivalences are eliminated.");
-			red.setToolTipText("Equivalences are eliminated.");
+			isred.setToolTipText("Redundancy has been eliminated.");
+			red.setToolTipText("Redundancy has been eliminated.");
 		} else {
 			isred.setText("<html><font color=\"red\">" +
 			"X </font></html>");
-			isred.setToolTipText("Equivalences are not eliminated yet.");
-			red.setToolTipText("Equivalences are not eliminated yet.");
+			isred.setToolTipText("Redundancy has not been eliminated.");
+			red.setToolTipText("Redundancy has not been eliminated.");
 		}
 		
 		setMinimumSize(new Dimension((int) (statusbar.getPreferredSize().width * 1.2),
@@ -932,15 +932,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				(BigInteger.ONE.equals(noOfSolvedForms)? "" : "s") +
 				".");
 		infotext.append(System.getProperty("line.separator"));
-		infotext.append("It contains " + noOfSubgraphs + " subgraphs, " +
+		infotext.append("It contains " + noOfSubgraphs + " subgraphs and " +
 				noOfSplits + " splits.");
 		infotext.append(System.getProperty("line.separator"));
 		infotext.append(System.getProperty("line.separator"));
 		
 		if( modified && (! reduced) ) {
-			infotext.append("The chart has been modified,");
+			infotext.append("The chart has been modified:");
 			infotext.append(System.getProperty("line.separator"));
-			infotext.append("some splits have been deleted.");
+			infotext.append("Some splits have been deleted.");
 			infotext.append(System.getProperty("line.separator"));
 		}
 		if( reduced ) {
@@ -1060,7 +1060,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			chartmenu.add(reset);
 			
 			
-			info = new JMenuItem("Show chart info...");
+			info = new JMenuItem("Show chart information...");
 			info.setActionCommand("chartinfo");
 			info.addActionListener(lis);
 			chartmenu.add(info);
@@ -1124,7 +1124,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		GridBagLayout layout = new GridBagLayout();
 		statusbar = new JPanel(layout);
-		solvedforms = new JLabel("This Chart has " 
+		solvedforms = new JLabel("This chart has " 
 				+ noOfSolvedForms + " solved form" +
 				(BigInteger.ONE.equals(noOfSolvedForms)? "" : "s") + ".");
 		

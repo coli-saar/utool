@@ -144,7 +144,7 @@ public class JDomGraphMenu extends JMenuBar {
 		graphSpecificItems.add(pdfPrint);
 		fileMenu.add(pdfPrint);
 		 // item for pdf-export
-		pictureExport = new JMenuItem("Export as Picture...");
+		pictureExport = new JMenuItem("Export as Image...");
 		pictureExport.setActionCommand("pic");
 		pictureExport.addActionListener(listener);
 		graphSpecificItems.add(pictureExport);

@@ -147,7 +147,7 @@ public class ExampleViewer extends JFrame implements
 			pack();
 			validate();
 		} else {
-			throw new IOException("There are no examples in your Utool directory.");
+			throw new IOException("Utool couldn't find any examples.");
 			
 		}
 		
