@@ -1,4 +1,0 @@
-[label(root f(hole)) dom(hole x1) dom(hole x6) dom(y6 u5) label(x6
-f6(y6)) dom(z5 u5) dom(y5 u4) label(x5 f5(y5 z5)) dom(z4 u4) dom(y4
-u3) label(x4 f4(y4 z4)) dom(z3 u3) dom(y3 u2)  label(x3 f3(y3 z3))
-dom(z2 u2) dom(y2 u1) label(x2 f2(y2 z2)) dom(z1 u1) label(x1 f1(z1))]
