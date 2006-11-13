@@ -4,9 +4,6 @@
 	<example filename="chain3.clls"
 		description="The pure chain of length 3" />
 	
-	<example filename="test.clls"
-		description="A normal dominance constraint with 132 solved forms" />
-	
 	<example filename="thatwould.clls"
 		description="The MRS output (translated into a normal dominance constraint)
 			that the English Resource Grammar (as of 2001) generates for
