@@ -308,6 +308,8 @@ In command-line mode, specify the output codec with the option
 mode, specify it by passing the codec name as the \verb?output-codec?
 attribute of the main \verb?utool? element.
 
+Notice that the \verb?solve? command potentially outputs more than one solved form. This means that the output codec you specify here must support the output of multiple solved forms. The \verb?utool -d? command shows you for each output codec whether it does this.
+
 \item \textbf{output-codec-options:} Some output codecs will accept options, in a way that works exactly the same as for input codecs. You can specify output codec options on the command line using the option \verb?--output-codec-options <options>?. In server mode, you can pass the output codec options in the \verb?output-codec-options? attribute of the main \verb?utool? element.
 
 \item \textbf{output:} By default, the command-line tool will write
@@ -359,7 +361,7 @@ The \verb?convert? command can take the following options:
 \begin{itemize}
 \item \textbf{input-codec:} see \verb?solvable? 
 \item \textbf{input-codec-options:} see \verb?solvable? 
-\item \textbf{output-codec:} see \verb?solve? 
+\item \textbf{output-codec:} see \verb?solve?, except that \verb?convert? doesn't require that the output codec supports the output of multiple solved forms
 \item \textbf{output-codec-options:} see \verb?solve? 
 \item \textbf{output:} see \verb?solve?
 \item \textbf{no-output:} see \verb?solve?
