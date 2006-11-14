@@ -62,12 +62,12 @@ either define the alias, or expand \verb?utool? to the appropriate
 
 \subsection{The Underspecification Workbench}
 
-The most convenient way to work with Utool is via Ubench, the Underspecification Workbench. This is a GUI that will visualise USRs for you and offers access to almost the entire functionality of Ubench. 
+The most convenient way to work with Utool is via Ubench, the Underspecification Workbench. This is a GUI that will visualise USRs for you and offers access to almost the entire functionality of Utool. 
 
 
 \subsubsection{Opening examples}
 
-You can start Ubench in the following way:
+You can start Ubench like so:
 
 \begin{verbatim}
 $ utool display
@@ -82,7 +82,7 @@ This will open a window that looks as follows:
 %HEVEA \imgsrc{ubench-empty.png}
 \end{quotation}
 
-Now let's have a look at an example. Utool comes with a number of built-in examples, which you can access from Ubench via the File/Open Example menu. So go to this menu, and load the example \verb?holesemantics-14.hs.pl?. This is a Hole Semantics USR for the sentence "Every man in a restaurant knows a woman with a car", in the format used in the Blackburn and Bos textbook \cite{blackburn05:_repres_infer_natur_languag}. Ubench will internally convert this USR into a labelled dominance graph and then draw it as follows:
+Now let's have a look at an example. Utool comes with a number of built-in examples, which you can access from Ubench via the File/Open Example menu. So go to this menu, and load the example \verb?holesemantics-14.hs.pl?. This is a Hole Semantics USR for the sentence ``Every man in a restaurant knows a woman with a car'', in the Prolog format used in the Blackburn and Bos textbook \cite{blackburn05:_repres_infer_natur_languag}. Ubench will internally convert this USR into a labelled dominance graph and then draw it as follows:
 
 \begin{quotation}
 %HEVEA \begin{latexonly}
@@ -91,7 +91,7 @@ Now let's have a look at an example. Utool comes with a number of built-in examp
 %HEVEA \imgsrc{ubench-holesem.png}
 \end{quotation}
 
-The window displays some interesting information below the dominance graph. In the lower right corner, you will see the letters "N c L H". These letters express the membership of the graph in a number of graph classes: If you mouse-over the letters, you will see that the graph is normal, compactifiable, leaf-labelled, and hypernormally connected. (These notions are explained e.g.\ in \citeNP{Koller04}.) This is good, because the translations from Hole Semantics and MRS into dominance graphs are only correct if the result is leaf-labelled and hypernormally connected. (But you don't really have to pay attention to this yourself: If the input USR hadn't been in this class, Ubench would have refused to translated it and displayed an error message.)
+The window displays some interesting information below the dominance graph. In the lower right corner, you will see the letters ``N c L H''. These letters express the membership of the graph in a number of graph classes: If you mouse-over the letters, you will see that the graph is normal, compactifiable, leaf-labelled, and hypernormally connected. (These notions are explained e.g.\ in \citeNP{Koller04}.) This is nice but unsurprising: The translations from Hole Semantics and MRS require the resulting dominance graph to be leaf-labelled and hypernormally connected, because these are formal prerequisites of the correctness of the translations. If the USR hadn't been of this form, Ubench would have refused to translate it and displayed an error message.
 
 
 \subsubsection{Solving dominance graphs}
@@ -106,24 +106,19 @@ In addition, the status bar claims that this dominance graph has 14 \emph{solved
 %HEVEA \imgsrc{ubench-holesem-sf.png}
 \end{quotation}
 
-As you can see, Ubench opened a new tab ``holesemantics-14.hs.pl SF \#1'', which displays the first solved form of the graph. In linguistic terms, the solved form represents one of the scope readings, in which the different quantifiers have been assigned one particular scoping. You can see that the solved form may still contain dominance edges. But because the original graph was hypernormally connected, you can imagine that all the (dotted) dominance edges can be removed and the result is a tree that only consists of tree edges (in technical terms, this is a \emph{configuration} of the original graph). Again, see e.g.\ \citeN{Koller04} for details.
+As you can see, Ubench opened a new tab ``holesemantics-14.hs.pl SF \#1'', which displays the first solved form of the graph. In linguistic terms, the solved form represents one of the scope readings, in which the different quantifiers have been assigned one particular scoping. You can see that the solved form may still contain (dotted) dominance edges. But because the original graph was hypernormally connected, you can imagine that they can all be removed and the result is a tree that only consists of tree edges and represents a formula of first-order predicate logic. In technical terms, this is a \emph{configuration} of the original graph; again, see e.g.\ \citeN{Koller04} for details.
 
 Notice that the status bar of a solved form is different than that of an unsolved dominance graph: It now displays the index of the solved form among all solved forms of this graph, and arrows for moving back and forth between the different solved forms. Go ahead and look at some solved forms.
 
-Notice also that by default all USRs are solved automatically when they are
-loaded. Usually, this does not take much time, but if the USR is very complex,
-you will experience a short delay (up to several seconds). You can disable the
-automatic solving by unchecking the corresponding checkbox in the ``Solver''
-menu.
 
 
 \subsubsection{Exporting graphs and solved forms}
 
-As we have said above, Utool works internally with labelled dominance graphs. It uses modules called \emph{codecs} to map between string representations of USRs or readings in some formalism and dominance graphs. When you opened the example \verb?holesemantics-14.hs.pl? earlier, Ubench recognised that the filename extension \verb?.hs.pl? is associated with the \verb?holesem-comsem? input codec, and used this codec to translate the contents of the file into the graph it displayed for you \cite{KolNieTha03}. Utool is distributed with a number of different input codecs. Some of these (e.g.\ the ones that deal with various concrete syntaxes of dominance graphs) are rather trivial, whereas others (e.g.\ the MRS input codecs) are quite sophisticated and needed to be proved correct \cite{FucKolNieTha04}.
+As we have said above, Utool works internally with labelled dominance graphs. It uses modules called \emph{input codecs} to map string representations of USRs in some formalism into labelled dominance graphs. When you opened the example \verb?holesemantics-14.hs.pl? earlier, Ubench recognised that the filename extension \verb?.hs.pl? is associated with the \verb?holesem-comsem? input codec, and used this codec to translate the contents of the file into the graph it displayed for you \cite{KolNieTha03}. Utool is distributed with a number of different input codecs. Some of these (e.g.\ the ones that deal with various concrete syntaxes of dominance graphs) are rather trivial, whereas others (e.g.\ the MRS input codecs) are quite sophisticated and needed to be proved correct \cite{FucKolNieTha04}.
 
-Utool also comes with several \emph{output codecs}, which solve the converse task of computing a string representation for a labelled dominance graph. Let's have a look at these for a moment. Go back to the "holesemantics-14.hs.pl" tab, and choose File/Export from the menu. If you open the "file format" dropdown menu, you will see the list of output codecs that Ubench is aware of. One thing you can try here is to select the \verb?domgraph-dot? output codec, which exports the current dominance graph in the "dot" graph format. Then you can use a graph-drawing tool that can deal with dot files, such as Graphviz, to visualise the graph.
+Utool also comes with several \emph{output codecs}, which solve the converse task of computing a string representation for a labelled dominance graph. Let's have a look at these for a moment. Go back to the ``holesemantics-14.hs.pl'' tab, and choose File/Export from the menu. If you open the ``file format'' dropdown menu, you will see the list of output codecs that Ubench is aware of. One thing you can try here is to select the \verb?domgraph-dot? output codec, which exports the current dominance graph in the ``dot'' graph format. Then you can use a graph-drawing tool that can deal with dot files, such as Graphviz, to visualise the graph.
 
-Alternatively, you can make Ubench write all solved forms of the current dominance graph into a file. Choose File/Export Solved Forms from the menu and choose, for instance, the "term-prolog" output codec. This will save all solved forms of the graph as a list of Prolog terms, as they would e.g.\ be computed by the Blackburn and Bos USR solver.
+Alternatively, you can make Ubench write all solved forms of the current dominance graph into a file. Choose File/Export Solved Forms from the menu and choose, for instance, the \verb?term-prolog? output codec. This will save all solved forms of the graph as a list of Prolog terms, as they would e.g.\ be computed by the Blackburn and Bos USR solver.
 
 You can display a list of all installed codecs by selecting Help/Show All Codecs in the Ubench menu, or by calling \verb?utool --display-codecs? on the command line. You can also extend Utool/Ubench quite easily by implementing your own codecs. This is described in more detail in Section~\ref{sec:codecs}.
 
@@ -131,9 +126,7 @@ You can display a list of all installed codecs by selecting Help/Show All Codecs
 
 \subsubsection{Redundancy elimination}
 
-\todo{nicht nur eigennamen}
-
-Let's finish off the Ubench section of this tutorial with a more advanced operation. Utool is able to modify an underspecified representation in such a way that readings are removed if they are equivalent to a reading that is still described by the USR. This can be very useful in practice. Consider the following sentence (this is Sentence 1262 from the Rondane Corpus):
+Let's finish off the Ubench section of this tutorial with a more advanced operation. Utool is able to modify an underspecified representation in such a way that readings are removed if they are equivalent to some other reading that is still described by the USR. This can be very useful in practice. Consider the following sentence (this is Sentence 1262 from the Rondane Corpus):
 
 \begin{example}
 \label{ex:rondane-1262} 
@@ -141,9 +134,9 @@ Let's finish off the Ubench section of this tutorial with a more advanced operat
   Alta through Sweden. 
 \end{example}
 
-According to the English Resource Grammar (ERG; \citeNP{Copestake&Flickinger:LKB}), this sentence has got 3960 scope readings. However, this ambiguity only comes from the fact that the ERG analyses proper names as potentially scope-bearing quantifiers, and the only difference between the different readings is the relative scope of these proper-name "quantifiers". More generally, we can say that all readings of the sentence are semantically equivalent, and it would be desirable to remove 3959 of these equivalent readings and retain only a single representative.
+According to the English Resource Grammar (ERG; \citeNP{Copestake&Flickinger:LKB}), this sentence has got 3960 scope readings. However, this ambiguity only comes from the fact that the ERG analyses proper names as potentially scope-bearing quantifiers, and the only difference between the different readings is the relative scope of these proper-name ``quantifiers''. More generally, we can say that all readings of the sentence are semantically equivalent, and it would be desirable to remove 3959 of these equivalent readings and retain only a single representative. And while the redundancy in this particular example comes only from spurious scope ambiguities between proper names, the problem of reducing the number of logically equivalent reading is not restricted to them and also covers ambiguities between e.g.\ different existential quantifiers or different universal quantifiers.
 
-Utool implements a redundancy elimination algorithm, which will modify a USR in such a way that readings that are semantically equivalent to remaining readings are deleted. It does this without ever enumerating readings, and can thus be very efficient \cite{koller06}. Let's try it out.
+Utool implements a redundancy elimination algorithm, which will modify a USR in such a way that readings that are semantically equivalent to remaining readings are deleted. It does this without ever enumerating readings, and is thus very efficient \cite{koller06}. At the same time, it is very effective: It reduces the median number of readings on the Rondane Treebank from 55 to 4. Let's try it out.
 
 The first thing you will need is a file that defines equivalences. One such file is distributed with Utool. In order to access it, unpack the Utool Jar file by typing the following command in some directory:
 
@@ -153,7 +146,7 @@ $ jar xf Utool-3.1.jar
 
 This will create, among many others, a file \verb?erg-examples.xml? in the directory \verb?examples?. This file contains an equivalence definition that is appropriate for the Minimal Recursion Semantics USRs that are computed by the English Resource Grammar \cite{Copestake&Flickinger:LKB}. Remember the pathname of this file for now.
 
-Now go back to Ubench and open the example \verb?rondane-1262.mrs.pl? in Ubench; the filename extension \verb?.mrs.pl? is connected to the \verb?mrs-prolog? input codec, which will convert MRS representations in the Prolog format used by the ERG. As you are already familiar with, Ubench will translate the USR into a labelled dominance graph and display it.  Select the entry "View/Display Chart" from the menu. This will open a new window that looks as follows:
+Now go back to Ubench and open the example \verb?rondane-1262.mrs.pl? in Ubench; the filename extension \verb?.mrs.pl? is connected to the \verb?mrs-prolog? input codec, which will read MRS representations in the Prolog format used by the ERG. As you are already familiar with, Ubench will translate the USR into a labelled dominance graph and display it.  Select the entry ``View/Display Chart'' from the menu. This will open a new window that looks as follows:
 
 \begin{quotation}
 %HEVEA \begin{latexonly}
@@ -162,16 +155,16 @@ Now go back to Ubench and open the example \verb?rondane-1262.mrs.pl? in Ubench;
 %HEVEA \imgsrc{ubench-chart.png}
 \end{quotation}
 
-The new windows displays the \emph{dominance chart} for the dominance graph. The dominance chart is an internal representation of the set of all solved forms that's more explicit and not quite as compact at the dominance graph itself, but still much smaller than the set of solved forms itself \cite{KolTha05b}. The chart is interesting in itself, and you can play with it a bit (try clicking on the different entries to highlight subgraphs), but for our current purposes, the main point is that it is on the level of charts that we can do the redundancy elimination. So choose Chart/Reduce Chart from the menu of the chart window, and select the file \verb?erg-examples.xml? that you unpacked from the Jar file earlier. After a moment, most entries will have been deleted from the chart, and the status bar will say that the (smaller) chart represents only a single solved form, rather than the 3960 solved forms that the original chart represented. You can click on the ``solve'' button to display this single solved form. As you can see, Ubench just modified a USR in order to represent a much smaller set of readings, and it did this without computing the individual readings. From our perspective, this ability to eliminate irrelevant readings that were technically predicted by the grammar but not intended in the particular situation is the main reason why underspecification is important.
+The new windows displays the \emph{dominance chart} for the dominance graph. The dominance chart is an internal representation of the set of all solved forms that's more explicit and not quite as compact at the dominance graph itself, but still much smaller than the set of solved forms itself (\citeNP{KolTha05b} -- see also Fig.~\ref{fig:chart-vs-solutions}). The chart is interesting in itself, and you can play with it a bit (try clicking on the different entries to highlight subgraphs), but for our current purposes, the main point is that it is on the level of charts that we can do the redundancy elimination. So choose Chart/Reduce Chart from the menu of the chart window, and select the file \verb?erg-examples.xml? that you unpacked from the Jar file earlier. After a moment, most entries will have been deleted from the chart, and the status bar will say that the (smaller) chart represents only a single solved form, rather than the 3960 solved forms that the original chart represented. You can click on the ``solve'' button to display this single solved form. As you can see, Ubench just modified a USR in order to represent a much smaller set of readings, and it did this without computing the individual readings. From our perspective, this ability to eliminate irrelevant readings that were technically predicted by the grammar but not intended in the particular situation is the main reason why underspecification is important.
 
-\todo{global eq system}
+If you find that you're working with redundancy elimination a lot, and you're using the same equivalence files repeatedly, you can set a global equivalence file in the Solver menu. You can then use it conveniently from every chart window by using the menu entry ``Reduce with global equivalence system''.
 
 
 \subsection{Running Utool from the command line}
 
-All the functionality that you have just explored from the GUI is also available on the command line. By way of example, let's solve the example file \verb?chain-3.clls?, which comes with Utool. This is the \emph{pure chain of length 3}; it is shown in Fig.~\ref{fig:chain3}), and you can also look at it via Ubench. This graph is solvable, and has five solved forms.
+All the functionality that you have just explored from the GUI is also available on the command line. By way of example, let's solve the example file \verb?chain3.clls?, which comes with Utool. This is the \emph{pure chain of length 3}; it is shown in Fig.~\ref{fig:chain3}), and you can also look at it via Ubench. This graph is solvable, and has five solved forms.
 
-In order to enumerate the solved forms of \verb?chain-3.clls?, you can call Utool as follows:
+In order to enumerate the solved forms of \verb?chain3.clls?, you can call Utool as follows:
 
 \begin{verbatim}
 $ utool solve -O term-prolog ex:chain3.clls
@@ -209,7 +202,7 @@ different tasks. They are described in detail in Section~\ref{sec:operations}.
 
 \item \verb?-O term-prolog?: After the command, you can specify \emph{options}. The option \verb?-O term-prolog? (or, equivalently, \verb?--output-codec term-prolog?) specifies that the \verb?solve? command should encode the solved forms using the \verb?term-prolog? output codec. You could have specified the input codec with the \verb?-I? or \verb?--input-codec? option, but Utool already inferred that it should use the input codec \verb?domcon-oz? from the filename extension \verb?.clls?.
 
-\item \verb?ex:chain3.clls?: Finally, you can specify where the input USR should come from. In this example, we have used \verb?ex:chain3.clls?. This tells Utool that it should look inside its Jar file for a resource with the name \verb?examples/chain3.clls? and read the USR from there. Alternatively, you can specify an ordinary filename here, and Utool will read the input USR from your file system.
+\item \verb?ex:chain3.clls?: Finally, you can specify where the input USR should come from. In this example, we have used \verb?ex:chain3.clls?. This tells Utool that it should look inside its Jar file for a resource with the name \verb?examples/chain3.clls? and read the USR from there. Alternatively, you can specify an ordinary filename here, and Utool will read the input USR from your file system. You can also pass a hyphen (\verb?-?) for this argument to make Utool read its input from standard input.
 \end{itemize}
 
 
@@ -226,7 +219,9 @@ Time to build chart: 105 ms
 Number of solved forms: 64764
 \end{verbatim}
 
-As you can see, we have now instructed Utool to run the \verb?solvable? command on the input USR \verb?ex:thatwould.clls?. In addition, we have specified the \verb?-s? (or \verb?--display-statistics?) option to get more informative output. Utool has computed a dominance chart with 650 entries and established that this chart represents a set of 64764 solved forms. However, it has not actually computed the solved forms themselves. (This is what \verb?solve? would have done after computing the chart.) It has also set an \emph{exit code} of 1 because the graph is solvable (has solved forms), so if you are using a bash shell, you can do the following immediately after the utool call:
+As you can see, we have now instructed Utool to run the \verb?solvable? command on the input USR \verb?ex:thatwould.clls?. In addition, we have specified the \verb?-s? (or \verb?--display-statistics?) option to get more informative output. Notice that we didn't have to specify an output codec, because \verb?solvable? doesn't output USRs or readings.
+
+Utool has computed a dominance chart with 650 entries and established that this chart represents a set of 64764 solved forms. However, it has not actually computed the solved forms themselves. (This is what \verb?solve? would have done after computing the chart.) It has also set an \emph{exit code} of 1 because the graph is solvable (has solved forms), so if you are using a bash shell, you can do the following immediately after the utool call:
 
 \begin{verbatim}
 $ echo $?
@@ -236,7 +231,7 @@ $ echo $?
 If you want to give your computer a challenge, we encourage you to run \verb?solvable? on the input \verb?ex:rondane-650.mrs.pl?, an MRS USR representing more than two trillion readings. You will have to increase Java's memory limit by passing it the option \verb?-Xmx512m? to avoid ``out of memory'' errors.
 
 
-Two further Utool commands are \verb?convert? and \verb?classify?, which allow you to convert USRs into each other (comparable to opening a USR and then exporting it using a different codec in Ubench) and to determine their membership in various graph classes (a more sophisticated version of Ubench's ``N C L H'' display in the status bar). We will not cover these commands in this tutorial. However, it is worth pointing out that you can always get help on the command-line usage of Ubench using the \verb?command?:
+Two further Utool commands are \verb?convert? and \verb?classify?, which allow you to convert USRs into other formalisms (comparable to opening a USR and then exporting it using a different codec in Ubench) and to determine their membership in various graph classes (a more sophisticated version of Ubench's ``N C L H'' display in the status bar). We will not cover these commands in this tutorial. However, it is worth pointing out that you can always get help on the command-line usage of Ubench using the \verb?help? command:
 
 \begin{verbatim}
 $ utool help
@@ -255,7 +250,7 @@ will display help on how to use the \verb?solve? command (and similarly for the 
 
 \subsection{The Utool Server} 
 
-Finally, you can also run Utool in a server mode. In server mode, Utool
+The third way of running Utool is in a server mode. In server mode, Utool
 keeps running indefinitely; it accepts commands via a socket, executes
 these commands, and sends the results back through the socket. You can
 start Utool in server mode from Ubench by clicking on the server icon in the top right corner, or from the command line as follows:
@@ -266,7 +261,7 @@ $ utool server
 %$
 
 This will open a socket on port 2802 of your machine and listen to
-commands sent from this port. If you have Perl installed on your
+commands sent to this port. If you have Perl installed on your
 system, you can test the Utool Server using the demo client we have
 included in the distribution. Keep the Utool server process
 running, change to the directory where you unpacked the Jar earlier, and execute the following command:
