@@ -51,8 +51,8 @@
 	<property name="distribution.exclude" value="**/testsuite/**" />
 	
 	<!-- deployment -->
-	<property name="${deploy.dir}" value="/web/www.coli.uni-saarland.de/html/projects/chorus/utool" />
-	<property name="${deploy.hostname}" value="httpd.coli.uni-saarland.de" />
+	<property name="deploy.dir" value="/web/www.coli.uni-saarland.de/html/projects/chorus/utool" />
+	<property name="deploy.hostname" value="httpd.coli.uni-saarland.de" />
 	
 
 
@@ -142,6 +142,18 @@
 		<delete dir="tmp_Domgraph/" />
 	</target>
 
+	
+
+	
+	<!-- exact command for deployment on Alexander's laptop:
+	
+	CLASSPATH=packages/jsch-0.1.28.jar:$CLASSPATH ~/Applications/apache-ant-1.6.5/bin/ant \
+	   -f projects/Domgraph/build.xml deploy -Dkeystore=/Users/alex/.keystore -Dkeystore.alias=chorus \
+	   -Dkeystore.password=... -Ddeploy.username=koller -Ddeploy.password=...
+	    
+	   Remember to use Java 1.5!!
+	   
+	-->
 	
 	<!-- deploy a new distribution as follows:
 	

@@ -1,6 +1,6 @@
 <jnlp
   spec="1.0+"
-  codebase="http://www.coli.uni-saarland.de/projects/chorus/utool/webstart"
+  codebase="http://www.coli.uni-saarland.de/projects/chorus/utool"
   href="utool.jnlp">
 
   <information>
@@ -18,27 +18,7 @@
 
   <resources>
     <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="Utool-3.1.jar"/>
-  </resources>
-
-  <resources os="Windows">
-    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="Utool-3.1.jar"/>
-  </resources>
-  
-  <resources os="SunOS" arch="sparc">
-    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="Utool-3.1.jar"/>
-  </resources>
-  
-  <resources os="Linux">
-    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="Utool-3.1.jar"/>
-  </resources>
-
-  <resources os="Mac OS">
-    <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="Utool-3.1.jar"/>
+    <jar href="download/Utool-3.1.jar"/>
   </resources>
 
   <application-desc>
