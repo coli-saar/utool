@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="packages/commons-io-1.2.jar"/>
 	<classpathentry kind="lib" path="packages/commons-lang-2.1.jar"/>
 	<classpathentry kind="lib" path="packages/groovy-all-1.0-JSR-06.jar"/>
+	<classpathentry kind="lib" path="projects/Domgraph"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
