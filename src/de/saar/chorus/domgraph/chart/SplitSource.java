@@ -293,17 +293,10 @@ public abstract class SplitSource {
 
     
 
-    /**************************************************************
-     * UNIT TESTS
-     **************************************************************/
-    
-    @Test(groups = {"Domgraph"})
-    public class UnitTests {
         /*
-         * tests:
+         * unit tests:
          * 
          * - check whether computeSplit computes correct splits
          * - computeSplit returns null if root is not free
          */
-    }
 }

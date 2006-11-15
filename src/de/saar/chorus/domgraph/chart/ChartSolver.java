@@ -185,19 +185,14 @@ public class ChartSolver {
     
     
 
-    
-    /**************************************************************
-     * UNIT TESTS
-     **************************************************************/
-    
-    @Test(groups = {"Domgraph"})
-    public class UnitTests {
+   
         /*
+         * UNIT TESTS:
+         * 
          * Test chart size and correct readings for:
          * - chain of length 3
          * - thatwould.clls (dauert einige Sekunden)
          * - not-hnc.clls
          * - something unsolvable
          */
-    }
 }
