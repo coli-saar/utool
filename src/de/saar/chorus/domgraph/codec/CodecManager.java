@@ -949,32 +949,6 @@ public class CodecManager {
      *  - exception when trying to register a nameless codec (getName = null)
      */
     
-    @Test(groups = {"Domgraph"})
-    public class UnitTests {
-        private CodecManager manager;
-        
-        @Configuration(beforeSuite = true)
-        public void setup() throws Exception {
-            manager = new CodecManager();
-            manager.registerAllDeclaredCodecs();
-        }
-        
-        public void getCodecNames() {
-            assert "domcon-oz".equals(manager.getInputCodecNameForFilename("foo.clls"));
-            assert "domcon-oz".equals(manager.getOutputCodecNameForFilename("foo.clls"));
-            assert "mrs-prolog".equals(manager.getInputCodecNameForFilename("foo.mrs.pl"));
-            assert "domgraph-udraw".equals(manager.getOutputCodecNameForFilename("foo.dg.udg"));
-            
-            assert manager.getOutputCodecNameForFilename("does.not.exist") == null;
-        }
-        
-        public void getParameterDefaultValues() {
-        	assert "false".equals(manager.getOutputCodecParameterDefaultValue("domgraph-udraw", "pipe"));
-        	assert manager.getOutputCodecParameterDefaultValue("domgraph-udraw", "does not exist") == null;
-        	assert manager.getOutputCodecParameterDefaultValue("does not exist", "foo") == null;
-        }
-    }
-
     
     
 }
