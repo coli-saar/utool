@@ -992,6 +992,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			elim.eliminate(chart);
 			reduced = true;
 			eqsname = eqsn;
+			if(statusbar != null)
 			refreshTitleAndStatus();
 			
 		}

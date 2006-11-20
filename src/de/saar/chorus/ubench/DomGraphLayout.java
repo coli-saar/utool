@@ -1592,7 +1592,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		for(Fragment frag : fragments) {
 			if(getFragInEdges(frag).size() == 0) {
 				
-				roots.add(frag);
+					roots.add(frag);
 				
 			}	
 			

@@ -308,6 +308,8 @@ public class JDomGraphMenu extends JMenuBar {
 
 
 		autoreduce.addItemListener(listener);
+		autoreduce.setEnabled(Ubench.getInstance().isEquationSystemLoaded());
+		
 		listener.registerEventSource(autoreduce, "autoreduce");
 		utoolMenu.add(autoreduce);
 		
@@ -410,8 +412,12 @@ public class JDomGraphMenu extends JMenuBar {
 	 * Enables or disables export of solved forms.
 	 * @param b if set to true, the menu item for solved form export is enabled
 	 */
-	public void setSaveAllEnables(boolean b) {
+	public void setSaveAllEnabled(boolean b) {
 		saveAll.setEnabled(b);
+	}
+	
+	public void setReduceAutomaticallyEnabled(boolean b) {
+		autoreduce.setEnabled(b);
 	}
 	
 	public static class ServerButton extends JToggleButton {
