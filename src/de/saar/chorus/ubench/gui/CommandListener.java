@@ -146,7 +146,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 			// start / stop server
 			
 			
-			if(Ubench.getInstance().getMenuBar().isServerButtonPressed()) {
+			if(Ubench.getInstance().getMenuBar().
+					getServerButton().isSelected()) {
 			//start server
 				
 			final  AbstractOptions op = new AbstractOptions();
@@ -1119,9 +1120,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		JDomGraphMenu menu = Ubench.getInstance().getMenuBar();
 		
 		if(newState == ConnectionManager.State.RUNNING) {
-			menu.setServerButtonPressed(true);
+			menu.getServerButton().setSelected(true);
 		} else if(newState == ConnectionManager.State.STOPPED) {
-			menu.setServerButtonPressed(false);
+			menu.getServerButton().setSelected(false);
 		}
 	}
 	
