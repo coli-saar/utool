@@ -76,7 +76,7 @@ public class JDomGraphMenu extends JMenuBar {
 					  autoreduce,
 					  preferences;
     
-	private JToggleButton server;
+	private ServerButton server;
 	
 	// the listener for the menu(s)
 	private CommandListener listener;
@@ -339,31 +339,10 @@ public class JDomGraphMenu extends JMenuBar {
         
         add(helpMenu);
         
-        URL picurl = null;
-        picurl = Thread.currentThread().getContextClassLoader().getResource("projects/Domgraph/pictures/Ch5.gif");
-        if(picurl == null) {
-        	picurl = Thread.currentThread().getContextClassLoader().getResource("pictures/Ch5.gif");
-        }
-        if(picurl == null) {
-        	server = new JToggleButton("@");
-        } else {
-        	ImageIcon ic = new ImageIcon(picurl);
-        	server = new JToggleButton(ic);
-        }
         
-         
-        server.setToolTipText("Click here to start a server " + 
-    			System.getProperty("line.separator") + 
-    			"on port " + ServerOptions.getPort() + ".");
         
-        server.setActionCommand("server");
-        server.addActionListener(listener);
-        server.setBackground(Color.GRAY);
-        server.setOpaque(false);
-        server.setIconTextGap(1);
-        server.setMargin(new Insets(1,1,1,1));
-        setServerButtonPressed(ConnectionManager.getState() 
-        		== ConnectionManager.State.RUNNING);
+        
+        server = new ServerButton(listener);
         add(Box.createHorizontalGlue());
         add(server);      
         
@@ -378,32 +357,17 @@ public class JDomGraphMenu extends JMenuBar {
     		cSolvForms.setEnabled(b);
     }
 	
-    /**
-     * Allows to press the server button or release it.
-     * @param b
-     */
-    void setServerButtonPressed(boolean b) {
-        server.setSelected(b);
-        if(b) {
-        	server.setToolTipText("The server is running. " +
-        			System.getProperty("line.separator") + 
-        		"Click here to stop it.");
-        } else {
-        	server.setToolTipText("Click here to start a server " + 
-        			System.getProperty("line.separator") + 
-        			"on port "  + ServerOptions.getPort() + ".");
-        }
-    }
-    
-    /**
-     * 
-     * @return true if the server button is selected
-     */
-    boolean isServerButtonPressed() {
-    	return server.isSelected();
-    }
+   
    
     
+	public ServerButton getServerButton() {
+		return server;
+	}
+
+	private void setServer(ServerButton server) {
+		this.server = server;
+	}
+
 	/**
 	 * Enable or disable the items that operate
 	 * on the visible graph.
@@ -448,5 +412,54 @@ public class JDomGraphMenu extends JMenuBar {
 	 */
 	public void setSaveAllEnables(boolean b) {
 		saveAll.setEnabled(b);
+	}
+	
+	public static class ServerButton extends JToggleButton {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -9122903869661066502L;
+
+		public ServerButton(CommandListener listener) {
+			super();
+			addActionListener(listener);
+			initialise();
+		}
+		
+		private void initialise() {
+			URL picurl = null;
+	        picurl = Thread.currentThread().getContextClassLoader().getResource("projects/Domgraph/pictures/Ch5.gif");
+	        if(picurl == null) {
+	        	picurl = Thread.currentThread().getContextClassLoader().getResource("pictures/Ch5.gif");
+	        }
+	        if(picurl == null) {
+	        	setText("@");
+	        } else {
+	        	ImageIcon ic = new ImageIcon(picurl);
+	        	setIcon(ic);
+	        }
+	        
+	        setActionCommand("server");
+	        setBackground(Color.GRAY);
+	        setOpaque(false);
+	        setIconTextGap(1);
+	        setMargin(new Insets(1,1,1,1));
+	        setSelected(ConnectionManager.getState() 
+	        		== ConnectionManager.State.RUNNING);
+		}
+		
+		public void setSelected(boolean pressed) {
+			if(pressed) {
+				setToolTipText("The server is running. " +
+	        			System.getProperty("line.separator") + 
+	        		"Click here to stop it.");
+			} else {
+				setToolTipText("Click here to start a server " + 
+	        			System.getProperty("line.separator") + 
+	        			"on port "  + ServerOptions.getPort() + ".");
+			}
+		}
+		
+		
 	}
 }

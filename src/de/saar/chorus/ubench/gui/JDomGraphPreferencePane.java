@@ -211,7 +211,7 @@ public class JDomGraphPreferencePane extends JFrame
 		}
 		
 		// TODO figure out how to do this properly
-		Ubench.getInstance().getMenuBar().setServerButtonPressed(
+		Ubench.getInstance().getMenuBar().getServerButton().setSelected(
 			ConnectionManager.getState() == ConnectionManager.State.RUNNING);
 		
 		if(systemerrout.isSelected()) {
