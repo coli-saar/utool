@@ -924,6 +924,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 				for(JGraphTab tab : Ubench.getInstance().getTabs() ) {
 					tab.enableGlobalEQS(true);
 				}
+			
 				
 			} catch( Exception ex ) {
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
@@ -933,6 +934,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 						"Error while loading equation system",
 						JOptionPane.ERROR_MESSAGE);
 			}
+			
+			
 		}
 	}
 	

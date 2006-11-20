@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 
 /**
  * This class represents a <code>JDialog</code> with a Generic progress bar.
@@ -77,10 +78,10 @@ public class WaitingDialog extends JDialog implements ActionListener {
 	 */
 	public void beginTask() {
 	
-		progressBar.setString(""); 
-		progressBar.setIndeterminate(true);
-		ok.setEnabled(false);
-		setVisible(true);
+				progressBar.setString(""); 
+				progressBar.setIndeterminate(true);
+				ok.setEnabled(false);
+				setVisible(true);		
 		
 	}
 	
