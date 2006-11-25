@@ -454,7 +454,10 @@ public class JDomGraphMenu extends JMenuBar {
 	        		== ConnectionManager.State.RUNNING);
 		}
 		
+		@Override
 		public void setSelected(boolean pressed) {
+			super.setSelected(pressed);
+			
 			if(pressed) {
 				setToolTipText("The server is running. " +
 	        			System.getProperty("line.separator") + 

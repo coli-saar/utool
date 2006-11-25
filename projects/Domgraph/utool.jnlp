@@ -8,7 +8,7 @@
     <vendor>Project CHORUS</vendor>
     <homepage href="http://www.coli.uni-saarland.de/projects/chorus/utool"/>
     <description>The Swiss Army Knife of Underspecification</description>
-    <description kind="short">Utool 3.1</description>
+    <description kind="short">Utool 3.1.1</description>
     <offline-allowed/>
   </information>
 
@@ -18,7 +18,7 @@
 
   <resources>
     <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+"/>
-    <jar href="download/Utool-3.1.jar"/>
+    <jar href="download/Utool-3.1.1.jar"/>
   </resources>
 
   <application-desc>
