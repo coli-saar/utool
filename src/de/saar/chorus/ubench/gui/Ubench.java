@@ -36,9 +36,9 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
+import de.saar.chorus.domgraph.utool.Utool;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.getopt.ConvenientGetopt;
 
 /**
  * The main class of Ubench.
@@ -596,36 +596,17 @@ public class Ubench {
      * Starting Ubench, optionally with files to open on command line
      * 
      * @param args
-     *            command line arfuments
+     *            command line arguments
      */
     public static void main(String[] args) {
         
-        
-        
-        
-        // parse command-line arguments
-        ConvenientGetopt getopt = new ConvenientGetopt("Ubench",
-                "java -jar Ubench.jar [options] [filename]",
-                "If Ubench doesn't run in server mode, specify a filename on the command line"
-                + "\nto display the graph.");
-        
-        getopt.parse(args);
-        
-        // extract arguments
-        
-        // load files that were specified on the command line
-        for (String file : getopt.getRemaining()) {
-            DomGraph anotherGraph = new DomGraph();
-            NodeLabels labels = new NodeLabels();
-            JDomGraph graph = getInstance().genericLoadGraph(file, anotherGraph, labels, null);
-            if (graph != null) {
-                // DomGraphTConverter conv = new DomGraphTConverter(graph);
-                JDomGraphTab firstTab = getInstance().addNewTab(graph, (new File(file))
-                        .getName(), anotherGraph, true, false, labels);
-                
-            }
+        // just pass this on to Utool.
+        String[] utoolargs = new String[args.length + 1];
+        utoolargs[0] = "display";
+        for(int i = 0; i < args.length; i++) {
+        	utoolargs[i+1] = args[i];
         }
-        
+        Utool.main(utoolargs);
     }
     
    
