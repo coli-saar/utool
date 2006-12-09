@@ -1573,11 +1573,9 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 				
 			}
 		} 
-		//System.out.println(bestRoot);
+		
 		graph.setBoundingBox(new Rectangle(absoluteCost.getMaxBoxWidth() - possibleOffset, absoluteCost.getMaxBoxHeight()));
 		
-		//boxdebugger.drawAll();
-		//paintDebugger();
 		
 	}
 	

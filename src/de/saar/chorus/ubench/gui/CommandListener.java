@@ -29,11 +29,11 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
 import de.saar.basic.ExportUtilities;
+import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -149,7 +149,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 			if(Ubench.getInstance().getMenuBar().
 					getServerButton().isSelected()) {
 			//start server
-				
 			final  AbstractOptions op = new AbstractOptions();
 				//	fetching server settings
 			op.setOptionLogging(ServerOptions.isLogging());
@@ -246,7 +245,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 						
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());	
+						int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());	
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
 							
 							File file = fc.getSelectedFile();
@@ -456,7 +455,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						
 						
-						int fcVal = fc.showSaveDialog(Ubench.getInstance().getWindow());
+						int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
 						
 						
 						if( fcVal == JFileChooser.APPROVE_OPTION ) {
@@ -493,7 +492,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 											Ubench.getInstance().getWindow());
 									progress.beginTask();
 									
-									
+								
 
 									// the recent graph
 									DomGraph graph = Ubench.getInstance().
@@ -557,6 +556,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 											// hiding progress bar
 											progress.endTask();
 											progress.setVisible(false);
+											
+										
+										
 											
 											// new text
 											long total_time = end_extraction - start_solver;
@@ -699,7 +701,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 					
 					
-					int fcVal =  fc.showSaveDialog(Ubench.getInstance().getWindow());
+					int fcVal =  GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
 					
 					
 //					proceed with a chosen file
@@ -760,7 +762,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 						
 						
 						// configuring button and window texts
-						int fcVal =  fc.showSaveDialog(Ubench.getInstance().getWindow());
+						int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
 						fc.setApproveButtonText("Print!");
 						
 						// proceed with a chosen file

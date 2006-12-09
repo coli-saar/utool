@@ -196,7 +196,6 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 		// 1. Apply (Up) as long as possible
 		if ( agenda.isEmpty() ) {
 			while( top.isAtLastSplit() ) {
-				//System.err.println("(Up)"); //debug
 				stack.pop();
 				if (stack.isEmpty() )
 					return;

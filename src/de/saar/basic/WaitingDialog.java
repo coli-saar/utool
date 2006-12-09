@@ -1,6 +1,7 @@
 package de.saar.basic;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,7 +10,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+
+
 
 /**
  * This class represents a <code>JDialog</code> with a Generic progress bar.
@@ -58,9 +60,12 @@ public class WaitingDialog extends JDialog implements ActionListener {
 		dialogPane.add(ok,BorderLayout.SOUTH);
 		dialogPane.doLayout();
 		add(dialogPane);
+		
+
 		pack();
 		validate();
-		
+		setSize(new Dimension(
+				200, getPreferredSize().height));
 //		 locating the panel centered
 		setLocation((owner.getWidth() - getWidth())/2,
 				(owner.getHeight() - getHeight())/2); 
@@ -78,10 +83,12 @@ public class WaitingDialog extends JDialog implements ActionListener {
 	 */
 	public void beginTask() {
 	
-				progressBar.setString(""); 
-				progressBar.setIndeterminate(true);
-				ok.setEnabled(false);
-				setVisible(true);		
+
+		progressBar.setString(""); 
+		progressBar.setIndeterminate(true);
+	
+		ok.setEnabled(false);
+		setVisible(true);
 		
 	}
 	
