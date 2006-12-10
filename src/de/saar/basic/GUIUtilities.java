@@ -21,18 +21,14 @@ public class GUIUtilities {
 									"Overwrite existing file", JOptionPane.YES_NO_CANCEL_OPTION);
 				
 				switch(ync) {
-				case JOptionPane.YES_OPTION : return fcVal;
-				case JOptionPane.CANCEL_OPTION : return JFileChooser.CANCEL_OPTION;
-				case JOptionPane.NO_OPTION : {
-					fc.setVisible(true);
-					fcVal = fc.showSaveDialog(parent);
-				}  				}
+					case JOptionPane.YES_OPTION 	: return fcVal;
+					case JOptionPane.CANCEL_OPTION 	: return JFileChooser.CANCEL_OPTION;
+					case JOptionPane.NO_OPTION 		: fcVal = fc.showSaveDialog(parent);
+				}  				
 			} else {
 				break;
 			}
 		}
-		
 		return fcVal;
-		
 	}
 }
