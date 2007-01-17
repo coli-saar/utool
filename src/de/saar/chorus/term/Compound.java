@@ -140,5 +140,18 @@ public class Compound extends Term {
         
         return ret;
     }
+
+	@Override
+	public String toLispString() {
+		StringBuffer buf = new StringBuffer("(" + label);
+		
+		for( Term subterm : subterms ) {
+			buf.append(" " + subterm.toLispString());
+		}
+		
+		buf.append(")");
+		
+		return buf.toString();
+	}
     
 }

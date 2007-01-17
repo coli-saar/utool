@@ -56,4 +56,9 @@ public class Constant extends Term {
     public Set<Variable> getVariables() {
         return new HashSet<Variable>();
     }
+
+	@Override
+	public String toLispString() {
+		return name;
+	}
 }

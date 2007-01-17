@@ -75,6 +75,7 @@ public abstract class Term {
         return substFor(new Variable(varname));
     }
     
+    public abstract String toLispString();
     
     
     
