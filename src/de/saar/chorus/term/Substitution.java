@@ -17,6 +17,7 @@ import java.util.Queue;
 import org.testng.annotations.Test;
 
 
+
 public class Substitution implements Cloneable {
     // subst maps variables to terms. INVARIANT: Variables on the LHS
     // of any mapping never occur on the RHS of any mapping.
@@ -184,6 +185,14 @@ public class Substitution implements Cloneable {
         to.subst.putAll(from.subst);
     }
 
+
+    public void remove(Variable v) {
+        subst.remove(v);
+    }
+    
+    public boolean appliesTo(Variable v) {
+        return subst.containsKey(v);
+    }
     
     
     

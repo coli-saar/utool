@@ -55,6 +55,11 @@ public class Variable extends Term {
         ret.add(this);
         return ret;
     }
+
+	@Override
+	public String toLispString() {
+		return name;
+	}
     
 
     
