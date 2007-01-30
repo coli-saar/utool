@@ -4,7 +4,7 @@ package de.saar.chorus.domgraph.codec;
 class CodecManagerTest extends GroovyTestCase {
 	 private CodecManager manager;
      
-     @Configuration(beforeSuite = true)
+     // @Configuration(beforeSuite = true)
      public void setUp() throws Exception {
          manager = new CodecManager();
          manager.registerAllDeclaredCodecs();

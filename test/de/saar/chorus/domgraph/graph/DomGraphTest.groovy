@@ -12,7 +12,7 @@ class DomGraphTest extends GroovyTestCase {
 	        private NodeLabels labels;
 	        private InputCodec ozcodec;
 	        
-	        @Configuration(beforeTestMethod = true)
+	        // @Configuration(beforeTestMethod = true)
 	        public void setUp() {
 	            ozcodec = new DomconOzInputCodec();
 	            graph = new DomGraph();

@@ -10,7 +10,7 @@ class ChainTest extends GroovyTestCase {
      private DomGraph graph;
      private NodeLabels labels;
      
-     @Configuration(beforeTestMethod = true)
+     // @Configuration(beforeTestMethod = true)
      public void setUp() {
          codec = new Chain();
          graph = new DomGraph();
