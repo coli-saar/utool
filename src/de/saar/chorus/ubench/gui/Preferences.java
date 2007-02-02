@@ -1,5 +1,11 @@
 package de.saar.chorus.ubench.gui;
 
+import org.jgraph.layout.JGraphLayoutAlgorithm;
+import org.jgraph.layout.SugiyamaLayoutAlgorithm;
+
+import de.saar.chorus.ubench.DomGraphLayout;
+import de.saar.chorus.ubench.JDomGraph;
+
 /**
  * This contains several preferences for layouting and solving 
  * graphs and a master object containing the general used
@@ -25,7 +31,23 @@ public class Preferences implements Cloneable {
     
     // non-static fields: specific to each graph
     private boolean showLabels;
+    private LayoutType layout;
     
+    public enum LayoutType {
+    	
+    	SUGIYAMA {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph) {
+    			return new SugiyamaLayoutAlgorithm();
+    		}
+    	} , 
+    	JDOMGRAPH {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph) {
+    			return new DomGraphLayout(graph);
+    		}
+    	};
+    	
+    	public abstract JGraphLayoutAlgorithm getLayout(JDomGraph graph);
+    }
     
     
     // the global preferences
@@ -37,6 +59,8 @@ public class Preferences implements Cloneable {
      */
 	public Preferences() {
 		showLabels = true;
+		layout = LayoutType.JDOMGRAPH;
+		
 	}
 	
     
@@ -49,6 +73,15 @@ public class Preferences implements Cloneable {
 		return showLabels;
 	}
 	
+    
+    public LayoutType getLayoutType() {
+    	return layout;
+    }
+    
+    public void setLayoutType(LayoutType lt) {
+    	layout = lt;
+    }
+    
     /**
      * Setting the parameter indicating whether node labels
      * or node names are shown. If set to false, the node names
@@ -148,7 +181,8 @@ public class Preferences implements Cloneable {
      * @return true if the previous preferences are out of date
      */
     public static boolean mustUpdateLayout(Preferences previousLayoutPreferences) {
-        return (previousLayoutPreferences.showLabels != getInstance().showLabels);
+        return ((previousLayoutPreferences.showLabels != getInstance().showLabels) ||
+        		(previousLayoutPreferences.layout != getInstance().layout));
     }
 
     

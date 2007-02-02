@@ -49,6 +49,7 @@ import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
  * The main <code>ActionListener</code> and <code>ItemListener</code> 
@@ -135,8 +136,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		/* Handling the known actions by identifying their command */
 		
-		
-		if( command.equals("preferences") ) {
+		 if( command.equals("preferences") ) {
 			// show settings (so far only server settings)
 			Ubench.getInstance().setPreferenceDialogVisible(true);
 		}  else if(command.equals("loadeqs")){
@@ -828,6 +828,21 @@ ItemListener, ConnectionManager.StateChangeListener {
 		// unknown event
 		if( desc == null ) {
 			System.err.println("Unknown item state change event!");
+		} else if( desc.equals("jdomgraphlayout") ) {
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
+			}
+			if(Ubench.getInstance().getVisibleTab() != null) {
+				Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+			}
+		}
+		else if ( desc.equals("sugiyamalayout") ) {
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
+			}
+			if(Ubench.getInstance().getVisibleTab() != null) {
+				Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+			}
 		} else 
 			// layout change on displaying labels
 			if(desc.equals("showLabels")) {

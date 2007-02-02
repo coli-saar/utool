@@ -303,6 +303,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		if ((recentLayout == null)
 				|| Preferences.mustUpdateLayout(recentLayout)) {
 			graph.setShowLabels(Preferences.getInstance().isShowLabels());
+			graph.setLayoutType(Preferences.getInstance().getLayoutType());
 			graph.computeLayout();
 
 			graph.adjustNodeWidths();
