@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -40,7 +41,7 @@ public class JDomGraphMenu extends JMenuBar {
 	private JMenu fileMenu,   // operating on files
 				  viewMenu,   // (general) view preferences 
 				  utoolMenu,  // solving
-				  helpMenu;	  // Help / About	 
+				  helpMenu, layoutMenu;	  // Help / About	 
 	
 	// the menu items
 	private JMenuItem 
@@ -74,7 +75,8 @@ public class JDomGraphMenu extends JMenuBar {
 					  displayCodecs,
 					  loadeqs,
 					  autoreduce,
-					  preferences;
+					  preferences,
+					  sugiyamalayout, jdomgraphlayout;
     
 	private ServerButton server;
 	
@@ -224,6 +226,31 @@ public class JDomGraphMenu extends JMenuBar {
 		viewMenu.add(resetLayout);	
 		graphSpecificItems.add(resetLayout);
 		
+		
+		layoutMenu = new JMenu("Choose Layout");
+		
+		sugiyamalayout = new JCheckBoxMenuItem("Sugiyama Layout");
+		sugiyamalayout.addItemListener(listener);
+		listener.registerEventSource(sugiyamalayout, "sugiyamalayout");
+		sugiyamalayout.setActionCommand("sugiyamalayout");
+		
+		jdomgraphlayout = new JCheckBoxMenuItem("JDomGraph Layout");
+		jdomgraphlayout.setSelected(true);
+		jdomgraphlayout.addItemListener(listener);
+		listener.registerEventSource(jdomgraphlayout, "jdomgraphlayout");
+		
+		ButtonGroup layoutgroup = new ButtonGroup();
+		layoutgroup.add(jdomgraphlayout);
+		layoutgroup.add(sugiyamalayout);
+		
+		layoutMenu.add(jdomgraphlayout);
+		layoutMenu.add(sugiyamalayout);
+		
+		graphSpecificItems.add(layoutMenu);
+		viewMenu.add(layoutMenu);
+		
+		viewMenu.addSeparator();
+		
 		displayChart = new JMenuItem("Display Chart");
 		displayChart.setMnemonic(KeyEvent.VK_C);
 		displayChart.setAccelerator(KeyStroke.getKeyStroke("alt C"));
@@ -231,6 +258,9 @@ public class JDomGraphMenu extends JMenuBar {
 		displayChart.addActionListener(listener);
 		graphSpecificItems.add(displayChart);
 		viewMenu.add(displayChart);
+		
+		
+		
 		
 		viewMenu.validate();
 		add(viewMenu);

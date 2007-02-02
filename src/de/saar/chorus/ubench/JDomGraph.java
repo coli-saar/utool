@@ -33,6 +33,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
 import de.saar.chorus.ubench.gui.Preferences;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
  * A Swing component that represents a labelled dominance graph.
@@ -72,6 +73,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	
 	private boolean hnc;
 	
+	private LayoutType layouttype;
 	
 	private List<Set<DefaultGraphCell>> wccs;
 	
@@ -147,11 +149,19 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		// set up popup handling
 		popupListeners = new HashSet<DomGraphPopupListener>();
 		addMouseListener(new PopupListener());		
-		
+		layouttype = LayoutType.JDOMGRAPH;
 		clear();
 		
 		// set up tooltip handling
 		ToolTipManager.sharedInstance().registerComponent(this);
+	}
+	
+	public void setLayoutType(LayoutType lt) {
+		if(lt != layouttype ) {
+			layouttype = lt;
+			computeLayout();
+			adjustNodeWidths();
+		}
 	}
 	
 	
@@ -308,7 +318,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		if(isForest() && (wccs().size() == 1) ) {
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
-			JGraphUtilities.applyLayout(this, new DomGraphLayout(this));
+			
+			JGraphUtilities.applyLayout(this, layouttype.getLayout(this));
 		}
 	}
 	

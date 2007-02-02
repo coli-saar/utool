@@ -97,7 +97,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 	 * 
 	 * @param gr the graph to compute the layout for
 	 */
-	DomGraphLayout(JDomGraph gr) {
+	public DomGraphLayout(JDomGraph gr) {
 		/*
 		 * initializing the graph and its attributes
 		 * by getting them from the graph
