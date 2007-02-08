@@ -18,10 +18,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 /**
  * A <code>JPanel</code> displaying a <code>JDomGraph</code>
@@ -380,6 +383,14 @@ public JGraphTab clone() {
 			cl, currentForm, solvedForms, graphName, listener, nodeLabels);
 	
 	return myClone;
+}
+
+@Override
+public void displayChart() {
+	Chart c = new Chart();
+	ChartSolver.solve(domGraph.compactify(),c);
+	cv = new ChartViewer(c, domGraph,
+			defaultName, graph, nodeLabels);
 }
    
 }

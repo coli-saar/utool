@@ -29,6 +29,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
+import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
@@ -70,6 +71,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	private Rectangle boundingBox;
 	
 	private DomGraph myDomGraph;
+	private Chart chart;
 	
 	private boolean hnc;
 	
@@ -136,6 +138,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 */
 	public JDomGraph(DomGraph origin) {
 		super();
+		chart = new Chart();
 		hnc = origin.isHypernormallyConnected();
 	
 		wccs = new ArrayList< Set<DefaultGraphCell>>();
@@ -156,12 +159,19 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 	
+	
+	public Chart getChart() {
+		return chart;
+	}
+
+
+	public void setChart(Chart chart) {
+		this.chart = chart;
+	}
+
+
 	public void setLayoutType(LayoutType lt) {
-		if(lt != layouttype ) {
 			layouttype = lt;
-			computeLayout();
-			adjustNodeWidths();
-		}
 	}
 	
 	
@@ -319,7 +329,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
 		}  else {
 			
-			JGraphUtilities.applyLayout(this, layouttype.getLayout(this));
+			JGraphUtilities.applyLayout(this, layouttype.getLayout(this, chart, myDomGraph));
 		}
 	}
 	
@@ -672,6 +682,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		// setting the scale
 		clone.setScale(getScale());
 		clone.setShowLabels(Preferences.getInstance().isShowLabels());
+		clone.setLayoutType(Preferences.getInstance().getLayoutType());
 		return clone;
 	}
 	

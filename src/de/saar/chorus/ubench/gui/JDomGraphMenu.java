@@ -76,7 +76,7 @@ public class JDomGraphMenu extends JMenuBar {
 					  loadeqs,
 					  autoreduce,
 					  preferences,
-					  sugiyamalayout, jdomgraphlayout;
+					  sugiyamalayout, jdomgraphlayout, chartlayout;
     
 	private ServerButton server;
 	
@@ -231,20 +231,28 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		sugiyamalayout = new JCheckBoxMenuItem("Sugiyama Layout");
 		sugiyamalayout.addItemListener(listener);
-		listener.registerEventSource(sugiyamalayout, "sugiyamalayout");
+		listener.registerEventSource(sugiyamalayout, "layoutchange");
 		sugiyamalayout.setActionCommand("sugiyamalayout");
 		
 		jdomgraphlayout = new JCheckBoxMenuItem("JDomGraph Layout");
 		jdomgraphlayout.setSelected(true);
 		jdomgraphlayout.addItemListener(listener);
-		listener.registerEventSource(jdomgraphlayout, "jdomgraphlayout");
+		listener.registerEventSource(jdomgraphlayout, "layoutchange");
+		
+		
+		chartlayout = new JCheckBoxMenuItem("Chart Layout");
+		chartlayout.addItemListener(listener);
+		listener.registerEventSource(chartlayout, "layoutchange");
+		
 		
 		ButtonGroup layoutgroup = new ButtonGroup();
 		layoutgroup.add(jdomgraphlayout);
 		layoutgroup.add(sugiyamalayout);
+		layoutgroup.add(chartlayout);
 		
 		layoutMenu.add(jdomgraphlayout);
 		layoutMenu.add(sugiyamalayout);
+		layoutMenu.add(chartlayout);
 		
 		graphSpecificItems.add(layoutMenu);
 		viewMenu.add(layoutMenu);

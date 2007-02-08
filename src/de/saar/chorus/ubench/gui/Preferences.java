@@ -3,6 +3,9 @@ package de.saar.chorus.ubench.gui;
 import org.jgraph.layout.JGraphLayoutAlgorithm;
 import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.ubench.DomGraphChartLayout;
 import de.saar.chorus.ubench.DomGraphLayout;
 import de.saar.chorus.ubench.JDomGraph;
 
@@ -28,25 +31,37 @@ public class Preferences implements Cloneable {
     // static fields: per-application preferences 
     private static boolean autoCount = true;
     private static boolean fitToWindow = false;
+    private LayoutType lt;
     
     // non-static fields: specific to each graph
     private boolean showLabels;
-    private LayoutType layout;
+  
     
     public enum LayoutType {
     	
     	SUGIYAMA {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph) {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
+    				DomGraph domgraph) {
     			return new SugiyamaLayoutAlgorithm();
     		}
     	} , 
     	JDOMGRAPH {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph) {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
+					DomGraph domgraph) {
     			return new DomGraphLayout(graph);
+    		}
+    	},
+    	
+    	CHARTLAYOUT {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
+    				DomGraph domgraph) {
+    					return new DomGraphChartLayout(graph, chart, domgraph);
+    			
     		}
     	};
     	
-    	public abstract JGraphLayoutAlgorithm getLayout(JDomGraph graph);
+    	public abstract JGraphLayoutAlgorithm getLayout(JDomGraph graph, Chart chart,
+    			DomGraph domgraph);
     }
     
     
@@ -59,7 +74,7 @@ public class Preferences implements Cloneable {
      */
 	public Preferences() {
 		showLabels = true;
-		layout = LayoutType.JDOMGRAPH;
+		lt = LayoutType.JDOMGRAPH;
 		
 	}
 	
@@ -75,11 +90,11 @@ public class Preferences implements Cloneable {
 	
     
     public LayoutType getLayoutType() {
-    	return layout;
+    	return lt;
     }
     
     public void setLayoutType(LayoutType lt) {
-    	layout = lt;
+    	this.lt = lt;
     }
     
     /**
@@ -182,7 +197,7 @@ public class Preferences implements Cloneable {
      */
     public static boolean mustUpdateLayout(Preferences previousLayoutPreferences) {
         return ((previousLayoutPreferences.showLabels != getInstance().showLabels) ||
-        		(previousLayoutPreferences.layout != getInstance().layout));
+        		(previousLayoutPreferences.lt != getInstance().lt));
     }
 
     
@@ -194,6 +209,7 @@ public class Preferences implements Cloneable {
      */
 	public void copyTo(Preferences second) {
         second.showLabels = showLabels;
+        second.lt = lt;
 	}
 
 
