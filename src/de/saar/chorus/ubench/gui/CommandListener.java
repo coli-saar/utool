@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
@@ -824,102 +825,114 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 */
 	public void itemStateChanged(ItemEvent e) {
 		String desc = lookupEventSource(e.getSource());
-		
+
 		// unknown event
 		if( desc == null ) {
 			System.err.println("Unknown item state change event!");
-		} else if( desc.equals("jdomgraphlayout") ) {
-			if(e.getStateChange() == ItemEvent.SELECTED) {
-				Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
+		} else if( desc.equals("layoutchange") ) {
+			if(e.getStateChange() == ItemEvent.SELECTED ) {
+				String selectedItem = ((JMenuItem) e.getSource()).getText();
+				
+				System.err.println(selectedItem);
+				if(selectedItem.equals("JDomGraph Layout")) {
+
+					Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
+					if(Ubench.getInstance().getVisibleTab() != null) {
+						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+					}
+
+				} else if ( selectedItem.equals("Sugiyama Layout") ) {
+						Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
+						if(Ubench.getInstance().getVisibleTab() != null) {
+							Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+						}
+
+				}  else if ( selectedItem.equals("Chart Layout") ) {
+						Preferences.getInstance().setLayoutType(LayoutType.CHARTLAYOUT);
+						if(Ubench.getInstance().getVisibleTab() != null) {
+							Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+						}
+				}
+				
 			}
-			if(Ubench.getInstance().getVisibleTab() != null) {
-				Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-			}
-		}
-		else if ( desc.equals("sugiyamalayout") ) {
-			if(e.getStateChange() == ItemEvent.SELECTED) {
-				Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
-			}
-			if(Ubench.getInstance().getVisibleTab() != null) {
-				Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-			}
+			
 		} else 
-			// layout change on displaying labels
-			if(desc.equals("showLabels")) {
-				
-				// align preferences to selection state.
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					Preferences.getInstance().setShowLabels(true);
-				} else {
-					Preferences.getInstance().setShowLabels(false);
-				}
-				
-				// refresh the visible graph if necessary.
-				if(Ubench.getInstance().getVisibleTab() != null) {
-					Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-				}
-			} else 
-				
-				// checkbox indicating whether graphs are
-				// solved right after loading automatically
-				if(desc.equals("countAndSolve")) {
-					
-					// enable/disable menu items and change preferences
+				// layout change on displaying labels
+				if(desc.equals("showLabels")) {
+
+					// align preferences to selection state.
 					if(e.getStateChange() == ItemEvent.SELECTED) {
-						if( Ubench.getInstance().getMenuBar() != null ) {
-							Ubench.getInstance().getMenuBar().setCountSfEnabled(false);
-						}
-						Preferences.setAutoCount(true);
-						if( Ubench.getInstance().getVisibleTab() != null  ) {
-							((JDomGraphTab) Ubench.getInstance().getVisibleTab()).solve();
-							Ubench.getInstance().refresh();
-						}
-						
+						Preferences.getInstance().setShowLabels(true);
 					} else {
-						if( (Ubench.getInstance().getMenuBar() != null) && 
-								Ubench.getInstance().getVisibleTab() != null &&
-								Ubench.getInstance().getVisibleTab().getClass() != JSolvedFormTab.class) {
-							Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
-						}
-						
-						Preferences.setAutoCount(false);
+						Preferences.getInstance().setShowLabels(false);
+					}
+
+					// refresh the visible graph if necessary.
+					if(Ubench.getInstance().getVisibleTab() != null) {
+						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
 					}
 				} else 
-					
-					// layout preferences concerning graph scaling
-					if (desc.equals("fitAll")) {
-						
-						// change preferences and refresh the visible
-						// graph 
+
+					// checkbox indicating whether graphs are
+					// solved right after loading automatically
+					if(desc.equals("countAndSolve")) {
+
+						// enable/disable menu items and change preferences
 						if(e.getStateChange() == ItemEvent.SELECTED) {
-							Preferences.setFitToWindow(true);
-							if( Ubench.getInstance().getVisibleTab() != null ) {
-								Ubench.getInstance().getVisibleTab().fitGraph();
+							if( Ubench.getInstance().getMenuBar() != null ) {
+								Ubench.getInstance().getMenuBar().setCountSfEnabled(false);
 							}
-						} else {
-							Preferences.setFitToWindow(false);
-						}
-						
-					} else if(desc.equals("autoreduce")) {
-						if(e.getStateChange() == ItemEvent.SELECTED ) {
-							Ubench.getInstance().reduceAutomatically = true;
-							if(! Ubench.getInstance().isEquationSystemLoaded() ) {
-								JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-										"You must load a global equation system before Utool can" +
-										System.getProperty("line.separator") + 
-										"automatically eliminate equivalences. You can select one" +
-										System.getProperty("line.separator") +
-										"in the following dialog.",
-										"Please load an equation system",
-										JOptionPane.INFORMATION_MESSAGE);
-								loadEQS();
+							Preferences.setAutoCount(true);
+							if( Ubench.getInstance().getVisibleTab() != null  ) {
+								((JDomGraphTab) Ubench.getInstance().getVisibleTab()).solve();
+								Ubench.getInstance().refresh();
 							}
-							
+
 						} else {
-							Ubench.getInstance().reduceAutomatically = false;
+							if( (Ubench.getInstance().getMenuBar() != null) && 
+									Ubench.getInstance().getVisibleTab() != null &&
+									Ubench.getInstance().getVisibleTab().getClass() != JSolvedFormTab.class) {
+								Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
+							}
+
+							Preferences.setAutoCount(false);
 						}
-					}
-	}
+					} else 
+
+						// layout preferences concerning graph scaling
+						if (desc.equals("fitAll")) {
+
+							// change preferences and refresh the visible
+							// graph 
+							if(e.getStateChange() == ItemEvent.SELECTED) {
+								Preferences.setFitToWindow(true);
+								if( Ubench.getInstance().getVisibleTab() != null ) {
+									Ubench.getInstance().getVisibleTab().fitGraph();
+								}
+							} else {
+								Preferences.setFitToWindow(false);
+							}
+
+						} else if(desc.equals("autoreduce")) {
+							if(e.getStateChange() == ItemEvent.SELECTED ) {
+								Ubench.getInstance().reduceAutomatically = true;
+								if(! Ubench.getInstance().isEquationSystemLoaded() ) {
+									JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+											"You must load a global equation system before Utool can" +
+											System.getProperty("line.separator") + 
+											"automatically eliminate equivalences. You can select one" +
+											System.getProperty("line.separator") +
+											"in the following dialog.",
+											"Please load an equation system",
+											JOptionPane.INFORMATION_MESSAGE);
+									loadEQS();
+								}
+
+							} else {
+								Ubench.getInstance().reduceAutomatically = false;
+							}
+						}
+		}
 	
 	private void loadEQS() {
 		JFileChooser fc = new JFileChooser();

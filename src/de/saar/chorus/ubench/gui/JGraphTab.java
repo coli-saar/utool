@@ -5,13 +5,12 @@ import java.awt.Color;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 
@@ -302,6 +301,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	public void repaintIfNecessary() {
 		if ((recentLayout == null)
 				|| Preferences.mustUpdateLayout(recentLayout)) {
+			System.err.println("Updating: Layout changes to " + 
+					Preferences.getInstance().getLayoutType());
 			graph.setShowLabels(Preferences.getInstance().isShowLabels());
 			graph.setLayoutType(Preferences.getInstance().getLayoutType());
 			graph.computeLayout();
@@ -346,6 +347,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 */
 	public void resetLayout() {
 		graph.setScale(1);
+		graph.setLayoutType(LayoutType.JDOMGRAPH);
 		graph.computeLayout();
 		graph.adjustNodeWidths();
 	}
@@ -365,12 +367,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	}
 
 	
-	public void displayChart() {
-		Chart c = new Chart();
-		ChartSolver.solve(domGraph.compactify(),c);
-		cv = new ChartViewer(c, domGraph,
-				defaultName, graph, nodeLabels);
-	}
+	public abstract void displayChart(); 
 	
 	/**
 	 * 
