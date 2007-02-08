@@ -564,7 +564,6 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		typedList.add(nVal);
 	}
 	
-	
 	/**
 	 * Perform DFS in a fragment to resolve its leave nodes in
 	 * the right order.
@@ -591,6 +590,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 					fragLeafDFS(frag, graph.getChildren(root).get(i), leaves);
 			}
 		}
+		
 	}
 	
 	/**
