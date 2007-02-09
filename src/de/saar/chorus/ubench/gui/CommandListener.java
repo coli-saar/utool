@@ -50,6 +50,7 @@ import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LabelType;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
@@ -856,16 +857,33 @@ ItemListener, ConnectionManager.StateChangeListener {
 				
 			}
 			
-		} else 
-				// layout change on displaying labels
-				if(desc.equals("showLabels")) {
+		} else if(desc.equals("showLabels")) {
 
 					// align preferences to selection state.
 					if(e.getStateChange() == ItemEvent.SELECTED) {
-						Preferences.getInstance().setShowLabels(true);
-					} else {
-						Preferences.getInstance().setShowLabels(false);
+						Preferences.getInstance().setLabelType(LabelType.LABEL);
+					} 
+
+					// refresh the visible graph if necessary.
+					if(Ubench.getInstance().getVisibleTab() != null) {
+						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
 					}
+				} else if(desc.equals("showNames")) {
+//					 align preferences to selection state.
+					if(e.getStateChange() == ItemEvent.SELECTED) {
+						Preferences.getInstance().setLabelType(LabelType.NAME);
+					} 
+
+					// refresh the visible graph if necessary.
+					if(Ubench.getInstance().getVisibleTab() != null) {
+						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+					}
+					 
+				} else if(desc.equals("showBoth")) {
+//					 align preferences to selection state.
+					if(e.getStateChange() == ItemEvent.SELECTED) {
+						Preferences.getInstance().setLabelType(LabelType.BOTH);
+					} 
 
 					// refresh the visible graph if necessary.
 					if(Ubench.getInstance().getVisibleTab() != null) {

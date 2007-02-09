@@ -34,6 +34,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.jgraph.ImprovedJGraph;
 import de.saar.chorus.ubench.gui.Preferences;
+import de.saar.chorus.ubench.gui.Preferences.LabelType;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
@@ -76,6 +77,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	private boolean hnc;
 	
 	private LayoutType layouttype;
+	private LabelType labeltype;
 	
 	private List<Set<DefaultGraphCell>> wccs;
 	
@@ -153,6 +155,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		popupListeners = new HashSet<DomGraphPopupListener>();
 		addMouseListener(new PopupListener());		
 		layouttype = LayoutType.JDOMGRAPH;
+		labeltype = LabelType.LABEL;
 		clear();
 		
 		// set up tooltip handling
@@ -681,7 +684,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		// setting the scale
 		clone.setScale(getScale());
-		clone.setShowLabels(Preferences.getInstance().isShowLabels());
+		clone.setLabeltype(Preferences.getInstance().getLabelType());
 		clone.setLayoutType(Preferences.getInstance().getLayoutType());
 		return clone;
 	}
@@ -708,17 +711,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	}
 	
 	
-    /**
-     * Changing the preferences for displaying node labels
-     * @param b indicating whether or not to show labels (insted
-     * 			of names, default is true)
-     */
-    public void setShowLabels(boolean b) {
-        for( DefaultGraphCell node : nodes ) {
-            getNodeData(node).setShowLabel(b);
-        }
-    }
-    
    
     /**
      * Removes all dominance edges from this graph.
@@ -767,6 +759,19 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 */
 	public List<Set<DefaultGraphCell>> getWccs() {
 		return wccs;
+	}
+
+
+	public LabelType getLabeltype() {
+		return labeltype;
+	}
+
+
+	public void setLabeltype(LabelType labeltype) {
+		this.labeltype = labeltype;
+		for( DefaultGraphCell node : nodes ) {
+            getNodeData(node).setShowLabel(labeltype);
+        }
 	}
 	
 	
