@@ -112,7 +112,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 			} else if (showLabel == LabelType.NAME) {
 				return name;
 			} else {
-				return name + ":" + simplifiedLabel;
+				return name + " : " + simplifiedLabel;
 			}
 			
 		} else {
