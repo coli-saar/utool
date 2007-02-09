@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.saar.chorus.jgraph.INodeData;
+import de.saar.chorus.ubench.gui.Preferences;
+import de.saar.chorus.ubench.gui.Preferences.LabelType;
 
 
 
@@ -26,7 +28,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
     private String simplifiedLabel;
 	private String label;
 	private NodeType type;
-    private boolean showLabel;
+    private Preferences.LabelType showLabel;
 	
 	/**
 	 * New node data for a labelled node (with label).
@@ -41,7 +43,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
         this.name = name;
 		setLabel(label);
 		this.type = type;
-        showLabel = false;
+        showLabel = Preferences.LabelType.LABEL;
 	}
 	
 	/**
@@ -56,7 +58,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 		this.name = name;
 		this.type = type;
 		this.label = "";
-        showLabel = false;
+        showLabel = Preferences.LabelType.NAME;
 	}
     
     private void setLabel(String label) {
@@ -105,10 +107,12 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 	public String toString() {
 		
 		if(type.equals(NodeType.labelled)) {
-			if(showLabel) {
+			if(showLabel == LabelType.LABEL) {
 				return simplifiedLabel;
-			} else {
+			} else if (showLabel == LabelType.NAME) {
 				return name;
+			} else {
+				return name + ":" + simplifiedLabel;
 			}
 			
 		} else {
@@ -116,7 +120,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 		}
 	}
     
-    public void setShowLabel(boolean b) {
+    public void setShowLabel(LabelType b) {
         showLabel = b;
     }
 

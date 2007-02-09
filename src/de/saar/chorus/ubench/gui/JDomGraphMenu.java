@@ -41,7 +41,7 @@ public class JDomGraphMenu extends JMenuBar {
 	private JMenu fileMenu,   // operating on files
 				  viewMenu,   // (general) view preferences 
 				  utoolMenu,  // solving
-				  helpMenu, layoutMenu;	  // Help / About	 
+				  helpMenu, layoutMenu, labelMenu;	  // Help / About	 
 	
 	// the menu items
 	private JMenuItem 
@@ -56,8 +56,7 @@ public class JDomGraphMenu extends JMenuBar {
 					  countAndSolve, // checkbox indicating whether or not to 
 					  				 // solve every loaded graph at once
 					  				 
-					  showLabels,    // checkbox, indicating whether to show
-					  				 // node labels or node names
+					  showLabels,    showNames, showBoth,
 					  resetLayout,   // drawing the "first" layout again
 					  fitAll,        // checkbox indicating whether or not the recent
 									 // and all further loaded graphs shall be zoomed
@@ -205,11 +204,33 @@ public class JDomGraphMenu extends JMenuBar {
 		viewMenu = new JMenu("View");
 		viewMenu.setMnemonic(KeyEvent.VK_V);
 
+		
+		labelMenu = new JMenu("Node Labels");
+		ButtonGroup labelgroup = new ButtonGroup();
+		
         // Checkbox indicating label/name - view
-		showLabels = new JCheckBoxMenuItem("Show Node Labels");
+		showLabels = new JCheckBoxMenuItem("Show Labels");
+		showLabels.setSelected(true);
 		showLabels.addItemListener(listener);
 		listener.registerEventSource(showLabels, "showLabels");
-		viewMenu.add(showLabels);
+		labelMenu.add(showLabels);
+		labelgroup.add(showLabels);
+		
+		
+		showNames = new JCheckBoxMenuItem("Show Names");
+		showNames.addItemListener(listener);
+		listener.registerEventSource(showNames, "showNames");
+		labelMenu.add(showNames);
+		labelgroup.add(showNames);
+		
+		
+		showBoth = new JCheckBoxMenuItem("Show Names and Labels");
+		showBoth.addItemListener(listener);
+		listener.registerEventSource(showBoth, "showBoth");
+		labelMenu.add(showBoth);
+		labelgroup.add(showBoth);
+		
+		viewMenu.add(labelMenu);
 		
 		// Checkbox indicating whether the graphs should be
 		// scaled town in order to fit the window

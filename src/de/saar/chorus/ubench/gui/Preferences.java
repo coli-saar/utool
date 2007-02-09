@@ -31,11 +31,16 @@ public class Preferences implements Cloneable {
     // static fields: per-application preferences 
     private static boolean autoCount = true;
     private static boolean fitToWindow = false;
-    private LayoutType lt;
+   
     
     // non-static fields: specific to each graph
-    private boolean showLabels;
+    private LayoutType layouttype;
+    private LabelType labeltype;
   
+    
+    public enum LabelType {
+    	NAME, LABEL, BOTH;
+    }
     
     public enum LayoutType {
     	
@@ -73,41 +78,34 @@ public class Preferences implements Cloneable {
      * with the default values.
      */
 	public Preferences() {
-		showLabels = true;
-		lt = LayoutType.JDOMGRAPH;
+		labeltype = LabelType.LABEL;
+		layouttype = LayoutType.JDOMGRAPH;
 		
 	}
 	
     
     /******** accessor methods **************/
 	
-	/**
-	 * @return true if node labels are shown (default)
-	 */
-    public boolean isShowLabels() {
-		return showLabels;
+	public void setLabelType(LabelType lt) {
+		labeltype = lt;
 	}
 	
+	public LabelType getLabelType() {
+		return labeltype;
+	}
+    
+	
+	
+    public void setLayoutType(LayoutType lt) {
+    	layouttype = lt;
+    }
     
     public LayoutType getLayoutType() {
-    	return lt;
+    	return layouttype;
     }
     
-    public void setLayoutType(LayoutType lt) {
-    	this.lt = lt;
-    }
     
-    /**
-     * Setting the parameter indicating whether node labels
-     * or node names are shown. If set to false, the node names
-     * are shown instead of the node labels.
-     * (Default: <code>true</code>, node labels are shown)
-     * 
-     * @param showLabels set this to false for showing node names
-     */
-	public void setShowLabels(boolean showLabels) {
-		this.showLabels = showLabels;
-	}
+  
     
 	
   
@@ -196,8 +194,9 @@ public class Preferences implements Cloneable {
      * @return true if the previous preferences are out of date
      */
     public static boolean mustUpdateLayout(Preferences previousLayoutPreferences) {
-        return ((previousLayoutPreferences.showLabels != getInstance().showLabels) ||
-        		(previousLayoutPreferences.lt != getInstance().lt));
+        return (
+        		(previousLayoutPreferences.layouttype != getInstance().layouttype) ||
+        		(previousLayoutPreferences.labeltype != getInstance().labeltype));
     }
 
     
@@ -208,8 +207,8 @@ public class Preferences implements Cloneable {
      * @param second the Preferences to copy the values to
      */
 	public void copyTo(Preferences second) {
-        second.showLabels = showLabels;
-        second.lt = lt;
+        second.layouttype = layouttype;
+        second.labeltype = labeltype;
 	}
 
 
