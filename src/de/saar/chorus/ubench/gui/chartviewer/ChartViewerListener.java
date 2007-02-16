@@ -135,7 +135,7 @@ public class ChartViewerListener implements ActionListener {
 			
 			Chart chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
-			SolvedFormIterator sfi = new SolvedFormIterator(chart,firstForm);
+			SolvedFormIterator sfi = new SolvedFormIterator((Chart) chart.clone() ,firstForm);
 			firstForm = firstForm.withDominanceEdges(sfi.next());
 			
 			DomGraphTConverter conv = new DomGraphTConverter(firstForm, viewer.getLabels());
