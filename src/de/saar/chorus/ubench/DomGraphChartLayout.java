@@ -108,7 +108,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		 * by getting them from the graph
 		 */
 		this.graph = gr;
-		this.chart = chart;
+		this.chart = (Chart) chart.clone();
 		domgraph = origin;
 		
 		fragments = graph.getFragments();
@@ -556,10 +556,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	
 	private void fillLayers() {
 		
-		List<Set<String>> toplevel = chart.getToplevelSubgraphs();
+		List<Set<String>> toplevel = new ArrayList<Set<String>>(chart.getToplevelSubgraphs());
 		
 		for(Set<String> tls : toplevel ) {
-			fillLayer(0, chart.getSplitsFor(tls), new HashSet<String>());
+			fillLayer(0, new ArrayList<Split>(chart.getSplitsFor(tls)), new HashSet<String>());
 		}
 		
 	}
@@ -576,8 +576,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			if(! visited.contains(root)) {
 				visited.add((root));
 			recent.add(root);
-			recent.addAll(split.getAllDominators());
-			remainingSubgraphs.addAll( split.getAllSubgraphs() ) ;
+			recent.addAll(new HashSet<String>(split.getAllDominators()));
+			remainingSubgraphs.addAll( new ArrayList<Set<String>>(split.getAllSubgraphs()) ) ;
 			}
 			
 		}
@@ -588,12 +588,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	
 
 		for(Set<String> subgraph : remainingSubgraphs) {
-			subgraph.removeAll(recent);	
-			for(Set<String> wccs : domgraph.wccs(subgraph)) {
+			Set<String> sgc = new HashSet<String>(subgraph);
+			sgc.removeAll(recent);	
+			for(Set<String> wccs : domgraph.wccs(sgc)) {
 				List<Split> newSplits = chart.getSplitsFor(wccs);
 				if(newSplits != null) {
 
-					fillLayer(nextLayer, newSplits, visited);
+					fillLayer(nextLayer, new ArrayList<Split>(newSplits), visited);
 				} else {
 
 					addToLayer(wccs,nextLayer);
