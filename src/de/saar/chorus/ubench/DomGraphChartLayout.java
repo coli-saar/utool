@@ -79,6 +79,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	
 	private Map<Fragment,Integer> fragmentToDepth;
 	private List<Set<String>> layers;
+	private Map<Fragment, DefaultGraphCell> leaflayer; // a leaf mapped to its parent hole
 	private List<Set<Fragment>> fraglayers;
 
 	//the x-offset of the nodes of a fragment
@@ -167,7 +168,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			rootToFrag.put(root, frag);
 		}
 		
-
+		leaflayer = new HashMap<Fragment, DefaultGraphCell>();
 	}
 
 
@@ -598,7 +599,15 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 			for(String node : layer) {
 				Fragment frag = rootToFrag.get(node);
+				
+				if(getFragDegree(frag) == 1 && getFragOutEdges(frag).size() == 0) {
+					DefaultGraphCell parent = graph.getSourceNode(
+							getFragInEdges(frag).iterator().next());
+					leaflayer.put(frag,parent);
+				} else {
+				
 				fraglayers.get(i).add(frag);
+				}
 			}
 			
 		}
@@ -1727,8 +1736,20 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 			int x = relXtoRoot.get(node); 
 			int offset = fragOffset.get(nodeFrag) - graph.computeNodeWidth(node)/2;
-			int xMovement = fragXpos.get(nodeFrag)  + offset;
-
+			int xMovement;
+			
+			if(leaflayer.containsKey(nodeFrag)) {
+				DefaultGraphCell sourceHole = leaflayer.get(nodeFrag);
+				Fragment parent = graph.findFragment(sourceHole);
+				
+				xMovement = relXtoParent.get(sourceHole)
+				+ graph.computeNodeWidth(sourceHole)/2
+				- graph.computeNodeWidth(node)/2
+				+ fragOffset.get(nodeFrag)
+				+ fragXpos.get(parent);
+			} else {
+				xMovement= fragXpos.get(nodeFrag)  + offset;
+			}	
 			/*
 			 * the absolute x- position is the relative
 			 * position added to the fragment's x-position
@@ -1746,7 +1767,21 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 
 			int y = relYpos.get(node);
-			int yMovement = fragYpos.get(nodeFrag);
+			
+			int yMovement;
+			
+			
+			if(leaflayer.containsKey(nodeFrag)) {
+				DefaultGraphCell sourceHole = leaflayer.get(nodeFrag);
+				Fragment parent = graph.findFragment(sourceHole);
+				yMovement = fragYpos.get(parent) +
+							fragHeight.get(parent) +
+							(fragmentYDistance/2);
+			} else {
+				yMovement = fragYpos.get(nodeFrag);
+			}
+			
+			
 			y += yMovement;
 
 			if(yOffset> 0 && (! nodeFrag.equals(movedRoot)))
