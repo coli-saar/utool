@@ -41,11 +41,13 @@ class MrsCodec {
 	
 	private Normalisation normalisation;
 	
+	private LabelStyle labelStyle;
+	
 	//
 	//
 	//
 	
-	public MrsCodec(DomGraph graph, NodeLabels labels, Normalisation normalisation)
+	public MrsCodec(DomGraph graph, NodeLabels labels, Normalisation normalisation, LabelStyle labelStyle)
 	{
 		this.graph = graph;
 		this.labels = labels;
@@ -53,6 +55,7 @@ class MrsCodec {
 		this.binder = new TreeMap<String,String>();
 		this.bound = new TreeMap<String,Set<String>>();
 		this.normalisation = normalisation;
+		this.labelStyle = labelStyle;
 	}
 	
 	public void tellVariable(String name) throws MalformedDomgraphException
@@ -137,9 +140,86 @@ class MrsCodec {
 		}
 	}
 	
+	private String makeLabel(String label, Map<String,String> attrs)
+	{		
+		switch (labelStyle) {
+		case plain:
+			return makePlainLabel(label, attrs);
+		case rich:
+			return makeRichLabel(label, attrs);
+		case full:
+			return makeFullLabel(label, attrs);
+		}
+		return null;
+	}
+	
+	private String makePlainLabel(String label, Map<String,String> attrs)
+	{
+		return label;
+	}
+	
+	private String makeRichLabel(String label, Map<String,String> attrs)
+	{
+		StringBuilder buffer = new StringBuilder(label);	
+		boolean printComma = false;
+
+		buffer.append("[");
+
+		for (Map.Entry<String,String> entry : attrs.entrySet()) {
+			String attr = entry.getKey();
+			String value = entry.getValue();
+
+			if (ignore(attr))
+				continue;
+
+			if (sig.containsKey(value) && sig.get(value) == Type.VARIABLE) {
+				if (printComma)
+					buffer.append(", ");
+				else
+					printComma = true;
+
+				buffer.append(value);
+			}
+		}
+		buffer.append("]");
+		
+		return buffer.toString();
+	}
+	
+	private String makeFullLabel(String label, Map<String,String> attrs)
+	{
+		StringBuilder buffer = new StringBuilder();	
+		boolean printComma = false;
+
+		buffer.append("[");
+		buffer.append(label);
+		buffer.append(" ");
+		
+		for (Map.Entry<String,String> entry : attrs.entrySet()) {
+			String attr = entry.getKey();
+			String value = entry.getValue();
+
+			if (ignore(attr))
+				continue;
+
+			if (printComma)
+				buffer.append(", ");
+			else
+				printComma = true;
+
+			buffer.append(attr);
+			buffer.append(":");
+			buffer.append(value);
+		}
+
+		buffer.append("]");
+
+		return buffer.toString();
+	}
+
 	public void addRelation(String node, String label, Map<String,String> attrs) throws MalformedDomgraphException
 	{
-		addNode(node, label);
+		addNode(node, makeLabel(label, attrs));
 		
 		if (attrs.containsKey("RSTR") && attrs.containsKey("BODY")) {
 			// Quantifier 
