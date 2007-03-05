@@ -29,13 +29,16 @@ public class MrsXmlInputCodec extends InputCodec {
 	
 	private MrsCodec codec;
 	private Normalisation normalisation;
-
+	private LabelStyle labelStyle;
+	
 	@CodecConstructor
 	public MrsXmlInputCodec(
-		@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation)
+		@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation,
+		@CodecOption(name="labelStyle", defaultValue="plain") LabelStyle labelStyle)
 	{
 		super();
 		this.normalisation = normalisation;
+		this.labelStyle = labelStyle;
 	}
 	
 	
@@ -141,7 +144,7 @@ public class MrsXmlInputCodec extends InputCodec {
 	
 	public void decode(Reader inputStream, DomGraph graph, NodeLabels labels) throws MalformedDomgraphException, IOException, ParserException
 	{
-		codec = new MrsCodec(graph, labels, normalisation);
+		codec = new MrsCodec(graph, labels, normalisation, labelStyle);
 		
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();

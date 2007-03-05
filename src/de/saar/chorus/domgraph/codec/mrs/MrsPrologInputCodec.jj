@@ -26,20 +26,23 @@ import de.saar.chorus.domgraph.codec.mrs.*;
 public class MrsPrologInputCodec extends InputCodec
 {
 	private Normalisation normalisation;
+	private LabelStyle labelStyle;
     private MrsCodec codec;
  
     @CodecConstructor
     public MrsPrologInputCodec(
-    	@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation)
+    	@CodecOption(name="normalisation", defaultValue="nets") Normalisation normalisation,
+    	@CodecOption(name="labelStyle", defaultValue="plain") LabelStyle labelStyle)
     {
 		this((Reader) null);
 		this.normalisation = normalisation;
+		this.labelStyle = labelStyle;
     }
     
     public void decode(Reader inputStream, DomGraph graph, NodeLabels labels)
 		throws IOException, ParserException, MalformedDomgraphException
     {
-		codec = new MrsCodec(graph, labels, normalisation);
+		codec = new MrsCodec(graph, labels, normalisation, labelStyle);
 
 		try {
 		    ReInit(inputStream);
@@ -120,7 +123,7 @@ void RelList() throws MalformedDomgraphException:
 {
 }
 {
-    "[" ( Rel() ) ( "," Rel() )* "]"
+    "[" [ ( Rel() ) ( "," Rel() )* ] "]"
 }
 
 void Rel() throws MalformedDomgraphException:
@@ -170,7 +173,7 @@ void QeqList() throws MalformedDomgraphException:
 {
 }
 {
-    <HCONS> "(" "[" ( Qeq() ) ( "," Qeq() )* "]" ")"
+    <HCONS> "(" "[" [ ( Qeq() ) ( "," Qeq() )* ] "]" ")"
 }
 
 void Qeq() throws MalformedDomgraphException: 
