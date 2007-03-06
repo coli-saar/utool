@@ -1407,7 +1407,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			}
 
 			frags = convertStringsToFragments(fragmentsString);
-			frags.removeAll(leaflayer.keySet());
+		//	frags.removeAll(leaflayer.keySet());
 			
 			
 			
@@ -1445,6 +1445,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			} else {
 				if(! frags.isEmpty())
 				fragToXPos.put(frags.iterator().next(), 0);
+			}
+			
+			Set<Fragment> free = convertStringsToFragments(freefrags);
+			if(free.size() == 1) {
+				Fragment top = free.iterator().next();
+				if(getFragInEdges(top).size() == 0) {
+					fragToXPos.put(top, (width - fragWidth.get(top))/2);
+				}
 			}
 		}
 		
@@ -1518,6 +1526,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				// this is probably the case iff 
 				// I am a 'single'
 				fragToXPos.put(current, myX);
+				nextX += fragWidth.get(current) + fragmentXDistance;
 
 			} else {
 				for(Fragment frag : myBox.frags) {
@@ -1547,7 +1556,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				}
 				
 			} else {
-				nextX += fragmentXDistance + fragWidth.get(current);
 				for(Fragment par : parents) {
 					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
 				}
@@ -1607,7 +1615,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				}
 
 			} else {
-				nextX += fragmentXDistance + fragWidth.get(current);
+				
 				for(Fragment par : childboxparents) {
 					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
 				}
