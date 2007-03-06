@@ -931,6 +931,7 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			List<DefaultGraphCell> holes = getFragHoles(fragment);
 			Collections.reverse(holes);
 			
+			
 			for( DefaultGraphCell hole : holes ) {
 				List<DefaultEdge> outedges = graph.getOutEdges(hole);
 				boolean firstOutEdge = true;
