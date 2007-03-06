@@ -1114,7 +1114,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			
 			
 			if(! visited.contains(current)) {
-				visited.add(current);
 				System.err.print("Unseen frag: " + current);
 			/*
 			 * Placing the recent fragment.
@@ -1124,20 +1123,23 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			if(myBox == null) {
 				// this is probably the case iff 
 				// I am a 'single'
+				visited.add(current);
 				myX = Math.max(x, nextPossibleX[fragmentToLayer.get(current)] );
 				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
 				fragToXPos.put(current, myX);
-				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
+			//	nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 
 			} else {
 				System.err.print("Box! Starting at " + x);
 				for(Fragment frag : myBox.frags) {
+					if(!visited.contains(frag)) {
 					visited.add(frag);
 					System.err.print("    boxfrag: " + frag);
 					int xVal = Math.max(myBox.getBoxXPos(frag) + myX, nextPossibleX[fragmentToLayer.get(frag)]);
 					fragToXPos.put(frag, xVal);
 					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
-					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
+			//		nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
+					}
 				}
 				
 			}
@@ -1197,13 +1199,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				if(childbox != null) {
 					System.err.println("box!");
 					for(Fragment cbf : childbox.frags) {
+						if(! visited.contains(cbf)) {
 						visited.add(cbf);
 						System.err.println("    boxfrag: " + cbf);
 						int xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
 						fragToXPos.put(cbf, xVal);
 						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
-						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
-						
+			//			nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
+						}
 					}
 					nextX = fragToXPos.get(child) + fragWidth.get(child) + fragmentXDistance;
 					
