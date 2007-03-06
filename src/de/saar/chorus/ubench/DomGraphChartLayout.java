@@ -80,17 +80,15 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	private Map<Fragment,Integer> fragmentToDepth;
 	private List<Set<String>> layers;
 	private Map<Fragment, DefaultGraphCell> leaflayer; // a leaf mapped to its parent hole
+	private Map<Fragment, Integer> fragmentToLayer;
+	
 	private List<Set<Fragment>> fraglayers;
 
 	//the x-offset of the nodes of a fragment
 	private Map<Fragment,Integer> fragOffset;
 
-	// dominance edges that we want to ignore so as to avoid
-	// walking hypernormal paths
-	private Set<DefaultEdge> deactivatedEdges;
-
-	// map each fragment to its towers
-	private Map<Fragment, List<FragmentTower>> fragmentToTowers;
+	
+	
 
 	// the position of a node within its fragment
 	private Map<DefaultGraphCell,Integer> relXtoParent;
@@ -129,11 +127,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		layers = new ArrayList<Set<String>>();
 		fraglayers = new ArrayList<Set<Fragment>>();
+		fragmentToLayer = new HashMap<Fragment, Integer>();
 
+		
 		movedRoot = null;
 		yOffset = 0;
 		//all the other fields are initialized empty
-		deactivatedEdges = new HashSet<DefaultEdge>();
 
 		fragXpos = new HashMap<Fragment, Integer>();
 		fragYpos = new HashMap<Fragment, Integer>();
@@ -155,7 +154,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		nodesToShape = new HashMap<DefaultGraphCell, Shape>();
 		nodesToDepth = new HashMap<DefaultGraphCell,Integer>();
-		fragmentToTowers = new HashMap<Fragment, List<FragmentTower>>();
 		relXtoRoot = new HashMap<DefaultGraphCell, Integer>();
 		
 		fragToRoot = new HashMap<Fragment, String>();
@@ -173,411 +171,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 
 
-	/**
-	 * <code>Cost</code>
-	 * Class to represent assessment criteria for 
-	 * layouts.
-	 *
-	 */
-	private static class Cost implements Comparable<Cost> {
-
-		private int degree, 						// maximal amount of "box tiers"
-		crossings, 						// amount of crossings
-		towers,  						// amount of towers
-		averageTowerHeight, 			// averaged height of towers
-		completeTowerHeight, 			// summed up height of towers
-		maxBoxHeight, maxBoxWidth,  	// dimensions of the largest box
-		maxEdgeLength, minEdgeLength, 	// extreme values of edge length
-		boxes, 							// amount of boxes
-		edges; 							// amount of edges
-
-		private float boxRatio; 					// ratio maxBoxHeight/maxBoxWidth 
-		private double maxEdgeRange; 				// diference of longest and shortest edge 
-
-		public static Cost maxCost = new Cost(Integer.MAX_VALUE);
-
-		/**
-		 * 
-		 * @return maximal edge range
-		 */
-		public double getMaxEdgeRange() {
-			return maxEdgeRange;
-		}
-
-		/**
-		 * 
-		 * @param maxEdgeRange
-		 */
-		public void setMaxEdgeRange(double maxEdgeRange) {
-			this.maxEdgeRange = maxEdgeRange;
-		}
-
-		/**
-		 * initializes all fields, most of them with zero,
-		 * the values to set "minimal" later on with 
-		 * <code>Integer.MAX_VALUE</code>
-		 *
-		 */
-		public Cost() {
-			degree = 0;
-			crossings = 0;
-			towers = 0;
-			averageTowerHeight = 0;
-			completeTowerHeight = 0;
-			maxBoxHeight = 0;
-			maxBoxWidth = 0;
-			boxRatio = 0;
-			boxes = 0;
-			maxEdgeLength = 0;
-			minEdgeLength = Integer.MAX_VALUE;
-			maxEdgeRange = Integer.MAX_VALUE;
-		}
-
-		/**
-		 * This constructor sets 
-		 * all fields in the cost to the value of the
-		 * parameter x. It can be used to create Cost objects that are
-		 * maximally expensive. (Use it as new Cost(Integer.MAX_VALUE).)
-		 */
-		private Cost(int x) {
-			degree = x;
-			crossings = x;
-			towers = x;
-			averageTowerHeight = x;
-			completeTowerHeight = x;
-			maxBoxHeight = x;
-			maxBoxWidth = x;
-			boxRatio = x;
-			boxes = x;
-			maxEdgeLength = x;
-			minEdgeLength = 0;
-			maxEdgeRange = x;
-		}
-
-		/**
-		 * adds up another Cost object to this one.
-		 * (deprecated?)
-		 * @param c
-		 */
-		public void add(Cost c) {
-			degree += c.degree;
-			crossings += c.crossings;
-			towers += c.towers;
-			averageTowerHeight += c.averageTowerHeight;
-			completeTowerHeight += c.completeTowerHeight;
-			maxBoxHeight = Math.max(maxBoxHeight,c.maxBoxHeight);
-			maxBoxWidth = Math.max(maxBoxWidth, c.maxBoxWidth);
-			boxRatio = (boxRatio + c.boxRatio)/2;
-			boxes += c.boxes;
-		}
-
-		/**
-		 * returns the most relevant values of this <code>Cost</code> 
-		 * object as <code>String</code>
-		 * @return the String reperesentation 
-		 */
-		public String toString() {
-			StringBuffer content = new StringBuffer();
-
-			content.append("<Cost: crossings= " + crossings + ">");
-			content.append(System.getProperty("line.separator"));
-			content.append("<Cost: box ratio = " + boxRatio + ">");
-			content.append(System.getProperty("line.separator"));
-			content.append("<Cost: maximal edge range = " + maxEdgeRange + ">");
-			content.append(System.getProperty("line.separator"));
-			content.append("<Cost: towers = " + towers + ">");
-			content.append(System.getProperty("line.separator"));
-			content.append("<Cost: average tower height = " + averageTowerHeight + ">");
-			content.append(System.getProperty("line.separator"));
-			content.append("<Cost: max. superposed boxes = " + degree + ">");
-			content.append(System.getProperty("line.separator"));
-
-			return content.toString();
-		}
-
-		/**
-		 * Updates the saved difference of the minimal and 
-		 * the maximal edge length in this <code>Cost</code> 
-		 * object.
-		 * @param edgeLength the edge length to consider
-		 */
-		public void updateEdgeCost(double edgeLength) {
-			edges++;
-
-			if( edgeLength < minEdgeLength ) {
-				minEdgeLength = (int) edgeLength;
-				if(edges == 1) {
-					maxEdgeLength = minEdgeLength;
-				}
-			} else if ( edgeLength > maxEdgeLength ) {
-				maxEdgeLength = (int) edgeLength;
-			}
-
-			maxEdgeRange = maxEdgeLength - minEdgeLength;
-		}
-
-
-
-		/**
-		 * @return Returns the crossings.
-		 */
-		int getCrossings() {
-			return crossings;
-		}
-		/**
-		 * @param crossings The crossings to set.
-		 */
-		void setCrossings(int crossings) {
-			this.crossings = crossings;
-		}
-
-
-
-		/**
-		 * @return Returns the maxBoxHeight.
-		 */
-		int getMaxBoxHeight() {
-			return maxBoxHeight;
-		}
-
-		/**
-		 * @param maxBoxHeight The maxBoxHeight to set.
-		 */
-		void setMaxBoxHeight(int height) {
-			if(height> maxBoxHeight) {
-				maxBoxHeight = height;
-			}
-		}
-
-		void raiseCrossings(){
-			crossings++;
-		}
-		/**
-		 * @return Returns the degree.
-		 */
-		int getDegree() {
-			return degree;
-		}
-		/**
-		 * @param degree The degree to set.
-		 */
-		void setDegree(int degree) {
-			this.degree = degree;
-		}
-
-		/**
-		 * Changes degree if the parameter is
-		 * a higher degree.
-		 * @param deg the degree to compare with
-		 */
-		void setDegreeIfGreater(int deg) {
-			if(deg> degree){
-				degree = deg;
-			}
-		}
-
-		/**
-		 * @return Returns the towers.
-		 */
-		int getTowers() {
-			return towers;
-		}
-		/**
-		 * @param towers The towers to set.
-		 */
-		void setTowers(int towers) {
-			this.towers = towers;
-		}
-
-		/**
-		 * raises the amount of towers by one and
-		 * computes (approximately) the average
-		 * tower height. 
-		 * @param towHeight
-		 */
-		void raiseTowers(int towHeight) {
-			towers++;
-			completeTowerHeight += towHeight;
-			averageTowerHeight = completeTowerHeight/towers;
-		}
-
-		/**
-		 * raises the amount of towers by one.
-		 *
-		 */
-		void raiseTowers() {
-			towers++;
-		}
-
-		/**
-		 * Compares this <code>Cost</code> object to
-		 * another one.
-		 * @param anotherCost they other cost object
-		 * @return 0 if the two objects are equal,
-		 *  	a negative int value if the other Cost object
-		 *  	is greater, otherwise a positive int value.
-		 */
-		public int compareTo(Cost anotherCost) {
-			return compare(this, anotherCost);
-		}
-
-
-
-
-
-		/**
-		 * Compares the calling <code>Cost</cost> object to
-		 * another one.
-		 * @param obj, the second cost object
-		 * @return true if the two objects represent
-		 * 			the same cost values
-		 */
-		public boolean equals(Object obj) {	
-			return (compare(this, (Cost) obj) == 0);
-		}
-
-
-		/**
-		 * Compares two <code>Cost</code> objects.
-		 * @param costX, the first cost object
-		 * @param costY, the second cost object
-		 * @return 0 if the two objects are equal,
-		 *  	a negative int value if the second Cost object
-		 *  	is greater, otherwise a positive int value.
-		 */
-		private int compare(Cost costX, Cost costY) {
-
-			if (costX.getCrossings() == costY.getCrossings()) {
-
-				if (costX.getMaxEdgeRange() == costY.getMaxEdgeRange()) {
-
-					if (costX.getBoxRatio() == costY.getBoxRatio()) {
-
-						if (costX.getDegree() == costY.getDegree()) {
-
-							if (costX.getMaxBoxHeight() == costY
-									.getMaxBoxHeight()) {
-
-								if (costX.getTowers() == costY.getTowers()) {
-
-									if (costY.getAverageTowerHeight() == costX
-											.getAverageTowerHeight()) {
-										return 0;
-									} else {
-										return costX.getAverageTowerHeight()
-										- costY.getAverageTowerHeight();
-									}
-								} else {
-									return costY.getTowers()
-									- costX.getTowers();
-								}
-							} else {
-								return costX.getMaxBoxHeight()
-								- costY.getMaxBoxHeight();
-							}
-						} else {
-							return costX.getDegree() - costY.getDegree();
-						}
-
-					} else {
-						// TODO probably this could be simplified?!
-						BigDecimal ratBigInt = new BigDecimal((double) (
-								Math.abs(1 - costX.getBoxRatio()) 
-								- Math.abs(1 - costY.getBoxRatio())));
-						return ratBigInt.signum();
-					}
-				} else {
-					BigDecimal edgLgth = new BigDecimal(costX.getMaxEdgeRange()
-							- costY.getMaxEdgeRange());
-					return edgLgth.signum();
-				}
-			} else {
-				return costX.getCrossings() - costY.getCrossings();
-			} 
-		}
-
-
-
-		/**
-		 * @return Returns the averageTowerHeight.
-		 */
-		private int getAverageTowerHeight() {
-			return averageTowerHeight;
-		}
-
-		/**
-		 * 
-		 * @return the number of boxes
-		 */
-		public int getBoxes() {
-			return boxes;
-		}
-
-		/**
-		 * @param boxes
-		 */
-		public void setBoxes(int boxes) {
-			this.boxes = boxes;
-		}
-
-		/**
-		 * 
-		 * @return the box ratio
-		 */
-		public float getBoxRatio() {
-			return boxRatio;
-		}
-
-		/**
-		 * 
-		 * @param boxRatio
-		 */
-		public void setBoxRatio(float boxRatio) {
-			this.boxRatio = boxRatio;
-		}
-
-		/**
-		 * 
-		 * @return the maximal box width
-		 */
-		public int getMaxBoxWidth() {
-			return maxBoxWidth;
-		}
-
-		/**
-		 * Sets the maximal box width.
-		 * @param maxBoxWidth 
-		 */
-		public void setMaxBoxWidth(int maxBoxWidth) {
-			this.maxBoxWidth = maxBoxWidth;
-		}
-
-		/**
-		 * updates this <code>Cost</code> object's boxRatio.
-		 * Notes if a parameter is a new extreme value for box
-		 * height or box width.
-		 * Counts up the boxes and calculates the new ratio of
-		 * the maximal box width and the maximal box height.
-		 * @param boxHeight the new box height to check
-		 * @param boxWidth the new box width
-		 */
-		public void updateBoxParameter(int boxHeight, int boxWidth) {
-			boxes++;
-			if( boxHeight > maxBoxHeight ) {
-				maxBoxHeight = boxHeight;
-			}
-
-			if( boxWidth > maxBoxWidth) {
-				maxBoxWidth = boxWidth;
-			}
-
-			boxRatio = (float) maxBoxHeight / maxBoxWidth;
-		}
-
-		public int hashCode() {
-			return maxBoxWidth * maxBoxHeight * boxes * averageTowerHeight;
-		}
-	}
 
 
 	private void fillLayers() {
@@ -608,6 +201,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 				fraglayers.get(i).add(frag);
 				}
+				fragmentToLayer.put(frag, i);
 			}
 			
 		}
@@ -1024,8 +618,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			
 			for(Fragment boxfrag : box.frags) {
 				System.out.println(boxfrag);
-				fragXpos.put(boxfrag, box.getBoxXPos(boxfrag) + offset);
-				offset +=box.width;
+				fragXpos.put(boxfrag, box.getBoxXPos(boxfrag) );
+				//offset +=box.width;
 			}
 		}
 		
@@ -1111,7 +705,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				+ fragOffset.get(nodeFrag)
 				+ fragXpos.get(parent);
 			} else {
-				xMovement= fragXpos.get(nodeFrag)  + offset;
+				xMovement= fragXpos.get(nodeFrag) + offset;
 			}	
 			/*
 			 * the absolute x- position is the relative
@@ -1355,7 +949,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		private Set<String> fragmentsString; // string representation of my fragment's nodes
 		private Set<Fragment> frags; // my fragments
-		private Set<String> freefragments; // the free fragments contained in the wcc I consist of
+		private Set<String> freefragments; // the free fragments contained in the wcc I consist of 
+		private int[] nextPossibleX; // the leftmost free position for a fragment in a slot.
 		
 		private int width; // my width (after layout)
 
@@ -1369,7 +964,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			fragmentsString = new HashSet<String>(wcc);	
 			freefragments = freefrags;
 			fragToXPos = new HashMap<Fragment, Integer>();
-			
+			nextPossibleX = new int[fraglayers.size()];
 			
 			children = new HashMap<Set<Fragment>, FragmentBox>();
 
@@ -1428,20 +1023,22 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			for(Fragment frag : possibleRoots ) {
 				if(bestCost == -1 ) {
 					// first loop
-					bestCost = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null);
+					bestCost = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
 					bestRoot = frag;
+					
 				} else {
-					int nextCrossCount = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null);
+					int nextCrossCount = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
 					if(nextCrossCount < bestCost) {
 						bestCost = nextCrossCount;
 						bestRoot = frag;
 					}
 				}
 				
+				nextPossibleX = new int[fraglayers.size()];
 				fragToXPos.clear();
 			}
-			
-			fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null);
+			System.err.println("\n\n\n ===== FINAL DFS ====");
+			fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null, new ArrayList<Fragment>());
 			} else {
 				if(! frags.isEmpty())
 				fragToXPos.put(frags.iterator().next(), 0);
@@ -1483,17 +1080,16 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		 * @return the number of crossings
 		 */
 		int fragBoxDFS(int x, Set<Fragment> visited, Fragment current, int crossings,
-				DefaultGraphCell lastroot) {
+				DefaultGraphCell lastroot, List<Fragment> parentsToCover) {
 
 			int cross = crossings;
 			int nextX = x;
 			int myX = x;
+			int rightX = x;
 			DefaultGraphCell currentRoot = getFragRoot(current);
-			int childWidth = 0;
 			
 
-			if(! visited.contains(current)) {
-				visited.add(current);
+			
 
 			
 			// 0. Compute the hole by which we entered; if it's not the left one,
@@ -1517,6 +1113,9 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			}
 			
 			
+			if(! visited.contains(current)) {
+				visited.add(current);
+				System.err.print("Unseen frag: " + current);
 			/*
 			 * Placing the recent fragment.
 			 * It can be the case that I belong actually to a childbox of this box.
@@ -1525,16 +1124,25 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			if(myBox == null) {
 				// this is probably the case iff 
 				// I am a 'single'
+				myX = Math.max(x, nextPossibleX[fragmentToLayer.get(current)] );
+				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
 				fragToXPos.put(current, myX);
-				nextX += fragWidth.get(current) + fragmentXDistance;
+				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 
 			} else {
+				System.err.print("Box! Starting at " + x);
 				for(Fragment frag : myBox.frags) {
 					visited.add(frag);
-					fragToXPos.put(frag, myBox.getBoxXPos(frag) + myX);
+					System.err.print("    boxfrag: " + frag);
+					int xVal = Math.max(myBox.getBoxXPos(frag) + myX, nextPossibleX[fragmentToLayer.get(frag)]);
+					fragToXPos.put(frag, xVal);
+					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
+					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
 				}
-				nextX += myBox.getWidth() + fragmentXDistance;
+				
 			}
+			nextX = fragToXPos.get(current) + fragmentXDistance + fragWidth.get(current);
+			rightX = nextX;
 			
 			
 			// 1. compute my unseen parents.
@@ -1551,15 +1159,19 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				// dominate myself right above me.
 				Collections.sort(parents, new FragmentOutDegreeComparator());
 				for(Fragment par : parents) {
-					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
-					nextX += fragWidth.get(par) + fragmentXDistance;
+					System.err.println("parent: " + par);
+					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot, new ArrayList<Fragment>());
+					nextX = fragToXPos.get(par) +  fragWidth.get(par) + fragmentXDistance;
 				}
 				
 			} else {
 				for(Fragment par : parents) {
-					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
+					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot, new ArrayList<Fragment>());
+					nextX =  fragToXPos.get(par) + fragWidth.get(par) + fragmentXDistance;
 				}
 			}
+			
+			nextX = rightX;
 			
 
 			// 2. compute my unseen children.
@@ -1572,20 +1184,28 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			}
 
 			
-			List<Fragment> childboxparents = new ArrayList<Fragment>();
+
+			System.err.print("Children! starting at rightX = " + rightX);
 			
 			for(Fragment child : childfrags) {
+				System.err.println("   child: " + child);
+				if(!visited.contains(child)) {
+				List<Fragment> childboxparents = new ArrayList<Fragment>();
 				FragmentBox childbox = getBoxForFrag(child);
 				
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
+					System.err.println("box!");
 					for(Fragment cbf : childbox.frags) {
 						visited.add(cbf);
-						fragToXPos.put(cbf,
-								childbox.getBoxXPos(cbf) + nextX);
+						System.err.println("    boxfrag: " + cbf);
+						int xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
+						fragToXPos.put(cbf, xVal);
+						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
+						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
+						
 					}
-					nextX += fragmentXDistance + childbox.getWidth();
-					childWidth += childbox.getWidth();
+					nextX = fragToXPos.get(child) + fragWidth.get(child) + fragmentXDistance;
 					
 					for(DefaultEdge edge : getFragInEdges(child)) {
 						Fragment parent = graph.getSourceFragment(edge);
@@ -1594,38 +1214,31 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						}
 					}
 					
+					Collections.sort(childboxparents, new FragmentOutDegreeComparator());
+					cross += fragBoxDFS(nextX, visited, child, 0, currentRoot, childboxparents);
+					
 					
 				} else {
 					// no childbox. this should never happen. However, if it does - 
 					// just go on.
-					cross += fragBoxDFS(nextX, visited, child, 0, currentRoot);
-					childWidth += fragWidth.get(child);
-					nextX += fragWidth.get(child) + fragmentXDistance;
+					cross += fragBoxDFS(nextX, visited, child, 0, currentRoot, new ArrayList<Fragment>());
+					nextX = fragToXPos.get(child) + fragWidth.get(child) + fragmentXDistance;
+				}
 				}
 			}
 			
-			// 3. place my brothers -- the parents of my childboxes.
-			if(childboxparents.size() > 1) {
-				// this is to make sure that I start placing my parents which only 
-				// dominate myself right above me.
-				Collections.sort(childboxparents, new FragmentOutDegreeComparator());
-				for(Fragment par : childboxparents) {
-					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
-					nextX += fragWidth.get(par) + fragmentXDistance;
-				}
-
-			} else {
-				
-				for(Fragment par : childboxparents) {
-					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot);
-				}
-			}
+		
 
 
 
 				width = nextX - fragmentXDistance;
 
-			} 
+			} else {
+				for(Fragment frag : parentsToCover) {
+					cross += fragBoxDFS(nextX, visited, frag, 0, currentRoot, new ArrayList<Fragment>());
+					nextX = fragToXPos.get(frag) + fragWidth.get(frag) + fragmentXDistance;
+				}
+			}
 
 			return cross;
 		}
