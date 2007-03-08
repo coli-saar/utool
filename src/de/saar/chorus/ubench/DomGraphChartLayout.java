@@ -121,7 +121,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		 */
 		this.graph = gr;
 		this.chart = (Chart) chart.clone();
-		domgraph = origin;
+		domgraph = origin.compactify();
 
 		fragments = graph.getFragments();
 
@@ -607,6 +607,11 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		}
 
 		int offset = 0;
+		int leftBorder = 0;
+		Fragment topFragment = null;
+		if(fraglayers.get(0).size() == 1) {
+			topFragment = fraglayers.get(0).iterator().next();
+		}
 		for(Set<String> toplevel : chart.getToplevelSubgraphs()) {
 			
 			Set<String> free = new HashSet<String>();
@@ -618,9 +623,15 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			
 			for(Fragment boxfrag : box.frags) {
 				System.out.println(boxfrag);
-				fragXpos.put(boxfrag, box.getBoxXPos(boxfrag) );
-				//offset +=box.width;
+				int x = box.getBoxXPos(boxfrag);
+				fragXpos.put(boxfrag, x);
+				leftBorder = Math.max(leftBorder, x + fragWidth.get(boxfrag));
 			}
+		}
+		
+		if(topFragment != null) {
+			fragXpos.remove(topFragment);
+			fragXpos.put(topFragment, leftBorder/2 - fragWidth.get(topFragment)/2);
 		}
 		
 		
@@ -1260,7 +1271,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				if( // I have one and only one parent, or my parents are not in the box.
 						(getFragDegree(frag) == 1 || convertStringsToFragments(freefragments).contains(frag)) &&
 						// AND I have no children
-						getFragOutEdges(frag).size() == 0) {
+						getFragOutEdges(frag).size() <= 1 && getFragInEdges(frag).size() <= 1) {
 					theroots.add(frag);
 				}
 			}
