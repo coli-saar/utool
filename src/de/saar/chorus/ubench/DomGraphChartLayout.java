@@ -1181,6 +1181,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			FragmentBox myBox = getBoxForFrag(current);
 				// this is probably the case iff 
 				// I am a 'single'
+			if(myBox == null) {
 				visited.add(current);
 				if(! oneHoleFrags.contains(current)) {
 				myX = Math.max(x, nextPossibleX[fragmentToLayer.get(current)] );
@@ -1189,7 +1190,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				}
 				fragToXPos.put(current, myX);
 				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
-				if(myBox == null) {
+				
 				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
 				
 				
