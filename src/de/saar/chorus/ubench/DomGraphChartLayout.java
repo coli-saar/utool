@@ -44,13 +44,6 @@ import de.saar.chorus.treelayout.Shape;
 /**
  * This is a draft for a new chart-based layout algorithm.
  * 
- * TODO
- *  - implement FragmentBox class
- *  - do DFS for determining the best root (on the left) within a FragmentBox
- *  - merge boxes by adding the fragments of the child-box and move them to the place 
- *    computed for the box (with DFS)
- *  - FBs probably know their parent frag and whether they are a left or a right child
- *  - spechial treatment of leaves! 
  * 
  * 
  * @author Alexander Koller
@@ -542,13 +535,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	private  int isOneHoleFrag(Fragment frag) {
 		List<DefaultGraphCell> holes = getFragHoles(frag);
 		if(holes.size() == 1) {
-			List<DefaultEdge> outedges = graph.getOutEdges(holes.iterator().next());
+			DefaultGraphCell hole = holes.iterator().next();
+			List<DefaultEdge> outedges = graph.getOutEdges(hole);
 			if(outedges.size() == 1) {
 				Fragment child = graph.getTargetFragment(outedges.iterator().next());
 				if(getFragDegree(child) == 1) {
 					return fragWidth.get(child);
 				} else {
-					return -1;
+					return graph.computeNodeWidth(hole);
 				}
 		}} else if(holes.size() == 2){
 			boolean first = true;
