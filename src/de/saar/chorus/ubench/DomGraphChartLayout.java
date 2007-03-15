@@ -81,6 +81,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	private List<Set<String>> layers;
 	private Map<Fragment, DefaultGraphCell> leaflayer; // a leaf mapped to its parent hole
 	private Map<Fragment, Integer> fragmentToLayer;
+	private Set<Fragment> oneHoleFrags;
 	
 	private List<Set<Fragment>> fraglayers;
 
@@ -144,7 +145,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		fragmentToDepth = new HashMap<Fragment, Integer>();
 
-
+		oneHoleFrags = new HashSet<Fragment>();
 		
 		relXtoParent = new HashMap<DefaultGraphCell,Integer>();
 		relYpos = new HashMap<DefaultGraphCell,Integer>();
@@ -315,6 +316,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		}
 	}
 
+	private void computeOneHoleFrags() {
+		for(Fragment frag : fragments) {
+			if(isOneHoleFrag(frag)) {
+				oneHoleFrags.add(frag);
+			}
+		}
+	}
+	
 	/**
 	 * Resolve all leaves of a fragment (in the
 	 * right order).
@@ -525,7 +534,30 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	}
 
 
-	
+	private  boolean isOneHoleFrag(Fragment frag) {
+		List<DefaultGraphCell> holes = getFragHoles(frag);
+		if(holes.size() == 1) {
+			return true;
+		} else if(holes.size() == 2){
+			boolean first = true;
+			for(DefaultGraphCell hole : holes) {
+				if(first) {
+					first = false;
+					List<DefaultEdge> outedges = graph.getOutEdges(hole);
+					if(outedges.size() == 1) {
+						Fragment child = graph.getTargetFragment(outedges.iterator().next());
+						if(getFragDegree(child) == 1) {
+							return true;
+						} else {
+							return false;
+						}
+					}
+				} 
+			}
+		}
+		
+		return false;
+	}
 
 
 
@@ -845,7 +877,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * Starts the layout algorithm.
 	 */
 	public void run(JGraph gr, Object[] cells, int arg2) {
-
+		computeOneHoleFrags();
 		fillLayers();
 		computeFragDimensions();
 		computeFragmentPositions();
@@ -1131,25 +1163,32 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			 * It can be the case that I belong actually to a childbox of this box.
 			 */
 			FragmentBox myBox = getBoxForFrag(current);
-			if(myBox == null) {
 				// this is probably the case iff 
 				// I am a 'single'
 				visited.add(current);
+				if(! oneHoleFrags.contains(current)) {
 				myX = Math.max(x, nextPossibleX[fragmentToLayer.get(current)] );
-				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
+				} else {
+					myX = nextPossibleX[fragmentToLayer.get(current)] ;
+				}
 				fragToXPos.put(current, myX);
-			//	nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
+				if(myBox == null) {
+				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
+				
+				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 
 			} else {
 				System.err.print("Box! Starting at " + x);
+				
+				
 				for(Fragment frag : myBox.frags) {
 					if(!visited.contains(frag)) {
 					visited.add(frag);
 					System.err.print("    boxfrag: " + frag);
-					int xVal = Math.max(myBox.getBoxXPos(frag) + myX, nextPossibleX[fragmentToLayer.get(frag)]);
+					int xVal = myBox.getBoxXPos(frag) + myX;
 					fragToXPos.put(frag, xVal);
 					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
-			//		nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
+					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
 					}
 				}
 				
@@ -1213,10 +1252,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						if(! visited.contains(cbf)) {
 						visited.add(cbf);
 						System.err.println("    boxfrag: " + cbf);
-						int xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
+						int xVal = childbox.getBoxXPos(cbf) + nextX;
 						fragToXPos.put(cbf, xVal);
 						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
-			//			nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
+						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
 						}
 					}
 					nextX = fragToXPos.get(child) + fragWidth.get(child) + fragmentXDistance;
@@ -1250,7 +1289,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			} else {
 				for(Fragment frag : parentsToCover) {
 					cross += fragBoxDFS(nextX, visited, frag, 0, currentRoot, new ArrayList<Fragment>());
-					nextX = fragToXPos.get(frag) + fragWidth.get(frag) + fragmentXDistance;
+					nextX = nextPossibleX[fragmentToLayer.get(frag)];
 				}
 			}
 
