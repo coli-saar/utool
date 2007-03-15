@@ -318,8 +318,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 	private void computeOneHoleFrags() {
 		for(Fragment frag : fragments) {
-			if(isOneHoleFrag(frag)) {
+			int childwidth = isOneHoleFrag(frag);
+			if(childwidth > -1) {
 				oneHoleFrags.add(frag);
+				// 15 is half a hole.
+				int newWidth = fragWidth.get(frag) + (childwidth/2) - 15;
+				fragWidth.remove(frag);
+				fragWidth.put(frag, newWidth);
 			}
 		}
 	}
@@ -534,11 +539,18 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	}
 
 
-	private  boolean isOneHoleFrag(Fragment frag) {
+	private  int isOneHoleFrag(Fragment frag) {
 		List<DefaultGraphCell> holes = getFragHoles(frag);
 		if(holes.size() == 1) {
-			return true;
-		} else if(holes.size() == 2){
+			List<DefaultEdge> outedges = graph.getOutEdges(holes.iterator().next());
+			if(outedges.size() == 1) {
+				Fragment child = graph.getTargetFragment(outedges.iterator().next());
+				if(getFragDegree(child) == 1) {
+					return fragWidth.get(child);
+				} else {
+					return -1;
+				}
+		}} else if(holes.size() == 2){
 			boolean first = true;
 			for(DefaultGraphCell hole : holes) {
 				if(first) {
@@ -547,16 +559,16 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					if(outedges.size() == 1) {
 						Fragment child = graph.getTargetFragment(outedges.iterator().next());
 						if(getFragDegree(child) == 1) {
-							return true;
+							return fragWidth.get(child);
 						} else {
-							return false;
+							return -1;
 						}
 					}
 				} 
 			}
 		}
 		
-		return false;
+		return -1;
 	}
 
 
@@ -605,7 +617,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		visited.clear();
 		
 		
-		for(Set<Fragment> layer : fraglayers) {
+		for(int i = 0; i < fraglayers.size(); i++) {
+			Set<Fragment> layer = fraglayers.get(i);
 	//		int x0;
 			double deltax; 
 
@@ -624,6 +637,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				if(! visited.contains(frag)) {
 					visited.add(frag);
 					fragYpos.put(frag, yFragPos);
+					
+				
 					yPosToAdd = Math.max(fragHeight.get(frag), yPosToAdd);
 
 				/*	if(x0 == 0) {
@@ -877,9 +892,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * Starts the layout algorithm.
 	 */
 	public void run(JGraph gr, Object[] cells, int arg2) {
-		computeOneHoleFrags();
+		
 		fillLayers();
 		computeFragDimensions();
+		computeOneHoleFrags();
 		computeFragmentPositions();
 		computeNodePositions();
 		placeNodes();
@@ -964,8 +980,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	public class FragmentOutDegreeComparator implements Comparator<Fragment> {
 
 		public int compare(Fragment arg0, Fragment arg1) {
-		
-			return getFragOutEdges(arg0).size() - getFragOutEdges(arg1).size();
+			if(oneHoleFrags.contains(arg0) && oneHoleFrags.contains(arg1)) {
+				return getFragOutEdges(arg0).size() - getFragOutEdges(arg1).size();
+			} else if(oneHoleFrags.contains(arg0)) {
+				return -1;
+			} else if(oneHoleFrags.contains(arg1)) {
+				return 1;
+			} else return getFragOutEdges(arg0).size() - getFragOutEdges(arg1).size();
 		}
 		
 	}
