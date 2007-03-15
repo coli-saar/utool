@@ -7,6 +7,7 @@ import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentYDistance;
 import static de.saar.chorus.ubench.DomGraphLayoutParameters.nodeYDistance;
 import static de.saar.chorus.ubench.DomGraphLayoutParameters.towerXDistance;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
@@ -408,29 +409,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 	}
 
-	/**
-	 * Computes (approximately) the length of the Edge between two 
-	 * Fragments. 
-	 * 
-	 * @param from
-	 * @param to
-	 * @return the distance
-	 */
-	private double getFragmentDistance(Fragment from, Fragment to,
-			Map<Fragment,Integer> xCoordinates, Map<Fragment, Integer> yCoordinates) {
-		int fromX = xCoordinates.get(from) + (fragWidth.get(from)/2);
-		int fromY = yCoordinates.get(from) + fragHeight.get(from);
-		int toX = xCoordinates.get(to) + (fragWidth.get(to)/2);
-		int toY = yCoordinates.get(to);
-
-		double roughDistance =
-			Math.sqrt(
-					Math.pow(Math.abs(fromX - toX),2) 
-					+ Math.pow(Math.abs(fromY-toY),2)
-			);
-
-		return roughDistance;
-	}
+	
 
 	/**
 	 * Resolving the number of dominance edges adjacent
@@ -582,7 +561,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		int yFragPos = 0;
 		int yPosToAdd = 0;
-		int xFragPos = 0;
 		int noOfBiggestLayer = 0;
 		int widthOfBiggestLayer = 0;
 		Set<Fragment> visited = new HashSet<Fragment>();
@@ -591,7 +569,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		for(int i = 0; i < fraglayers.size(); i++ ) {
 
 			Set<Fragment> layer = fraglayers.get(i);
-			int fragCount = 0;
 
 			int layerWidth = 0;
 			roots.add(i, new HashSet<Fragment>()); 
@@ -677,6 +654,9 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		if(topFragment != null) {
 			fragXpos.remove(topFragment);
 			fragXpos.put(topFragment, leftBorder/2 - fragWidth.get(topFragment)/2);
+			for (DefaultEdge edge : getFragOutEdges(topFragment)) {
+				GraphConstants.setLineColor(graph.getModel().getAttributes(edge), new Color(255,204,230));
+			}
 		}
 		
 		
@@ -1076,6 +1056,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			Set<Fragment> possibleRoots = getPossibleRoots();
 			if(possibleRoots.isEmpty()) {
 				possibleRoots.addAll(frags);
+				System.err.println("  *** no roots! adding everything!***");
 			}
 			
 			// initialising the best root and the number of crossings.
@@ -1112,6 +1093,21 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				Fragment top = free.iterator().next();
 				if(getFragInEdges(top).size() == 0) {
 					fragToXPos.put(top, (width - fragWidth.get(top))/2);
+				}
+			}
+			
+			/**
+			 * TODO this is an awful hack to avoid NPEs. It should help to find out which fragments get no (resp.
+			 * here: the wrong) x-position. Refactor this!
+			 */
+			
+			for(Fragment frag : frags) {
+				if(! fragToXPos.containsKey(frag)) {
+					int x = nextPossibleX[fragmentToLayer.get(frag)];
+				
+					fragToXPos.put(frag, x);
+					nextPossibleX[fragmentToLayer.get(frag)] = x + fragWidth.get(frag) + fragmentXDistance;
+					
 				}
 			}
 		}
@@ -1192,10 +1188,11 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					myX = nextPossibleX[fragmentToLayer.get(current)] ;
 				}
 				fragToXPos.put(current, myX);
+				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 				if(myBox == null) {
 				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
 				
-				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
+				
 
 			} else {
 				System.err.print("Box! Starting at " + x);
@@ -1353,9 +1350,9 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 			for(Fragment frag : frags) {
 				if( // I have one and only one parent, or my parents are not in the box.
-						(getFragDegree(frag) == 1 || convertStringsToFragments(freefragments).contains(frag)) &&
+						(getFragInEdges(frag).size() == 1 || convertStringsToFragments(freefragments).contains(frag)) &&
 						// AND I have no children
-						getFragOutEdges(frag).size() <= 1 && getFragInEdges(frag).size() <= 1) {
+						(getFragOutEdges(frag).size() == 0 || oneHoleFrags.contains(frag)) ) {
 					theroots.add(frag);
 				}
 			}
