@@ -293,8 +293,9 @@ public class Ubench {
      */
     public void addTab(JGraphTab tab, boolean showNow, int ind) {
     	
-    	
+    	System.err.println("Empty? " + tab.isEmpty());
     	if(tab != null && (! tab.isEmpty())) {
+    		
     		int index;
     		tabs.add(ind, tab);
     		// registering the tab
@@ -397,7 +398,7 @@ public class Ubench {
         // the new tab
         JDomGraphTab tab = new JDomGraphTab(graph, origin, normalisedLabel, paintNow,
                 listener, labels);
-        if (tab.getGraph() != null) {
+        if (tab.getGraph() != null && (! tab.isEmpty())) {
             
             // tab sucessfully created
             addTab(tab, showNow);
@@ -472,7 +473,7 @@ public class Ubench {
         // the new tab
         JDomGraphTab tab = new JDomGraphTab(graph, origin, normaliseTabLabel(label),
                 paintNow, listener, labels);
-        if (tab.getGraph() != null) {
+        if (tab.getGraph() != null && (! tab.isEmpty())) {
             
             // tab sucessfully created
             addTab(tab, showNow, index);
