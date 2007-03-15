@@ -1196,11 +1196,16 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				System.err.print("Box! Starting at " + x);
 				
 				
-				for(Fragment frag : myBox.frags) {
+				for(Fragment frag : myBox.getSortedFragments()) {
 					if(!visited.contains(frag)) {
 					visited.add(frag);
 					System.err.print("    boxfrag: " + frag);
-					int xVal = myBox.getBoxXPos(frag) + myX;
+					int xVal;
+					if(oneHoleFrags.contains(frag)) {
+						xVal = nextPossibleX[fragmentToLayer.get(frag)];
+					} else {
+						xVal = myBox.getBoxXPos(frag) + myX;
+					} 
 					fragToXPos.put(frag, xVal);
 					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
 					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
@@ -1267,7 +1272,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						if(! visited.contains(cbf)) {
 						visited.add(cbf);
 						System.err.println("    boxfrag: " + cbf);
-						int xVal = childbox.getBoxXPos(cbf) + nextX;
+						int xVal;
+						if(oneHoleFrags.contains(cbf)) {
+							xVal = nextPossibleX[fragmentToLayer.get(cbf)];
+						} else {
+							xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
+						}
 						fragToXPos.put(cbf, xVal);
 						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
 						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
@@ -1311,7 +1321,22 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return cross;
 		}
 		
+		List<Fragment> getSortedFragments() {
+			List<Fragment> fraglist = new ArrayList<Fragment>(frags);
+			Collections.sort(fraglist, new FragmentXComparator());
+			return fraglist;
+		}
+		
 
+		private class FragmentXComparator implements Comparator<Fragment> {
+
+			public int compare(Fragment arg0, Fragment arg1) {
+				// TODO Auto-generated method stub
+				return fragToXPos.get(arg0) - fragToXPos.get(arg1);
+			}
+			
+		}
+		
 		/**
 		 * Find the fragments which are allowed to be the leftmost fragments
 		 * in a box. 
