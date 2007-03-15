@@ -1096,20 +1096,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				}
 			}
 			
-			/**
-			 * TODO this is an awful hack to avoid NPEs. It should help to find out which fragments get no (resp.
-			 * here: the wrong) x-position. Refactor this!
-			 */
-			
-			for(Fragment frag : frags) {
-				if(! fragToXPos.containsKey(frag)) {
-					int x = nextPossibleX[fragmentToLayer.get(frag)];
-				
-					fragToXPos.put(frag, x);
-					nextPossibleX[fragmentToLayer.get(frag)] = x + fragWidth.get(frag) + fragmentXDistance;
-					
-				}
-			}
+		
 		}
 		
 		/**
@@ -1146,7 +1133,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			int myX = x;
 			int rightX = x;
 			DefaultGraphCell currentRoot = getFragRoot(current);
-			
+
+			List<Fragment> parents = new ArrayList<Fragment>();
 
 			
 
@@ -1192,7 +1180,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 				
 				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
-				
+				for(DefaultEdge edge : getFragInEdges(current)) {
+					Fragment par = graph.getSourceFragment(edge);
+					if(frags.contains(par) && (! visited.contains(par))) {
+						parents.add(par);
+					}
+				}
 				
 
 			} else {
@@ -1213,6 +1206,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
 					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
 					}
+					for(DefaultEdge edge : getFragInEdges(frag)) {
+						Fragment par = graph.getSourceFragment(edge);
+						if(frags.contains(par) && (! visited.contains(par)) && (! myBox.frags.contains(par))) {
+							parents.add(par);
+						}
+					}
 				}
 				
 			}
@@ -1220,14 +1219,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			rightX = nextX;
 			
 			
-			// 1. compute my unseen parents.
-			List<Fragment> parents = new ArrayList<Fragment>();
-			for(DefaultEdge edge : getFragInEdges(current)) {
-				Fragment par = graph.getSourceFragment(edge);
-				if(frags.contains(par) && (! visited.contains(par))) {
-					parents.add(par);
-				}
-			}
 			
 			if(parents.size() > 1) {
 				// this is to make sure that I start placing my parents which only 
@@ -1284,16 +1275,18 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						fragToXPos.put(cbf, xVal);
 						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
 						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
+						
+						}
+						for(DefaultEdge edge : getFragInEdges(cbf)) {
+							Fragment parent = graph.getSourceFragment(edge);
+							if(! visited.contains(parent) && frags.contains(parent) && 
+									(! childbox.frags.contains(parent))) {
+								childboxparents.add(parent);
+							}
 						}
 					}
 					nextX = fragToXPos.get(child) + fragWidth.get(child) + fragmentXDistance;
-					
-					for(DefaultEdge edge : getFragInEdges(child)) {
-						Fragment parent = graph.getSourceFragment(edge);
-						if(! visited.contains(parent) &&  frags.contains(parent) ){
-							childboxparents.add(parent);
-						}
-					}
+			
 					
 					Collections.sort(childboxparents, new FragmentOutDegreeComparator());
 					cross += fragBoxDFS(nextX, visited, child, 0, currentRoot, childboxparents);
