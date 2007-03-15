@@ -190,7 +190,11 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				if(getFragDegree(frag) == 1 && getFragOutEdges(frag).size() == 0) {
 					DefaultGraphCell parent = graph.getSourceNode(
 							getFragInEdges(frag).iterator().next());
-					leaflayer.put(frag,parent);
+					if(oneHoleFrags.contains(graph.findFragment(parent))) {
+						leaflayer.put(frag,parent);
+					} else {
+						fraglayers.get(i).add(frag);
+					}
 				} else {
 				
 				fraglayers.get(i).add(frag);
@@ -737,8 +741,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * position of their fragment (cp. its fragment node).
 	 */
 	private void computeNodePositions() {
-
-
 		for(DefaultGraphCell node : graph.getNodes() ) {
 
 			Fragment nodeFrag = graph.findFragment(node);
@@ -751,11 +753,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				DefaultGraphCell sourceHole = leaflayer.get(nodeFrag);
 				Fragment parent = graph.findFragment(sourceHole);
 				
-				xMovement = relXtoParent.get(sourceHole)
-				+ graph.computeNodeWidth(sourceHole)/2
-				- graph.computeNodeWidth(node)/2
-				+ fragOffset.get(nodeFrag)
-				+ fragXpos.get(parent);
+					xMovement = relXtoParent.get(sourceHole)
+					+ graph.computeNodeWidth(sourceHole)/2
+					- graph.computeNodeWidth(node)/2
+					+ fragOffset.get(nodeFrag)
+					+ fragXpos.get(parent);
+
 			} else {
 				xMovement= fragXpos.get(nodeFrag) + offset;
 			}	
@@ -783,9 +786,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			if(leaflayer.containsKey(nodeFrag)) {
 				DefaultGraphCell sourceHole = leaflayer.get(nodeFrag);
 				Fragment parent = graph.findFragment(sourceHole);
+				
 				yMovement = fragYpos.get(parent) +
 							fragHeight.get(parent) +
-							(fragmentYDistance/2);
+							(fragmentYDistance/3);
 			} else {
 				yMovement = fragYpos.get(nodeFrag);
 			}
@@ -887,9 +891,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 */
 	public void run(JGraph gr, Object[] cells, int arg2) {
 		
-		fillLayers();
+		
 		computeFragDimensions();
 		computeOneHoleFrags();
+		fillLayers();
 		computeFragmentPositions();
 		computeNodePositions();
 		placeNodes();
@@ -1268,7 +1273,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
 					System.err.println("box!");
-					for(Fragment cbf : childbox.frags) {
+					for(Fragment cbf : childbox.getSortedFragments()) {
 						if(! visited.contains(cbf)) {
 						visited.add(cbf);
 						System.err.println("    boxfrag: " + cbf);
