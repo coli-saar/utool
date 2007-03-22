@@ -347,7 +347,6 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 */
 	public void resetLayout() {
 		graph.setScale(1);
-		graph.setLayoutType(LayoutType.JDOMGRAPH);
 		graph.computeLayout();
 		graph.adjustNodeWidths();
 	}
