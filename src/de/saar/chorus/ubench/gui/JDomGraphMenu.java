@@ -274,8 +274,6 @@ public class JDomGraphMenu extends JMenuBar {
 		layoutMenu.add(jdomgraphlayout);
 		layoutMenu.add(sugiyamalayout);
 		layoutMenu.add(chartlayout);
-		
-		graphSpecificItems.add(layoutMenu);
 		viewMenu.add(layoutMenu);
 		
 		viewMenu.addSeparator();
