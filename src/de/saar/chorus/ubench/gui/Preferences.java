@@ -79,7 +79,7 @@ public class Preferences implements Cloneable {
      */
 	public Preferences() {
 		labeltype = LabelType.LABEL;
-		layouttype = LayoutType.JDOMGRAPH;
+		layouttype = LayoutType.CHARTLAYOUT;
 		
 	}
 	

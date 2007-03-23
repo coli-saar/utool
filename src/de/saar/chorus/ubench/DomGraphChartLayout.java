@@ -714,13 +714,36 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 	}
 
+	
+		private void moveGraph(int x) {
+			Set<Fragment> seen = new HashSet<Fragment>();
+			for(DefaultGraphCell node : graph.getNodes()) {
 
+				
+				if(xPos.containsKey(node)) {
+					int old = xPos.get(node);
+					xPos.remove(node);
+					xPos.put(node, old +x);
+				} else {
+					Fragment frag = graph.findFragment(node);
+					if(! seen.contains(frag) ) {
+						seen.add(frag);
+						int old = fragOffset.get(frag);
+						fragOffset.remove(frag);
+						fragOffset.put(frag, old + x);
+					}
+				}
+			}
+		}
+	
 	/**
 	 * computes the position of all nodes considering
 	 * their relative poitions within a fragment and the
 	 * position of their fragment (cp. its fragment node).
 	 */
 	private void computeNodePositions() {
+		
+		int movegraph = 0;
 		for(DefaultGraphCell node : graph.getNodes() ) {
 
 			Fragment nodeFrag = graph.findFragment(node);
@@ -734,9 +757,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				Fragment parent = graph.findFragment(sourceHole);
 				
 					xMovement = relXtoParent.get(sourceHole)
-					+ graph.computeNodeWidth(sourceHole)/2
 					- graph.computeNodeWidth(node)/2
-					+ fragOffset.get(nodeFrag)
+					+ fragOffset.get(parent)
 					+ fragXpos.get(parent);
 
 			} else {
@@ -749,6 +771,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			x += xMovement ;
 
 			xPos.put(node, x);
+
+			movegraph = Math.min(movegraph, x);
 
 			/*
 			 * the absolute y- position is the relative
@@ -784,6 +808,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 
 		}
+		moveGraph(movegraph * -1);
 	}
 
 	/**
@@ -1259,19 +1284,27 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				List<Fragment> childboxparents = new ArrayList<Fragment>();
 				FragmentBox childbox = getBoxForFrag(child);
 				
+				
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
 					System.err.println("box!");
+					boolean first = true;
 					for(Fragment cbf : childbox.getSortedFragments()) {
+						if(first) {
+							first = false;
+								if(oneHoleFrags.contains(cbf)) {
+									nextX = nextPossibleX[fragmentToLayer.get(cbf)];
+								}
+						}
 						if(! visited.contains(cbf)) {
 						visited.add(cbf);
 						System.err.println("    boxfrag: " + cbf);
 						int xVal;
-						if(oneHoleFrags.contains(cbf)) {
-							xVal = nextPossibleX[fragmentToLayer.get(cbf)];
-						} else {
+				//		if(oneHoleFrags.contains(cbf)) {
+					//		xVal = nextPossibleX[fragmentToLayer.get(cbf)];
+						//} else {
 							xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
-						}
+						//}
 						fragToXPos.put(cbf, xVal);
 						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
 						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
