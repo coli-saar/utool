@@ -34,7 +34,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Michaela Regneri
  *
  */
-public class SolvedFormIterator implements Iterator<List<DomEdge>> {
+public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
@@ -45,10 +45,10 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	
     // the solved form which will be returned by the next call
     // to next()
-	private List<DomEdge> nextSolvedForm;
+	private SolvedFormSpec nextSolvedForm;
 	
     // a cached list of solved forms for get(int)
-	private List< List<DomEdge> > solvedForms;
+	private List<SolvedFormSpec> solvedForms;
     // the iterator used for computing the solved forms
     private SolvedFormIterator iteratorForGet;
     
@@ -63,7 +63,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
         chart = ch;
         agenda = new Agenda();
         stack = new Stack<EnumerationStackEntry>();
-        solvedForms = new ArrayList< List<DomEdge> >();
+        solvedForms = new ArrayList<SolvedFormSpec>();
         
         if( makeIteratorForGet ) {
             iteratorForGet = new SolvedFormIterator(ch, graph, false);
@@ -113,11 +113,11 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
 	}
 	
 	
-	private List<DomEdge> extractDomEdges() {
-		List<DomEdge> toReturn = new ArrayList<DomEdge>();
+	private SolvedFormSpec extractDomEdges() {
+		SolvedFormSpec toReturn = new SolvedFormSpec();
 		
 		for( EnumerationStackEntry ese : stack) {
-			toReturn.addAll(ese.getEdgeAccu());
+			toReturn.addAllDomEdges(ese.getEdgeAccu());
 		}
 		
 		return toReturn;
@@ -270,8 +270,8 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
     	return nextSolvedForm != null;
     }
 
-    public List<DomEdge> next() {
-    	List<DomEdge> ret = nextSolvedForm;
+    public SolvedFormSpec next() {
+    	SolvedFormSpec ret = nextSolvedForm;
     	
     	if( ret != null ) {
     		updateNextSolvedForm();
@@ -290,7 +290,7 @@ public class SolvedFormIterator implements Iterator<List<DomEdge>> {
      * @param sf index of the solved form to extract
      * @return the solved form
      */
-    public List<DomEdge> getSolvedForm(int sf) {
+    public SolvedFormSpec getSolvedForm(int sf) {
         for( int i = solvedForms.size(); i <= sf; i++ ) {
             if( !iteratorForGet.hasNext() ) {
                 return null;

@@ -16,6 +16,7 @@ import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
@@ -200,7 +201,7 @@ public class Utool {
                         long count = 0;
                         SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
                         while( it.hasNext() ) {
-                            List<DomEdge> domedges = it.next();
+                            SolvedFormSpec domedges = it.next();
                             count++;
                             
                             if( !options.hasOptionNoOutput() ) {

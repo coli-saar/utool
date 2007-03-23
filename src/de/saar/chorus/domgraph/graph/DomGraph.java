@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 
 import de.saar.basic.TestTools;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 
@@ -731,16 +732,16 @@ public class DomGraph implements Cloneable {
      * except that the dominance edges are replaced by those specified in
      * <code>domedges</code>. The original graph is not modified.
      * 
-     * @param domedges the dominance edges of the new graph
+     * @param spec the dominance edges of the new graph
      * @return a new dominance graph with these dominance edges
      */
-    public DomGraph withDominanceEdges(Collection<DomEdge> domedges) {
+    public DomGraph withDominanceEdges(SolvedFormSpec spec) {
         DomGraph ret = (DomGraph) clone();
         
         ret.removeAllDominanceEdges();
         
-        if( domedges != null ) {
-            for( DomEdge e : domedges ) {
+        if( spec != null ) {
+            for( DomEdge e : spec.getDomEdges() ) {
                 ret.addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
             }
         }
