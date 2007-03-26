@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.ubench;
+package de.saar.chorus.layout.domgraphlayout;
 
 /**
  * Storing the general parameters (distances between

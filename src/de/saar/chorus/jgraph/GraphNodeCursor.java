@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
 
-import de.saar.chorus.treelayout.NodeCursorInterface;
+import de.saar.chorus.layout.treelayout.NodeCursorInterface;
 
 /**
  * Class to layout solved forms implementing the <code>NodeCursorInterface</code>.

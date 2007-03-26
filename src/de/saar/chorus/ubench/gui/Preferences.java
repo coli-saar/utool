@@ -5,8 +5,8 @@ import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.ubench.DomGraphChartLayout;
-import de.saar.chorus.ubench.DomGraphLayout;
+import de.saar.chorus.layout.chartlayout.DomGraphChartLayout;
+import de.saar.chorus.layout.domgraphlayout.DomGraphLayout;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
