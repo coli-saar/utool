@@ -17,6 +17,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.RepaintManager;
+import javax.swing.RepaintManager;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
