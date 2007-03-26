@@ -2,4 +2,4 @@
 % (in fact, it is in solved form itself), but Chart#countSolvedForms
 % used to report it as having two solved forms. This was ticket #36.
 
-[label('X11' ax_1) label('X1' ie(X11 X12)) label('X12' '[S -o h]') label('X2' ax_2)]
+[label(x11 ax_1) label(x1 ie(x11 x12)) label(x12 '[S -o h]') label(x2 ax_2)]

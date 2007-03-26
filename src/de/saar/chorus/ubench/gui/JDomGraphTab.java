@@ -100,7 +100,7 @@ public class JDomGraphTab extends JGraphTab  {
 					solvable = false;
 					compactifiable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
-					Preferences.getInstance().setLayoutType(Preferences.LayoutType.JDOMGRAPH);
+					graph.setLayoutType(Preferences.LayoutType.JDOMGRAPH);
 				}
 			} else {
 				compactifiable =

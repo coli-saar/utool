@@ -216,9 +216,6 @@ public class Ubench {
      */
     public void refresh() {
         if (getVisibleTab() != null) {
-        	if(Preferences.isGlobalLayoutChange()) {
-        		getVisibleTab().repaintIfNecessary();
-        	}
             if(getVisibleTab().getClass() == JSolvedFormTab.class ) {
                 setSolvingEnabled(false);
                 menuBar.setSaveAllEnabled(false);

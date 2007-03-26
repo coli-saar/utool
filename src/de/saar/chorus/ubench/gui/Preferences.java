@@ -31,7 +31,6 @@ public class Preferences implements Cloneable {
     // static fields: per-application preferences 
     private static boolean autoCount = true;
     private static boolean fitToWindow = false;
-    private static boolean globalLayoutChange = false;
    
     
     // non-static fields: specific to each graph
@@ -80,6 +79,7 @@ public class Preferences implements Cloneable {
      */
 	public Preferences() {
 		labeltype = LabelType.LABEL;
+		//layouttype = LayoutType.JDOMGRAPH;
 		layouttype = LayoutType.CHARTLAYOUT;
 		
 	}
@@ -152,14 +152,7 @@ public class Preferences implements Cloneable {
         return fitToWindow;
     }
     
-    public static boolean isGlobalLayoutChange() {
-    	return globalLayoutChange;
-    }
-
-    public static void setGlobalLayoutChange(boolean b) {
-    	globalLayoutChange = b;
-    }
- 
+  
 
 
 
