@@ -27,6 +27,8 @@ import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LabelType;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 
 /**
@@ -44,13 +46,14 @@ public class JDomGraphPreferencePane extends JFrame
 	
 	
 	JTabbedPane tabs;	// several tabs for different option typs
-	JPanel servertab;	// tab for server options
+	JPanel servertab, layouttab;	// tab for server options
 	
 	// checkboxes for server warmup and server logging
 	JCheckBox warmup, logging;
 	
 	
-	JRadioButton port2802, systemerrout, ownport, ownlog;
+	JRadioButton port2802, systemerrout, ownport, ownlog, jdomgraph, chartlayout, sugiyama,
+				showNames, showLabels, showBoth;
 	JTextField port, logfile;
 	JButton ok, apply, cancel, browse;
 	String logfilepath;
@@ -64,6 +67,8 @@ public class JDomGraphPreferencePane extends JFrame
 		super("Settings");
 		setAlwaysOnTop(true);
 		tabs = new JTabbedPane();
+		
+		// tab for server settings
 		servertab = new JPanel();
 		servertab.setLayout(new GridLayout(0,1));
 		
@@ -141,7 +146,70 @@ public class JDomGraphPreferencePane extends JFrame
 		servertab.add(log);
 		
 		tabs.add(servertab, "Server");
-		add(tabs, BorderLayout.CENTER);
+		
+		
+		
+		// tab for layout settings
+		layouttab = new JPanel(new GridLayout(0,1));
+		
+		
+		// layout algorithm
+		JPanel layoutstyle = new JPanel(new GridLayout(0,2));
+		ButtonGroup layoutgroup = new ButtonGroup();
+		 
+		 
+		 chartlayout = new JRadioButton("Chart Layout");
+		 layoutgroup.add(chartlayout);
+		 layoutstyle.add(chartlayout);
+		 
+		 jdomgraph = new JRadioButton("JDomGraph Layout");
+		 layoutgroup.add(jdomgraph);
+		 layoutstyle.add(jdomgraph);
+		 
+		 sugiyama = new JRadioButton("Sugiyama Layout");
+		 layoutgroup.add(sugiyama);
+		 layoutstyle.add(sugiyama);
+
+		 layoutstyle.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), 
+				 "Standard Layout",
+				 TitledBorder.LEADING,
+				 TitledBorder.ABOVE_TOP));
+
+		 layouttab.add(layoutstyle);
+		 
+		 
+		 // labels
+		 
+		 JPanel labels = new JPanel(new GridLayout(0,2));
+		 
+		 ButtonGroup labelgroup = new ButtonGroup();
+		 
+		 showNames = new JRadioButton("Show node names");
+		 labelgroup.add(showNames);
+		 labels.add(showNames);
+		 showLabels = new JRadioButton("Show node labels");
+		 labelgroup.add(showLabels);
+		 labels.add(showLabels);
+		 showBoth = new JRadioButton("Show names and labels");
+		 labelgroup.add(showBoth);
+		 labels.add(showBoth);
+		 
+
+		 labels.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), 
+				 "Node Labeling",
+				 TitledBorder.LEADING,
+				 TitledBorder.ABOVE_TOP));
+
+		 
+		 
+		 layouttab.add(labels);
+		 
+		 tabs.add(layouttab, ("Layout"));
+		 
+		 
+		 
+		 add(tabs, BorderLayout.CENTER);
+		// bottom of the tabbed pane
 		
 		ok = new JButton("OK");
 		ok.setActionCommand("ok");
@@ -154,6 +222,7 @@ public class JDomGraphPreferencePane extends JFrame
 		cancel = new JButton("Cancel");
 		cancel.setActionCommand("cancel");
 		cancel.addActionListener(this);
+		
 		
 		JPanel bottom = new JPanel();
 		bottom.add(apply);
@@ -193,6 +262,20 @@ public class JDomGraphPreferencePane extends JFrame
 		}
 		
 		systemerrout.setSelected(true);
+		
+
+		 switch(Preferences.getInstance().getLayoutType()) {
+		 	case JDOMGRAPH : jdomgraph.setSelected(true); break;
+		 	case SUGIYAMA : sugiyama.setSelected(true); break;
+		 	case CHARTLAYOUT : chartlayout.setSelected(true);
+		 }
+		 
+		 switch(Preferences.getInstance().getLabelType()) {
+		 	case LABEL : showLabels.setSelected(true); break;
+		 	case NAME : showNames.setSelected(true); break;
+		 	case BOTH : showBoth.setSelected(true);
+		 }
+		
 		
 	}
 	
@@ -235,6 +318,23 @@ public class JDomGraphPreferencePane extends JFrame
 			}
 		}
 		
+		if(jdomgraph.isSelected()) {
+			Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
+		} else if(chartlayout.isSelected()) {
+			Preferences.getInstance().setLayoutType(LayoutType.CHARTLAYOUT);
+		} else if(sugiyama.isSelected()) {
+			Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
+		}
+		
+		if(showLabels.isSelected()) {
+			Preferences.getInstance().setLabelType(LabelType.LABEL);
+		} else if(showNames.isSelected()) {
+			Preferences.getInstance().setLabelType(LabelType.NAME);
+		} else if(showBoth.isSelected()) {
+			Preferences.getInstance().setLabelType(LabelType.BOTH);
+		}
+		 if(Ubench.getInstance().getVisibleTab() != null)
+			 Ubench.getInstance().getVisibleTab().repaintIfNecessary();
 	}
 
 	/**

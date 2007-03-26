@@ -101,6 +101,8 @@ public class Ubench {
      *
      */
     private Ubench() {
+
+    	
     	// register codecs
         codecManager = new CodecManager();
         codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
@@ -135,7 +137,7 @@ public class Ubench {
         eqs = null;
         eqsname = null;
         reduceAutomatically = false;
-        settings = new JDomGraphPreferencePane();
+        
     }
     
     /**
@@ -227,6 +229,7 @@ public class Ubench {
                     menuBar.setSaveAllEnabled(false);
                 }
                 menuBar.setPlusMinusEnabled(false,false);
+                menuBar.refresh();
             }
         } else {
             menuBar.setGraphSpecificItemsEnabled(false);
@@ -705,17 +708,18 @@ public class Ubench {
      */
     private void initialise() {
 //      set up the window
-    	
+
+       
     	GridBagLayout layout = new GridBagLayout();
         window = makeWindow();
         window.setLayout(layout);
+        
         
         listener = new CommandListener();
         tabbedPane = new JDomTabbedPane(listener);
         menuBar = new JDomGraphMenu(listener);
         window.setJMenuBar(menuBar);
         statusBar = new JDomGraphStatusBar(listener);
-        
         
         // ttm.registerComponent(slider);
         ttm.registerComponent(statusBar);
@@ -764,6 +768,7 @@ public class Ubench {
         window.setSize(300,200);
         
         window.validate();
+        settings = new JDomGraphPreferencePane();
     }
     
     

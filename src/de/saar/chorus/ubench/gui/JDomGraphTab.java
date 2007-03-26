@@ -2,7 +2,6 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -29,6 +28,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 /**
@@ -244,6 +244,25 @@ public class JDomGraphTab extends JGraphTab  {
 		changeCursorGlobally(Cursor.getDefaultCursor());
 	}
 	
+	/**
+	 * Repaints the graph if its layout is not consistent
+	 * with the recent layout preferences.
+	 */
+	public void repaintIfNecessary() {
+		if ((recentLayout == null)
+				|| Preferences.mustUpdateLayout(recentLayout)) {
+			System.err.println("Updating: Layout changes to " + 
+					Preferences.getInstance().getLayoutType());
+			
+			
+			graph.setLabeltype(Preferences.getInstance().getLabelType());
+			
+			if(isSolvedYet || Preferences.getInstance().getLayoutType() != LayoutType.CHARTLAYOUT) {
+				graph.setLayoutType(Preferences.getInstance().getLayoutType());
+			}
+			updateRecentLayout();
+		}
+	}
 
 	
 	
