@@ -11,7 +11,7 @@ import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.layout.JGraphLayoutAlgorithm;
 
-import de.saar.chorus.treelayout.Shape;
+import de.saar.chorus.layout.treelayout.Shape;
 
 public abstract class ImprovedJGraphLayout extends JGraphLayoutAlgorithm {
     

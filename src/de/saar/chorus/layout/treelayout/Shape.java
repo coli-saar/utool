@@ -6,7 +6,7 @@
 //  Copyright 2005 __MyCompanyName__. All rights reserved.
 //
 
-package de.saar.chorus.treelayout;
+package de.saar.chorus.layout.treelayout;
 
 import java.util.ArrayList;
 import java.util.Iterator;

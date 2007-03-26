@@ -2,12 +2,12 @@
  * Created on 07.02.2005
  * 
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.layout.domgraphlayout;
 
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentXDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentYDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.nodeYDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.towerXDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.fragmentXDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.fragmentYDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.nodeYDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.towerXDistance;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -34,10 +34,13 @@ import org.jgraph.util.JGraphUtilities;
 import de.saar.chorus.jgraph.GraphDrawingCursor;
 import de.saar.chorus.jgraph.GraphLayoutCursor;
 import de.saar.chorus.jgraph.ImprovedJGraphLayout;
-import de.saar.chorus.treelayout.BoundingBox;
-import de.saar.chorus.treelayout.PostOrderNodeVisitor;
-import de.saar.chorus.treelayout.PreOrderNodeVisitor;
-import de.saar.chorus.treelayout.Shape;
+import de.saar.chorus.layout.treelayout.BoundingBox;
+import de.saar.chorus.layout.treelayout.PostOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.PreOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.Shape;
+import de.saar.chorus.ubench.Fragment;
+import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.NodeType;
 
 
 

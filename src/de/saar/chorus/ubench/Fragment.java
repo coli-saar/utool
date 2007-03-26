@@ -184,7 +184,7 @@ public class Fragment extends DomGraphPopupTarget {
      * @param node, the node to check
      * @return true if the node is a leaf;
      */
-    boolean isLeaf(DefaultGraphCell node) {
+    public boolean isLeaf(DefaultGraphCell node) {
     	if(getChildren(node) == null) {
     		return false;
     	}
@@ -202,7 +202,7 @@ public class Fragment extends DomGraphPopupTarget {
      * @param child, the node to find the parent from
      * @return the parent or null
      */
-    DefaultGraphCell getParent(DefaultGraphCell child) {
+    public DefaultGraphCell getParent(DefaultGraphCell child) {
     	for(DefaultEdge edge : getEdges()){
     		DefaultGraphCell potChild = 
     			(DefaultGraphCell) JGraphUtilities.getTargetVertex(getParent(), edge);

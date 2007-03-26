@@ -8,9 +8,9 @@ import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
 
-import de.saar.chorus.treelayout.Extent;
-import de.saar.chorus.treelayout.Shape;
-import de.saar.chorus.treelayout.ShapeList;
+import de.saar.chorus.layout.treelayout.Extent;
+import de.saar.chorus.layout.treelayout.Shape;
+import de.saar.chorus.layout.treelayout.ShapeList;
 
 /**
  * A class to determine the positions of nodes in a graph that 

@@ -585,7 +585,26 @@ abstract public class ImprovedJGraph<NodeType,
         return true;
     }
     
-
+    public boolean isForest(Set<DefaultGraphCell> subgraph) {
+    	for( DefaultGraphCell node : subgraph ) {
+            if( parents.get(node).size() > 1 ) {
+            	boolean first = true;
+            	for(DefaultGraphCell parent : parents.get(node)) {
+            		if(subgraph.contains(parent)) {
+            			if(first) {
+            				first = false;
+            			} else {
+            				System.out.println(">>> no tree: parents = " + parents.get(node));
+            				return false;
+            			}
+            		}
+            	}
+            }
+        }
+        
+        return true;
+    }
+    
     /**
      * @return Returns the children.
      */

@@ -1,4 +1,4 @@
-package de.saar.chorus.treelayout;
+package de.saar.chorus.layout.treelayout;
 
 /**
  * 

@@ -1,11 +1,11 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.layout.chartlayout;
 
 
 
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentXDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentYDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.nodeYDistance;
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.towerXDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.fragmentXDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.fragmentYDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.nodeYDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.towerXDistance;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -35,10 +35,14 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GraphDrawingCursor;
 import de.saar.chorus.jgraph.GraphLayoutCursor;
 import de.saar.chorus.jgraph.ImprovedJGraphLayout;
-import de.saar.chorus.treelayout.BoundingBox;
-import de.saar.chorus.treelayout.PostOrderNodeVisitor;
-import de.saar.chorus.treelayout.PreOrderNodeVisitor;
-import de.saar.chorus.treelayout.Shape;
+import de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters;
+import de.saar.chorus.layout.treelayout.BoundingBox;
+import de.saar.chorus.layout.treelayout.PostOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.PreOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.Shape;
+import de.saar.chorus.ubench.Fragment;
+import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.NodeType;
 
 
 
@@ -641,7 +645,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				free.add(split.getRootFragment());
 			}
 			FragmentBox box = new FragmentBox(toplevel, free);
-			System.out.println(box.fragToXPos);
+		//	System.out.println(box.fragToXPos);
 			
 			for(Fragment boxfrag : box.frags) {
 				System.out.println(boxfrag);
@@ -1028,30 +1032,35 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		 * @param freefrags
 		 */
 		FragmentBox( Set<String> wcc, Set<String> freefrags ) {
-			
+
 			fragmentsString = new HashSet<String>(wcc);	
+			frags = convertStringsToFragments(fragmentsString);
 			freefragments = freefrags;
 			fragToXPos = new HashMap<Fragment, Integer>();
 			nextPossibleX = new int[fraglayers.size()];
-			
+
 			children = new HashMap<Set<Fragment>, FragmentBox>();
 
 			Set<String> childnodes = new HashSet<String>(wcc);
 			childnodes.removeAll(freefragments);
-			
+			System.out.println("||| BOX: " + frags + "|||");
+			Set<Fragment> debug = convertStringsToFragments(childnodes);
+ 			Set<Fragment> debugII = convertStringsToFragments(freefragments);
+			System.out.println("||| >> REMOVING:" + debugII);
+			System.out.println("||| >>>  CHILDREN: " + debug);
 			
 
-			
 			//TODO refactor the box computation
 			// asking the graph for the wccs I get for my fragments without
 			// the free fragments.
 			for(Set<String> childwcc : domgraph.wccs(childnodes)) {
-				
+
 				Set<String> freeChildFrag = new HashSet<String>();
-				
+				Set<Fragment> debugcwcc = convertStringsToFragments(childwcc);
+				System.out.println("||| >>>> wcc: " + debugcwcc);
 				// either the wcc is another subgraph in the chart...
 				if(chart.containsSplitFor(childwcc)) {
-					
+
 					// then I record all the free fragments in there and
 					// pass them on
 					for(Split chspl : chart.getSplitsFor(childwcc)) {
@@ -1060,59 +1069,74 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				} else {
 					// if the wcc is not in the chart, it is a leaf.
 					// the free fragments of my child are all fragments in the child subgraph.
+					System.out.println("||| >>>>>  No split found.");
 					freeChildFrag.addAll(childwcc);
 				}
-				
+
 				Set<Fragment> childroots = convertStringsToFragments(freeChildFrag);
-				
+
 				// a new childbox
 				children.put(childroots, new FragmentBox(childwcc, freeChildFrag));
 			}
 
-			frags = convertStringsToFragments(fragmentsString);
-		//	frags.removeAll(leaflayer.keySet());
 			
+			//	frags.removeAll(leaflayer.keySet());
+
 			
-			
+			//System.out.println("||| >>> children: " + children);
 			// layout
-			
+
 			if(frags.size() > 1) {
-			// all the possible roots computed
-			Set<Fragment> possibleRoots = getPossibleRoots();
-			if(possibleRoots.isEmpty()) {
-				possibleRoots.addAll(frags);
-				System.err.println("  *** no roots! adding everything!***");
-			}
-			
-			// initialising the best root and the number of crossings.
-			Fragment bestRoot = possibleRoots.iterator().next();
-			int bestCost = -1;
-			int x = 0; // the first x is 0
-			
-			for(Fragment frag : possibleRoots ) {
-				if(bestCost == -1 ) {
-					// first loop
-					bestCost = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
-					bestRoot = frag;
-					
-				} else {
-					int nextCrossCount = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
-					if(nextCrossCount < bestCost) {
-						bestCost = nextCrossCount;
-						bestRoot = frag;
-					}
+				// all the possible roots computed
+
+				Set<DefaultGraphCell> mySubgraph = new HashSet<DefaultGraphCell>();
+				for(Fragment frag : frags) {
+					mySubgraph.addAll(frag.getNodes());
 				}
-				
-				nextPossibleX = new int[fraglayers.size()];
-				fragToXPos.clear();
-			}
-			System.err.println("\n\n\n ===== FINAL DFS ====");
-			fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null, new ArrayList<Fragment>());
+				System.out.println("<<< Frags: " + frags);
+				if(graph.isForest(mySubgraph)) {
+					System.out.println("<<<< TREE >>>");
+					if(! fragBoxTreeLayout()) {
+						System.err.println(":'(");
+					}
+				} else {
+
+					Set<Fragment> possibleRoots = getPossibleRoots();
+					if(possibleRoots.isEmpty()) {
+						possibleRoots.addAll(frags);
+						System.err.println("  *** no roots! adding everything!***");
+					}
+
+					// initialising the best root and the number of crossings.
+					Fragment bestRoot = possibleRoots.iterator().next();
+					int bestCost = -1;
+					int x = 0; // the first x is 0
+
+					for(Fragment frag : possibleRoots ) {
+						if(bestCost == -1 ) {
+							// first loop
+							bestCost = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
+							bestRoot = frag;
+
+						} else {
+							int nextCrossCount = fragBoxDFS(0, new HashSet<Fragment>(), frag, 0, null, new ArrayList<Fragment>());
+							if(nextCrossCount < bestCost) {
+								bestCost = nextCrossCount;
+								bestRoot = frag;
+							}
+						}
+
+						nextPossibleX = new int[fraglayers.size()];
+						fragToXPos.clear();
+					}
+			//		System.err.println("\n\n\n ===== FINAL DFS ====");
+					fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null, new ArrayList<Fragment>());
+				}
 			} else {
 				if(! frags.isEmpty())
-				fragToXPos.put(frags.iterator().next(), 0);
+					fragToXPos.put(frags.iterator().next(), 0);
 			}
-			
+
 			Set<Fragment> free = convertStringsToFragments(freefrags);
 			if(free.size() == 1) {
 				Fragment top = free.iterator().next();
@@ -1120,8 +1144,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					fragToXPos.put(top, (width - fragWidth.get(top))/2);
 				}
 			}
-			
-		
+
+
 		}
 		
 		/**
@@ -1137,6 +1161,65 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					return children.get(rootSet);
 			}
 			return null;
+		}
+		
+		boolean fragBoxTreeLayout() {
+			Fragment root = getRoot();
+			if(root != null) {
+				fragBoxTreeLayoutDFS(root, new HashSet<Fragment>(), 0);
+			} else {
+				return false;
+			}
+			return true;
+		}
+		
+		Fragment getRoot() {
+			
+			
+			for(Fragment frag : frags) {
+				if(getFragInEdges(frag).size() == 0)
+					return frag;
+				
+				boolean parent = false;
+				for(DefaultEdge edge : getFragInEdges(frag)) {
+					Fragment par = graph.getSourceFragment(edge);
+					if(frags.contains(par) ) {
+						parent = true;
+						break;
+					}
+				}
+				if(! parent) {
+					return frag;
+				}
+			}
+			return null;
+		}
+		
+		int fragBoxTreeLayoutDFS(Fragment current, Set<Fragment> visited, int xStart) {
+
+			if(!visited.contains(current)) {
+				visited.add(current);
+				Set<Fragment> childfrags = new HashSet<Fragment>();
+				for(DefaultEdge edge : getFragOutEdges(current)) {
+					Fragment child = graph.getTargetFragment(edge);
+					if(! visited.contains(child)) {
+						childfrags.add(child);
+					}
+				}
+
+				int rightborder = xStart;
+				int myX = 0;
+				int leftborder = xStart;
+
+				for(Fragment child : childfrags) {
+					rightborder = fragBoxTreeLayoutDFS(child, visited, leftborder);
+					leftborder = rightborder + fragmentXDistance;
+				}
+				myX = (xStart + rightborder)/2;
+				fragToXPos.put(current, myX);
+				return myX + fragWidth.get(current);
+			}	
+			return xStart;
 		}
 		
 		/**
@@ -1186,7 +1269,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			
 			
 			if(! visited.contains(current)) {
-				System.err.print("Unseen frag: " + current);
+//				System.err.print("Unseen frag: " + current);
 			/*
 			 * Placing the recent fragment.
 			 * It can be the case that I belong actually to a childbox of this box.
@@ -1204,7 +1287,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				fragToXPos.put(current, myX);
 				nextPossibleX[fragmentToLayer.get(current)]  = myX + fragWidth.get(current) + fragmentXDistance;
 				
-				System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
+			//	System.err.println("  -> no box, putting myself at " + myX + ", start was " + x);
 				for(DefaultEdge edge : getFragInEdges(current)) {
 					Fragment par = graph.getSourceFragment(edge);
 					if(frags.contains(par) && (! visited.contains(par))) {
@@ -1214,13 +1297,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 
 			} else {
-				System.err.print("Box! Starting at " + x);
+	//			System.err.print("Box! Starting at " + x);
 				
 				
 				for(Fragment frag : myBox.getSortedFragments()) {
 					if(!visited.contains(frag)) {
 					visited.add(frag);
-					System.err.print("    boxfrag: " + frag);
+	//				System.err.print("    boxfrag: " + frag);
 					int xVal;
 					if(oneHoleFrags.contains(frag)) {
 						xVal = nextPossibleX[fragmentToLayer.get(frag)];
@@ -1228,7 +1311,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						xVal = myBox.getBoxXPos(frag) + myX;
 					} 
 					fragToXPos.put(frag, xVal);
-					System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
+	//				System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
 					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
 					}
 					for(DefaultEdge edge : getFragInEdges(frag)) {
@@ -1241,8 +1324,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 			}
 			nextX = fragToXPos.get(current) + fragmentXDistance + fragWidth.get(current);
-			rightX = nextX;
 			
+			if(oneHoleFrags.contains(current)) {
+				rightX = fragToXPos.get(current);
+			} else {
+				rightX = nextX;
+			}
 			
 			
 			if(parents.size() > 1) {
@@ -1250,7 +1337,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				// dominate myself right above me.
 				Collections.sort(parents, new FragmentOutDegreeComparator());
 				for(Fragment par : parents) {
-					System.err.println("parent: " + par);
+	//				System.err.println("parent: " + par);
 					cross += fragBoxDFS(nextX, visited, par, 0, currentRoot, new ArrayList<Fragment>());
 					nextX = fragToXPos.get(par) +  fragWidth.get(par) + fragmentXDistance;
 				}
@@ -1276,10 +1363,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 			
 
-			System.err.print("Children! starting at rightX = " + rightX);
+	//		System.err.print("Children! starting at rightX = " + rightX);
 			
 			for(Fragment child : childfrags) {
-				System.err.println("   child: " + child);
+	//			System.err.println("   child: " + child);
 				if(!visited.contains(child)) {
 				List<Fragment> childboxparents = new ArrayList<Fragment>();
 				FragmentBox childbox = getBoxForFrag(child);
@@ -1287,7 +1374,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
-					System.err.println("box!");
+	//				System.err.println("box!");
 					boolean first = true;
 					for(Fragment cbf : childbox.getSortedFragments()) {
 						if(first) {
@@ -1298,7 +1385,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						}
 						if(! visited.contains(cbf)) {
 						visited.add(cbf);
-						System.err.println("    boxfrag: " + cbf);
+	//					System.err.println("    boxfrag: " + cbf);
 						int xVal;
 				//		if(oneHoleFrags.contains(cbf)) {
 					//		xVal = nextPossibleX[fragmentToLayer.get(cbf)];
@@ -1306,7 +1393,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 							xVal = Math.max(childbox.getBoxXPos(cbf) + nextX, nextPossibleX[fragmentToLayer.get(cbf)]);
 						//}
 						fragToXPos.put(cbf, xVal);
-						System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
+	//					System.err.println("putting at " + xVal + ", nextX + chboxX was " + (childbox.getBoxXPos(cbf) + nextX));
 						nextPossibleX[fragmentToLayer.get(cbf)] = xVal + fragWidth.get(cbf) + fragmentXDistance;
 						
 						}

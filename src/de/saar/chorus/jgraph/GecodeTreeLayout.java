@@ -12,10 +12,10 @@ import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 
-import de.saar.chorus.treelayout.BoundingBox;
-import de.saar.chorus.treelayout.PostOrderNodeVisitor;
-import de.saar.chorus.treelayout.PreOrderNodeVisitor;
-import de.saar.chorus.treelayout.Shape;
+import de.saar.chorus.layout.treelayout.BoundingBox;
+import de.saar.chorus.layout.treelayout.PostOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.PreOrderNodeVisitor;
+import de.saar.chorus.layout.treelayout.Shape;
 
 
 /**

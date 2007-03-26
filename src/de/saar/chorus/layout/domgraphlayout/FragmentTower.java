@@ -1,6 +1,6 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.layout.domgraphlayout;
 
-import static de.saar.chorus.ubench.DomGraphLayoutParameters.fragmentYDistance;
+import static de.saar.chorus.layout.domgraphlayout.DomGraphLayoutParameters.fragmentYDistance;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import de.saar.chorus.ubench.Fragment;
 
 /**
  * A special part for the layout of a dominance graph.
