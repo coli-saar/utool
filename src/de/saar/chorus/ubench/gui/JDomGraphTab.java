@@ -138,6 +138,7 @@ public class JDomGraphTab extends JGraphTab  {
 						+ "so Ubench unfortunately cannot display it.",
 						"Error during layout",
 						JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
 				Ubench.getInstance().refresh();
 				return;
 				

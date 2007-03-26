@@ -19,6 +19,7 @@ import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 
 /**
@@ -256,7 +257,6 @@ public class JDomGraphMenu extends JMenuBar {
 		sugiyamalayout.setActionCommand("sugiyamalayout");
 		
 		jdomgraphlayout = new JCheckBoxMenuItem("JDomGraph Layout");
-		jdomgraphlayout.setSelected(true);
 		jdomgraphlayout.addItemListener(listener);
 		listener.registerEventSource(jdomgraphlayout, "layoutchange");
 		
@@ -270,6 +270,13 @@ public class JDomGraphMenu extends JMenuBar {
 		layoutgroup.add(jdomgraphlayout);
 		layoutgroup.add(sugiyamalayout);
 		layoutgroup.add(chartlayout);
+		
+
+		switch(Preferences.getInstance().getLayoutType()) {
+		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
+		case SUGIYAMA : sugiyamalayout.setSelected(true); break;
+		case CHARTLAYOUT : chartlayout.setSelected(true);
+		}
 		
 		layoutMenu.add(jdomgraphlayout);
 		layoutMenu.add(sugiyamalayout);
