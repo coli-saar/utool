@@ -913,7 +913,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 									Ubench.getInstance().getVisibleTab().getClass() != JSolvedFormTab.class) {
 								Ubench.getInstance().getMenuBar().setCountSfEnabled(true);
 							}
-
+							Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
 							Preferences.setAutoCount(false);
 						}
 					} else 
