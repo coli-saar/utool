@@ -174,9 +174,16 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 
 
 	public void setLayoutType(LayoutType lt) {
+		if(layouttype != lt) {
 			layouttype = lt;
+			computeLayout();
+			adjustNodeWidths();
+		} 
 	}
 	
+	public LayoutType getLayoutType() {
+		return layouttype;
+	}
 	
 	/**
 	 * Remove all nodes and edges in the graph.
@@ -765,13 +772,18 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	public LabelType getLabeltype() {
 		return labeltype;
 	}
+	
+	
 
 
 	public void setLabeltype(LabelType labeltype) {
-		this.labeltype = labeltype;
-		for( DefaultGraphCell node : nodes ) {
-            getNodeData(node).setShowLabel(labeltype);
-        }
+		if(this.labeltype != labeltype) {
+			this.labeltype = labeltype;
+			for( DefaultGraphCell node : nodes ) {
+				getNodeData(node).setShowLabel(labeltype);
+			}
+			adjustNodeWidths();
+		}
 	}
 	
 	

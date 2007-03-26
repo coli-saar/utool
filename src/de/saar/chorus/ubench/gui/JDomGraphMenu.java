@@ -19,7 +19,7 @@ import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
-import de.saar.chorus.ubench.gui.Preferences.LayoutType;
+import de.saar.chorus.ubench.gui.Preferences.LabelType;
 
 
 /**
@@ -461,6 +461,22 @@ public class JDomGraphMenu extends JMenuBar {
 		chartlayout.setEnabled(b);
 		if(! countAndSolve.isSelected() )
 			cSolvForms.setEnabled(b);
+	}
+	
+	public void refresh() {
+
+		switch(Ubench.getInstance().getVisibleTab().getLayoutType()) {
+		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
+		case SUGIYAMA : sugiyamalayout.setSelected(true); break;
+		case CHARTLAYOUT : chartlayout.setSelected(true);
+		}
+		
+		switch(Ubench.getInstance().getVisibleTab().getLabelType()) {
+		case NAME : showNames.setSelected(true); break;
+		case LABEL : showLabels.setSelected(true); break;
+		case BOTH : showBoth.setSelected(true);
+		}
+		
 	}
 	
 	/**

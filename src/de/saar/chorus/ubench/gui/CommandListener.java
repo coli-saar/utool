@@ -838,21 +838,20 @@ ItemListener, ConnectionManager.StateChangeListener {
 				System.err.println(selectedItem);
 				if(selectedItem.equals("JDomGraph Layout")) {
 
-					Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
+					
 					if(Ubench.getInstance().getVisibleTab() != null) {
-						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+						Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.JDOMGRAPH);
 					}
 
 				} else if ( selectedItem.equals("Sugiyama Layout") ) {
-						Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
 						if(Ubench.getInstance().getVisibleTab() != null) {
-							Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+							Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.SUGIYAMA);
 						}
 
 				}  else if ( selectedItem.equals("Chart Layout") ) {
-						Preferences.getInstance().setLayoutType(LayoutType.CHARTLAYOUT);
 						if(Ubench.getInstance().getVisibleTab() != null) {
-							Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+							Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.CHARTLAYOUT);
+							
 						}
 				}
 				
@@ -860,37 +859,24 @@ ItemListener, ConnectionManager.StateChangeListener {
 			
 		} else if(desc.equals("showLabels")) {
 
-					// align preferences to selection state.
-					if(e.getStateChange() == ItemEvent.SELECTED) {
-						Preferences.getInstance().setLabelType(LabelType.LABEL);
-					} 
-
-					// refresh the visible graph if necessary.
-					if(Ubench.getInstance().getVisibleTab() != null) {
-						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-					}
-				} else if(desc.equals("showNames")) {
-//					 align preferences to selection state.
-					if(e.getStateChange() == ItemEvent.SELECTED) {
-						Preferences.getInstance().setLabelType(LabelType.NAME);
-					} 
-
-					// refresh the visible graph if necessary.
-					if(Ubench.getInstance().getVisibleTab() != null) {
-						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-					}
-					 
-				} else if(desc.equals("showBoth")) {
-//					 align preferences to selection state.
-					if(e.getStateChange() == ItemEvent.SELECTED) {
-						Preferences.getInstance().setLabelType(LabelType.BOTH);
-					} 
-
-					// refresh the visible graph if necessary.
-					if(Ubench.getInstance().getVisibleTab() != null) {
-						Ubench.getInstance().getVisibleTab().repaintIfNecessary();
-					}
-				} else 
+			// align preferences to selection state.
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				if(Ubench.getInstance().getVisibleTab() != null) 
+					Ubench.getInstance().getVisibleTab().setLabelType(LabelType.LABEL);
+			}
+		} else if(desc.equals("showNames")) {
+//			align preferences to selection state.
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				if(Ubench.getInstance().getVisibleTab() != null) 
+					Ubench.getInstance().getVisibleTab().setLabelType(LabelType.NAME);
+			} 
+		} else if(desc.equals("showBoth")) {
+//			align preferences to selection state.
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				if(Ubench.getInstance().getVisibleTab() != null) 
+					Ubench.getInstance().getVisibleTab().setLabelType(LabelType.BOTH);
+			} 
+		} else {
 
 					// checkbox indicating whether graphs are
 					// solved right after loading automatically
@@ -916,7 +902,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
 							Preferences.setAutoCount(false);
 						}
-					} else 
+					} else {
 
 						// layout preferences concerning graph scaling
 						if (desc.equals("fitAll")) {
@@ -951,6 +937,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 								Ubench.getInstance().reduceAutomatically = false;
 							}
 						}
+					}
+		}
 		}
 	
 	private void loadEQS() {
