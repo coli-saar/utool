@@ -24,7 +24,7 @@
 	<property name="getopt.jar" location="${packages}/java-getopt-1.0.9.jar" />
 	<property name="getopt.unpacked.classes" value="gnu/getopt/*"/>
 
-	<property name="itext.jar" location="${packages}/itext-1.3.1.jar" />
+	<property name="itext.jar" location="${packages}/itext-2.0.0.jar" />
 	<property name="itext.unpacked.classes" value="com/lowagie/**" />
 
 	<property name="jgraph.jar" location="${packages}/jgraph.jar" />
