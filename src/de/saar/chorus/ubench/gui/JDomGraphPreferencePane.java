@@ -55,6 +55,8 @@ public class JDomGraphPreferencePane extends JFrame
 	JRadioButton port2802, systemerrout, ownport, ownlog, jdomgraph, chartlayout, sugiyama,
 				showNames, showLabels, showBoth;
 	JTextField port, logfile;
+	JCheckBox allGraphs;
+	
 	JButton ok, apply, cancel, browse;
 	String logfilepath;
 	
@@ -201,8 +203,15 @@ public class JDomGraphPreferencePane extends JFrame
 				 TitledBorder.ABOVE_TOP));
 
 		 
-		 
 		 layouttab.add(labels);
+		 
+
+		 
+		 JPanel globalChange = new JPanel();
+		 allGraphs = new JCheckBox("Apply to all open graphs");
+		 globalChange.add(allGraphs);
+		 layouttab.add(globalChange);
+		 
 		 
 		 tabs.add(layouttab, ("Layout"));
 		 
@@ -275,6 +284,8 @@ public class JDomGraphPreferencePane extends JFrame
 		 	case NAME : showNames.setSelected(true); break;
 		 	case BOTH : showBoth.setSelected(true);
 		 }
+		 
+		 allGraphs.setSelected(Preferences.isGlobalLayoutChange());
 		
 		
 	}
@@ -317,6 +328,8 @@ public class JDomGraphPreferencePane extends JFrame
 						JOptionPane.ERROR_MESSAGE);
 			}
 		}
+		
+		Preferences.setGlobalLayoutChange(allGraphs.isSelected());
 		
 		if(jdomgraph.isSelected()) {
 			Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
