@@ -451,6 +451,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 */
 	public void setSolvingEnabled(boolean b) {
 		solve.setEnabled(b);
+		chartlayout.setEnabled(b);
 		if(! countAndSolve.isSelected() )
 			cSolvForms.setEnabled(b);
 	}
