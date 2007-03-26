@@ -205,13 +205,6 @@ public class JDomGraphPreferencePane extends JFrame
 		 
 		 layouttab.add(labels);
 		 
-
-		 
-		 JPanel globalChange = new JPanel();
-		 allGraphs = new JCheckBox("Apply to all open graphs");
-		 globalChange.add(allGraphs);
-		 layouttab.add(globalChange);
-		 
 		 
 		 tabs.add(layouttab, ("Layout"));
 		 
@@ -284,8 +277,6 @@ public class JDomGraphPreferencePane extends JFrame
 		 	case NAME : showNames.setSelected(true); break;
 		 	case BOTH : showBoth.setSelected(true);
 		 }
-		 
-		 allGraphs.setSelected(Preferences.isGlobalLayoutChange());
 		
 		
 	}
@@ -329,7 +320,6 @@ public class JDomGraphPreferencePane extends JFrame
 			}
 		}
 		
-		Preferences.setGlobalLayoutChange(allGraphs.isSelected());
 		
 		if(jdomgraph.isSelected()) {
 			Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
@@ -346,8 +336,7 @@ public class JDomGraphPreferencePane extends JFrame
 		} else if(showBoth.isSelected()) {
 			Preferences.getInstance().setLabelType(LabelType.BOTH);
 		}
-		 if(Ubench.getInstance().getVisibleTab() != null)
-			 Ubench.getInstance().getVisibleTab().repaintIfNecessary();
+		
 	}
 
 	/**
