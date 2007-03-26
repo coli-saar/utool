@@ -1325,7 +1325,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			}
 			nextX = fragToXPos.get(current) + fragmentXDistance + fragWidth.get(current);
 			
-			if(oneHoleFrags.contains(current)) {
+			if(getFragHoles(current).size() == 1) {
 				rightX = fragToXPos.get(current);
 			} else {
 				rightX = nextX;
