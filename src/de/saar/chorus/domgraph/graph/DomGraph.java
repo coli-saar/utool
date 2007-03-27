@@ -7,7 +7,6 @@
 
 package de.saar.chorus.domgraph.graph;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,14 +19,9 @@ import java.util.Set;
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
-import org.testng.annotations.Configuration;
-import org.testng.annotations.Test;
 
-import de.saar.basic.TestTools;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
-import de.saar.chorus.domgraph.codec.InputCodec;
-import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 
 /**
  * A dominance graph. Dominance graphs are directed
