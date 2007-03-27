@@ -35,14 +35,6 @@ public class SplitComputer {
     // (wcc identity, i.e. dom edge into this wcc) -> (nodes in that wcc)
     private Map<Edge,Set<String>> wccs;
     
-    
-    // (dom edge out of root fragment identifying a wcc) ->
-    //   (lowest dominator for any node in this wcc)
-    private Map<Edge,String> wccDominator;
-
-    // node -> dom edge out of root frag by which this node is reached
-    private Map<String,Edge> wccOfNode;
-    
     // set of nodes already visited by DFS
     // this set is implemented as a field of the class in order
     // to save on object allocations
@@ -52,9 +44,7 @@ public class SplitComputer {
     public SplitComputer(DomGraph graph) {
         this.graph = graph;
         rootFragment = new HashSet<String>();
-        wccOfNode = new HashMap<String,Edge>();
         wccs = new HashMap<Edge, Set<String>>();
-        wccDominator = new HashMap<Edge, String>();
         
         visited = new HashSet<String>();
     }
@@ -81,7 +71,6 @@ public class SplitComputer {
         rootFragment = graph.getFragment(root);
         
         // perform DFS
-        wccOfNode.clear();
         wccs.clear();
         visited.clear();
         
@@ -128,9 +117,8 @@ public class SplitComputer {
         // INVARIANT: this method is only called on unvisited nodes
         assert !visited.contains(node) : "DFS visited node twice";
         
-        if( !subgraph.contains(node) ) {
-            return true;
-        }
+        // INVARIANT: this method is only called on nodes in the subgraph
+        assert subgraph.contains(node) : "DFS left subgraph";
         
         visited.add(node);
         
@@ -149,55 +137,52 @@ public class SplitComputer {
         for( Edge edge : edgeList ) {
             String neighbour = (String) edge.oppositeVertex(node);
             
-            if( rootFragment.contains(neighbour) && !rootFragment.contains(node) ) {
-            	// The (undirected) DFS steps from a node outside the root fragment
-            	// into the root fragment.  Because the root fragment has no incoming
-            	// dominance edges, this must be a dominance edge out of the root
-            	// fragment.  We don't traverse this edge in the DFS, but we must check
-            	// that the edge is consistent with the wcc assignment we have so far.
-            	
-            	assert node.equals(edge.getTarget());
-                assert neighbour.equals(edge.getSource());
-                assert graph.getData(edge).getType() == EdgeType.DOMINANCE;
-                
-                // Because the DFS visits outgoing tree edges first, we can only return
-                // from a DFS into a WCC to either (a) a disjoint node (in which case
-                // the fragment was not free) or (b) a node that dominates the original
-                // dominator (in which case it's ok).
-                if( ! pathInRootFragment.contains(neighbour)) {
-                	return false;
-                }
-            } else if( !visited.contains(neighbour) ) {
-                // any other edge -- let's explore it
-            	
-            	if( rootFragment.contains(node) ) {
-            		// we're inside the root fragment, walking down
-            		
-            		assert node.equals(edge.getSource());
-            		
-                	if( graph.getData(edge).getType() == EdgeType.TREE ) {
-                		// downward tree edge (upward nodes are all in visited)
-                		pathInRootFragment.add(neighbour);
-                		if( !dfs(neighbour, null, pathInRootFragment, subgraph, visited)) {
-                			return false;
-                		}
-                		pathInRootFragment.remove(neighbour);
-                	} else {
-                		// downward dominance edge: first visit to a new wcc
-                		assert graph.getData(edge).getType() == EdgeType.DOMINANCE;
-                		
-                		if( !wccOfNode.containsKey(neighbour)) {
-                			wccDominator.put(edge, node);
-                			
-                			if( !dfs(neighbour, edge, pathInRootFragment, subgraph, visited )) {
-                				return false;
-                			}
-                		}
-                	}
-            	} else {
-            		// outside the root fragment: just keep collecting nodes for same wcc
-            		if( !dfs(neighbour, wccId, pathInRootFragment, subgraph, visited)) {
+            if( subgraph.contains(neighbour) ) {
+            	if( rootFragment.contains(neighbour) && !rootFragment.contains(node) ) {
+            		// The (undirected) DFS steps from a node outside the root fragment
+            		// into the root fragment.  Because the root fragment has no incoming
+            		// dominance edges, this must be a dominance edge out of the root
+            		// fragment.  We don't traverse this edge in the DFS, but we must check
+            		// that the edge is consistent with the wcc assignment we have so far.
+
+            		assert node.equals(edge.getTarget());
+            		assert neighbour.equals(edge.getSource());
+            		assert graph.getData(edge).getType() == EdgeType.DOMINANCE;
+
+            		// Because the DFS visits outgoing tree edges first, we can only return
+            		// from a DFS into a WCC to either (a) a disjoint node (in which case
+            		// the fragment was not free) or (b) a node that dominates the original
+            		// dominator (in which case it's ok).
+            		if( ! pathInRootFragment.contains(neighbour)) {
             			return false;
+            		}
+            	} else if( !visited.contains(neighbour) ) {
+            		// any other edge -- let's explore it
+
+            		if( rootFragment.contains(node) ) {
+            			// we're inside the root fragment, walking down
+            			assert node.equals(edge.getSource());
+
+            			if( graph.getData(edge).getType() == EdgeType.TREE ) {
+            				// downward tree edge (upward nodes are all in visited)
+            				pathInRootFragment.add(neighbour);
+            				if( !dfs(neighbour, null, pathInRootFragment, subgraph, visited)) {
+            					return false;
+            				}
+            				pathInRootFragment.remove(neighbour);
+            			} else {
+            				// Downward dominance edge. The WCC at the other end of the edge
+            				// hasn't been visited yet, otherwise neighbour would be an element
+            				// of the "visited" set.
+            				if( !dfs(neighbour, edge, pathInRootFragment, subgraph, visited )) {
+            					return false;
+            				}
+            			}
+            		} else {
+            			// outside the root fragment: just keep collecting nodes for same wcc
+            			if( !dfs(neighbour, wccId, pathInRootFragment, subgraph, visited)) {
+            				return false;
+            			}
             		}
             	}
             }
@@ -221,7 +206,6 @@ public class SplitComputer {
     	}
     	
     	thisWcc.add(node);
-    	wccOfNode.put(node, wccId);
     }
 }
 
@@ -234,32 +218,4 @@ public class SplitComputer {
  * - check whether computeSplit computes correct splits
  * - computeSplit returns null if root is not free
  */
-
-
-
-/*
-private void updateDomEdge(String neighbour, String node, Edge edge) {
-    String src = (String) edge.getSource(); // not necessarily = node
-    String tgt = (String) edge.getTarget();
-    
-    
-    if( (graph.getData(edge).getType() == EdgeType.DOMINANCE)
-            && (src.equals(node))
-            && (rootFragment.contains(src)) ) {
-        // dom edge out of fragment => initialise dEFNW
-        // NB: If two dom edges out of the same hole point into the
-        // same wcc, we will only ever use one of them, because the others'
-        // target node will have been visited when we consider them.
-        wccOfNode.put(tgt,edge);
-        //System.err.println("put(" + tgt + "," + edge + ")");
-    } else if( !rootFragment.contains(neighbour) ) {
-        // otherwise make neighbours inherit my dEFNW
-        wccOfNode.put(neighbour, wccOfNode.get(node));
-        //System.err.println("inherit(" + neighbour + "," + domEdgeForNodeWcc.get(node));
-    } else {
-      //  System.err.println("Can't inherit domedge: " + edge);
-    }
-}
-*/
-
 
