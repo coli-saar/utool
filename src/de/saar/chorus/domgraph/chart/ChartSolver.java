@@ -12,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.testng.annotations.Test;
-
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 

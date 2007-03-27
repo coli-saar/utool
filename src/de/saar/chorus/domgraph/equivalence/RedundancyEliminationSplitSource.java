@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.graph.DomGraph;
 

@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class Split {
     private String rootFragment;
-    private Map<String,List<Set<String>>> wccs;  // root/hole -> wccs
+    private Map<String,List<Set<String>>> wccs;  // node -> wccs
     
     /**
      * Creates a split with a given root fragment.
@@ -67,15 +67,15 @@ public class Split {
 
     /**
      * Returns the set of weakly connected components which
-     * are connected to the specified hole.
+     * are connected to the specified node.
      * 
-     * @param hole a hole of the root fragment
-     * @return the list of wccs connected to this hole, or
-     * <code>null</code> if this is not a hole or no wccs
+     * @param node a node of the root fragment
+     * @return the list of wccs connected to this node, or
+     * <code>null</code> if no wccs
      * are connected to it.
      */
-    public List<Set<String>> getWccs(String hole) {
-        return wccs.get(hole);
+    public List<Set<String>> getWccs(String node) {
+        return wccs.get(node);
     }
     
     /**
