@@ -96,7 +96,7 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 			findNextSolvedForm();
 			
 			if( representsSolvedForm() ) {
-				nextSolvedForm = extractDomEdges();
+				nextSolvedForm = extractSolvedFormSpec();
 			} else {
 				nextSolvedForm = null;
 			}
@@ -113,11 +113,15 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 	}
 	
 	
-	private SolvedFormSpec extractDomEdges() {
+	private SolvedFormSpec extractSolvedFormSpec() {
 		SolvedFormSpec toReturn = new SolvedFormSpec();
 		
 		for( EnumerationStackEntry ese : stack) {
 			toReturn.addAllDomEdges(ese.getEdgeAccu());
+			
+			if( ese.getCurrentSplit() != null ) {
+				toReturn.addSubstitution(ese.getCurrentSplit().getSubstitution());
+			}
 		}
 		
 		return toReturn;
@@ -127,39 +131,35 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 	private void findNextSolvedForm() {
 		if( !isFinished() ) {
 			do {
-				//System.err.println("step()");
 				step();
 			} while(!agenda.isEmpty());
 			
 			if( isFinished() ) {
 				agenda.clear();
-			} else {
-//				System.err.println("===== SOLVED FORM ===="); //Debug
 			}
 		} 
 	}
 	
-	
+
 	private void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
 		Split split = ese.getCurrentSplit();
-		
+
 		// iterate over all dominators
-			for( String node : split.getAllDominators() ) {
-				List<Set<String>> wccs = split.getWccs(node);
-				for( int i = 0; i < wccs.size(); i++ ) {
-					Set<String> wcc = wccs.get(i);
-					addFragsetToAgendaAndAccu(wcc, node, ese);
-				}
+		for( String node : split.getAllDominators() ) {
+			List<Set<String>> wccs = split.getWccs(node);
+			for( int i = 0; i < wccs.size(); i++ ) {
+				Set<String> wcc = wccs.get(i);
+				addFragsetToAgendaAndAccu(wcc, node, ese);
 			}
-		
+		}
+
 	}
 	
 	private void addFragsetToAgendaAndAccu(Set<String> fragSet, String dominator, EnumerationStackEntry ese) {
         if( isSingleton(fragSet) ) {
             // singleton fragsets: add directly to ese's domedge list
-            DomEdge newEdge = new DomEdge(dominator, getSingletonRoot(fragSet));
+            DomEdge newEdge = new DomEdge(dominator, getSingletonRoot());
             ese.addDomEdge(newEdge);
-            //System.err.println("Singleton DomEdge : " + newEdge);
         } else {
             // larger fragsets: add to agenda
             AgendaEntry newEntry = new AgendaEntry(dominator,fragSet);
@@ -168,10 +168,8 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
     }
 
 
-    private String getSingletonRoot(@SuppressWarnings("unused") Set<String> fragSet) {
+    private String getSingletonRoot() {
         return rootForThisFragset;
-        //return fragSet.iterator().next();
-        //return fragmentTable.get(fragSet);
     }
 
     private boolean isSingleton(Set<String> fragSet) {
@@ -203,15 +201,12 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 					top = stack.peek();
 			}
 		}
-        
-        //System.err.println("agenda: " + agenda);
 		
 		// 2. Apply (Step) or (Down) as appropriate.
 		// Singleton fragments are put directly into the accu, rather
 		// than the agenda (i.e. simulation of Singleton).
 		if( agenda.isEmpty() ) {
 			// (Step)
-			//System.err.println("(Step)");
 			top.clearAccu();
 			top.nextSplit();
 			
@@ -219,22 +214,17 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
                 DomEdge newEdge = 
                     new DomEdge(top.getDominator(), top.getCurrentSplit().getRootFragment());
 				top.addDomEdge(newEdge);
-				
-				//System.err.println("new DomEdge: " + newEdge);
 			}
 			
 			if(! top.getAgendaCopy().isEmpty() ) {
-				//System.err.println("Retrieve agenda from stored stack entry."); //debug
 				agenda.addAll(top.getAgendaCopy());
 			}
 			
 			addSplitToAgendaAndAccu( top );
 		} else {
             // (Down)
-            //System.err.println("(Down)");
 
 			agTop = agenda.pop();
-            //System.err.println("agTop = " + agTop);
 			topNode = agTop.getDominator();
 			topFragset = agTop.getFragmentSet();
             
@@ -243,18 +233,13 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
                 
                 EnumerationStackEntry newTop = 
                     new EnumerationStackEntry(topNode, sv, agenda);
-                
-                //System.err.println("new ese: " + newTop);
 
 				if( topNode != null ) {
                     DomEdge newEdge = 
                         new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
 					newTop.addDomEdge( newEdge );
-				
-					//System.err.println("new DomEdge: " + newEdge);
 				}
 				
-                //System.err.println("push: " + newTop);
 				stack.push(newTop);
 				addSplitToAgendaAndAccu( newTop );
 			}

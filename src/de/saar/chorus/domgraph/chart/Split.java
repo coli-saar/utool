@@ -108,7 +108,7 @@ public class Split {
     }
     
     public String toString() {
-        return "<" + rootFragment + " " + wccs + ">";
+        return "<" + rootFragment + " " + wccs + ", subst =" + substitution + ">";
     }
 
 	public Map<String, String> getSubstitution() {

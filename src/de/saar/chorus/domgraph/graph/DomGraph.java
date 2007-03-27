@@ -1084,8 +1084,6 @@ public class DomGraph implements Cloneable {
 	 * @return true iff the graph is well-formed.
 	 */
 	public boolean isWellFormed() {
-		assert isWeaklyNormal();
-		assert isCompact();
         
         if( hasCachedResult("isWellFormed")) {
             return ((Boolean) getCachedResult("isWellFormed")).booleanValue();
