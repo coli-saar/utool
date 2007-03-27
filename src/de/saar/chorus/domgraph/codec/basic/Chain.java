@@ -12,10 +12,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.CharBuffer;
 
-import org.testng.annotations.Configuration;
-import org.testng.annotations.ExpectedExceptions;
-import org.testng.annotations.Test;
-
 import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;

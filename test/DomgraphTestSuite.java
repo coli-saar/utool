@@ -25,6 +25,7 @@ public class DomgraphTestSuite extends TestSuite {
     	addDomgraphTest("codec/basic/Chain");
     	addDomgraphTest("codec/domcon/DomconOzInputCodec");
         addDomgraphTest("graph/DomGraph");
+        addDomgraphTest("chart/SplitComputer");
     	
         return suite;
     }

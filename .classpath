@@ -15,11 +15,11 @@
 	<classpathentry exported="true" kind="lib" path="packages/EXML.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/commons-io-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/commons-lang-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="packages/groovy-all-1.0-JSR-06.jar"/>
 	<classpathentry exported="true" kind="lib" path="projects/Domgraph"/>
 	<classpathentry exported="true" kind="lib" path="packages/bcel-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/jsch-0.1.28.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/swing-worker.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/itext-2.0.0.jar"/>
+	<classpathentry kind="lib" path="packages/groovy-all-1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
