@@ -846,6 +846,7 @@ public class DomGraph implements Cloneable {
 	 * 
 	 * @return true iff the graph is compact.
 	 */
+	@Deprecated
 	public boolean isCompact() {
         if( hasCachedResult("isCompact")) {
             return ((Boolean) getCachedResult("isCompact")).booleanValue();
@@ -872,6 +873,7 @@ public class DomGraph implements Cloneable {
 	 * 
 	 * @return true iff the graph can be compactified
 	 */
+	@Deprecated
 	public boolean isCompactifiable() {
         if( hasCachedResult("isCompactifiable")) {
             return ((Boolean) getCachedResult("isCompactifiable")).booleanValue();

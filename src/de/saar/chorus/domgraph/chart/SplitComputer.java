@@ -126,12 +126,12 @@ public class SplitComputer {
     	dominanceParents.retainAll(subgraph);
     	dominanceParents.removeAll(ancestors); // ancestors are satisfied transitively and can be ignored
     	
-    	if( dominanceParents.size() > 1 ) {
-    		//System.err.println(node + " has more than one incoming dom edges");
-    		return false;
-    	}
-    	
     	if( !dominanceParents.isEmpty() ) {
+    		if( dominanceParents.size() > 1 ) {
+        		//System.err.println(node + " has more than one incoming dom edges");
+        		return false;
+        	}
+        	
     		// the only incoming dom edges that are allowed are from roots and into holes
     		if( !outgoingTreeEdges.isEmpty() ) { 
     			// System.err.println(node + " is not a hole");

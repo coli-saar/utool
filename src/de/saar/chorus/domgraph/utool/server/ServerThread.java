@@ -85,7 +85,6 @@ class ServerThread extends Thread {
         boolean weaklyNormal = false;
         boolean normal = false;
         boolean compact = false;
-        boolean compactifiable = false;
 
 
         
@@ -100,7 +99,6 @@ class ServerThread extends Thread {
             weaklyNormal = options.getGraph().isWeaklyNormal();
             normal = options.getGraph().isNormal();
             compact = options.getGraph().isCompact();
-            compactifiable = options.getGraph().isCompactifiable();
         }            
         
         
@@ -123,20 +121,12 @@ class ServerThread extends Thread {
             
             
         case solve:
-            DomGraph compactGraph = null;
+            DomGraph graph = options.getGraph();
             
             if( !weaklyNormal ) {
                 sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not weakly normal!");
                 return;
             }
-            
-            if( !compact && !compactifiable ) {
-                sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not compact and not compactifiable!");
-                return;
-            }
-            
-            // compactify if necessary
-            compactGraph = options.getGraph().compactify();
             
             // compute chart
             long start_solver = System.currentTimeMillis();
@@ -144,12 +134,12 @@ class ServerThread extends Thread {
             boolean solvable;
             
             if( options.hasOptionEliminateEquivalence() ) {
-                solvable = ChartSolver.solve(compactGraph, chart, 
+                solvable = ChartSolver.solve(graph, chart, 
                         new RedundancyEliminationSplitSource(
-                                new IndividualRedundancyElimination(compactGraph, 
-                                        options.getLabels(), options.getEquations()), compactGraph));
+                                new IndividualRedundancyElimination(graph, 
+                                        options.getLabels(), options.getEquations()), graph));
             } else {
-                solvable = ChartSolver.solve(compactGraph, chart); 
+                solvable = ChartSolver.solve(graph, chart); 
             }
             
             
@@ -241,9 +231,6 @@ class ServerThread extends Thread {
                 programExitCode |= ExitCodes.CLASSIFY_COMPACT;
             }
             
-            if( compactifiable ) {
-                programExitCode |= ExitCodes.CLASSIFY_COMPACTIFIABLE;
-            }
             
             if( options.getGraph().isHypernormallyConnected() ) {
                 programExitCode |= ExitCodes.CLASSIFY_HN_CONNECTED;
@@ -261,7 +248,6 @@ class ServerThread extends Thread {
                     + "weaklynormal='" + weaklyNormal + "' "
                     + "normal='" + normal + "' "
                     + "compact='" + compact + "' "
-                    + "compactifiable='" + compactifiable + "' "
                     + "hypernormallyconnected='" + options.getGraph().isHypernormallyConnected() + "' "
                     + "leaflabelled='" + options.getGraph().isLeafLabelled() + "' "
                     + "/>");

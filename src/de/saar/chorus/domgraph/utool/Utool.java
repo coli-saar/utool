@@ -46,7 +46,6 @@ public class Utool {
         boolean weaklyNormal = false;
         boolean normal = false;
         boolean compact = false;
-        boolean compactifiable = false;
         
         // parse command-line options and load graph
         try {
@@ -62,7 +61,6 @@ public class Utool {
             weaklyNormal = options.getGraph().isWeaklyNormal();
             normal = options.getGraph().isNormal();
             compact = options.getGraph().isCompact();
-            compactifiable = options.getGraph().isCompactifiable();
             
             if( options.hasOptionStatistics() ) {
                 if( normal ) {
@@ -79,12 +77,7 @@ public class Utool {
                 if( compact ) {
                     System.err.println("The input graph is compact.");
                 } else {
-                    System.err.print("The input graph is not compact, ");
-                    if( compactifiable ) {
-                        System.err.println("but I will compactify it for you.");
-                    } else {
-                        System.err.println("and it cannot be compactified.");
-                    }
+                    System.err.print("The input graph is not compact.");
                 }
                 
                 if( options.hasOptionEliminateEquivalence() ) {
@@ -129,7 +122,7 @@ public class Utool {
             
             
         case solve:
-            DomGraph compactGraph = null;
+            DomGraph graph = options.getGraph();
             
             if( (options.getOperation() == Operation.solve)
             		&& ! (options.getOutputCodec() instanceof MultiOutputCodec)
@@ -147,14 +140,6 @@ public class Utool {
                 System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
             }
             
-            if( !compact && !compactifiable ) {
-                System.err.println("Cannot solve graphs that are not compact and not compactifiable!");
-                System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
-            }
-            
-            // compactify if necessary
-            compactGraph = options.getGraph().compactify();
-
             if( options.hasOptionStatistics() ) {
                 System.err.print("Solving graph ... ");
             }
@@ -166,13 +151,13 @@ public class Utool {
             
             if( options.hasOptionEliminateEquivalence() ) {
                 solvable = 
-                    ChartSolver.solve(compactGraph, chart, 
+                    ChartSolver.solve(graph, chart, 
                             new RedundancyEliminationSplitSource(
-                                    new IndividualRedundancyElimination(compactGraph, 
-                                            options.getLabels(), options.getEquations()), compactGraph));
+                                    new IndividualRedundancyElimination(graph, 
+                                            options.getLabels(), options.getEquations()), graph));
                 
             } else {
-                solvable = ChartSolver.solve(compactGraph, chart); 
+                solvable = ChartSolver.solve(graph, chart); 
             }
             
             long end_solver = System.currentTimeMillis();
@@ -184,7 +169,7 @@ public class Utool {
             	
                 if( options.hasOptionStatistics() ) {
                     System.err.println("it is solvable.");
-                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), compactGraph);
+                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), graph);
                 }
                 
                 // TODO runtime prediction (see ticket #11)
@@ -289,9 +274,6 @@ public class Utool {
                 programExitCode |= ExitCodes.CLASSIFY_COMPACT;
             }
             
-            if( compactifiable ) {
-                programExitCode |= ExitCodes.CLASSIFY_COMPACTIFIABLE;
-            }
             
             if( options.getGraph().isHypernormallyConnected() ) {
                 if( options.hasOptionStatistics() ) {
