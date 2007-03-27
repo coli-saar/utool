@@ -67,6 +67,9 @@ public class Chart implements Cloneable {
      * @param split a split of this subgraph
      */
     public void addSplit(Set<String> subgraph, Split split) {
+    	assert split != null;
+    	assert split.getSubstitution() != null;
+    
         List<Split> splitset = chart.get(subgraph);
         if( splitset == null ) {
             splitset = new ArrayList<Split>();

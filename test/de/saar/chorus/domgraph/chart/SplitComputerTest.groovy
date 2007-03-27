@@ -284,5 +284,20 @@ class SplitComputerTest extends GroovyTestCase {
 		assert split == null;
 	}
 	
+	public void testRedundantDomEdge() {
+		TestingTools.decodeDomcon("[label(x f(x1)) label(y g(y1)) dom(x1 w) dom(y1 w) dom(y x1)]",
+				graph, labels);
+		
+		SplitComputer comp = new SplitComputer(graph);
+		Split split = comp.computeSplit("y", graph.getAllNodes());
+		
+		assert split != null;
+		
+		assert split.getAllDominators().equals(new HashSet(["y1"])) : "dominators are " + split.getAllDominators();
+		assert isWccListEqual([["w","x","x1"]], split.getWccs("y1"));
+		
+		assert split.getSubstitution().equals([:]);
+	}
+	
 	// TODO cycles
 }

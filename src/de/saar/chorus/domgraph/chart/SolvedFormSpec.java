@@ -43,5 +43,13 @@ public class SolvedFormSpec {
 	public void setSubstitution(Map<String, String> subst) {
 		this.subst = subst;
 	}
+
+	public void addSubstitution(Map<String, String> substitution) {
+		this.subst.putAll(substitution);
+	}
+	
+	public String toString() {
+		return "(domedges: " + domedges + ", subst=" + subst + ")";
+	}
 	
 }

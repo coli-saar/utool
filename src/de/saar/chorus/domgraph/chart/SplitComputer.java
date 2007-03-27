@@ -74,6 +74,7 @@ public class SplitComputer {
     public Split computeSplit(String root, Set<String> subgraph)
     {
         // initialise root fragment
+    	substitution = new HashMap<String, String>();
         rootFragment = computeRootFragment(root, graph, subgraph);
         
         if( rootFragment == null ) {

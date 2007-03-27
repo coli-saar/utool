@@ -5,6 +5,7 @@ import de.saar.chorus.domgraph.codec.domcon.*;
 import de.saar.chorus.domgraph.graph.*;
 
 import java.io.*;
+import java.util.*;
 
 public class TestingTools {
 	private static InputCodec dc = new DomconOzInputCodec();
@@ -22,4 +23,15 @@ public class TestingTools {
 			assert exceptionType.isInstance(e)
 		}
 	}
+	
+	public static List collectIteratorValues(Iterator it) {
+		List ret = new ArrayList();
+		
+		while( it.hasNext() ) {
+			ret.add(it.next());
+		}
+		
+		return ret;
+	}
+	
 }

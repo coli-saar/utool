@@ -95,9 +95,7 @@ public class ChartSolver {
         this.graph = graph;
         this.chart = chart;
         
-        // ASSUMPTION graph is compact and weakly normal
-        assert graph.isCompact();
-        assert graph.isWeaklyNormal();
+        // deleted the assumption that graph is weakly normal and compact
         
         roots = graph.getAllRoots();
     }
