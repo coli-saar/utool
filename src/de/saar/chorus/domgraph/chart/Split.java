@@ -9,7 +9,6 @@ package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +27,7 @@ import java.util.Set;
 public class Split {
     private String rootFragment;
     private Map<String,List<Set<String>>> wccs;  // node -> wccs
+    private Map<String,String> substitution; // hole -> root
     
     /**
      * Creates a split with a given root fragment.
@@ -37,6 +37,7 @@ public class Split {
     public Split(String rootFragment) {
         this.rootFragment = rootFragment;
         wccs = new HashMap<String,List<Set<String>>>();
+        substitution = new HashMap<String, String>();
     }
     
     /**
@@ -109,4 +110,12 @@ public class Split {
     public String toString() {
         return "<" + rootFragment + " " + wccs + ">";
     }
+
+	public Map<String, String> getSubstitution() {
+		return substitution;
+	}
+	
+	public void setSubstitution(Map<String,String> subst) {
+		substitution = subst;
+	}
 }

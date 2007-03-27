@@ -40,11 +40,17 @@ public class SplitComputer {
     // to save on object allocations
     private Set<String> visited;
     
+    // maps holes to roots with which they must be plugged directly
+    // (occurs for non-weakly-normal dominance graphs)
+    private Map<String,String> substitution;
+    
+    
             
     public SplitComputer(DomGraph graph) {
         this.graph = graph;
         rootFragment = new HashSet<String>();
         wccs = new HashMap<Edge, Set<String>>();
+        substitution = new HashMap<String, String>();
         
         visited = new HashSet<String>();
     }
@@ -68,7 +74,11 @@ public class SplitComputer {
     public Split computeSplit(String root, Set<String> subgraph)
     {
         // initialise root fragment
-        rootFragment = graph.getFragment(root);
+        rootFragment = computeRootFragment(root, graph, subgraph);
+        
+        if( rootFragment == null ) {
+        	return null;
+        }
         
         // perform DFS
         wccs.clear();
@@ -85,6 +95,7 @@ public class SplitComputer {
         // build Split object
         Split ret = new Split(root);
         
+        ret.setSubstitution(substitution);
         for( Edge wccId : wccs.keySet() ) {
         	ret.addWcc((String) wccId.getSource(), wccs.get(wccId));
         }
@@ -94,7 +105,90 @@ public class SplitComputer {
     
     
     
-    /**
+    private Set<String> computeRootFragment(String root, DomGraph graph, Set<String> subgraph) {
+    	Set<String> nodes = new HashSet<String>();
+    	Set<String> ancestors = new HashSet<String>();
+    	
+    	if( computeRootFragmentDfs(root, nodes, ancestors, subgraph) ) {
+    		return nodes;	
+    	} else {
+    		return null;
+    	}
+	}
+    
+    private boolean computeRootFragmentDfs(String node, Set<String> nodes, Set<String> ancestors, Set<String> subgraph)  {
+    	nodes.add(node);
+    	
+    	List<Edge> outgoingTreeEdges = graph.getOutEdges(node, EdgeType.TREE);
+    	
+    	// determine the set of dominance parents within this subgraph
+    	Set<String> dominanceParents = new HashSet<String>(graph.getParents(node, EdgeType.DOMINANCE));
+    	dominanceParents.retainAll(subgraph);
+    	dominanceParents.removeAll(ancestors); // ancestors are satisfied transitively and can be ignored
+    	
+    	if( dominanceParents.size() > 1 ) {
+    		//System.err.println(node + " has more than one incoming dom edges");
+    		return false;
+    	}
+    	
+    	if( !dominanceParents.isEmpty() ) {
+    		// the only incoming dom edges that are allowed are from roots and into holes
+    		if( !outgoingTreeEdges.isEmpty() ) { 
+    			// System.err.println(node + " is not a hole");
+    			return false;
+    		}
+    		
+    		for( String parent : dominanceParents ) {
+    			if( !graph.isRoot(parent) ) {
+    				// System.err.println(node + " has non-root parent");
+    				return false;
+    			}
+    		}
+    		
+    	}
+    	
+    	// dfs over tree children
+    	for( Edge edge : outgoingTreeEdges ) {
+    		String neighbour = (String) edge.getTarget();
+    		
+    		if( subgraph.contains(neighbour)) {
+    			if( nodes.contains(neighbour) ) {
+    				// already visited the neighbour => this neighbour is reachable
+    				// by two different paths, i.e. the superfragment is not a tree
+    				return false;
+    			} else {
+    				ancestors.add(node);
+    				if( !computeRootFragmentDfs(neighbour, nodes, ancestors, subgraph) ) {
+    					return false;
+    				}
+    				ancestors.remove(node);
+    			}
+    		}
+    	}
+    	
+    	// dfs over incoming dom edges
+    	for( String parent : dominanceParents ) {
+    		substitution.put(node, parent);
+    		
+    		if( nodes.contains(parent) ) {
+    			// incoming cross edge from a previously visited non-ancestor
+    			// => the source node is disjoint to our current position
+    			return false;
+    		} else {
+    			ancestors.add(node);
+    			if( !computeRootFragmentDfs(parent, nodes, ancestors, subgraph) ) {
+    				return false;
+    			}
+    			ancestors.remove(node);
+    		}
+    	}
+    	
+    	return true;
+	}
+
+
+
+	/**
      * Performs a depth-first search through the graph which
      * determines the wccs of the split for the given node
      * and enters them into domEdgeForNodeWcc and splitmap.
@@ -132,7 +226,8 @@ public class SplitComputer {
         // otherwise, iterate over all adjacent edges, visiting
         // tree edges first
         List<Edge> edgeList = graph.getAdjacentEdges(node, EdgeType.TREE);
-        edgeList.addAll(graph.getAdjacentEdges(node, EdgeType.DOMINANCE));
+        edgeList.addAll(graph.getInEdges(node, EdgeType.DOMINANCE));
+        edgeList.addAll(graph.getOutEdges(node, EdgeType.DOMINANCE));
         
         for( Edge edge : edgeList ) {
             String neighbour = (String) edge.oppositeVertex(node);
@@ -161,10 +256,10 @@ public class SplitComputer {
 
             		if( rootFragment.contains(node) ) {
             			// we're inside the root fragment, walking down
-            			assert node.equals(edge.getSource());
 
-            			if( graph.getData(edge).getType() == EdgeType.TREE ) {
-            				// downward tree edge (upward nodes are all in visited)
+            			if( rootFragment.contains(neighbour) ) {
+            				// - downward tree edge (upward nodes are all in visited)
+            				// - upward dominance cross edge (downward edges all point out of root fragment)
             				pathInRootFragment.add(neighbour);
             				if( !dfs(neighbour, null, pathInRootFragment, subgraph, visited)) {
             					return false;
@@ -174,7 +269,9 @@ public class SplitComputer {
             				// Downward dominance edge. The WCC at the other end of the edge
             				// hasn't been visited yet, otherwise neighbour would be an element
             				// of the "visited" set.
-            				if( !dfs(neighbour, edge, pathInRootFragment, subgraph, visited )) {
+                			assert node.equals(edge.getSource());
+
+                			if( !dfs(neighbour, edge, pathInRootFragment, subgraph, visited )) {
             					return false;
             				}
             			}
