@@ -121,11 +121,6 @@ class ServerThread extends Thread {
         case solve:
             DomGraph graph = options.getGraph();
             
-            if( !weaklyNormal ) {
-                sendError(out, ExitCodes.ILLFORMED_INPUT_GRAPH, "Cannot solve graphs that are not weakly normal!");
-                return;
-            }
-            
             // compute chart
             long start_solver = System.currentTimeMillis();
             Chart chart = new Chart();
