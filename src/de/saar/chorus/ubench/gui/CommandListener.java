@@ -42,7 +42,6 @@ import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
-import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
@@ -526,7 +525,6 @@ ItemListener, ConnectionManager.StateChangeListener {
 											// to the file
 											
 											FileWriter writer = new FileWriter(outputfile);
-											long start_extraction = System.currentTimeMillis();
 											long count = 0;
 											
 											

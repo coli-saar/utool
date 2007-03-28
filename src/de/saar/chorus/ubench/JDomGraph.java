@@ -153,9 +153,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		edgeToFragment = new HashMap<DefaultEdge,Fragment>();
 		// set up popup handling
 		popupListeners = new HashSet<DomGraphPopupListener>();
-		addMouseListener(new PopupListener());		
-		layouttype = LayoutType.JDOMGRAPH;
-		labeltype = LabelType.LABEL;
+		addMouseListener(new PopupListener());	
 		clear();
 		
 		// set up tooltip handling
@@ -334,13 +332,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 	 * will be in the same place.
 	 */
 	public void computeLayout() {
-
-		if(isForest() && (wccs().size() == 1) ) {
-			JGraphUtilities.applyLayout(this, new GecodeTreeLayout(this));
-		}  else {
-			
 			JGraphUtilities.applyLayout(this, layouttype.getLayout(this, chart, myDomGraph));
-		}
 	}
 	
 
@@ -782,7 +774,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			for( DefaultGraphCell node : nodes ) {
 				getNodeData(node).setShowLabel(labeltype);
 			}
-			adjustNodeWidths();
+			if(layouttype != null)
+				adjustNodeWidths();
 		}
 	}
 	
