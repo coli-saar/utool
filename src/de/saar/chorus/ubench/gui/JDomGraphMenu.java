@@ -19,7 +19,6 @@ import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
-import de.saar.chorus.ubench.gui.Preferences.LabelType;
 
 
 /**
@@ -430,10 +429,7 @@ public class JDomGraphMenu extends JMenuBar {
 		return server;
 	}
 
-	private void setServer(ServerButton server) {
-		this.server = server;
-	}
-
+	
 	/**
 	 * Enable or disable the items that operate
 	 * on the visible graph.

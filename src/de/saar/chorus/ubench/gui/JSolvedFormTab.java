@@ -24,6 +24,7 @@ import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 /**
@@ -77,7 +78,7 @@ public class JSolvedFormTab extends JGraphTab {
 		f.add(graph);
 		f.pack();
         
-		repaintIfNecessary();
+		graph.setLayoutType(LayoutType.TREELAYOUT);
         
 		scrollpane = new JScrollPane(graph);
         add(scrollpane, BorderLayout.CENTER);
@@ -111,7 +112,6 @@ public class JSolvedFormTab extends JGraphTab {
    	private JLabel 	solvedFormNo, // left side of the solved-form-scroller
    					of,  		  // right side of the solved-form-scroller
    					norm,  		  // indicates normality (solved forms)
-   					comp,   	  // indicates compactness (solved forms)
    					hn, 		  // indicates hypernormality(solved forms)
    					ll;			  // indicates leaf labeling (solved forms)
    	
@@ -243,22 +243,7 @@ public class JSolvedFormTab extends JGraphTab {
    		};
    		norm.setForeground(Color.RED);
    		
-   		
-   		comp = new JLabel("C") {
-   			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 733976281657651308L;
-
-			public Point getToolTipLocation(MouseEvent e) {
-   				Point p1 = comp.getLocation();
-   				Point toReturn = new Point(p1.x, p1.y-25);
-   				return toReturn;
-   			}
-   		};
-   		comp.setForeground(Color.RED);
-   		
-   		
+   	
    		
    		
    		if(domGraph.isNormal()) {
@@ -274,16 +259,7 @@ public class JSolvedFormTab extends JGraphTab {
    		}
    		
    		
-   		if(domGraph.isCompact()) {
-   			comp.setText("C");
-   			comp.setToolTipText("Compact");
-   		} else if (domGraph.isCompactifiable()) {
-   			comp.setText("c");
-   			comp.setToolTipText("compactifiable");
-   		} else {
-   			comp.setText("-");
-   			comp.setToolTipText("Not Compactifiable");
-   		}
+   	
    		
    		
    		if(domGraph.isHypernormallyConnected()) {
@@ -305,7 +281,6 @@ public class JSolvedFormTab extends JGraphTab {
    		classified.setAlignmentY(SwingConstants.HORIZONTAL);
    		classified.add(new JLabel("Classify: "));
    		classified.add(norm);
-   		classified.add(comp);
    		
    		classified.add(ll);
    		classified.add(hn);

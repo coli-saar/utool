@@ -52,9 +52,8 @@ public class JDomGraphTab extends JGraphTab  {
 	 */
 	private static final long serialVersionUID = 1L;
 	// graph information concerning solving and identity
-	boolean solvable, isSolvedYet, compactifiable; 
+	boolean solvable, isSolvedYet; 
 	private Chart chart;
-	private DomGraph compactGraph;
 	
 	/**
 	 * Constructor to set up a tab with a dominance graph.
@@ -70,17 +69,7 @@ public class JDomGraphTab extends JGraphTab  {
 		super(theGraph, origin, name, lis, labels);
 		
 		
-		
-		if(! (origin.isNormal() || origin.isWeaklyNormal())) {
-			empty = true;
-			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"The graph you are trying to load is not weakly normal.\n"
-					+ "Unfortunately, we can neither solve nor display\n " +
-					"graphs that are not at least weakly normal.",
-					"Graph is not weakly normal",
-					JOptionPane.ERROR_MESSAGE);
-		} else {
-			
+
 			
 			// initializing
 			graphName = name;
@@ -93,21 +82,8 @@ public class JDomGraphTab extends JGraphTab  {
 			setBackground(Color.WHITE);
 			
 			if(Preferences.isAutoCount()) {
-				if(domGraph.isCompactifiable()) {
-					compactGraph = domGraph.compactify();
-					compactifiable = true;
 					solve();
-				} else {
-					solvable = false;
-					compactifiable = false;
-					Ubench.getInstance().setSolvingEnabled(false);
-					graph.setLayoutType(Preferences.LayoutType.JDOMGRAPH);
-				}
-			} else {
-				compactifiable =
-					domGraph.isCompactifiable();
-			}
-			
+			} 
 			try {
 				
 				// graph layout
@@ -151,7 +127,7 @@ public class JDomGraphTab extends JGraphTab  {
 			revalidate();
 			setMinimumSize(statusBar.getMinimumSize());
 	
-		}
+		
 	}
 	
 	/**
@@ -164,7 +140,7 @@ public class JDomGraphTab extends JGraphTab  {
 				
 				chart = new Chart();
 				
-				if(ChartSolver.solve(compactGraph, chart))  {
+				if(ChartSolver.solve(domGraph, chart))  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);
@@ -172,6 +148,7 @@ public class JDomGraphTab extends JGraphTab  {
 				} else {
 					solvable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
+					graph.setLayoutType(LayoutType.JDOMGRAPH);
 				}
 				
 				statusBar = new DominanceGraphBar();
@@ -256,11 +233,13 @@ public class JDomGraphTab extends JGraphTab  {
 					Preferences.getInstance().getLayoutType());
 			
 			
-			graph.setLabeltype(Preferences.getInstance().getLabelType());
-			
 			if(isSolvedYet || Preferences.getInstance().getLayoutType() != LayoutType.CHARTLAYOUT) {
 				graph.setLayoutType(Preferences.getInstance().getLayoutType());
+			} else {
+				graph.setLayoutType(LayoutType.JDOMGRAPH);
 			}
+			
+			graph.setLabeltype(Preferences.getInstance().getLabelType());
 			updateRecentLayout();
 		}
 	}
@@ -286,7 +265,6 @@ public class JDomGraphTab extends JGraphTab  {
 		// the text labels
 		private JLabel 	numberOfForms, 	// indicates how many solved forms there are
 		norm, 		  	// indicates normality (graphs)
-		comp, 		  	// indicates compactness (graphs)
 		hn, 			// indicates hypernormality (graphs)
 		ll; 		 	// indicates leaf labeling (graphs)
 		
@@ -298,7 +276,7 @@ public class JDomGraphTab extends JGraphTab  {
 		
 		
 		/**
-		 * Sets up a new <code>SolvedFormBar</code> by
+		 * Sets up a new <code>DominanceGraphBar</code> by
 		 * initalizing the fields and doing the layout.
 		 * 
 		 */
@@ -340,18 +318,13 @@ public class JDomGraphTab extends JGraphTab  {
 					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
 				}
 			} else {
-				if(compactifiable) {
+				
 					if(solvable) {
 						numberOfForms.setText("This graph has an unknown number of solved forms."); 
 					} else {
 						numberOfForms.setText("This graph is unsolvable."); 
 					}
-				} else {
-					numberOfForms.setText("This graph is not compactifiable, " +
-							"so we cannot determine solvability.");
-					
-					
-				}
+				
 			}
 			
 	
@@ -418,20 +391,6 @@ public class JDomGraphTab extends JGraphTab  {
 			norm.setForeground(Color.RED);
 			classifyLabels.add(norm);
 			
-			comp = new JLabel("C") {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1727521902555287883L;
-
-				public Point getToolTipLocation(MouseEvent e) {
-					Point p1 = comp.getLocation();
-					Point toReturn = new Point(p1.x, p1.y-25);
-					return toReturn;
-				}
-			};
-			comp.setForeground(Color.RED);
-			classifyLabels.add(comp);
 			
 			
 			
@@ -448,18 +407,7 @@ public class JDomGraphTab extends JGraphTab  {
 				norm.setToolTipText("Not Normal");
 			}
 			
-			
-			if(domGraph.isCompact()) {
-				comp.setText("C");
-				comp.setToolTipText("Compact");
-			} else if (domGraph.isCompactifiable()) {
-				comp.setText("c");
-				comp.setToolTipText("compactifiable");
-			} else {
-				comp.setText("-");
-				comp.setToolTipText("Not Compactifiable");
-			}
-			
+		
 			
 			if(domGraph.isHypernormallyConnected()) {
 				hn.setText("H");
@@ -480,7 +428,6 @@ public class JDomGraphTab extends JGraphTab  {
 			classified.setAlignmentY(SwingConstants.HORIZONTAL);
 			classified.add(new JLabel("Classify: "));
 			classified.add(norm);
-			classified.add(comp);
 			
 			classified.add(ll);
 			classified.add(hn);
@@ -573,9 +520,7 @@ public class JDomGraphTab extends JGraphTab  {
 		return chart;
 	}
 
-	public DomGraph getCompactGraph() {
-		return compactGraph;
-	}
+	
 	
 	
 	

@@ -5,6 +5,7 @@ import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.jgraph.GecodeTreeLayout;
 import de.saar.chorus.layout.chartlayout.DomGraphChartLayout;
 import de.saar.chorus.layout.domgraphlayout.DomGraphLayout;
 import de.saar.chorus.ubench.JDomGraph;
@@ -56,6 +57,13 @@ public class Preferences implements Cloneable {
     			return new DomGraphLayout(graph);
     		}
     	},
+    	
+    	TREELAYOUT {
+    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
+					DomGraph domgraph) {
+    			return new GecodeTreeLayout(graph);
+    		}
+    	} ,
     	
     	CHARTLAYOUT {
     		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,

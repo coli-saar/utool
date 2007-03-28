@@ -38,6 +38,7 @@ import de.saar.chorus.layout.treelayout.BoundingBox;
 import de.saar.chorus.layout.treelayout.PostOrderNodeVisitor;
 import de.saar.chorus.layout.treelayout.PreOrderNodeVisitor;
 import de.saar.chorus.layout.treelayout.Shape;
+import de.saar.chorus.ubench.EdgeType;
 import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.NodeType;
@@ -647,7 +648,17 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		
 		//the in-edges of a fragment are the equivalent of
 		//the in-edges of the fragment's root.
-		return graph.getInEdges(getFragRoot(frag));
+		
+		List<DefaultEdge> inedges = new ArrayList<DefaultEdge>();
+		for(DefaultGraphCell node : frag.getNodes()) {
+			for(DefaultEdge edge :  graph.getInEdges(node)) {
+				if(graph.getEdgeData(edge).getType() == EdgeType.dominance) {
+					inedges.add(edge);
+				}
+			}
+		}
+		
+		return inedges;
 	}
 	
 	/**
@@ -674,6 +685,16 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 		for(DefaultGraphCell hole : getFragHoles(frag))  {
 			outEdges.addAll(graph.getOutEdges(hole));
 		}
+		
+		for(DefaultGraphCell node : frag.getNodes()) {
+			for(DefaultEdge edge :  graph.getOutEdges(node)) {
+				if(graph.getEdgeData(edge).getType() == EdgeType.dominance
+						&& (! outEdges.contains(edge))) {
+					outEdges.add(edge);
+				}
+			}
+		}
+		
 		return outEdges;
 		
 	}
@@ -869,13 +890,14 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			
 			
 			// 0. Compute the hole by which we entered (if there is one)
-			for( DefaultGraphCell hole : getFragHoles(fragment) ) {
-				for( DefaultEdge outedge : graph.getOutEdges(hole) ) {
-					if( visited.contains(graph.getTargetFragment(outedge) ) ) {
-						holesWithVisitedChildren.add(hole);
-						break;
-					}
-				}
+			for( DefaultGraphCell node : fragment.getNodes() ) {
+				for( DefaultEdge outedge : graph.getOutEdges(node) ) {
+					if(graph.getEdgeData(outedge).getType() == EdgeType.dominance) {
+						if( visited.contains(graph.getTargetFragment(outedge) ) ) {
+							holesWithVisitedChildren.add(node);
+							break;
+						}
+					}}
 			}
 			
 			
@@ -931,8 +953,24 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			}
 			
 			// 2d. Determine my dominance children.
+			
 			List<DefaultGraphCell> holes = getFragHoles(fragment);
 			Collections.reverse(holes);
+			
+			for(DefaultGraphCell node : fragment.getNodes()) {
+				if(! holes.contains(node)) {
+					for(DefaultEdge edge : graph.getOutEdges(node)) {
+						if(graph.getEdgeData(edge).getType() == EdgeType.dominance) {
+							holes.add(node);
+							break;
+						}
+					}
+				}
+			}
+			
+			
+			
+			
 			
 			
 			for( DefaultGraphCell hole : holes ) {
@@ -1321,10 +1359,24 @@ public class DomGraphLayout extends ImprovedJGraphLayout {
 			}
 		}
 		
+		
+		List<DefaultGraphCell> holes = getFragHoles(frag);
+		
+		for(DefaultGraphCell node : frag.getNodes()) {
+			if(! holes.contains(node) ){
+				for(DefaultEdge edge : graph.getOutEdges(node)) {
+					if(graph.getEdgeData(edge).getType() == EdgeType.dominance) {
+						holes.add(node);
+						break;
+					}
+				}
+			}
+		}
+		
 		// check outgoing dominance edges; if any dominance child
 		// is not a leaf (or already visited), then frag doesn't belong
 		// to the tower
-		for(DefaultGraphCell sourceHole : getFragHoles(frag)) {
+		for(DefaultGraphCell sourceHole : holes ) {
 			boolean outEdgeFound = false;
 			
 			for(DefaultEdge edge : graph.getOutEdges(sourceHole)) {
