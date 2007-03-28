@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
@@ -543,10 +544,12 @@ public class JDomGraphTab extends JGraphTab  {
 			
 			// setting up the first solved form:
 			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
-			DomGraph firstForm = domGraph.withDominanceEdges(solvedFormIterator.next());
+			SolvedFormSpec spec = solvedFormIterator.next();
+			DomGraph firstForm = domGraph.makeSolvedForm(spec);
+			NodeLabels labels = nodeLabels.makeSolvedForm(spec);
 			
 			// converting the graph into a JDomGraph
-			DomGraphTConverter conv = new DomGraphTConverter(firstForm, nodeLabels);
+			DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
 			JDomGraph domSolvedForm = conv.getJDomGraph();
 			
 			// setting up the tab
@@ -555,7 +558,7 @@ public class JDomGraphTab extends JGraphTab  {
 					solvedFormIterator, firstForm,
 					1, solvedForms, 
 					graphName, 
-					listener, nodeLabels);
+					listener, labels);
 			
 			return sFTab;
 		} else {

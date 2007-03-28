@@ -14,9 +14,11 @@ import javax.swing.JOptionPane;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.JSolvedFormTab;
@@ -136,9 +138,11 @@ public class ChartViewerListener implements ActionListener {
 			Chart chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
 			SolvedFormIterator sfi = new SolvedFormIterator((Chart) chart.clone() ,firstForm);
-			firstForm = firstForm.withDominanceEdges(sfi.next());
+			SolvedFormSpec spec = sfi.next();
+			firstForm = firstForm.makeSolvedForm(spec);
+			NodeLabels labels = viewer.getLabels().makeSolvedForm(spec);
 			
-			DomGraphTConverter conv = new DomGraphTConverter(firstForm, viewer.getLabels());
+			DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
 			JDomGraph domSolvedForm = conv.getJDomGraph();
 			
 			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
@@ -147,7 +151,7 @@ public class ChartViewerListener implements ActionListener {
 					1, chart.countSolvedForms().longValue(), 
 					viewer.getTitle(), 
 					Ubench.getInstance().getListener(), 
-					viewer.getLabels());
+					labels);
 			
 			Ubench.getInstance().addTab(sFTab, true);
 		} else if ( command.equals("resetchart") ) {

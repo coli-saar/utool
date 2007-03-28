@@ -547,8 +547,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 												
 												// let the outputcodec write the solved form
 												// to a file
-												oc.encode(graph.withDominanceEdges(domedges), 
-														Ubench.getInstance().getVisibleTab().getNodeLabels(), 
+												oc.encode(graph.makeSolvedForm(domedges), 
+														Ubench.getInstance().getVisibleTab().getNodeLabels().makeSolvedForm(domedges), 
 														writer);
 												
 											}
@@ -1111,9 +1111,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		// extracting the wanted solved form
 		SolvedFormIterator solver = Ubench.getInstance().getVisibleTab().getSolvedFormIterator();
-		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels();
 		SolvedFormSpec domEdges = solver.getSolvedForm((int) no-1);
-		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getDomGraph().withDominanceEdges(domEdges);
+		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels().makeSolvedForm(domEdges);
+		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getDomGraph().makeSolvedForm(domEdges);
 		
 		int toInsertHere = Ubench.getInstance().getVisibleTabIndex();
 		
