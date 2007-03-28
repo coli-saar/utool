@@ -193,7 +193,7 @@ public class Utool {
                                 if( count > 1 ) {
                                     outputcodec.print_list_separator(options.getOutput());
                                 }
-                                outputcodec.encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), options.getOutput());
+                                outputcodec.encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), options.getOutput());
                             }
                         }
                         long end_extraction = System.currentTimeMillis();

@@ -14,7 +14,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.Socket;
-import java.util.List;
 
 import de.saar.basic.Logger;
 import de.saar.basic.LoggingWriter;
@@ -29,7 +28,6 @@ import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
-import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
@@ -175,7 +173,7 @@ class ServerThread extends Thread {
                             
                             if( !options.hasOptionNoOutput() ) {
                                 buf.append("  <solution string='");
-                                options.getOutputCodec().encode(options.getGraph().withDominanceEdges(domedges), options.getLabels(), enc);
+                                options.getOutputCodec().encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), enc);
                                 buf.append("' />\n");
                             }
                         }

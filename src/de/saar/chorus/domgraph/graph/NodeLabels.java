@@ -10,6 +10,8 @@ package de.saar.chorus.domgraph.graph;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+
 
 
 /**
@@ -71,6 +73,20 @@ public class NodeLabels {
     @Override
     public int hashCode() {
         return labels.hashCode();
+    }
+    
+    public NodeLabels makeSolvedForm(SolvedFormSpec spec) {
+    	NodeLabels ret = new NodeLabels();
+    	
+    	for( Map.Entry<String, String> labelling : labels.entrySet() ) {
+    		if( spec.getSubstitution().containsKey(labelling.getKey()) ) {
+    			ret.labels.put(spec.getSubstitution().get(labelling.getKey()), labelling.getValue());
+    		} else {
+    			ret.labels.put(labelling.getKey(), labelling.getValue());
+    		}
+    	}
+    	
+    	return ret;
     }
     
     

@@ -726,20 +726,38 @@ public class DomGraph implements Cloneable {
      * except that the dominance edges are replaced by those specified in
      * <code>domedges</code>. The original graph is not modified.
      * 
+     * TODO fix documentation
+     * 
      * @param spec the dominance edges of the new graph
      * @return a new dominance graph with these dominance edges
      */
-    public DomGraph withDominanceEdges(SolvedFormSpec spec) {
+    public DomGraph makeSolvedForm(SolvedFormSpec spec) {
         DomGraph ret = (DomGraph) clone();
         
+        assert spec != null; // I think this possibility is no longer used.
+        
+        // remove all dominance edges 
         ret.removeAllDominanceEdges();
         
-        if( spec != null ) {
-            for( DomEdge e : spec.getDomEdges() ) {
-                ret.addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
-            }
+        // add new dominance edges
+        for( DomEdge e : spec.getDomEdges() ) {
+        	// ensure that the dominance edge doesn't use a node that will be deleted
+        	// via the substitution
+        	assert !spec.getSubstitution().containsKey(e.getSrc());
+        	assert !spec.getSubstitution().containsKey(e.getTgt());
+        	
+        	ret.addEdge(e.getSrc(), e.getTgt(), new EdgeData(EdgeType.DOMINANCE));
         }
-            
+
+        // apply substitution: replace all tree edges into the key (which is a hole)
+        // by tree edges into the value (which is a root); and remove all keys from the graph
+        for( Map.Entry<String, String> nodepair : spec.getSubstitution().entrySet() ) {
+        	for( Edge incomingTreeEdge : getInEdges(nodepair.getKey(), EdgeType.TREE)) {
+        		ret.addEdge((String) incomingTreeEdge.getSource(), nodepair.getValue(), new EdgeData(EdgeType.TREE));
+        	}
+        	
+        	ret.remove(nodepair.getKey());
+        }
         
         ret.cachedResults = null;
         
