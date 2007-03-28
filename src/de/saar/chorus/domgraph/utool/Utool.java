@@ -135,10 +135,6 @@ public class Utool {
                 System.err.println();
             }
             
-            if( !weaklyNormal ) {
-                System.err.println("Cannot solve graphs that are not weakly normal!");
-                System.exit(ExitCodes.ILLFORMED_INPUT_GRAPH);
-            }
             
             if( options.hasOptionStatistics() ) {
                 System.err.print("Solving graph ... ");
