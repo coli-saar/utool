@@ -37,6 +37,52 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 		assert solvedFormsEqual(sfs, [ [[["y1","x"],["x1","z"]],[:]], [[["y1","z"]],["x1":"y"]] ]) : "sfs = " + sfs;
 	}
 	
+
+	public void testThreeUpperFragments() {
+		TestingTools.decodeDomcon("[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]",
+				graph, labels);
+		
+		assert ChartSolver.solve(graph, chart) == true;
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		assert solvedFormsEqual(sfs, [ [[["z1","w"]],["x1":"y", "y1":"z"]], [[["x1","w"]],["z1":"y","y1":"x"]] ]) : "sfs = " + sfs;
+	}
+	
+	public void testFourUpperFragments() {
+		TestingTools.decodeDomcon("[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(v k(v1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(v y1) dom(y v1) dom(x1 w) dom(y1 w) dom(z1 w) dom(v1 w)]",
+				graph, labels);
+		
+		assert ChartSolver.solve(graph, chart) == false;
+	}
+	
+	public void testChainWithCrossEdge1() {
+		// chain with cross edge into connecting hole => two solved forms
+		TestingTools.decodeDomcon("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x2)]",
+				graph, labels);
+		
+		assert ChartSolver.solve(graph, chart) == true;
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		assert solvedFormsEqual(sfs, [ [[["y1","x"],["x2","z"]],[:]], [[["y1","z"]],["x2":"y"]] ]) : "sfs = " + sfs;
+	}
+	
+	public void testChainWithCrossEdge2() {
+		// chain with cross edge into non-connecting hole => unsolvable
+		TestingTools.decodeDomcon("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x1)]",
+				graph, labels);
+		
+		assert ChartSolver.solve(graph, chart) == true;
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		assert solvedFormsEqual(sfs, [ [[["y1","x"],["x2","z"]],[:]] ]) : "sfs = " + sfs;
+	}
+	
 	// Compare two lists of solved forms. The first (result) is a list of SolvedFormSpecs
 	// as returned by a SolvedFormIterator. The second (gold) has the following form:
 	//    gold     -> List(sf)

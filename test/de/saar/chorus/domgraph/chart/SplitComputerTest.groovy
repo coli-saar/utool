@@ -107,7 +107,22 @@ class SplitComputerTest extends GroovyTestCase {
 		assert split == null;
 	}
 	
-	// TODO non-hnc graphs
+	public void testNonHnc() {
+		// a small non-hnc graph
+		TestingTools.decodeDomcon("[label(x f(x1)) dom(x1 y) dom(x1 z)]",
+				graph, labels);
+		
+		SplitComputer comp = new SplitComputer(graph);
+		Split split = comp.computeSplit("x", graph.getAllNodes());
+		
+		assert split != null;
+		
+		assert split.getAllDominators().equals(new HashSet(["x1"]));
+		assert isWccListEqual([["y"],["z"]], split.getWccs("x1"));
+		
+		assert split.getSubstitution().isEmpty();
+	}
+	
 
 	public void testCrossEdge() {
 		TestingTools.decodeDomcon("[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2) dom(x z1) dom(y z2) dom(y2 z3)]",
