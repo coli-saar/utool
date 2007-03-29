@@ -459,7 +459,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			// computing the x-positions, dependent on the _direct_
 			// parent
 
-			System.out.println("Frag: " + frag + " Root: " + root);
+			
 			GraphLayoutCursor layCursor = new GraphLayoutCursor(root, this, graph, frag.getNodes());
 			PostOrderNodeVisitor postVisitor = new PostOrderNodeVisitor(layCursor);
 			postVisitor.run();
@@ -1109,6 +1109,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return null;
 		}
 		
+		/**
+		 * 
+		 * @return
+		 */
 		boolean fragBoxTreeLayout() {
 			Fragment root = getRoot();
 			System.out.println(root);
@@ -1120,6 +1124,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return true;
 		}
 		
+		/**
+		 * 
+		 * @return
+		 */
 		Fragment getRoot() {
 			
 			
@@ -1142,6 +1150,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return null;
 		}
 		
+		/**
+		 * 
+		 * @param current
+		 * @param visited
+		 * @param xStart
+		 * @return
+		 */
 		int fragBoxTreeLayoutDFS(Fragment current, Set<Fragment> visited, int xStart) {
 
 			if(!visited.contains(current)) {
@@ -1404,15 +1419,26 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return cross;
 		}
 		
+		/**
+		 * 
+		 * @return
+		 */
 		List<Fragment> getSortedFragments() {
 			List<Fragment> fraglist = new ArrayList<Fragment>(frags);
 			Collections.sort(fraglist, new FragmentXComparator());
 			return fraglist;
 		}
 		
-
+		/**
+		 * 
+		 * @author Michaela Regneri
+		 *
+		 */
 		private class FragmentXComparator implements Comparator<Fragment> {
 
+			/**
+			 * 
+			 */
 			public int compare(Fragment arg0, Fragment arg1) {
 				// TODO Auto-generated method stub
 				return fragToXPos.get(arg0) - fragToXPos.get(arg1);
@@ -1442,11 +1468,19 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		}
 
 		
-
+		/**
+		 * 
+		 * @return
+		 */
 		int getWidth() {
 			return width;
 		}
 		
+		/**
+		 * 
+		 * @param frag
+		 * @return
+		 */
 		int getBoxXPos(Fragment frag) {
 			return fragToXPos.get(frag);
 		}

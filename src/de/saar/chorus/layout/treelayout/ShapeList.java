@@ -157,6 +157,7 @@ public class ShapeList {
     // of the merged shape, where properly is defined as in Kennedy's paper.
     private void merge() {
         int numberOfShapes = shapes.size();
+        
         if (numberOfShapes == 1) {
             mergedShape = (Shape) shapes.get(0);
             offsetList = new ArrayList();
@@ -185,7 +186,9 @@ public class ShapeList {
                 // between the *previous* axis and the axis of nextShapeL.
                 // This explains the correction.
                 Shape nextShapeL = (Shape) shapes.get(i);
+               
                 int nextAlphaL = getAlpha(currentShapeL, nextShapeL);
+                
                 currentShapeL = merge(currentShapeL, nextShapeL, nextAlphaL);
                 alphaL[i] = nextAlphaL - width;
                 width = nextAlphaL;

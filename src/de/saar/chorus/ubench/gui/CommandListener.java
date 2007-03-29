@@ -1128,7 +1128,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		// setting up the new tab
 		JSolvedFormTab solvedFormTab = new JSolvedFormTab(domSolvedForm, 
 				Ubench.getInstance().getVisibleTab().getGraphName()  + "  SF #" + no, solver,
-				nextForm,
+				Ubench.getInstance().getVisibleTab().getDomGraph(),
 				no, Ubench.getInstance().getVisibleTab().getSolvedForms(), 
 				Ubench.getInstance().getVisibleTab().getGraphName(), 
 				Ubench.getInstance().getListener(), 
