@@ -76,8 +76,11 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 	     */
 	    public void processCurrentNode() {
 	        DefaultGraphCell currentNode = getVisualNode();
-	       
-			if( graph.isRoot(currentNode) || (! nodes.contains(graph.getParents(currentNode).get(0)))) {
+
+	        boolean containsParents = false;
+	        
+	        
+			if( graph.isRelativeRoot(currentNode, nodes) )  {
                 layout.addRelXtoParent(currentNode,0);
 			}
             
@@ -85,7 +88,7 @@ public class GraphLayoutCursor extends GraphNodeCursor {
 			Shape shape;
 			List<DefaultGraphCell> children = graph.getChildren(currentNode);
 			children.retainAll(nodes);
-			if ( graph.isLeaf(currentNode) || children.isEmpty()) {
+			if ( graph.isRelativeLeaf(currentNode, nodes)) {
 				shape = new Shape(extent);
 			} else {
 				ShapeList childShapes = new ShapeList(nodeXDistance);

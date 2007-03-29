@@ -629,11 +629,14 @@ abstract public class ImprovedJGraph<NodeType,
      * @param node the node (the left sibling)
      * @return the right sibling, or null if there is none
      */
-    public DefaultGraphCell getRightSibling(DefaultGraphCell node) {
-        List<DefaultGraphCell> myparents = getParents(node);
+    public DefaultGraphCell getRelativeRightSibling(DefaultGraphCell node, Collection<DefaultGraphCell> subgraph) {
         
-        if( myparents == null )
+        
+        if( getParents(node) == null )
             return null;
+        
+        List<DefaultGraphCell> myparents = new ArrayList<DefaultGraphCell>(getParents(node));
+        myparents.retainAll(subgraph);
         
         if( myparents.size() != 1 ) {
             return null;
@@ -644,10 +647,12 @@ abstract public class ImprovedJGraph<NodeType,
         
         for( DefaultEdge edge : outEdges ) {
             DefaultGraphCell tgt = getTargetNode(edge);
+            if(subgraph.contains(tgt)) {
             if( foundMyself )
                 return tgt;
-            else if( tgt == node ) 
+            else if( tgt.equals(node) ) 
                 foundMyself = true;
+            }
         }
         
         return null;

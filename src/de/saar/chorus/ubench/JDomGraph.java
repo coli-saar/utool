@@ -258,7 +258,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 			return solidEdge;
 		} else {
 			AttributeMap domEdge = getModel().createAttributes();
-			GraphConstants.setLineEnd(domEdge, GraphConstants.ARROW_NONE);
+			GraphConstants.setLineEnd(domEdge, GraphConstants.ARROW_CLASSIC);
 			GraphConstants.setEndSize(domEdge, 10);
 			GraphConstants.setLineColor(domEdge, Color.RED);
 			GraphConstants.setLineWidth(domEdge, 1.2f);

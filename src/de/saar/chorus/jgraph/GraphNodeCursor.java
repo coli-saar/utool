@@ -1,5 +1,7 @@
 package de.saar.chorus.jgraph;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
@@ -76,7 +78,15 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
     	 * The node must not be the start node, neither the
     	 * graph root.
     	 */
-        return ((node != startNode) && (!graph.isRoot(node)) && nodesToLayout.contains( graph.getParents(node).get(0) ));
+    	boolean parentfound = false;
+    	for(Object par : graph.getParents(node)) {
+    		if(nodesToLayout.contains(par)) {
+    			parentfound = true;
+    			break;
+    		}
+    	}
+    	
+        return ((node != startNode) &&  parentfound);
     }
     
     /**
@@ -84,7 +94,11 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * (assuming that there is one).
      */
     public void moveUpwards() {
-        node = (DefaultGraphCell) graph.getParents(node).get(0);
+    	List<DefaultGraphCell> parents = 
+    		new ArrayList<DefaultGraphCell>(graph.getParents(node));
+    	parents.retainAll(nodesToLayout);
+    	
+        node = (DefaultGraphCell) parents.get(0);
     }
     
     /**
@@ -94,7 +108,15 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * @return true if there are one ore more children
      */
     public boolean mayMoveDownwards() {
-        return (!graph.getChildren(node).isEmpty()) && nodesToLayout.contains( graph.getChildren(node).get(0) );
+    	boolean childfound = false;
+    	for(Object par : graph.getChildren(node)) {
+    		if(nodesToLayout.contains(par)) {
+    			childfound = true;
+    			break;
+    		}
+    	}
+    	
+        return ( childfound );
     }
     
     /**
@@ -102,7 +124,11 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * (assuming that there is one).
      */
     public void moveDownwards() {
-        node = (DefaultGraphCell) graph.getChildren(node).get(0);
+    	List<DefaultGraphCell> children = 
+    		new ArrayList<DefaultGraphCell>(graph.getChildren(node));
+    	children.retainAll(nodesToLayout);
+    	
+        node = (DefaultGraphCell) children.get(0);
     }
     
     /**
@@ -112,8 +138,9 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * @return true if there is a right sibling
      */
     public boolean mayMoveSidewards() {
-		DefaultGraphCell sibling = graph.getRightSibling(node);
-        return (sibling != null) && nodesToLayout.contains(graph.getRightSibling(node));
+		DefaultGraphCell sibling = graph.getRelativeRightSibling(node, nodesToLayout);
+		
+        return sibling != null;
     }
     
     /**
@@ -123,7 +150,8 @@ abstract  class GraphNodeCursor implements NodeCursorInterface {
      * @see <code>JDomGraph.getRightSibling(DefaultGraphCell node)</code>
      */
     public void moveSidewards() {
-        node = graph.getRightSibling(node);
+    	
+        node = graph.getRelativeRightSibling(node, nodesToLayout);
     }
     
     abstract public void processCurrentNode(); 
