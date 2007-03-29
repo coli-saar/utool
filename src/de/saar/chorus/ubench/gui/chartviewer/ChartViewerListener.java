@@ -147,7 +147,7 @@ public class ChartViewerListener implements ActionListener {
 			
 			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
 					viewer.getTitle()  + "  SF #1", 
-					sfi, firstForm,
+					sfi, (DomGraph) viewer.getDg(),
 					1, chart.countSolvedForms().longValue(), 
 					viewer.getTitle(), 
 					Ubench.getInstance().getListener(), 

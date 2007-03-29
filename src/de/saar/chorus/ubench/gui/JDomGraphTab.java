@@ -502,7 +502,7 @@ public class JDomGraphTab extends JGraphTab  {
 			// setting up the tab
 			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
 					defaultName  + "  SF #1", 
-					solvedFormIterator, firstForm,
+					solvedFormIterator, domGraph,
 					1, solvedForms, 
 					graphName, 
 					listener, labels);
