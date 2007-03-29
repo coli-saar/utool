@@ -459,7 +459,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			// computing the x-positions, dependent on the _direct_
 			// parent
 
-
+			System.out.println("Frag: " + frag + " Root: " + root);
 			GraphLayoutCursor layCursor = new GraphLayoutCursor(root, this, graph, frag.getNodes());
 			PostOrderNodeVisitor postVisitor = new PostOrderNodeVisitor(layCursor);
 			postVisitor.run();
@@ -1075,7 +1075,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						nextPossibleX = new int[fraglayers.size()];
 						fragToXPos.clear();
 					}
-			//		System.err.println("\n\n\n ===== FINAL DFS ====");
+					System.out.println("\n\n\n ===== FINAL DFS for Box with roots " + convertStringsToFragments(freefrags) +"====  ROOT: " + bestRoot);
 					fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null, new ArrayList<Fragment>());
 				
 			} else {
@@ -1248,18 +1248,30 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 			} else {
 	//			System.err.print("Box! Starting at " + x);
-				
+				boolean first = true;
 				
 				for(Fragment frag : myBox.getSortedFragments()) {
+					if(first) {
+						first = false;
+						if(oneHoleFrags.contains(frag)) {
+							myX = nextPossibleX[fragmentToLayer.get(frag)];
+						} else {
+							myX = myBox.getBoxXPos(frag) + myX;
+						} 
+					} else {
+						
+					}
+					
+					
 					if(!visited.contains(frag)) {
 					visited.add(frag);
 	//				System.err.print("    boxfrag: " + frag);
 					int xVal;
-					if(oneHoleFrags.contains(frag)) {
-						xVal = nextPossibleX[fragmentToLayer.get(frag)];
-					} else {
+				//	if(oneHoleFrags.contains(frag)) {
+					//	xVal = nextPossibleX[fragmentToLayer.get(frag)];
+				//	} else {
 						xVal = myBox.getBoxXPos(frag) + myX;
-					} 
+				//	} 
 					fragToXPos.put(frag, xVal);
 	//				System.err.println("  put at " + xVal + "next possible was " + nextPossibleX[fragmentToLayer.get(frag)]);
 					nextPossibleX[fragmentToLayer.get(frag)] = xVal + fragWidth.get(frag) + fragmentXDistance;
@@ -1324,6 +1336,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
+					System.out.println("Child: " + child + "children: " +
+							childbox.fragToXPos);
 	//				System.err.println("box!");
 					boolean first = true;
 					for(Fragment cbf : childbox.getSortedFragments()) {
