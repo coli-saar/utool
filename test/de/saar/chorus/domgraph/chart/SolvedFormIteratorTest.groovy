@@ -47,7 +47,7 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 	public void testNonCompact() {
 		// a really simple non-compact graph
 		checkSolvedForms("[label(x f(x1 x2)) label(x1 a) label(x2 b)]",
-				[ [[[]]],[:] ]);
+				[ [[],[:]] ]);
 	}
 	
 	
