@@ -232,6 +232,9 @@ public class DomGraph implements Cloneable {
 	 * @param data the data for the new edge
 	 */
 	public void addEdge(String src, String tgt, EdgeData data) {
+		assert graph.containsVertex(src) : "Source node " + src + " does not exist!";
+		assert graph.containsVertex(tgt) : "Target node " + tgt + " does not exist!";
+			
 		Edge e = graph.addEdge(src,tgt);
 		edgeData.put(e, data);
         cachedResults = null;
