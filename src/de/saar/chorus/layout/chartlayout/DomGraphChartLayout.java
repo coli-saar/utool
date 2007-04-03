@@ -172,7 +172,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		Set<String> roots = domgraph.getAllRoots();
 		
 		for(Set<String> tls : toplevel ) {
-			fillLayer(0, new ArrayList<Split>(chart.getSplitsFor(tls)), new HashSet<String>());
+			if(chart.containsSplitFor(tls)) {
+				fillLayer(0, new ArrayList<Split>(chart.getSplitsFor(tls)), new HashSet<String>());
+			} else {
+				Set<String> leaves = new HashSet<String>(tls);
+				addToLayer(leaves, 0);
+			}
 		}
 		
 		
@@ -641,6 +646,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		
 		int leftBorder = 0;
+		int xoffset = 0;
+		
 		Fragment topFragment = null;
 		if(fraglayers.get(0).size() == 1) {
 			topFragment = fraglayers.get(0).iterator().next();
@@ -648,18 +655,23 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		for(Set<String> toplevel : chart.getToplevelSubgraphs()) {
 			
 			Set<String> free = new HashSet<String>();
+			if(chart.containsSplitFor(toplevel)) {
 			for(Split split : chart.getSplitsFor(toplevel)) {
 				free.addAll(domgraph.getFragment(split.getRootFragment()));
 			}
+			} else {
+				free.addAll(toplevel);
+				free.retainAll(roots);
+			}
 			FragmentBox box = new FragmentBox(toplevel, free);
-		//	System.out.println(box.fragToXPos);
 			
 			for(Fragment boxfrag : box.frags) {
 				System.out.println(boxfrag);
-				int x = box.getBoxXPos(boxfrag);
+				int x = box.getBoxXPos(boxfrag) + xoffset;
 				fragXpos.put(boxfrag, x);
 				leftBorder = Math.max(leftBorder, x + fragWidth.get(boxfrag));
 			}
+			xoffset = leftBorder + fragmentXDistance;
 		}
 		
 		if(topFragment != null) {
@@ -670,21 +682,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			}
 		}
 		
-		
-	
-
-
-
-
-
 	}
 
-	
-
-
-	
-
-	
 		private void moveGraph(int x) {
 			Set<Fragment> seen = new HashSet<Fragment>();
 			for(DefaultGraphCell node : graph.getNodes()) {
@@ -1083,13 +1082,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					fragToXPos.put(frags.iterator().next(), 0);
 			}
 
-			Set<Fragment> free = convertStringsToFragments(freefrags);
-			if(free.size() == 1) {
-				Fragment top = free.iterator().next();
-				if(getFragInEdges(top).size() == 0) {
-					fragToXPos.put(top, (width - fragWidth.get(top))/2);
-				}
-			}
+			
 			}
 
 		}
@@ -1182,7 +1175,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				myX = (xStart + rightborder)/2 - fragWidth.get(current)/2;
 				fragToXPos.put(current, myX);
 				System.err.println("putting " + current + " at " + myX);
-				return myX + fragWidth.get(current);
+				return myX + fragWidth.get(current) ;
 			}	
 			return xStart;
 		}
