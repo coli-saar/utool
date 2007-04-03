@@ -666,7 +666,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			FragmentBox box = new FragmentBox(toplevel, free);
 			
 			for(Fragment boxfrag : box.frags) {
-				System.out.println(boxfrag);
 				int x = box.getBoxXPos(boxfrag) + xoffset;
 				fragXpos.put(boxfrag, x);
 				leftBorder = Math.max(leftBorder, x + fragWidth.get(boxfrag));
@@ -999,15 +998,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			for(Fragment frag : frags) {
 				mySubgraph.addAll(frag.getNodes());
 			}
-			System.out.println("<<< Frags: " + frags);
+			
 			if(graph.isForest(mySubgraph)) {
-				System.out.println("<<<< TREE >>>");
 				if(! fragBoxTreeLayout()) {
 					System.err.println(":'(");
 				}
 			} else {
 
-			//TODO refactor the box computation
+			
 			// asking the graph for the wccs I get for my fragments without
 			// the free fragments.
 			for(Set<String> childwcc : domgraph.wccs(childnodes)) {
@@ -1049,13 +1047,12 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					Set<Fragment> possibleRoots = getPossibleRoots();
 					if(possibleRoots.isEmpty()) {
 						possibleRoots.addAll(frags);
-						System.err.println("  *** no roots! adding everything!***");
 					}
 
 					// initialising the best root and the number of crossings.
 					Fragment bestRoot = possibleRoots.iterator().next();
 					int bestCost = -1;
-					int x = 0; // the first x is 0
+					
 
 					for(Fragment frag : possibleRoots ) {
 						if(bestCost == -1 ) {
@@ -1074,7 +1071,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 						nextPossibleX = new int[fraglayers.size()];
 						fragToXPos.clear();
 					}
-					System.out.println("\n\n\n ===== FINAL DFS for Box with roots " + convertStringsToFragments(freefrags) +"====  ROOT: " + bestRoot);
 					fragBoxDFS(0, new HashSet<Fragment>(), bestRoot, 0, null, new ArrayList<Fragment>());
 				
 			} else {
@@ -1108,7 +1104,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		 */
 		boolean fragBoxTreeLayout() {
 			Fragment root = getRoot();
-			System.out.println(root);
 			if(root != null) {
 				fragBoxTreeLayoutDFS(root, new HashSet<Fragment>(), 0);
 			} else {
@@ -1174,7 +1169,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				}
 				myX = (xStart + rightborder)/2 - fragWidth.get(current)/2;
 				fragToXPos.put(current, myX);
-				System.err.println("putting " + current + " at " + myX);
 				return myX + fragWidth.get(current) ;
 			}	
 			return xStart;
@@ -1344,14 +1338,11 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 				// merging the box of my child, if there is one.
 				if(childbox != null) {
-					System.out.println("Child: " + child + "children: " +
-							childbox.fragToXPos);
-	//				System.err.println("box!");
+				
 					boolean first = true;
 					for(Fragment cbf : childbox.getSortedFragments()) {
 						if(first) {
 							if(!visited.contains(cbf)) {
-							System.err.println("first cbf: " + cbf);
 							}
 							first = false;
 								if(oneHoleFrags.contains(cbf) && (! visited.contains(cbf))) {
@@ -1433,7 +1424,6 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			 * 
 			 */
 			public int compare(Fragment arg0, Fragment arg1) {
-				// TODO Auto-generated method stub
 				return fragToXPos.get(arg0) - fragToXPos.get(arg1);
 			}
 			

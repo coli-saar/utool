@@ -236,7 +236,20 @@ public class Fragment extends DomGraphPopupTarget {
     	return null;
     }
     
-    
+    public DefaultGraphCell getRoot() {
+    	if(nodes.isEmpty()) {
+    		return null;
+    	} else { 
+    		DefaultGraphCell root = nodes.iterator().next();
+    		DefaultGraphCell parent = getParent(root);
+    		while(getParent(root) != null) {
+    			root = parent;
+    			parent = getParent(root);
+    		}
+    		
+    		return root;
+    	}	
+    }
     /**
      * Returns all the leaves, considering the nodes
      * of this fragment.
