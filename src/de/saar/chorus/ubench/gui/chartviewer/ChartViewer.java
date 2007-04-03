@@ -192,6 +192,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		calculateChartTable();
 		
 		
+		
+		
 		// initialising and customising the JTable
 		prettyprint = new JTable(new ChartTableModel()) {
 			
@@ -230,6 +232,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		prettyprint.getColumnModel().getSelectionModel().addListSelectionListener(this);
 		
 		// column width
+		if(noOfSplits > 0)
 		initColumnSizes();
 		
 		// layout
@@ -286,7 +289,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			corSubgraph(fragset, roots, visited);
 		}
 		
-		biggestSubgraph = subgraphs.get(0);
+		if(!subgraphs.isEmpty()) {
+			biggestSubgraph = subgraphs.get(0);
+		} else {
+			biggestSubgraph = new HashSet<String>();
+		}
 		lastIndex = orderedSplits.size();
 		
 	}
