@@ -594,7 +594,6 @@ abstract public class ImprovedJGraph<NodeType,
             			if(first) {
             				first = false;
             			} else {
-            				System.out.println(">>> no tree: parents = " + parents.get(node));
             				return false;
             			}
             		}
