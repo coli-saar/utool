@@ -32,17 +32,21 @@ public class SolvedFormSpec {
 		return subst;
 	}
 	
+	/*
 	public void addDomEdge(DomEdge edge) {
 		domedges.add(edge);
 	}
+	*/
 	
 	public void addAllDomEdges(Collection<DomEdge> edges) {
 		domedges.addAll(edges);
 	}
 	
+	/*
 	public void setSubstitution(Map<String, String> subst) {
 		this.subst = subst;
 	}
+	*/
 
 	public void addSubstitution(Map<String, String> substitution) {
 		this.subst.putAll(substitution);
