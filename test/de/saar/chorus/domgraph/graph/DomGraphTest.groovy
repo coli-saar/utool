@@ -33,21 +33,6 @@ class DomGraphTest extends GroovyTestCase {
 	             
 	             assert new HashSet(graph.wccs()).
 	             	equals(new HashSet([new HashSet(["a", "b", "c", "d", "e", "f", "g", "h"])]));
-	             
-	             
-	             
-	             /*
-	             
-	             
-	             Set<Set<String>> result = new HashSet<Set<String>>(graph.wccs());
-	             
-	             Set<String> goldWcc = 
-	                 TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f", "g", "h" });
-	             Set<Set<String>> gold = new HashSet<Set<String>>(1);
-	             gold.add(goldWcc);
-	             
-	             assert result.equals(gold);
-	             */
 	        }
 
 	        // unrestricted wccs, 2 wccs
@@ -59,18 +44,6 @@ class DomGraphTest extends GroovyTestCase {
 	            
 	            assert new HashSet(graph.wccs()).
 	            	equals(new HashSet([new HashSet(["a", "b", "c", "d", "e", "f"]), new HashSet(["g", "h"])]))
-	            
-	            /*
-	            Set<Set<String>> result = new HashSet<Set<String>>(graph.wccs());
-	            
-	            Set gold = //(Set<Set<String>>)
-	                TestTools.makeSet(new Set[] {
-	                        TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" }),
-	                        TestTools.makeSet(new String[] { "g", "h" })
-	                });
-	            
-	            assert result.equals(gold);
-	            */
 	       }
 	        
 	        // restricted wccs, 2 wccs
@@ -82,19 +55,6 @@ class DomGraphTest extends GroovyTestCase {
 	           
 	           assert new HashSet(graph.wccs(new HashSet(["a", "b", "c", "d", "e", "g", "h"]))).
 	           		equals(new HashSet([new HashSet(["a", "b", "c", "d", "e"]), new HashSet(["g", "h"])]))
-	           
-	           		/*
-	           Set<Set<String>> result = 
-	               new HashSet<Set<String>>(graph.wccs(TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "g", "h" })));
-	           
-	           Set gold = // (Set<Set<String>>)
-	           TestTools.makeSet(new Set[] {
-	                   TestTools.makeSet(new String[] { "a", "b", "c", "d", "e" }),
-	                   TestTools.makeSet(new String[] { "g", "h" })
-	           });
-	       
-	           assert result.equals(gold);
-	           */
 	       }
 	       
 	        // restricted wccs (deletes second wcc -> 1 wcc left)
@@ -106,18 +66,6 @@ class DomGraphTest extends GroovyTestCase {
 	           
 	           assert new HashSet(graph.wccs(new HashSet(["a", "b", "c", "d", "e", "f"]))).
 	           		equals(new HashSet([new HashSet(["a", "b", "c", "d", "e", "f"])]))
-	           
-	           /*
-	           Set<Set<String>> result = 
-	               new HashSet<Set<String>>(graph.wccs(TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" })));
-	           
-	           Set gold =  // (Set<Set<String>>)
-	           TestTools.makeSet(new Set[] {
-	                   TestTools.makeSet(new String[] { "a", "b", "c", "d", "e", "f" }),
-	           });
-	       
-	           assert result.equals(gold);
-	           */
 	       }
 
 	        // wccs restricted to empty node set -> empty wcc set
@@ -128,14 +76,6 @@ class DomGraphTest extends GroovyTestCase {
 	                   graph, labels);
 	           
 	           assert graph.wccs(new HashSet([])).isEmpty();
-	           	
-	           
-	           		/*
-	           Set<Set<String>> result = 
-	               new HashSet<Set<String>>(graph.wccs(new HashSet<String>()));
-	           
-	           assert result.isEmpty();
-	           */
 	       }
 
 	        
@@ -159,9 +99,46 @@ class DomGraphTest extends GroovyTestCase {
 	        }
 	        
 	        
+	        /*********** test cases for make(Weakly)NormalBackbone ***********/
+	        public void testBackboneOfNormalGraph() {
+	        	backboneTest("[label(x f(y)) dom(y z) label(z a)]", 
+	        			"[label(x f(y)) dom(y z) label(z a)]", 
+	        			"[label(x f(y)) dom(y z) label(z a)]");
+	        }
+
+	        public void testBackboneOfWeaklyNormalGraph() {
+	        	backboneTest("[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b)]",
+	        			"[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b)]",
+	        			"[label(x f(y)) dom(y z) label(z a) label(w b)]");
+	        }
+
+	        public void testBackboneOfCrossEdgeGraph() {
+	        	backboneTest("[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b) label(x1 g(x2)) dom(x1 y)]",
+	        			"[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b) label(x1 g(x2)) ]",
+	        			"[label(x f(y)) dom(y z) label(z a) label(w b) label(x1 g(x2))]");
+	        }
+
 	        
 	        
 	        
+	        
+	        //////////////////////////////////////////////////////////////////////////////////////////
+	        
+	        
+	        private void backboneTest(String original, String wnBackbone, String nBackbone) {
+	        	DomGraph originalGraph = new DomGraph(), nGraph = new DomGraph(), wnGraph = new DomGraph();
+	        	NodeLabels labels = new NodeLabels();
+	        	
+	        	TestingTools.decodeDomcon(original, originalGraph, labels);
+	        	
+				DomGraph backup = (DomGraph) originalGraph.clone();
+	        	nGraph = originalGraph.makeNormalBackbone();
+	        	wnGraph = originalGraph.makeWeaklyNormalBackbone();
+	        	
+	        	TestingTools.assertDomgraphEquals(nGraph, labels, nBackbone, "normal backbone incorrect");
+	        	TestingTools.assertDomgraphEquals(wnGraph, labels, wnBackbone, "weakly normal backbone incorrect");
+	        	assert DomGraph.isEqual(originalGraph, labels, backup, labels) : "graph changed during backbone computation";
+	        }
 	        
 	        
 	        

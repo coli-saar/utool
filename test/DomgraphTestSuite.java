@@ -17,6 +17,10 @@ public class DomgraphTestSuite extends TestSuite {
     	suite.addTestSuite(gsuite.compile(TEST_ROOT + DOMGRAPH + name + SUFFIX));
     }
     
+    private static void addTest(String name) throws Exception {
+    	suite.addTestSuite(gsuite.compile(TEST_ROOT + name + SUFFIX));
+    }
+    
     public static Test suite() throws Exception {
         
         //suite.addTestSuite(FooTest.class);  // non-groovy test cases welcome, too.
@@ -27,6 +31,8 @@ public class DomgraphTestSuite extends TestSuite {
         addDomgraphTest("graph/DomGraph");
         addDomgraphTest("chart/SplitComputer");
         addDomgraphTest("chart/SolvedFormIterator");
+        
+        addTest("de/saar/chorus/layout/chartlayout/DomGraphChartLayout");
     	
         return suite;
     }

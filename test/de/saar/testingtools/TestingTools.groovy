@@ -9,9 +9,25 @@ import java.util.*;
 
 public class TestingTools {
 	private static InputCodec dc = new DomconOzInputCodec();
+	private static OutputCodec outdc = new DomconOzOutputCodec();
 	
 	public static void decodeDomcon(String domcon, DomGraph graph, NodeLabels labels) {
 		dc.decode(new StringReader(domcon), graph, labels);
+	}
+	
+	public static void assertDomgraphEquals(DomGraph graph, NodeLabels labels, String domcon, String msg) {
+		DomGraph goldGraph = new DomGraph();
+		NodeLabels goldLabels = new NodeLabels();
+		
+		decodeDomcon(domcon, goldGraph, goldLabels);
+		assert DomGraph.isEqual(graph, labels, goldGraph, goldLabels) : msg + " " + encodeDomcon(graph,labels);
+	}
+	
+	public static String encodeDomcon(DomGraph graph, NodeLabels labels) {
+		StringWriter buf = new StringWriter();
+		
+		outdc.encode(graph, labels, buf);
+		return buf.toString();
 	}
 	
 	

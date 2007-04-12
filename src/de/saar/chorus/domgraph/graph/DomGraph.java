@@ -519,6 +519,16 @@ public class DomGraph implements Cloneable {
 	}
 	
 	/**
+	 * Checks whether a node is a hole, i.e. an unlabelled leaf.
+	 * 
+	 * @param node a node in the graph
+	 * @return true iff the node is a hole
+	 */
+	public boolean isHole(String node) {
+		return isLeaf(node) && (getData(node).getType() == NodeType.UNLABELLED);
+	}
+	
+	/**
 	 * Collects all nodes in a given subgraph which are roots.
 	 * 
 	 * @param nodes a collection of nodes (defining a subgraph)
@@ -554,6 +564,21 @@ public class DomGraph implements Cloneable {
 		
 		return ret;
 	}
+	
+	/**
+	 * Checks whether an edge is a cross edge, i.e. a dominance
+	 * edge from a root into a hole.  Weakly normal graphs are characterized
+	 * as having no cross edges.
+	 * 
+	 * @param e an edge in the graph
+	 * @return true iff e is a cross edge
+	 */
+	public boolean isCrossEdge(Edge e) {
+		return (getData(e).getType() == EdgeType.DOMINANCE)
+		&& isRoot((String) e.getSource())
+		&& isHole((String) e.getTarget());
+	}
+	
 	
 	
 	
@@ -765,6 +790,52 @@ public class DomGraph implements Cloneable {
         ret.cachedResults = null;
         
         return ret;
+    }
+    
+    /**
+     * Returns a dominance graph that is just like the current graph,
+     * except that all dominance edges that don't go from holes to roots
+     * have been deleted.  The resulting graph is guaranteed to be normal.
+     * The original graph is not modified.
+     * 
+     * @return the normal backbone of the original graph
+     */
+    public DomGraph makeNormalBackbone() {
+    	DomGraph ret = (DomGraph) clone();
+    	
+    	ret.removeAllDominanceEdges();
+    	
+    	for( DomEdge edge : getAllDomEdges() ) {
+    		// System.err.println("mNB Check " + edge + ": " + isHole(edge.getSrc()) + " " + isRoot(edge.getTgt()));
+    		if( isHole(edge.getSrc()) && isRoot(edge.getTgt()) ) {
+    			ret.addEdge(edge.getSrc(), edge.getTgt(), new EdgeData(EdgeType.DOMINANCE));
+    		}
+    	}
+    	
+    	return ret;
+    }
+    
+    /**
+     * Returns a dominance graph that is just like the current graph,
+     * except that all cross edges, i.e. dominance edges that go from roots
+     * to holes, have been deleted.
+     * The resulting graph is guaranteed to be weakly normal.
+     * The original graph is not modified.
+     * 
+     * @return the weakly normal backbone of the original graph
+     */
+    public DomGraph makeWeaklyNormalBackbone() {
+    	DomGraph ret = (DomGraph) clone();
+    	
+    	ret.removeAllDominanceEdges();
+    	
+    	for( DomEdge edge : getAllDomEdges() ) {
+    		if( !isRoot(edge.getSrc()) || !isHole(edge.getTgt()) ) {
+    			ret.addEdge(edge.getSrc(), edge.getTgt(), new EdgeData(EdgeType.DOMINANCE));
+    		}
+    	}
+    	
+    	return ret;
     }
 	
 	
@@ -1313,7 +1384,8 @@ public class DomGraph implements Cloneable {
             if( out1.size() != out2.size() ) {
                 return false;
             }
-            
+
+            /** TODO: this is too restrictive; (dominance) edges shouldn't have to come in the same order!! **/ 
             for( int i = 0; i < out1.size(); i++ ) {
                 Edge e1 = out1.get(i);
                 Edge e2 = out2.get(i);
