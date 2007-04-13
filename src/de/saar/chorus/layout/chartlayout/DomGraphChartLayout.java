@@ -27,6 +27,7 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.jgraph.GraphDrawingCursor;
@@ -109,13 +110,23 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * 
 	 * @param gr the graph to compute the layout for
 	 */
-	public DomGraphChartLayout(JDomGraph gr, Chart chart, DomGraph origin) {
+	public DomGraphChartLayout(JDomGraph gr, Chart ch, DomGraph origin) {
 		/*
 		 * initializing the graph and its attributes
-		 * by getting them from the graph
 		 */
+		
+		// checking whether or not the DomGraph is weakly normal
+		if(origin.isWeaklyNormal()) {
+			// if so, proceed with the "normal" chart
+			chart = (Chart) ch.clone();
+		} else {
+			// if the graph is not wn, compute the chart of the wn backbone.
+			DomGraph wnbackbone = origin.makeWeaklyNormalBackbone();
+			chart = new Chart();
+			ChartSolver.solve(wnbackbone, chart);
+		}
 		this.graph = gr;
-		this.chart = (Chart) chart.clone();
+		
 		domgraph = origin;
 
 		fragments = graph.getFragments();
