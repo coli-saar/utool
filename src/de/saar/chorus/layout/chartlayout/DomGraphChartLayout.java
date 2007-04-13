@@ -957,14 +957,15 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		
 	}
 	
+	
+	
 	/**
-	 * A helper class containing fragments and layouting them
 	 * relative to their box.
 	 * 
 	 * @author Michaela Regneri
 	 *
 	 */
-	public class FragmentBox {
+	private class FragmentBox {
 
 		private Map<Fragment, Integer> fragToXPos; //positions within the box
 		private Map<Set<Fragment>, FragmentBox> children; // boxes contained in this box
