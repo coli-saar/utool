@@ -24,163 +24,144 @@ class DomGraphChartLayoutTest extends GroovyTestCase {
 	
 	public void testCompact() {
 		// a compact dominance graph (this should be easy)
-		checkAllFragments(  "[label(x f(x1 x2)) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
 	}
 	
 	public void testNormalNonCompact() {
 		// a normal, non-compact dominance graph
-		checkAllFragments(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) label(y a) dom(x2 z) label(z a)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) label(y a) dom(x2 z) label(z a)]");
 	}
 	
 	public void testWeaklyNormalNonCompact() {
 		// a weakly normal, non-compact dominance graph
-		checkAllFragments(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
 	}
 	
 	public void testWeaklyNormalNonCompactDominatingEdges() {
 		// a wn non-compact domgraph in which a hole and an ancestor of this hole
 		// point into the same wcc
-		checkAllFragments(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) dom(x1 y) label(y a) dom(x2 z) label(z a)]");
 	}
 	
 	public void testWeaklyNormalNonCompactDisjointDominators() {
 		// a wn non-cpt domgraph in which two different holes point into the same wcc
 		// (i.e. fragment is not free)
-		checkAllFragments(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) dom(x4 y) label(y a) dom(x2 z) label(z a)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(x1 f(x3 x4)) dom(x3 y) dom(x4 y) label(y a) dom(x2 z) label(z a)]");
 	}
 	
 	public void testNonHnc() {
 		// a small non-hnc graph
-		checkAllFragments(  "[label(x f(x1)) dom(x1 y) dom(x1 z)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1)) dom(x1 y) dom(x1 z)]");
+		
 	}
 	
 	
 	public void testDownwardCrossEdge() {
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2)]");
 	}
 	
 	public void testCrossEdgeDominating() {
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2) label(z1 g(z3)) dom(x z1) dom(y z2) dom(y2 z3)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2) label(z1 g(z3)) dom(x z1) dom(y z2) dom(y2 z3)]");
 	}
 	
 	public void testCrossEdgeDisjoint() {
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2) label(z1 g(z3)) dom(x1 z1) dom(y z2) dom(y2 z3)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x2) label(z1 g(z3)) dom(x1 z1) dom(y z2) dom(y2 z3)]");
 	}
 	
 	public void testTwoCrossEdges() {
 		// x2 has two incoming cross edges => unsolvable
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(z1 g(z3)) dom(y x2) dom(z1 x2)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(z1 g(z3)) dom(y x2) dom(z1 x2)]");
 	}
 	
 	public void testNonTreeCrossEdges() {
 		// y has two cross edges into disjoint nodes => superfragment not a tree, hence unsolvable
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x1) dom(y x2)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x1) dom(y x2)]");
 	}
 	
 	public void testIncomingNonCrossEdge() {
 		// y has incoming dom edge which is not a cross edge => x is not free
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x1) label(z h(z1)) dom(z1 y)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(y x1) label(z h(z1)) dom(z1 y)]");
 	}
 	
 	public void testCrossEdgeFromNonHole() {
 		// dom edge out of the middle of y's fragment into a hole of x's fragment
 		// => x is not free because this dom edge is equivalent to the non-cross edge (y1,x)
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(y1 g(y3 y4)) dom(y1 x2)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(y1 g(y3 y4)) dom(y1 x2)]");
 	}
 	
 	public void testCrossEdgeIntoNonRoot() {
 		// dom edge from the root x into the non-hole y1
 		// => x is not free because this dom edge is equivalent to the non-cross edge (x,y)
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(y1 g(y3 y4)) dom(x y1)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1 y2)) label(y1 g(y3 y4)) dom(x y1)]");
 	}
 	
 	public void testThreeFragments1() {
 		// three interconnected upper fragments; x is free
-		checkAllFragments(  "[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]");
 	}
 	
 	public void testThreeFragments2() {
 		// the same three interconnected upper fragments as in testThreeFragments1; y is not free
-		checkAllFragments(  "[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]");
+		
 	}
 	
 	public void testDisjointCrossEdges() {
 		// y and z are plugged into disjoint holes of x; thus cross edge from z to y1 can't be satisfied
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1)) label(z h(z1)) dom(y x1) dom(z x2) dom(z y1)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1 x2)) label(y g(y1)) label(z h(z1)) dom(y x1) dom(z x2) dom(z y1)]");
 	}
 	
 	public void testChainWithCrossEdgeOk() {
 		// chain of length two with cross edge; hole with incoming cross edge is the correct one
 		// according to the chain
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(x1 w) dom(y1 w) dom(y x1)]");
-		checkGraphLayout();
+		checkGraphLayout("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x1 w) dom(y1 w) dom(y x1)]");
 	}
 	
 	public void testChainWithCrossEdgeFail() {
 		// chain of length two with cross edge; hole with incoming cross edge is the wrong one
 		// according to the chain
-		checkAllFragments(  "[label(x f(x1 x2)) label(y g(y1 y2)) dom(x1 w) dom(y1 w) dom(y x2)]");
-		checkGraphLayout();
+		checkGraphLayout( "[label(x f(x1 x2)) label(y g(y1 y2)) dom(x1 w) dom(y1 w) dom(y x2)]");
 	}
 	
 	public void testRedundantDomEdge() {
-		checkAllFragments(  "[label(x f(x1)) label(y g(y1)) dom(x1 w) dom(y1 w) dom(y x1)]");
-		checkGraphLayout();
+		checkGraphLayout(  "[label(x f(x1)) label(y g(y1)) dom(x1 w) dom(y1 w) dom(y x1)]");
 	}
 	
 	public void testSmall() {
-		checkAllFragments("[label(x f(x1)) dom(x1 y) label(y a)]");
-		checkGraphLayout();
+		checkGraphLayout("[label(x f(x1)) dom(x1 y) label(y a)]");
 	}
 	
 	public void testCrossEdge() {
-		checkAllFragments("[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]");
-		checkGraphLayout();
+		checkGraphLayout("[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]");
 	}
 
 	public void testThreeUpperFragments() {
 
-		checkAllFragments("[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1)" +
+		checkGraphLayout("[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1)" +
         "dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]");
-		
-		checkGraphLayout();
 	}
 	
 	
 	
 	public void testChainWithCrossEdge1() {
 		// chain with cross edge into connecting hole => two solved forms
-		
-		checkAllFragments("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x2)]");
-		checkGraphLayout();
+		checkGraphLayout("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x2)]");
 	}
 	
 	public void testChainWithCrossEdge2() {
 		// chain with cross edge into non-connecting hole => unsolvable
-		
-		checkAllFragments("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x1)]");
-		checkGraphLayout();
+		checkGraphLayout("[label(x f(x1 x2)) label(y g(y1 y2)) dom(x2 z) dom(y1 z) dom(y x1)]");
 	}
 	
 	
-	private void checkGraphLayout() {
+	private void checkGraphLayout(String domcon) {
+		TestingTools.decodeDomcon(domcon, graph, labels);
+		DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
+		jdomgraph = conv.getJDomGraph();
+		jdomgraph.computeFragments();
+		
+		checkAllFragments(jdomgraph)
+		
 		ChartSolver.solve(graph, chart);
 		try { 
 			JGraphUtilities.applyLayout(jdomgraph, new DomGraphChartLayout(jdomgraph, chart, graph));
@@ -190,12 +171,9 @@ class DomGraphChartLayoutTest extends GroovyTestCase {
 		}
 	}
 	
-	private void checkAllFragments(String domcon) {
-		TestingTools.decodeDomcon(domcon, graph, labels);
-		DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
-		jdomgraph = conv.getJDomGraph();
-		jdomgraph.computeFragments();
-		for(Fragment frag : jdomgraph.getFragments()) {
+	private void checkAllFragments(JDomGraph dg) {
+		
+		for(Fragment frag : dg.getFragments()) {
 			checkFragment(frag, frag.getRoot());
 		}
 	}
