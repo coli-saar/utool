@@ -1071,15 +1071,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					if (bestCost == -1) {
 						// first loop
 						bestCost = fragBoxDFS(current, 0,
-								new HashSet<Fragment>(), frag, 0, null,
-								new ArrayList<Fragment>());
+								new HashSet<Fragment>(), frag, 0, null);
 						bestRoot = frag;
 
 					} else {
 						// not the first loop.
 						int nextCrossCount = fragBoxDFS(current, 0,
-								new HashSet<Fragment>(), frag, 0, null,
-								new ArrayList<Fragment>());
+								new HashSet<Fragment>(), frag, 0, null);
 						if (nextCrossCount < bestCost) {
 							bestCost = nextCrossCount;
 							bestRoot = frag;
@@ -1092,7 +1090,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				
 				// final DFS
 				fragBoxDFS(current, 0, new HashSet<Fragment>(), bestRoot, 0,
-						null, new ArrayList<Fragment>());
+						null);
 
 			} else {
 				// There is at most one fragment in my box.
@@ -1121,12 +1119,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * @param current the current fragment
 	 * @param crossings the number of crossings counted so far.
 	 * @param lastroot the root of the fragment visited right before this loop
-	 * @param parentsToCover a set of nodes which this loop has to place even if the current fragment is already visited
 	 * @return the number of crossings after this loop
 	 */
 	int fragBoxDFS(FragmentBox box, int x, Set<Fragment> visited,
-			Fragment current, int crossings, DefaultGraphCell lastroot,
-			List<Fragment> parentsToCover) {
+			Fragment current, int crossings, DefaultGraphCell lastroot) {
 
 		// initialising
 		Set<Fragment> frags = box.getFrags(); // the fragments to consider
@@ -1281,7 +1277,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				Collections.sort(parents, new FragmentOutDegreeComparator());
 				for (Fragment par : parents) {
 					cross += fragBoxDFS(box, nextX, visited, par, 0,
-							currentRoot, new ArrayList<Fragment>());
+							currentRoot);
 					nextX = box.getBoxXPos(par) + fragWidth.get(par)
 							+ fragmentXDistance;
 				}
@@ -1290,7 +1286,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 				// if I have only one parent, I don't need any sorting.
 				for (Fragment par : parents) {
 					cross += fragBoxDFS(box, nextX, visited, par, 0,
-							currentRoot, new ArrayList<Fragment>());
+							currentRoot);
 					nextX = box.getBoxXPos(par) + fragWidth.get(par)
 							+ fragmentXDistance;
 				}
@@ -1386,14 +1382,18 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 								new FragmentOutDegreeComparator());
 						
 						// place the parents of the childbox.
-						cross += fragBoxDFS(box, nextX, visited, child, 0,
-								currentRoot, childboxparents);
+						
+						for(Fragment boxpar : childboxparents) {
+							cross += fragBoxDFS(box, nextX, visited, boxpar, 0,
+								currentRoot);
+							nextX = box.getNextPossibleX()[fragmentToLayer.get(boxpar)];
+						}
 
 					} else {
 						// no childbox. this should never happen. However, if it
 						// does - just go on with DFS.
 						cross += fragBoxDFS(box, nextX, visited, child, 0,
-								currentRoot, new ArrayList<Fragment>());
+								currentRoot);
 						nextX = box.getBoxXPos(child) + fragWidth.get(child)
 								+ fragmentXDistance;
 					}
@@ -1404,17 +1404,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			// the fragment distance.
 			box.setWidth(nextX - fragmentXDistance);
 
-		} else {
-			// the current fragment may be already visited; however, there are fragments
-			// which have to be placed in this step, because the current fragment was placed in
-			// a box and the parents of the box were not placed yet.
-			for (Fragment frag : parentsToCover) {
-				cross += fragBoxDFS(box, nextX, visited, frag, 0, currentRoot,
-						new ArrayList<Fragment>());
-				nextX = box.getNextPossibleX()[fragmentToLayer.get(frag)];
-			}
-		}
-
+		} 
 		return cross;
 	}
 
