@@ -369,6 +369,10 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		}
 	}
 
+	/**
+	 * 
+	 *
+	 */
 	private void computeOneHoleFrags() {
 		for (Fragment frag : fragments) {
 			int childwidth = isOneHoleFrag(frag);
@@ -1607,31 +1611,60 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		private int width; // my width (after layout)
 	
 		
-		 Set<Fragment> getFrags() {
+		/**
+		 * 
+		 * @return
+		 */
+		Set<Fragment> getFrags() {
 			return frags;
 		}
 
-		 void setFrags(Set<Fragment> frags) {
+		/**
+		 * 
+		 * @param frags
+		 */
+		void setFrags(Set<Fragment> frags) {
 			this.frags = frags;
 		}
-
-		  int[] getNextPossibleX() {
+		
+		/**
+		 * 
+		 * @return
+		 */
+		int[] getNextPossibleX() {
 			return nextPossibleX;
 		}
 
-		  void setNextPossibleX(int[] nextPossibleX) {
+		/**
+		 * 
+		 * @param nextPossibleX
+		 */
+		void setNextPossibleX(int[] nextPossibleX) {
 			this.nextPossibleX = nextPossibleX;
 		}
 
-		  void setWidth(int width) {
+		/**
+		 * 
+		 * @param width
+		 */
+		void setWidth(int width) {
 			this.width = width;
 		}
-
-		  void putChild(Set<Fragment> parents, FragmentBox chbox) {
+		
+		/**
+		 * 
+		 * @param parents
+		 * @param chbox
+		 */
+		void putChild(Set<Fragment> parents, FragmentBox chbox) {
 			children.put(parents, chbox);
 		}
 
-		  void clear() {
+		/**
+		 * 
+		 *
+		 */
+		void clear() {
 			nextPossibleX = new int[fraglayers.size()];
 			fragToXPos.clear();
 		}
@@ -1706,6 +1739,11 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			return fragToXPos.get(frag);
 		}
 
+		/**
+		 * 
+		 * @param frag
+		 * @param x
+		 */
 		void setBoxXPos(Fragment frag, int x) {
 			fragToXPos.put(frag, x);
 		}

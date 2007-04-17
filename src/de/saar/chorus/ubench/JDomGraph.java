@@ -172,7 +172,9 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 
 
 	public void setLayoutType(LayoutType lt) {
-		if(layouttype != lt) {
+		if(layouttype == null) {
+			layouttype = lt;
+		} else if(layouttype != lt) {
 			layouttype = lt;
 			computeLayout();
 			adjustNodeWidths();
@@ -683,8 +685,6 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		// setting the scale
 		clone.setScale(getScale());
-		clone.setLabeltype(Preferences.getInstance().getLabelType());
-		clone.setLayoutType(Preferences.getInstance().getLayoutType());
 		return clone;
 	}
 	
