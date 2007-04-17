@@ -172,22 +172,38 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 		leaflayer = new HashMap<Fragment, DefaultGraphCell>();
 	}
 
+	
+	/**
+	 * This computed the layers of the graph. The layers consist of fragments,
+	 * whose maximal depth (the longest path from a root via dominance edges) 
+	 * corresponds to the layer. Thus layer 0 contains all roots of the fragment graph,
+	 * and so on.
+	 *
+	 */
 	private void fillLayers() {
 
+		// retrieving the toplevel subgraphs from the chart.
 		List<Set<String>> toplevel = new ArrayList<Set<String>>(chart
 				.getToplevelSubgraphs());
 		Set<String> roots = domgraph.getAllRoots();
 
+		// the free fragments in the toplevel subgraph
+		// are the root fragments of the graph and
 		for (Set<String> tls : toplevel) {
 			if (chart.containsSplitFor(tls)) {
+				// root fragments are in layer 0, this computes the other layers
+				// recursively
 				fillLayer(0, new ArrayList<Split>(chart.getSplitsFor(tls)),
 						new HashSet<String>());
 			} else {
+				// if the chart is empty, all fragments are 
+				// considered as root fragments
 				Set<String> leaves = new HashSet<String>(tls);
 				addToLayer(leaves, 0);
 			}
 		}
 
+		// iterate over the layers
 		for (int i = 0; i < layers.size(); i++) {
 
 			Set<String> layer = new HashSet<String>(layers.get(i));
@@ -218,6 +234,14 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 	}
 
+	/**
+	 * Recursive helper method to assign a layer to each fragment in the given 'layer'
+	 * and deeper. 
+	 * 
+	 * @param layer the layer depth to start with
+	 * @param splits the initial set of splits for the start layer
+	 * @param visited the nodes visited so far
+	 */
 	private void fillLayer(int layer, List<Split> splits, Set<String> visited) {
 
 		Set<String> recent = new HashSet<String>();
@@ -225,20 +249,29 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 		int nextLayer = layer + 1;
 
+		// iterating over the splits for this layer
 		for (Split split : splits) {
 			String root = split.getRootFragment();
 			if (!visited.contains(root)) {
+				
+				// the split's root is part of the fragments in the
+				// current layer
 				visited.add((root));
 				recent.add(root);
 				recent.addAll(new HashSet<String>(split.getAllDominators()));
+				
+				// we have to visited the split's subgraph in the next loop.
 				remainingSubgraphs.addAll(new ArrayList<Set<String>>(split
 						.getAllSubgraphs()));
 			}
 
 		}
 
+		// fill the current layer
 		addToLayer(recent, layer);
 
+		// iterate over the subgraphs and assign layers
+		// to their nodes
 		for (Set<String> subgraph : remainingSubgraphs) {
 			Set<String> sgc = new HashSet<String>(subgraph);
 			sgc.removeAll(recent);
@@ -260,11 +293,22 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 
 	}
 
+	/**
+	 * Helper method adding a set of nodes to a given layer
+	 * 
+	 * @param recent the nodes to fill the layer with
+	 * @param ind the layer's number
+	 */
 	private void addToLayer(Set<String> recent, int ind) {
+		
+		// if the layer does not exist it, creat it and
+		// add the nodes
 		if (layers.size() <= ind) {
 			layers.add(ind, recent);
 
 		} else {
+			// if the layer already exists, 
+			// add all nodes to it.
 			layers.get(ind).addAll(recent);
 		}
 	}
