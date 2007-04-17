@@ -172,9 +172,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 
 
 	public void setLayoutType(LayoutType lt) {
-		if(layouttype == null) {
-			layouttype = lt;
-		} else if(layouttype != lt) {
+		 if(layouttype != lt) {
 			layouttype = lt;
 			computeLayout();
 			adjustNodeWidths();
