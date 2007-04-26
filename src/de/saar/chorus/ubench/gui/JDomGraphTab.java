@@ -209,7 +209,7 @@ public class JDomGraphTab extends JGraphTab  {
 		 if(!isSolvedYet) {
 			 isSolvedYet = true;
 				chart = new Chart();
-				ChartSolver.solve(domGraph.compactify(), chart);
+				ChartSolver.solve(domGraph, chart);
 		 }
 			
 			cv = new ChartViewer( chart, 

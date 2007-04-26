@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 
 
 
@@ -58,14 +59,40 @@ public class ChartSolver {
      * dominance graph. It will use the given split source in order to
      * compute the splits for each subgraph. 
      * 
-     * @param graph a weakly normal, compact dominance graph
+     * @param graph an arbitrary dominance graph
      * @param chart a chart which will be filled with the splits of this graph
      * @param splitsource a split source
      * @return true if the graph is solvable, false otherwise
      */
     public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) {
-        ChartSolver solver = new ChartSolver(graph, chart, splitsource);
+    	DomGraph preprocessed = null;
+    	
+    	// Try to preprocess the graph. If this fails (i.e. preprocess() throws
+    	// an exception), the graph is trivially unsolvable and we can return immediately.
+    	try {
+    		preprocessed = graph.preprocess();
+    	} catch(Exception e) {
+    		return false;
+    	}
+    	
+    	if( obviouslyUnsolvable(preprocessed) ) {
+    		return false;
+    	}
+    	
+    	// Otherwise, solve the preprocessed graph.
+        ChartSolver solver = new ChartSolver(preprocessed, chart, splitsource);
         return solver.solve();
+    }
+    
+    private static boolean obviouslyUnsolvable(DomGraph graph) {
+    	for( String node : graph.getAllNodes() ) {
+    		if( graph.indeg(node, EdgeType.TREE) > 1 ) {
+    			return true;
+    		}
+    	}
+    	
+    	
+    	return false;
     }
 
     /**
@@ -110,10 +137,6 @@ public class ChartSolver {
     private boolean solve() {
         List<Set<String>> wccs = graph.wccs();
       
-        if( !graph.isWellFormed() ) {
-            return false;
-        }
-
         for( Set<String> wcc : wccs ) {
             chart.addToplevelSubgraph(wcc);
             if( !solve(wcc) ) {

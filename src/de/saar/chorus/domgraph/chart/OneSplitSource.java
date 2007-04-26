@@ -49,9 +49,8 @@ public class OneSplitSource extends SplitSource {
     }
 
     public static boolean isGraphSolvable(DomGraph graph) {
-        DomGraph cpt = graph.compactify();
         Chart chart = new Chart();
         
-        return ChartSolver.solve(cpt, chart, new OneSplitSource(graph));
+        return ChartSolver.solve(graph, chart, new OneSplitSource(graph));
     }
 }

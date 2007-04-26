@@ -106,6 +106,23 @@ public class SplitComputer {
     
     
     
+    /**
+     * Computes the root fragment for the split with root node <code>root</code>.
+     * This method pursues dominance edges from roots to holes and "plugs" the
+     * root into the hole, thus potentially constructing a non-compact fragment
+     * even if the original graph was compact.
+     * The method returns <code>null</code> if anything goes wrong during this
+     * construction.  In particular, it checks
+     * <ol>
+     * <li> whether any hole has more than one non-trivial incoming dominance edge;
+     * <li> whether the fragment has a cycle.
+     * </ol>
+     * 
+     * @param root
+     * @param graph
+     * @param subgraph
+     * @return
+     */
     private Set<String> computeRootFragment(String root, DomGraph graph, Set<String> subgraph) {
     	Set<String> nodes = new HashSet<String>();
     	Set<String> ancestors = new HashSet<String>();
