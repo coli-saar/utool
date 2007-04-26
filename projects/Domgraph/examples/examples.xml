@@ -71,5 +71,15 @@
 	        The sentence has 14 readings. The solver described in the
 		    Blackburn &amp; Bos textbook takes about 14 seconds to enumerate
 			all pluggings. Utool needs about 10 milliseconds." />
+			
+	<example filename="kallmeyer-romero.clls"
+		description="Example (37) from Kallmeyer &amp; Romero, Research on
+		Language and Computation 2007.  This is an underspecified representation
+		for the following sentence:
+		
+		      &quot;Two policement spy on someone from every city.&quot;
+		      
+		This graph is not weakly normal because of the cross edge from
+		y1 to x3.  It has four solved forms." />
 
 </examples>
