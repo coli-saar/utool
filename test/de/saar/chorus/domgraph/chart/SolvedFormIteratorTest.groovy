@@ -44,13 +44,45 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 				[ [[["y1","x"],["x2","z"]],[:]] ]);
 	}
 	
-	public void testNonCompact() {
+	public void testNonCompact1() {
 		// a really simple non-compact graph
 		checkSolvedForms("[label(x f(x1 x2)) label(x1 a) label(x2 b)]",
 				[ [[],[:]] ]);
 	}
 	
+	public void testNonCompact2() {
+		// a non-compact graph that is almost as simple, but doesn't get the same NPE in SFI
+		checkSolvedForms("[label(x f(x1 x2)) label(x1 a) label(y b) dom(x2 y)]",
+				[ [[["x2","y"]],[:]] ]);
+	}
 	
+	public void testPreprocessing1() {
+		// a graph with a dom edge from an internal node to a labelled leaf; this
+		// edge should be replaced by one from the internal node to the root
+		checkSolvedForms("[label(x1 f(x2)) label(x2 g(x3)) label(y1 h(y2)) label(y2 a) dom(x2 y2)]",
+				[ [[["x2","y1"]],[:]] ]);
+	}
+	
+	public void testPreprocessing2() {
+		// a graph with a trivial dominance edge
+		checkSolvedForms("[label(x1 f(x2)) label(x2 g(x3)) label(x3 h(x4)) label(x4 a) dom(x2 x3)]",
+				[ [[],[:]] ]);
+	}
+	
+	public void testPreprocessing3() {
+		// a graph with a trivially unsolvable dominance edge
+		checkUnsolvable("[label(x1 f(x2 x3)) label(x2 a) label(x3 b) dom(x2 x3)]");
+	}
+	
+	public void testNonTreeFragmentTwoInEdges() {
+		// a graph with a node that has two incoming tree edges
+		checkUnsolvable("[label(x1 f(x2 x3)) label(x2 g(x4)) label(x3 g(x4)) label(x4 a)]");
+	}
+	
+	public void testNonTreeFragmentCycle() {
+		// a graph with a cyclic fragment
+		checkUnsolvable("[label(x1 f(x2)) label(x2 g(x1))]");
+	}
 	
 	/**** utility methods ****/
 	

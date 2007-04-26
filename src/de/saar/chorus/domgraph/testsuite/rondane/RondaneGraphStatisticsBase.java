@@ -40,18 +40,16 @@ public class RondaneGraphStatisticsBase {
         Map<String,Boolean> ret = new HashMap<String,Boolean>();
         
         ret.put("compact", Boolean.valueOf(graph.isCompact()));
-        ret.put("compactifiable", Boolean.valueOf(graph.isCompactifiable()));
         ret.put("hnc", Boolean.valueOf(graph.isHypernormallyConnected()));
         ret.put("normal", Boolean.valueOf(graph.isNormal()));
         ret.put("weaklynormal", Boolean.valueOf(graph.isWeaklyNormal()));
-        ret.put("wellformed", Boolean.valueOf(graph.isWellFormed()));
         
         return ret;
     }
     
     public static BigInteger getNumSolvedForms(DomGraph graph) {
         Chart c = new Chart();
-        ChartSolver.solve(graph.compactify(), c);
+        ChartSolver.solve(graph, c);
         return c.countSolvedForms();
     }
     

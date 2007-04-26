@@ -8,7 +8,6 @@
 package de.saar.chorus.domgraph.utool;
 
 import java.io.IOException;
-import java.util.List;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
@@ -21,7 +20,6 @@ import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
-import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
@@ -45,7 +43,6 @@ public class Utool {
 
         boolean weaklyNormal = false;
         boolean normal = false;
-        boolean compact = false;
         
         // parse command-line options and load graph
         try {
@@ -60,7 +57,6 @@ public class Utool {
         if( options.getOperation().requiresInput ) {
             weaklyNormal = options.getGraph().isWeaklyNormal();
             normal = options.getGraph().isNormal();
-            compact = options.getGraph().isCompact();
             
             if( options.hasOptionStatistics() ) {
                 if( normal ) {
@@ -72,12 +68,6 @@ public class Utool {
                     } else {
                         System.err.println(" (not even weakly normal).");
                     }
-                }
-                
-                if( compact ) {
-                    System.err.println("The input graph is compact.");
-                } else {
-                    System.err.print("The input graph is not compact.");
                 }
                 
                 if( options.hasOptionEliminateEquivalence() ) {
@@ -258,6 +248,7 @@ public class Utool {
         case classify:
             int programExitCode = 0;
             
+            
             if( weaklyNormal ) {
                 programExitCode |= ExitCodes.CLASSIFY_WEAKLY_NORMAL;
             }
@@ -266,8 +257,15 @@ public class Utool {
                 programExitCode |= ExitCodes.CLASSIFY_NORMAL;
             }
             
-            if( compact ) {
+            if( options.getGraph().isCompact() ) {
+                if( options.hasOptionStatistics() ) {
+                    System.err.println("The input graph is compact.");
+                }
                 programExitCode |= ExitCodes.CLASSIFY_COMPACT;
+            } else {
+            	if( options.hasOptionStatistics() ) {
+            		System.err.println("The input graph is not compact.");
+            	}
             }
             
             

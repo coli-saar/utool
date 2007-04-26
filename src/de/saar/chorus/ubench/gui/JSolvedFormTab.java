@@ -363,7 +363,7 @@ public JGraphTab clone() {
 @Override
 public void displayChart() {
 	Chart c = new Chart();
-	ChartSolver.solve(domGraph.compactify(),c);
+	ChartSolver.solve(domGraph,c);
 	cv = new ChartViewer(c, domGraph,
 			defaultName, graph, nodeLabels);
 }
