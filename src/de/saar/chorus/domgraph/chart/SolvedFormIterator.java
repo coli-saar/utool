@@ -1,8 +1,11 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -38,8 +41,7 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 	private Chart chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;
-
-    //private Map<Set<String>, String> fragmentTable;
+    
     private Set<String> roots;
     private String rootForThisFragset;
 	
@@ -71,12 +73,11 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
             iteratorForGet = null;
         }
         
-        //fragmentTable = graph.getFragments();
         roots = graph.getAllRoots();
         
         
         for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
-            if( fragset.size() > 0 ) {
+            if( (fragset.size() > 0) ) {
                 agenda.add(new AgendaEntry(null, fragset));
             }
         }
@@ -158,7 +159,7 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 	private void addFragsetToAgendaAndAccu(Set<String> fragSet, String dominator, EnumerationStackEntry ese) {
         if( isSingleton(fragSet) ) {
             // singleton fragsets: add directly to ese's domedge list
-            DomEdge newEdge = new DomEdge(dominator, getSingletonRoot());
+            DomEdge newEdge = new DomEdge(dominator, getSingletonRoot(fragSet));
             ese.addDomEdge(newEdge);
         } else {
             // larger fragsets: add to agenda
@@ -168,21 +169,28 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
     }
 
 
-    private String getSingletonRoot() {
-        return rootForThisFragset;
+    private String getSingletonRoot(Set<String> fragSet) {
+    	return rootForThisFragset;
     }
 
     private boolean isSingleton(Set<String> fragSet) {
         int numRoots = 0;
         
+        
         for( String node : fragSet ) {
             if( roots.contains(node) ) {
                 numRoots++;
+                
+                if( numRoots > 1 ) {
+                	return false;
+                }
+                
                 rootForThisFragset = node;
             }
         }
         
         return numRoots == 1;
+        
     }
 
     private void step() {
@@ -223,23 +231,24 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
 			addSplitToAgendaAndAccu( top );
 		} else {
             // (Down)
-
 			agTop = agenda.pop();
 			topNode = agTop.getDominator();
 			topFragset = agTop.getFragmentSet();
-            
-			if (topFragset.size() > 1 ) {
-                List<Split> sv = chart.getSplitsFor(topFragset);
-                
-                EnumerationStackEntry newTop = 
-                    new EnumerationStackEntry(topNode, sv, agenda);
+			
+			if( !isSingleton(topFragset) ) {
+				// if topFragset is a singleton, then it was a wcc of the entire graph
+				// that only contained a single fragment; hence we don't need to do anything here
+				List<Split> sv = chart.getSplitsFor(topFragset);
+
+				EnumerationStackEntry newTop = 
+					new EnumerationStackEntry(topNode, sv, agenda);
 
 				if( topNode != null ) {
-                    DomEdge newEdge = 
-                        new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
+					DomEdge newEdge = 
+						new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
 					newTop.addDomEdge( newEdge );
 				}
-				
+
 				stack.push(newTop);
 				addSplitToAgendaAndAccu( newTop );
 			}
