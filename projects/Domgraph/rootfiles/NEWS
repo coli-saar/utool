@@ -1,5 +1,18 @@
+unreleased  3.2
+    - This release of Utool includes a new solver for dominance graphs
+      that don't have to be weakly normal or compactifiable.  Starting
+      with this release, Utool can deal with Kallmeyer & Romero style
+      USRs.
+
+    - Ubench now uses a new graph layout algorithm by default.  This
+      layout algorithm is based on the internal chart data structure
+      and looks much better than the old layout algorithm for many
+      graphs.
+
+
 2006-11-24  3.1.1
     - Some minor bugfixes.
+
 
 2006-11-13  3.1
     - Much more of the functionality of Utool is now also
