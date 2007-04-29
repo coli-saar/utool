@@ -84,6 +84,17 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 		checkUnsolvable("[label(x1 f(x2)) label(x2 g(x1))]");
 	}
 	
+	public void testEmptyChart1() {
+		checkSolvedForms("[label(x a)]",
+				[ [[],[:]] ]);
+	}
+	
+	public void testEmptyChart2() {
+		// two small connected components
+		checkSolvedForms("[label(x a) label(y b)]",
+				[ [[],[:]] ]);
+	}
+	
 	/**** utility methods ****/
 	
 	private void checkSolvedForms(String domcon, List goldSolvedForms) {

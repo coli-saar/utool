@@ -848,6 +848,17 @@ public class DomGraph implements Cloneable {
     }
 	
 
+	/**
+	 * Brings a dominance graph into a normal form in which every dominance edge
+	 * is either from a root to a hole or into a root, and there are no dominance
+	 * edges within the same fragment.  The method throws an exception if it encounters
+	 * a dominance edge within the same fragment whose source doesn't dominate its target.
+	 * 
+	 * @return a dominance graph with the same nodes and tree edges as this graph,
+	 * and cleaned-up dominance edges
+	 * @throws Exception if the graph contains a dominance edge within one fragment
+	 * whose source doesn't dominate its target.
+	 */
 	public DomGraph preprocess() throws Exception {
 		DomGraph ret = stripDomEdges();
 		
