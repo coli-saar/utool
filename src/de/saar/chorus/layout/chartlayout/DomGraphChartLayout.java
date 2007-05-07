@@ -218,11 +218,13 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 					DefaultGraphCell parent = graph
 							.getSourceNode(getFragInEdges(frag).iterator()
 									.next());
-					if (oneHoleFrags.contains(graph.findFragment(parent))) {
+				/*	if (oneHoleFrags.contains(graph.findFragment(parent))) {
+						// TODO make sure to put only left children here!
 						leaflayer.put(frag, parent);
-					} else {
-						fraglayers.get(i).add(frag);
-					}
+					} else {*/
+					if(! leaflayer.containsKey(frag))	
+					fraglayers.get(i).add(frag);
+					//}
 				} else {
 
 					fraglayers.get(i).add(frag);
@@ -301,7 +303,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 */
 	private void addToLayer(Set<String> recent, int ind) {
 		
-		// if the layer does not exist it, creat it and
+		// if the layer does not exist it, create it and
 		// add the nodes
 		if (layers.size() <= ind) {
 			layers.add(ind, recent);
@@ -637,6 +639,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 								.iterator().next());
 						if (getFragDegree(child) == 1) {
 							// the only child is a leaf
+							leaflayer.put(child, hole);
 							return fragWidth.get(child);
 						} else {
 							// no leaf; fail.
@@ -1169,7 +1172,7 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 	 * @param lastroot the root of the fragment visited right before this loop
 	 * @return the number of crossings after this loop
 	 */
-	int fragBoxDFS(FragmentBox box, int x, Set<Fragment> visited,
+	private int fragBoxDFS(FragmentBox box, int x, Set<Fragment> visited,
 			Fragment current, int crossings, DefaultGraphCell lastroot) {
 
 		// initialising
@@ -1352,7 +1355,8 @@ public class DomGraphChartLayout extends ImprovedJGraphLayout {
 			Set<Fragment> childfrags = new HashSet<Fragment>();
 			for (DefaultEdge edge : getFragOutEdges(current)) {
 				Fragment child = graph.getTargetFragment(edge);
-				if (!visited.contains(child)) {
+				
+				if (!visited.contains(child) ) {
 					childfrags.add(child);
 				}
 			}
