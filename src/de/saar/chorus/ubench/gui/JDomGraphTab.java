@@ -8,11 +8,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -520,7 +523,6 @@ public class JDomGraphTab extends JGraphTab  {
 		return chart;
 	}
 
-	
 	
 	
 	
