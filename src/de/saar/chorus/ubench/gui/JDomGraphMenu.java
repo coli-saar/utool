@@ -2,6 +2,7 @@ package de.saar.chorus.ubench.gui;
 
 import java.awt.Color;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.HashSet;
@@ -102,6 +103,9 @@ public class JDomGraphMenu extends JMenuBar {
 	 */
 	private void initialize() {
 		
+		int control = 
+	        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		
 		// file Menu
 		fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -110,7 +114,7 @@ public class JDomGraphMenu extends JMenuBar {
 		// item for xml-import
 		loadGraph = new JMenuItem("Open...");
 		loadGraph.setMnemonic(KeyEvent.VK_O);
-		loadGraph.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
+		loadGraph.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, control));
 		loadGraph.setActionCommand("loadGXL");
 		loadGraph.addActionListener(listener);
 		fileMenu.add(loadGraph);
@@ -125,7 +129,7 @@ public class JDomGraphMenu extends JMenuBar {
         saveUtool = new JMenuItem("Export...");
         saveUtool.setActionCommand("saveUtool");
         saveUtool.setMnemonic(KeyEvent.VK_E);
-        saveUtool.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
+        saveUtool.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, control));
         saveUtool.addActionListener(listener);
         fileMenu.add(saveUtool);
         graphSpecificItems.add(saveUtool);
@@ -165,14 +169,14 @@ public class JDomGraphMenu extends JMenuBar {
         duplicate = new JMenuItem("Duplicate Tab");
         duplicate.setActionCommand("dup");
         duplicate.setMnemonic(KeyEvent.VK_D);
-        duplicate.setAccelerator(KeyStroke.getKeyStroke("ctrl D"));
+        duplicate.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, control));
         duplicate.addActionListener(listener);
         fileMenu.add(duplicate);
         
         // item to close the graph
         close = new JMenuItem("Close Tab");
         close.setActionCommand("shut");
-        close.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
+        close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, control));
         close.addActionListener(listener);
         fileMenu.add(close);
         
@@ -189,7 +193,7 @@ public class JDomGraphMenu extends JMenuBar {
 		// item for quitting Leonardo
 		quit = new JMenuItem("Quit");
 		quit.setActionCommand("quit");
-		quit.setAccelerator(KeyStroke.getKeyStroke("ctrl Q"));
+		quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, control));
 		quit.addActionListener(listener);
 		fileMenu.add(quit);
 		
@@ -236,7 +240,7 @@ public class JDomGraphMenu extends JMenuBar {
 		// scaled town in order to fit the window
 		fitAll = new JCheckBoxMenuItem("Fit Graphs To Window");
 		fitAll.addItemListener(listener);
-		fitAll.setAccelerator(KeyStroke.getKeyStroke("ctrl F"));
+		fitAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, control));
         listener.registerEventSource(fitAll,"fitAll");
 		viewMenu.add(fitAll);
 		
