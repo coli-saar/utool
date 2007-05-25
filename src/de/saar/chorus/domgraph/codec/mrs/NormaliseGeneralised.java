@@ -2,20 +2,19 @@ package de.saar.chorus.domgraph.codec.mrs;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
 public class NormaliseGeneralised extends NormaliseNets {
 
-	public void normalise(MrsCodec codec, DomGraph graph)
+	public void normalise(DomGraph graph)
 		throws MalformedDomgraphException
 	{
 		// XXX -- only correct for compact graphs; for non-compact graphs,
@@ -40,7 +39,7 @@ public class NormaliseGeneralised extends NormaliseNets {
 						
 						if (targetWcc.equals(holeWcc)) {
 							// XXX
-							codec.addDomEdge(hole, target);
+							graph.addEdge(hole, target, new EdgeData(EdgeType.DOMINANCE));
 							// XXX
 							graph.remove(weakEdge);
 						}
@@ -50,7 +49,7 @@ public class NormaliseGeneralised extends NormaliseNets {
 				subgraph.add(root);
 			}
 		}
-		super.normalise(codec, graph);
+		super.normalise(graph);
 	}
 
 }

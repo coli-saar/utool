@@ -8,11 +8,12 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
 
 public class NormaliseNets implements Normaliser {
 
-	public void normalise(MrsCodec codec, DomGraph graph)
+	public void normalise(DomGraph graph)
 		throws MalformedDomgraphException 
 	{
 		for (String root : graph.getAllRoots()) {
@@ -52,7 +53,7 @@ public class NormaliseNets implements Normaliser {
 				if (holes.size() == 1) {
 					for (Edge edge : edges) {
 						for (String hole : holes) {
-							codec.addDomEdge(hole, (String) edge.getTarget());
+							graph.addEdge(hole, (String) edge.getTarget(), new EdgeData(EdgeType.DOMINANCE));
 						}
 					}
 

@@ -5,7 +5,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class NormaliseNone implements Normaliser {
 
-	public void normalise(MrsCodec codec, DomGraph graph)
+	public void normalise(DomGraph graph)
 		throws MalformedDomgraphException 
 	{
 		// nop

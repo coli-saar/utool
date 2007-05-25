@@ -392,7 +392,7 @@ class MrsCodec {
 				throw new MalformedDomgraphException(errorText.toString(), errorCode);
 		}
 		*/
-		normaliser.normalise(this, graph);
+		normaliser.normalise(graph);
 	}
 	
 	boolean ignore(String attr)
