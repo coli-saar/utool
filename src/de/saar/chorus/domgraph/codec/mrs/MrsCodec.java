@@ -39,7 +39,7 @@ class MrsCodec {
 	
 	private NodeLabels labels;
 	
-	private Normalisation normalisation;
+	private Normaliser normaliser;
 	
 	private LabelStyle labelStyle;
 	
@@ -54,8 +54,19 @@ class MrsCodec {
 		this.sig = new TreeMap<String,Type>();
 		this.binder = new TreeMap<String,String>();
 		this.bound = new TreeMap<String,Set<String>>();
-		this.normalisation = normalisation;
 		this.labelStyle = labelStyle;
+		
+		switch (normalisation) {
+		case none:
+			this.normaliser = new NormaliseNone();
+			break;
+		case gnets:
+			this.normaliser = new NormaliseGeneralised();
+			break;
+		default:
+			this.normaliser = new NormaliseNets();
+		}
+		
 	}
 	
 	public void tellVariable(String name) throws MalformedDomgraphException
@@ -348,11 +359,11 @@ class MrsCodec {
 	
 	public void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
-		StringBuffer errorText = new StringBuffer();
+		// StringBuffer errorText = new StringBuffer();
 
 		addBindingEdges();
 		setTopHandle(handle);
-		
+		/*
 		switch (normalisation) {
 		case none:
 			return;
@@ -380,6 +391,8 @@ class MrsCodec {
 			if (errorCode != 0)
 				throw new MalformedDomgraphException(errorText.toString(), errorCode);
 		}
+		*/
+		normaliser.normalise(this, graph);
 	}
 	
 	boolean ignore(String attr)
