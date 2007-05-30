@@ -20,7 +20,7 @@
 	<classpathentry exported="true" kind="lib" path="packages/jsch-0.1.28.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/swing-worker.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/itext-2.0.0.jar"/>
-	<classpathentry kind="lib" path="packages/groovy-all-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="packages/groovy-all-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
