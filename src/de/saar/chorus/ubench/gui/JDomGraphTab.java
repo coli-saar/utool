@@ -151,7 +151,6 @@ public class JDomGraphTab extends JGraphTab  {
 				} else {
 					solvable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
-					graph.setLayoutType(LayoutType.JDOMGRAPH);
 				}
 				
 				statusBar = new DominanceGraphBar();
