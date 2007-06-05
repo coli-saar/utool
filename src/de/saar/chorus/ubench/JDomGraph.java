@@ -396,7 +396,7 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		computeAdjacency();
 		wccs = wccs();
-		removeRedundandEdges();
+	//	removeRedundandEdges();
 	}
 	
 	
