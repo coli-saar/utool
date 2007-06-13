@@ -158,6 +158,8 @@ public class JDomGraph extends ImprovedJGraph<NodeType,NodeData,EdgeType,EdgeDat
 		
 		// set up tooltip handling
 		ToolTipManager.sharedInstance().registerComponent(this);
+		
+		setAntiAliased(true);
 	}
 	
 	
