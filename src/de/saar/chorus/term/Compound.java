@@ -80,8 +80,13 @@ public class Compound extends Term {
         }
     }
     
+    
+    @Override
+	public int hashCode() {
+    	return toLispString().hashCode();
+	}
 
-    public boolean hasSubterm(Term other) {
+	public boolean hasSubterm(Term other) {
         if( equals(other)) {
             return true;
         } else {
