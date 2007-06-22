@@ -10,7 +10,15 @@ package de.saar.chorus.domgraph.graph;
 
 /**
  * A representation of a dominance edge, as a pair of a source and 
- * a target node.
+ * a target node.  This class is meant to be used within a representation
+ * of a solved form: A <code>SolvedFormSpec</code> contains a collection of
+ * <code>DomEdge</code>s; they are computed by a <code>SolvedFormIterator</code>;
+ * and they are then inserted into a dominance graph by using the <code>makeSolvedForm</code>
+ * method in <code>DomGraph</code>.<p>
+ * 
+ * For all other purposes, you probably don't want to use this class.
+ * Use <code>Edge</code> instead; you can get the edges of a graph through
+ * <code>getAllEdges</code.
  * 
  * @author Alexander Koller
  *
