@@ -28,6 +28,11 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * an Oz list containing a term <code>plug(x y)</code> for each
  * dominance edge (x,y) in the solved form.<p>
  * 
+ * Notice that even if the dominance graph was obtained by applying a node
+ * substitution to the original graph, this output codec will not represent
+ * this substitution in its output.  It is meant to output graphs in solved
+ * form and with the empty substitution.<p> 
+ * 
  * An example output looks as follows:<br/>
  * {@code [plug(x y) plug(u v)]}
  * 

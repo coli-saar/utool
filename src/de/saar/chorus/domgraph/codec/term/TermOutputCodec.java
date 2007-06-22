@@ -39,8 +39,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * 
  * This codec can be used to compute terms both in Oz and in Prolog syntax.
  * The difference between these two concrete syntaxes is that Prolog inserts
- * a comma between subterms, whereas Oz uses whitespace for the same purpose.
- *  
+ * a comma between subterms, whereas Oz uses whitespace for the same purpose.<p>
  *  
  * @author Alexander Koller
  *

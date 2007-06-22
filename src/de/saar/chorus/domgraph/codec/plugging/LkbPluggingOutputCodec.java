@@ -29,6 +29,11 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * for the MRS solver that is built into LKB if you use the mrs-prolog input
  * codec and this output codec.<p>
  * 
+ * Notice that even if the dominance graph was obtained by applying a node
+ * substitution to the original graph, this output codec will not represent
+ * this substitution in its output.  It is meant to output graphs in solved
+ * form and with the empty substitution.<p> 
+ * 
  * An example output looks as follows:<br/>
  * {@code ((x x y) (y x y) (u u v) (v u v))}
  * 
