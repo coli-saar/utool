@@ -4,7 +4,7 @@
  */
 package de.saar.chorus.ubench;
 
-import de.saar.chorus.jgraph.IEdgeData;
+import de.saar.chorus.jgraph.improvedjgraph.IEdgeData;
 
 /**
  * The data that can be stored in the edge of a dominance graph -- namely,

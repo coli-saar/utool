@@ -19,7 +19,6 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
@@ -142,12 +141,10 @@ public class ChartViewerListener implements ActionListener {
 			firstForm = firstForm.makeSolvedForm(spec);
 			NodeLabels labels = viewer.getLabels().makeSolvedForm(spec);
 			
-			DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
-			JDomGraph domSolvedForm = conv.getJDomGraph();
 			
-			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
+			JSolvedFormTab sFTab = new JSolvedFormTab(new JDomGraph(), 
 					viewer.getTitle()  + "  SF #1", 
-					sfi, (DomGraph) viewer.getDg(),
+					sfi, (DomGraph) viewer.getDg(), firstForm,
 					1, chart.countSolvedForms().longValue(), 
 					viewer.getTitle(), 
 					Ubench.getInstance().getListener(), 

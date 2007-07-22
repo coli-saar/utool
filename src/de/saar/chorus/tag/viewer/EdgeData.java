@@ -7,7 +7,7 @@
 
 package de.saar.chorus.tag.viewer;
 
-import de.saar.chorus.jgraph.IEdgeData;
+import de.saar.chorus.jgraph.improvedjgraph.IEdgeData;
 
 public class EdgeData implements IEdgeData<Object> {
     

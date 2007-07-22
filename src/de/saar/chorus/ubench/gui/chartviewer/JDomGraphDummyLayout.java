@@ -28,7 +28,7 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 
 	private JDomGraph graph;
 	
-	JDomGraphDummyLayout(JDomGraph jdg) {
+	public JDomGraphDummyLayout(JDomGraph jdg) {
 		graph = jdg;
 	}
 	
@@ -64,30 +64,33 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 	 */
 	private void placeNodes() {
 		//the view map to save all the node's positions.
-		Map<DefaultGraphCell,AttributeMap> viewMap = new 
-		HashMap<DefaultGraphCell,AttributeMap>();
-		
-		DefaultGraphCell node = graph.getNodes().iterator().next();
+
+		if(! graph.getNodes().isEmpty()) {
+			Map<DefaultGraphCell,AttributeMap> viewMap = new 
+			HashMap<DefaultGraphCell,AttributeMap>();
+
+			DefaultGraphCell node = graph.getNodes().iterator().next();
 
 			int x = (int) graph.getCellBounds(node).getMinX() + 1;
 			int y = (int) graph.getCellBounds(node).getMinY() + 1 ;
-			
-			placeNodeAt(node, x, y, viewMap);
-	
-		graph.getGraphLayoutCache().edit(viewMap, null, null, null);
-		
-		
-			 x --;
-			 y --;
-			
+
 			placeNodeAt(node, x, y, viewMap);
 
-		graph.getGraphLayoutCache().edit(viewMap, null, null, null);
+			graph.getGraphLayoutCache().edit(viewMap, null, null, null);
+
+
+			x --;
+			y --;
+
+			placeNodeAt(node, x, y, viewMap);
+
+			graph.getGraphLayoutCache().edit(viewMap, null, null, null);
+		}
 	}
-	
+
 	
 	public void run(JGraph jgraph, Object[] cells, int step) {
-		
+		if(! graph.getNodes().isEmpty())
 		placeNodes();
 	}
 

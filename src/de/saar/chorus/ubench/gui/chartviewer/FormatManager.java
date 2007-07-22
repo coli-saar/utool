@@ -16,10 +16,9 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.ubench.EdgeType;
-import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.NodeType;
 
 /**
  * This is a class providing methods to mark Splits and Subgraphs
@@ -99,9 +98,9 @@ public class FormatManager {
 	private static void markEdge(DefaultEdge edge, Color color, JDomGraph graph,
 			float width) {
 		GraphConstants
-		.setLineColor(graph.getModel().getAttributes(edge), color);
+			.setLineColor(graph.getModel().getAttributes(edge), color);
 		GraphConstants
-		.setLineWidth(graph.getModel().getAttributes(edge), width);
+			.setLineWidth(graph.getModel().getAttributes(edge), width);
 	}
 	
 	/**
@@ -174,10 +173,10 @@ public class FormatManager {
 	 * @param graph	the graph
 	 * @param subgraphindex the index indicating which color index to use
 	 */
-	public static void markSubgraph(Set<String> roots, JDomGraph graph, int subgraphindex) {
+	public static void markSubgraph(Set<String> roots, JDomGraph graph, int subgraphindex, DomGraph dg) {
 		int color = subgraphindex % subgraphcolors.length;
 		
-		markSubgraph(roots, subgraphcolors[color], graph, false);
+		markSubgraph(roots, subgraphcolors[color], graph, false, dg);
 	}
 	
 	/**
@@ -187,10 +186,10 @@ public class FormatManager {
 	 * @param roots
 	 * @param graph
 	 */
-	public static void markSubgraph(Set<String> roots, JDomGraph graph) {
+	public static void markSubgraph(Set<String> roots, JDomGraph graph, DomGraph dg) {
 		
 		markSubgraph(roots, subgraphcolors[subgraphcolorindex],
-				graph, true);
+				graph,true, dg);
 		
 		refreshGraphLayout(graph);
 		
@@ -297,50 +296,35 @@ public class FormatManager {
 	 * @param shadeRemaining if set to true the remaining graph is colored grey.
 	 */
 	private static void markSubgraph(Set<String> roots, Color color, 
-			JDomGraph graph, boolean shadeRemaining) {
+			JDomGraph graph, boolean shadeRemaining, DomGraph dg) {
 		
 		if(shadeRemaining) {
 			shadeGraph(graph);
 			
 		}
 		
-		Set<Fragment> toMark = new HashSet<Fragment>();
+		Set<String> toMark = new HashSet<String>();
 		for (String otherNode : roots) {
-			
-			DefaultGraphCell gc = graph.getNodeForName(otherNode);
-			if (graph.getNodeData(gc).getType() != NodeType.unlabelled) {
-				Fragment frag = graph.findFragment(gc);
-				toMark.add(frag);
+			Set<String> fragment = dg.getFragment(otherNode);
+			if (dg.getData(otherNode).getType() == de.saar.chorus.domgraph.graph.NodeType.LABELLED) {
+				toMark.addAll(fragment);
 			} else {
-				markNode(gc, color, graph, markedNodeFont);
+				toMark.add(otherNode);
 			}
 			
-			for (DefaultEdge edg : graph.getOutEdges(gc)) {
+
+			toMark.addAll(dg.getChildren(otherNode, de.saar.chorus.domgraph.graph.EdgeType.DOMINANCE));
 				
-				if (graph.getEdgeData(edg).getType() == EdgeType.dominance) {
-					markEdge(edg, color, graph, markedEdgeWidth);
-					Fragment tgt = graph.getTargetFragment(edg);
-					if (tgt != null) {
-						toMark.add(tgt);
-					}
-				} else {
-					markEdge(edg, color, graph, markedEdgeWidth);
-				}
-				
-			}
+			
 		}
 		
-		for (Fragment frag : toMark) {
-			for (DefaultGraphCell gc : frag.getNodes()) {
+		for ( String node : toMark) {
+			DefaultGraphCell gc = graph.getNodeForName(node);
 				markNode(gc, color, graph, markedNodeFont);
 				for (DefaultEdge edg : graph.getOutEdges(gc)) {
-					
 					markEdge(edg, color, graph, markedEdgeWidth);
-					
 				}
 			}
-			
-		}
 		
 	}
 	
@@ -389,8 +373,9 @@ public class FormatManager {
 	 * @param root the root fragment
 	 * @param graph the parent graph
 	 */
-	public static void markRootFragment(Fragment root, JDomGraph graph) {
-		for( DefaultGraphCell rfn : root.getNodes()) {
+	public static void markRootFragment(String root, JDomGraph graph, DomGraph dg) {
+		for( String node : dg.getFragment(root)) {
+			DefaultGraphCell rfn = graph.getNodeForName(node);
 			markNode(rfn, rootcolor, graph, markedNodeFont);
 			for( DefaultEdge edg : graph.getOutEdges(rfn) ) {
 				markEdge(edg, rootcolor, graph, markedEdgeWidth);

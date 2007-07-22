@@ -7,6 +7,13 @@
 
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -15,6 +22,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,12 +31,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
+
+import com.lowagie.text.DocumentException;
 
 import de.saar.basic.ExportUtilities;
 import de.saar.basic.GUIUtilities;
@@ -38,19 +53,23 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.codec.CodecManager;
+import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
+import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutOptions;
+import de.saar.chorus.domgraph.layout.PDFCanvas;
+import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
-import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.ServerOptions;
-import de.saar.chorus.ubench.gui.Preferences.LabelType;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
@@ -138,7 +157,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		/* Handling the known actions by identifying their command */
 		
-		 if( command.equals("preferences") ) {
+		 if(command.equals("newTab") ) {
+			 Ubench.getInstance().addNewTab(
+					 new JDomGraph(), "New Graph", new DomGraph(), true, true, new NodeLabels());
+			 
+		 } else if( command.equals("preferences") ) {
 			// show settings (so far only server settings)
 			Ubench.getInstance().setPreferenceDialogVisible(true);
 		}  else if(command.equals("loadeqs")){
@@ -213,17 +236,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 							// JDomGraph
 							DomGraph theDomGraph = new DomGraph();
 							NodeLabels labels = new NodeLabels();
-							JDomGraph graph = Ubench.getInstance().genericLoadGraph(file.getAbsolutePath(), 
-									theDomGraph, labels, fc.getCodecOptions());
-							
-							
-							if( graph != null ) {
+							if(Ubench.getInstance().genericLoadGraph(file.getAbsolutePath(), 
+									theDomGraph, labels, fc.getCodecOptions()) ) {
 								
 								//	DomGraphTConverter conv = new DomGraphTConverter(graph);
 								
 								// setting up a new graph tab.
 								// the graph is painted and shown at once.
-								Ubench.getInstance().addNewTab(graph, file.getName(), theDomGraph, true, true, labels);
+								Ubench.getInstance().addNewTab(new JDomGraph(), file.getName(), theDomGraph, true, true, labels);
 							}
 						}
 					}.start();
@@ -310,6 +330,49 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					// closing the window
 					Ubench.getInstance().quit();
+					
+				} else if( command.startsWith("export-clipboard-")) {
+					String codecname = command.substring(17);
+					OutputCodec codec = Ubench.getInstance().getCodecManager().getOutputCodecForName(codecname, "");
+					StringWriter buf = new StringWriter();
+					
+					try {
+						codec.print_header(buf);
+						codec.encode(Ubench.getInstance().getVisibleTab().getDomGraph(),
+								Ubench.getInstance().getVisibleTab().getNodeLabels(),
+								buf);
+						codec.print_footer(buf);
+						
+						new MyClipboardOwner().setClipboardContents(buf.toString());
+					} catch (IOException e1) {
+						// highly unlikely unless the StringWriter ran out of memory or something
+						JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+								"An error occurred while writing into an internal buffer.",
+								"Error during output",
+								JOptionPane.ERROR_MESSAGE);
+					} catch (MalformedDomgraphException e1) {
+						JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+								"The output codec doesn't support output of this graph:\n" + e1,
+								"Error during output",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					
+				} else if( command.startsWith("import-clipboard-")) {
+					final String codecname = command.substring(17);
+					String clip = new MyClipboardOwner().getClipboardContents();
+					final StringReader reader = new StringReader(clip);
+					
+					
+					new Thread(){
+						public void run() {
+							DomGraph graph = new DomGraph();
+							NodeLabels labels = new NodeLabels();
+
+							if( Ubench.getInstance().genericLoadGraph(reader, codecname, graph, labels, null) ) {
+								Ubench.getInstance().addNewTab(new JDomGraph(), "(from clipboard)", graph, true, true, labels);
+							}
+						}
+					}.start();
 				} else if ( command.equals("dup")) {
 					
 					// duplicating the visible graph
@@ -798,8 +861,22 @@ ItemListener, ConnectionManager.StateChangeListener {
 									
 									try {
 										// the actual PDF-printing
-										ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), filepath);
+										PDFCanvas canv = new PDFCanvas(filepath);
+										LayoutAlgorithm al = Ubench.getInstance().getVisibleTab()
+																.getLayoutType().getLayout();
+										al.layout(Ubench.getInstance().getVisibleTab().getDomGraph(),
+												Ubench.getInstance().getVisibleTab().getNodeLabels(), canv, 
+												new LayoutOptions(Ubench.getInstance().getVisibleTab().getLabelType(), 
+														Preferences.isRemoveRedundandEdges()));
+										canv.finish();
+										
+										//ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), filepath);
 									} catch (IOException io) {
+										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+												"The output file can't be opened.",
+												"Error from PDF printer",
+												JOptionPane.ERROR_MESSAGE);
+									} catch(DocumentException de) {
 										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 												"The output file can't be opened.",
 												"Error from PDF printer",
@@ -833,18 +910,12 @@ ItemListener, ConnectionManager.StateChangeListener {
 			if(e.getStateChange() == ItemEvent.SELECTED ) {
 				String selectedItem = ((JMenuItem) e.getSource()).getText();
 				
-				System.err.println(selectedItem);
 				if(selectedItem.equals("JDomGraph Layout")) {
 
 					
 					if(Ubench.getInstance().getVisibleTab() != null) {
 						Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.JDOMGRAPH);
 					}
-
-				} else if ( selectedItem.equals("Sugiyama Layout") ) {
-						if(Ubench.getInstance().getVisibleTab() != null) {
-							Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.SUGIYAMA);
-						}
 
 				}  else if ( selectedItem.equals("Chart Layout") ) {
 						if(Ubench.getInstance().getVisibleTab() != null) {
@@ -1121,14 +1192,11 @@ ItemListener, ConnectionManager.StateChangeListener {
 		//ImprovedJGraphAdapter.convert(nextForm, fac, domSolvedForm);
 		
 		
-		DomGraphTConverter conv = new DomGraphTConverter(nextForm, labels);
-		JDomGraph domSolvedForm = conv.getJDomGraph();
-		
 		
 		// setting up the new tab
-		JSolvedFormTab solvedFormTab = new JSolvedFormTab(domSolvedForm, 
+		JSolvedFormTab solvedFormTab = new JSolvedFormTab(new JDomGraph(), 
 				Ubench.getInstance().getVisibleTab().getGraphName()  + "  SF #" + no, solver,
-				Ubench.getInstance().getVisibleTab().getDomGraph(),
+				Ubench.getInstance().getVisibleTab().getDomGraph(), nextForm,
 				no, Ubench.getInstance().getVisibleTab().getSolvedForms(), 
 				Ubench.getInstance().getVisibleTab().getGraphName(), 
 				Ubench.getInstance().getListener(), 
@@ -1165,4 +1233,53 @@ ItemListener, ConnectionManager.StateChangeListener {
 	}
 	
 	
+	// Code adapted from http://www.javapractices.com/Topic82.cjp
+	private static class MyClipboardOwner implements ClipboardOwner {
+
+		public void lostOwnership(Clipboard arg0, Transferable arg1) {
+			// do nothing
+		}
+		
+		/**
+		  * Place a String on the clipboard, and make this class the
+		  * owner of the Clipboard's contents.
+		  */
+		  public void setClipboardContents( String aString ){
+		    StringSelection stringSelection = new StringSelection( aString );
+		    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		    clipboard.setContents( stringSelection, this );
+		  }
+
+		  /**
+		  * Get the String residing on the clipboard.
+		  *
+		  * @return any text found on the Clipboard; if none found, return an
+		  * empty String.
+		  */
+		  public String getClipboardContents() {
+		    String result = "";
+		    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		    //odd: the Object param of getContents is not currently used
+		    Transferable contents = clipboard.getContents(null);
+		    boolean hasTransferableText =
+		      (contents != null) &&
+		      contents.isDataFlavorSupported(DataFlavor.stringFlavor)
+		    ;
+		    if ( hasTransferableText ) {
+		      try {
+		        result = (String)contents.getTransferData(DataFlavor.stringFlavor);
+		      }
+		      catch (UnsupportedFlavorException ex){
+		        //highly unlikely since we are using a standard DataFlavor
+		        System.out.println(ex);
+		        ex.printStackTrace();
+		      }
+		      catch (IOException ex) {
+		        System.out.println(ex);
+		        ex.printStackTrace();
+		      }
+		    }
+		    return result;
+		  }
+		} 
 }

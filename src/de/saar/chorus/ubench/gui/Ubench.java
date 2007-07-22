@@ -37,7 +37,6 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.Utool;
-import de.saar.chorus.ubench.DomGraphTConverter;
 import de.saar.chorus.ubench.JDomGraph;
 
 /**
@@ -132,6 +131,12 @@ public class Ubench {
 		} catch (Exception e) {
 		}
 		
+		// MacOS-specific system properties
+		if( System.getProperty("os.name").equals("Mac OS X")) {
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Ubench");  // doesn't work -- why not?
+			System.setProperty("apple.laf.useScreenMenuBar", "true");
+		}
+		
 
         
         eqs = null;
@@ -211,6 +216,11 @@ public class Ubench {
         return tabbedPane.getWidth();
     }
     
+    void refresh(boolean resize) {
+    	useNextTabToResizeFrame = resize;
+    	refresh();
+    }
+
     /**
      * Refreshes the menu, the slider and the status bar.
      */
@@ -235,6 +245,32 @@ public class Ubench {
         }
         resetSlider();
         statusBar.refresh();
+       
+        
+          if( Preferences.isFitWindowToGraph() && useNextTabToResizeFrame ) {
+        	  
+        	  
+    			// This is the first tab we're opening; use its size to resize the Ubench window.
+    			// We try to make the window just big enough to fit the graph, but no bigger
+    			// than the screen size.
+    
+    			GraphicsEnvironment env =
+    	        	GraphicsEnvironment.getLocalGraphicsEnvironment();
+    			Rectangle bounds = env.getMaximumWindowBounds();
+    			
+    			
+    			
+    			window.pack();
+    			Dimension graphsize = window.getSize();
+    			Dimension windowsize = new Dimension(Math.min(bounds.width, graphsize.width), Math.min(bounds.height, graphsize.height));
+   
+    			window.setSize(windowsize);
+    			window.validate();
+    			useNextTabToResizeFrame = false;
+    			
+    		}
+          
+         
     }
     
     /**
@@ -248,7 +284,13 @@ public class Ubench {
             tabs.remove(index);
             
         }
+        
+        
         refresh();
+        
+        if(tabs.size() == 0) {
+        	Preferences.setFitWindowToGraph(true);
+        }
     }
     
     /**
@@ -295,7 +337,8 @@ public class Ubench {
      */
     public void addTab(JGraphTab tab, boolean showNow, int ind) {
     	
-    	System.err.println("Empty? " + tab.isEmpty());
+    	
+    	
     	if(tab != null && (! tab.isEmpty())) {
     		
     		int index;
@@ -314,6 +357,8 @@ public class Ubench {
     		}
     		
     		
+  
+    		tab.drawGraph();
     		ttm.registerComponent(tab.getGraph());
     		
     		// if it's the first tab added, the graph menus get enabled
@@ -334,37 +379,13 @@ public class Ubench {
     		// aligning with preferences...
     		
     		// fitting?
-    		if (Preferences.isFitToWindow())
+    		if (Preferences.isFitToWindow()) {
     			tab.fitGraph();
-    		
-    		// solving?
-    		if (Preferences.isAutoCount()) {
-    			
-    			statusBar.showProgressBar();
-    			
     		}
     		
-    		refresh();
     		
-    		if( useNextTabToResizeFrame  ) {
-    			// This is the first tab we're opening; use its size to resize the Ubench window.
-    			// We try to make the window just big enough to fit the graph, but no bigger
-    			// than the screen size.
-    			
-    			GraphicsEnvironment env =
-    	        	GraphicsEnvironment.getLocalGraphicsEnvironment();
-    			Rectangle bounds = env.getMaximumWindowBounds();
-    			
-    			window.pack();
-    			
-    			Dimension graphsize = window.getSize();
-    			Dimension windowsize = new Dimension(Math.min(bounds.width, graphsize.width), Math.min(bounds.height, graphsize.height));
-    			
-    			window.setSize(windowsize);
-    			window.validate();
-    			
-    			useNextTabToResizeFrame = false;
-    		}
+    	
+    	
     		
     	}
     	
@@ -445,10 +466,8 @@ public class Ubench {
      */
     public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
         
-        DomGraphTConverter conv = new DomGraphTConverter(graph, labels);
-        JDomGraph jDomGraph = conv.getJDomGraph();
-        if(jDomGraph == null)
-            return false;
+
+        JDomGraph jDomGraph = new JDomGraph();
         
         JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
                 true, listener, labels);
@@ -456,36 +475,7 @@ public class Ubench {
         return true;
     }
     
-    /**
-     * Adding a new tab to the window displaying the given
-     * <code>JDomGraph</Code>, given the index indicating
-     * where to insert it in the tab.
-     * 
-     * @param graph the graph to display
-     * @param label the name of the tab
-     * @param paintNow if set to true the graph is layoutet at once
-     * @param showNow if set to true the graph is shown immidiately
-     * @param index indicating on which place of the tab the new tab shall be inserted
-     * @return the new tab or null if anything fails
-     */
-    public JDomGraphTab addNewTab(JDomGraph graph, String label,
-            DomGraph origin, boolean paintNow, boolean showNow, int index,
-            NodeLabels labels) {
-        
-        // the new tab
-        JDomGraphTab tab = new JDomGraphTab(graph, origin, normaliseTabLabel(label),
-                paintNow, listener, labels);
-        if (tab.getGraph() != null && (! tab.isEmpty())) {
-            
-            // tab sucessfully created
-            addTab(tab, showNow, index);
-            return tab;
-        } else {
-            // something went wrong (the tab contains no graph)
-            return null;
-        }
-        
-    }
+    
     
     /**
      * @return the <code>JDomGraph</code> currently displayed
@@ -512,7 +502,7 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public JDomGraph genericLoadGraph(Reader reader, String codec, 
+    public boolean genericLoadGraph(Reader reader, String codec, 
     		DomGraph graph, NodeLabels nl, Map<String, String> options) {
     	InputCodec inputCodec;
     	if(options != null ) {
@@ -532,7 +522,7 @@ public class Ubench {
                         "The specified file doesn't exist or cannot be opened.",
                         "Error during import", JOptionPane.ERROR_MESSAGE);
                 //e.printStackTrace();
-                return null;
+                return false;
             } catch (ParserException pe) {
                 JOptionPane
                 .showMessageDialog(
@@ -541,7 +531,7 @@ public class Ubench {
                         + pe,
                         "Error during import", JOptionPane.ERROR_MESSAGE);
                 
-                return null;
+                return false;
             } catch (MalformedDomgraphException me) {
                 JOptionPane
                 .showMessageDialog(
@@ -550,7 +540,7 @@ public class Ubench {
                         me,
                         "Error during import", JOptionPane.ERROR_MESSAGE);
                 
-                return null;
+                return false;
             }
         } else {
             JOptionPane
@@ -559,11 +549,11 @@ public class Ubench {
                     "The filename extension of this file is not associated with any known input codec.",
                     "Error during import", JOptionPane.ERROR_MESSAGE);
             
-            return null;
+            return false;
         }
         
-        DomGraphTConverter conv = new DomGraphTConverter(graph, nl);
-        return conv.getJDomGraph();
+        
+        return true;
     }
     
 
@@ -579,7 +569,7 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public JDomGraph genericLoadGraph(String filename, DomGraph graph, 
+    public boolean genericLoadGraph(String filename, DomGraph graph, 
     		NodeLabels nl, Map<String,String> options) {
         try {
             return genericLoadGraph(new InputStreamReader(new FileInputStream(filename)),
@@ -591,7 +581,7 @@ public class Ubench {
                     window,
                     "The specified file doesn't exist or cannot be opened.",
                     "Error during import", JOptionPane.ERROR_MESSAGE);
-            return null;
+            return false;
         }
     }
     
@@ -713,7 +703,6 @@ public class Ubench {
         window = makeWindow();
         window.setLayout(layout);
         
-        
         listener = new CommandListener();
         tabbedPane = new JDomTabbedPane(listener);
         menuBar = new JDomGraphMenu(listener);
@@ -759,12 +748,12 @@ public class Ubench {
         window.setFocusable(true);
         window.setVisible(true);
         
-        useNextTabToResizeFrame = true;
+        useNextTabToResizeFrame = false;
         window.pack();
         
         // start the window at a default window size that's not totally empty
         // (it will be resized once the first tab is opened)
-        window.setSize(300,200);
+        window.setSize( new Dimension(300,200) );
         
         window.validate();
         settings = new JDomGraphPreferencePane();

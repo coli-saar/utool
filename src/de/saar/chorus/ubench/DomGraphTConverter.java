@@ -31,9 +31,9 @@ public class DomGraphTConverter {
 		domGraph = graph;
 		
 		// create a new JDomGraph
-		jDomGraph = new JDomGraph(graph);
+		//jDomGraph = new JDomGraph(graph);
 		
-		
+		jDomGraph = new JDomGraph();
 		// insert all the nodes of the DomGraph
 		for(String node : domGraph.getAllNodes() ) {
 			NodeData cloneData;

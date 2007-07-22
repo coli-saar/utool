@@ -1,6 +1,5 @@
 package de.saar.chorus.ubench.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -8,19 +7,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -30,7 +24,9 @@ import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.DomGraphTConverter;
+import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
+import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutOptions;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
@@ -48,8 +44,8 @@ import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
  *
  */
 public class JDomGraphTab extends JGraphTab  {
-	
-	
+
+
 	/**
 	 * 
 	 */
@@ -57,7 +53,7 @@ public class JDomGraphTab extends JGraphTab  {
 	// graph information concerning solving and identity
 	boolean solvable, isSolvedYet; 
 	private Chart chart;
-	
+
 	/**
 	 * Constructor to set up a tab with a dominance graph.
 	 * The graph is solved if necessary.
@@ -68,71 +64,106 @@ public class JDomGraphTab extends JGraphTab  {
 	 */
 	public JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
 			boolean paintNow, CommandListener lis, NodeLabels labels) {
-		
+
 		super(theGraph, origin, name, lis, labels);
+		// initializing
+		graphName = name;
+
+		solvable = true;
+		solvedForms = -1;
+		setBackground(Color.WHITE);
+
+		if(Preferences.isAutoCount()) {
+			Ubench.getInstance().showProgressBar();
+			solve();
+		} 
 		
+		if( Preferences.getInstance().getLayoutType().isApplicable(this) ) {
+			setLayoutType(Preferences.getInstance().getLayoutType());
+		} else {
+			setLayoutType(LayoutType.JDOMGRAPH);
+		}
+		
+		statusBar = new DominanceGraphBar();
+		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
+		setMinimumSize(statusBar.getMinimumSize());
+		
+		theGraph.setMarqueeHandler(new DomgraphMarqueeHandler(this, origin, labels));
+	}
+
+	/**
+	 * Destructively changes the dominance graph underlying this JDomGraphTab.
+	 * This method updates the graph display, re-solves the graph, and updates
+	 * the status bar as necessary. 
+	 * 
+	 * @param domgraph
+	 * @param labels
+	 */
+	public void setDominanceGraph(DomGraph domgraph, NodeLabels labels) {
+		this.domGraph = domgraph;
+		this.nodeLabels = labels;
+		isSolvedYet = false;
+
+		if(Preferences.isAutoCount()) {
+			Ubench.getInstance().showProgressBar();
+			solve();
+		} 
+		
+		statusBar = new DominanceGraphBar();
+		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 		
 
-			
-			// initializing
-			graphName = name;
-			
-			
-			
-			
-			solvable = true;
-			solvedForms = -1;
-			setBackground(Color.WHITE);
-			
-			if(Preferences.isAutoCount()) {
-					solve();
-			} 
-			try {
-				
-				// graph layout
-				// graph = theGraph;
-				
-				// comute fragments 
-				graph.computeFragments();
-				
-				// if it should be painted directly, the 
-				// graph is layoutet.
-				if(paintNow) {
-					JFrame f = new JFrame("JGraph Test");
-					f.add(graph);
-					f.pack();
-					repaintIfNecessary();
-				}
-				
-				// add(graph);
-				scrollpane = new JScrollPane(graph);
-				add(scrollpane, BorderLayout.CENTER);
-				
-				// error message if layout fails
-			} catch (Exception e) {
-				empty = true;
-				
-				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-						"An error occurred while laying out this graph.\n"
-						+ "Probably the graph is constructed in a very strange way,\n"
-						+ "so Ubench unfortunately cannot display it.",
-						"Error during layout",
-						JOptionPane.ERROR_MESSAGE);
-				e.printStackTrace();
-				Ubench.getInstance().refresh();
-				return;
-				
-			}
-			
-			statusBar = new DominanceGraphBar();
-			barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
-			graph.revalidate();
-			revalidate();
-			setMinimumSize(statusBar.getMinimumSize());
-	
-		
+		cv = null;
+		//graph.clear();
+		drawGraph();
+		Ubench.getInstance().refresh();
 	}
 	
+	void drawGraph() {
+		
+		if(! domGraph.getAllNodes().isEmpty()) {
+		try {
+			SwingUtilities.invokeLater(new Thread() {
+				public void run() {
+					
+					
+					
+					JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
+					LayoutAlgorithm drawer = graph.getLayoutType().getLayout();
+					drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), 
+							Preferences.isRemoveRedundandEdges()));
+					canvas.finish();
+					
+					Ubench.getInstance().refresh(true);
+					Preferences.setFitWindowToGraph(false);
+				
+				}
+			})
+
+			;
+
+			// error message if layout fails
+		} catch (Exception e) {
+			//TODO find another way to notify Ubench about an empty tab
+			empty = true;
+
+			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+					"An error occurred while laying out this graph.\n"
+					+ "Probably the graph is constructed in a very strange way,\n"
+					+ "so Ubench unfortunately cannot display it.",
+					"Error during layout",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			Ubench.getInstance().refresh();
+			return;
+
+		}
+
+		//validate();
+		revalidate();
+		}
+	}
+
 	/**
 	 * Solve this tab's graph if it isn't solved yet.
 	 *
@@ -140,90 +171,96 @@ public class JDomGraphTab extends JGraphTab  {
 	public void solve() {
 		if( ! isSolvedYet ) {
 			try {
-				
+
 				chart = new Chart();
-				
+
 				if(ChartSolver.solve(domGraph, chart))  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);
-					graph.setChart(chart);
+					
+
 				} else {
 					solvable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
 				}
-				
+
 				statusBar = new DominanceGraphBar();
 				barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 			} catch( OutOfMemoryError e ) {
 				chart = null;
 				isSolvedYet = false;
-				
+
 				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 						"The solver ran out of memory while solving this graph. "
 						+ "Try increasing the heap size with the -Xmx option.",
 						"Out of memory",
 						JOptionPane.ERROR_MESSAGE);
+			} catch( Exception e ) {
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"An error occurred while solving this graph.\n",
+						"Dolver Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
 	 * @return true if the graph is solvable
 	 */
 	public boolean isSolvable() {
 		return solvable;
 	}
-	
-	
+
+
 	/**
 	 * @param solvable The solvable to set.
 	 */
 	public void setSolvable(boolean solvable) {
 		this.solvable = solvable;
 	}
-	
-	
+
+
 	/**
 	 * @return true if the graph has been solved yet.
 	 */
 	public boolean isSolvedYet() {
 		return isSolvedYet;
 	}
-	
+
 	/**
 	 * @param isSolvedYet The isSolvedYet to set.
 	 */
 	public void setSolvedYet(boolean isSolvedYet) {
 		this.isSolvedYet = isSolvedYet;
 	}
-	
+
 	public void displayChart() {
-		
+
 		Cursor waitcursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-		
+
 		changeCursorGlobally(waitcursor);
-		
+
 		if(cv == null ) {
-		 if(!isSolvedYet) {
-			 isSolvedYet = true;
+			if(!isSolvedYet) {
+				isSolvedYet = true;
 				chart = new Chart();
 				ChartSolver.solve(domGraph, chart);
-		 }
-			
+			}
+
 			cv = new ChartViewer( chart, 
 					domGraph, defaultName, graph, nodeLabels);
 		} else {
 			ChartViewer temp = new ChartViewer( chart, 
 					domGraph, defaultName, graph, nodeLabels);
 		}
-		
+
 		changeCursorGlobally(Cursor.getDefaultCursor());
 	}
-	
+
 	/**
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
@@ -233,21 +270,22 @@ public class JDomGraphTab extends JGraphTab  {
 				|| Preferences.mustUpdateLayout(recentLayout)) {
 			System.err.println("Updating: Layout changes to " + 
 					Preferences.getInstance().getLayoutType());
-			
-			
+
+
 			if(isSolvedYet || Preferences.getInstance().getLayoutType() != LayoutType.CHARTLAYOUT) {
-				graph.setLayoutType(Preferences.getInstance().getLayoutType());
+				setLayoutType(Preferences.getInstance().getLayoutType());
 			} else {
-				graph.setLayoutType(LayoutType.JDOMGRAPH);
+				setLayoutType(LayoutType.JDOMGRAPH);
 			}
-			
-			graph.setLabeltype(Preferences.getInstance().getLabelType());
+			graph.clear();
+			drawGraph();
 			updateRecentLayout();
+			validate();
 		}
 	}
 
-	
-	
+
+
 	/**
 	 * A <code>JPanel</code> representing a status bar for 
 	 * a dominance graph, to be inserted into the <code>CardLayout</code>
@@ -263,20 +301,20 @@ public class JDomGraphTab extends JGraphTab  {
 		private static final long serialVersionUID = 1L;
 		private JPanel classified; // the panel for the classify symbols
 		private JButton solve; 	// for solving 
-		
+
 		// the text labels
 		private JLabel 	numberOfForms, 	// indicates how many solved forms there are
 		norm, 		  	// indicates normality (graphs)
 		hn, 			// indicates hypernormality (graphs)
 		ll; 		 	// indicates leaf labeling (graphs)
-		
-		
+
+
 		private Set<JLabel> classifyLabels;
-		
-		
+
+
 		private GridBagLayout layout = new GridBagLayout();
-		
-		
+
+
 		/**
 		 * Sets up a new <code>DominanceGraphBar</code> by
 		 * initalizing the fields and doing the layout.
@@ -285,68 +323,68 @@ public class JDomGraphTab extends JGraphTab  {
 		private DominanceGraphBar() {
 			super(); 
 			setLayout(layout);
-			
-//			 solve button
+
+//			solve button
 			solve = new JButton("SOLVE");
 			solve.setActionCommand("solve");
 			solve.addActionListener(listener);
 			solve.setPreferredSize(new Dimension(80,25));
-			
+
 			GridBagConstraints solveConstraints = new GridBagConstraints();
 			solveConstraints.weightx = 0;
 			solveConstraints.weighty = 0;
 			solveConstraints.anchor = GridBagConstraints.WEST;
 			solveConstraints.insets = new Insets(0,10,0,10);
-			
+
 			layout.setConstraints(solve, solveConstraints);
 			add(solve);
-			
-			
-			
-			if(! solvable) {
+
+
+
+			if( ! (solvable && solvedForms > 0) ) {
 				solve.setEnabled(false);
 			}
-			
+
 			numberOfForms = new JLabel("", SwingConstants.LEFT);
-			
+
 			GridBagConstraints nofConstraint = new GridBagConstraints();
 			nofConstraint.fill = GridBagConstraints.HORIZONTAL;
-			
-					
+
+
 			if( isSolvedYet ) {
-				if(solvedForms > 1 ) {
+				if(solvedForms != 1 ) {
 					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved forms.");
 				} else {
 					numberOfForms.setText("This graph has " + String.valueOf(solvedForms) + " solved form.");
 				}
 			} else {
-				
-					if(solvable) {
-						numberOfForms.setText("This graph has an unknown number of solved forms."); 
-					} else {
-						numberOfForms.setText("This graph is unsolvable."); 
-					}
-				
+
+				if(solvable) {
+					numberOfForms.setText("This graph has an unknown number of solved forms."); 
+				} else {
+					numberOfForms.setText("This graph is unsolvable."); 
+				}
+
 			}
-			
-	
+
+
 			nofConstraint.weightx = 1.0;
 			nofConstraint.weighty = 1.0;
 			nofConstraint.anchor = GridBagConstraints.CENTER;
-		
-			
+
+
 			layout.setConstraints(numberOfForms, nofConstraint);
 			add(numberOfForms);
-			
+
 			/*
 			 * Every label is set up with its "standard" character
 			 * and the tooltip-text gets a new position (above the
 			 * symbol itself).
 			 */
-			
+
 			classified = new JPanel();
 			classifyLabels = new HashSet<JLabel>();
-			
+
 			ll = new JLabel("L") {
 				/**
 				 * 
@@ -354,7 +392,7 @@ public class JDomGraphTab extends JGraphTab  {
 				private static final long serialVersionUID = 1L;
 
 				public Point getToolTipLocation(MouseEvent e) {
-					
+
 					Point p1 = ll.getLocation();
 					Point toReturn = new Point(p1.x, p1.y-25);
 					return toReturn;
@@ -362,7 +400,7 @@ public class JDomGraphTab extends JGraphTab  {
 			};
 			ll.setForeground(Color.RED);
 			classifyLabels.add(ll);
-			
+
 			hn = new JLabel("H") {
 				/**
 				 * 
@@ -377,7 +415,7 @@ public class JDomGraphTab extends JGraphTab  {
 			};
 			hn.setForeground(Color.RED);
 			classifyLabels.add(hn);
-			
+
 			norm = new JLabel("N") {
 				/**
 				 * 
@@ -392,15 +430,15 @@ public class JDomGraphTab extends JGraphTab  {
 			};
 			norm.setForeground(Color.RED);
 			classifyLabels.add(norm);
-			
-			
-			
-			
-			
+
+
+
+
+
 			if(domGraph.isNormal()) {
 				norm.setText("N");
 				norm.setToolTipText("Normal");
-				
+
 			} else if (domGraph.isWeaklyNormal()) {
 				norm.setText("n");
 				norm.setToolTipText("Weakly Normal");
@@ -408,9 +446,9 @@ public class JDomGraphTab extends JGraphTab  {
 				norm.setText("-");
 				norm.setToolTipText("Not Normal");
 			}
-			
-		
-			
+
+
+
 			if(domGraph.isHypernormallyConnected()) {
 				hn.setText("H");
 				hn.setToolTipText("Hypernormally Connected");
@@ -418,7 +456,7 @@ public class JDomGraphTab extends JGraphTab  {
 				hn.setText("-");
 				hn.setToolTipText("Not Hypernormally Connected");
 			}
-			
+
 			if(domGraph.isLeafLabelled()) {
 				ll.setText("L");
 				ll.setToolTipText("Leaf-Labelled");
@@ -426,41 +464,41 @@ public class JDomGraphTab extends JGraphTab  {
 				ll.setText("-");
 				ll.setToolTipText("Not Leaf-Labelled");
 			}
-			
+
 			classified.setAlignmentY(SwingConstants.HORIZONTAL);
 			classified.add(new JLabel("Classify: "));
 			classified.add(norm);
-			
+
 			classified.add(ll);
 			classified.add(hn);
-			
+
 			classified.setForeground(Color.RED);
 			classified.setAlignmentX(SwingConstants.LEFT);
-			
+
 			GridBagConstraints classConstraints = new GridBagConstraints();
 			classConstraints.anchor = GridBagConstraints.EAST;
 			classConstraints.weightx = 0;
 			classConstraints.weighty = 0;
-			
-			
+
+
 			layout.setConstraints(classified,classConstraints);
 			add(classified);
-			
-	
-			
+
+
+
 		}
 	}
-	
-	
-	
+
+
+
 	private void changeCursorGlobally(Cursor cursor) {
 		SwingUtilities.getRoot(this).setCursor(cursor);
 		graph.setCursor(cursor);
 		statusBar.setCursor(cursor);
 		Ubench.getInstance().getWindow().setCursor(cursor);
 	}
-	
-	
+
+
 	/**
 	 * Returns a <code>JGraphTab</code> identic to this one
 	 * but containing clones of the <code>DomGraph</code> and the 
@@ -469,13 +507,13 @@ public class JDomGraphTab extends JGraphTab  {
 	public JGraphTab clone() {
 		JDomGraph jdomCl = graph.clone();
 		DomGraph domCl = (DomGraph) domGraph.clone();
-		
+
 		JDomGraphTab myClone = new JDomGraphTab(jdomCl, domCl,
 				defaultName,true, listener, nodeLabels);
-		
+
 		return myClone;
 	}
-	
+
 	/**
 	 * Creates a tab displaying the first solved form
 	 * of this dominance graph.
@@ -483,46 +521,43 @@ public class JDomGraphTab extends JGraphTab  {
 	 * @return the complete tab with the first solved form.
 	 */
 	public JSolvedFormTab createFirstSolvedForm() {
-		
+
 		// solve if not solved yet
 		if(! isSolvedYet ) {
 			solve();
 		}
-		
+
 		if( isSolvedYet ) {
-			
+
 			// setting up the first solved form:
 			solvedFormIterator = new SolvedFormIterator(chart,domGraph);
 			SolvedFormSpec spec = solvedFormIterator.next();
 			DomGraph firstForm = domGraph.makeSolvedForm(spec);
 			NodeLabels labels = nodeLabels.makeSolvedForm(spec);
-			
-			// converting the graph into a JDomGraph
-			DomGraphTConverter conv = new DomGraphTConverter(firstForm, labels);
-			JDomGraph domSolvedForm = conv.getJDomGraph();
-			
+
+
 			// setting up the tab
-			JSolvedFormTab sFTab = new JSolvedFormTab(domSolvedForm, 
+			JSolvedFormTab sFTab = new JSolvedFormTab(new JDomGraph(), 
 					defaultName  + "  SF #1", 
-					solvedFormIterator, domGraph,
+					solvedFormIterator, domGraph, firstForm,
 					1, solvedForms, 
 					graphName, 
 					listener, labels);
-			
+
 			return sFTab;
 		} else {
 			return null;
 		}
-		
-		
-		
+
+
+
 	}
 
 	public Chart getChart() {
 		return chart;
 	}
 
-	
-	
-	
+
+
+
 }

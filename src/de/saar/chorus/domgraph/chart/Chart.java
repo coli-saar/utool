@@ -245,6 +245,8 @@ public class Chart implements Cloneable {
     public String toString() {
         StringBuilder ret = new StringBuilder();
         
+        ret.append("Top-level subgraphs: " + toplevelSubgraphs);
+        
         for( Set<String> fragset : chart.keySet() ) {
             for( Split split : chart.get(fragset) ) {
                 ret.append(fragset.toString() + " -> " + split + "\n");
@@ -292,7 +294,7 @@ public class Chart implements Cloneable {
      */
     public BigInteger countSolvedForms() {
         BigInteger ret = BigInteger.ONE;
-                
+        
         for( Set<String> subgraph : getToplevelSubgraphs() ) {
             ret = ret.multiply(countSolvedFormsFor(subgraph, numSolvedForms));
         }
@@ -310,7 +312,7 @@ public class Chart implements Cloneable {
         if( numSolvedForms.containsKey(subgraph) ) {
             return numSolvedForms.get(subgraph);
         } else if( !containsSplitFor(subgraph) ) {
-            // no split for subgraph => subgraph contains only one fragment
+        	// subgraph contains only one fragment => 1 solved form
         	return BigInteger.ONE;
         } else {
             for( Split split : getSplitsFor(subgraph) ) {
@@ -358,6 +360,14 @@ public class Chart implements Cloneable {
         
         return ret;
     }
+
+	public void clear() {
+		toplevelSubgraphs.clear();
+		chart.clear();
+		numSolvedForms.clear();
+		refcount.clear();
+		size = 0;
+	}
 }
 
 

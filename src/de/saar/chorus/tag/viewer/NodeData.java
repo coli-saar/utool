@@ -7,7 +7,7 @@
 
 package de.saar.chorus.tag.viewer;
 
-import de.saar.chorus.jgraph.INodeData;
+import de.saar.chorus.jgraph.improvedjgraph.INodeData;
 
 public class NodeData implements INodeData<NodeType> {
     private NodeType type;

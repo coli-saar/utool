@@ -14,7 +14,7 @@ import javax.swing.JFrame;
 
 import de.saar.chorus.XTAGLexicon.Lexicon;
 import de.saar.chorus.XTAGLexicon.Tree;
-import de.saar.chorus.jgraph.GraphScroller;
+import de.saar.chorus.jgraph.improvedjgraph.GraphScroller;
 import de.saar.getopt.ConvenientGetopt;
 import de.saar.swing.JStandardFrame;
 

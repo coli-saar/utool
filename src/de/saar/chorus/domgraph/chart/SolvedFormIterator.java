@@ -1,11 +1,8 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -54,6 +51,8 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
     // the iterator used for computing the solved forms
     private SolvedFormIterator iteratorForGet;
     
+    private boolean chartIsEmpty, returnedSfForEmptyChart;
+    
 	
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
@@ -67,25 +66,34 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
         stack = new Stack<EnumerationStackEntry>();
         solvedForms = new ArrayList<SolvedFormSpec>();
         
-        if( makeIteratorForGet ) {
-            iteratorForGet = new SolvedFormIterator(ch, graph, false);
+        if( chart.getToplevelSubgraphs().isEmpty() ) {
+        	// If the chart has no top-level subgraph, we will generate a single (empty)
+        	// solved form.  (If such a chart comes from a solvable graph, the graph must
+        	// have been empty.)
+        	chartIsEmpty = true;
+        	returnedSfForEmptyChart = false;
         } else {
-            iteratorForGet = null;
+
+        	if( makeIteratorForGet ) {
+        		iteratorForGet = new SolvedFormIterator(ch, graph, false);
+        	} else {
+        		iteratorForGet = null;
+        	}
+
+        	roots = graph.getAllRoots();
+
+
+        	for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
+        		if( (fragset.size() > 0) ) {
+        			agenda.add(new AgendaEntry(null, fragset));
+        		}
+        	}
+
+        	//Null-Element on Stack
+        	stack.push( new EnumerationStackEntry(null, new ArrayList<Split>(), null));
+
+        	updateNextSolvedForm();
         }
-        
-        roots = graph.getAllRoots();
-        
-        
-        for( Set<String> fragset : chart.getToplevelSubgraphs() ) {
-            if( (fragset.size() > 0) ) {
-                agenda.add(new AgendaEntry(null, fragset));
-            }
-        }
-        
-        //Null-Element on Stack
-        stack.push( new EnumerationStackEntry(null, new ArrayList<Split>(), null));
-        
-        updateNextSolvedForm();
     }
     
 	
@@ -259,12 +267,26 @@ public class SolvedFormIterator implements Iterator<SolvedFormSpec> {
     
     
     /**** convenience methods for implementing Iterator ****/
-    
+
+  
     public boolean hasNext() {
-    	return nextSolvedForm != null;
+    	if( chartIsEmpty ) {
+    		return !returnedSfForEmptyChart;
+    	} else {
+    		return nextSolvedForm != null;
+    	}
     }
 
     public SolvedFormSpec next() {
+    	if( chartIsEmpty ) {
+    		if( returnedSfForEmptyChart ) {
+    			return null;
+    		} else {
+    			returnedSfForEmptyChart = true;
+    			return new SolvedFormSpec();
+    		}
+    	}
+    	
     	SolvedFormSpec ret = nextSolvedForm;
     	
     	if( ret != null ) {

@@ -22,8 +22,8 @@ import de.saar.chorus.XTAGLexicon.Node;
 import de.saar.chorus.XTAGLexicon.SubstitutionNode;
 import de.saar.chorus.XTAGLexicon.TerminalNode;
 import de.saar.chorus.XTAGLexicon.Tree;
-import de.saar.chorus.jgraph.GecodeTreeLayout;
-import de.saar.chorus.jgraph.ImprovedJGraph;
+import de.saar.chorus.jgraph.improvedjgraph.ImprovedJGraph;
+import de.saar.chorus.jgraph.improvedjgraph.layout.treelayout.GecodeTreeLayout;
 
 public class JTagTree extends ImprovedJGraph<NodeType,NodeData,Object,EdgeData> {
     public JTagTree(Tree tree) {
@@ -74,7 +74,7 @@ public class JTagTree extends ImprovedJGraph<NodeType,NodeData,Object,EdgeData> 
     
     protected AttributeMap defaultNodeAttributes(NodeType type) {
         GraphModel model = getModel();
-        AttributeMap map = model.createAttributes();
+        AttributeMap map = new AttributeMap();
 
         switch(type) {
         case anchor:
@@ -107,7 +107,7 @@ public class JTagTree extends ImprovedJGraph<NodeType,NodeData,Object,EdgeData> 
     }
 
     protected AttributeMap defaultEdgeAttributes(Object type) {
-        AttributeMap solidEdge = getModel().createAttributes();
+        AttributeMap solidEdge = new AttributeMap();
         GraphConstants.setLineEnd(solidEdge, GraphConstants.ARROW_NONE);
         GraphConstants.setEndSize(solidEdge, 10);
         GraphConstants.setLineWidth(solidEdge, 1.7f);

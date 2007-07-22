@@ -86,7 +86,7 @@ abstract class DomGraphPopupTarget implements ActionListener {
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent e) {
-        parent.notifyPopupListeners(itemsToIDs.get(e.getSource()));
+       // parent.notifyPopupListeners(itemsToIDs.get(e.getSource()));
     }
 
 

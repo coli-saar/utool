@@ -7,9 +7,9 @@ package de.saar.chorus.ubench;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.saar.chorus.jgraph.INodeData;
+import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
+import de.saar.chorus.jgraph.improvedjgraph.INodeData;
 import de.saar.chorus.ubench.gui.Preferences;
-import de.saar.chorus.ubench.gui.Preferences.LabelType;
 
 
 
@@ -28,7 +28,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
     private String simplifiedLabel;
 	private String label;
 	private NodeType type;
-    private Preferences.LabelType showLabel;
+    private LabelType showLabel;
 	
 	/**
 	 * New node data for a labelled node (with label).
@@ -43,7 +43,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
         this.name = name;
 		setLabel(label);
 		this.type = type;
-        showLabel = Preferences.LabelType.LABEL;
+        showLabel = LabelType.LABEL;
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 		this.name = name;
 		this.type = type;
 		this.label = "";
-        showLabel = Preferences.LabelType.NAME;
+        showLabel = LabelType.NAME;
 	}
     
     private void setLabel(String label) {

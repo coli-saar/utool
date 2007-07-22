@@ -10,7 +10,7 @@ package de.saar.chorus.tag.viewer;
 import java.util.List;
 
 import de.saar.chorus.XTAGLexicon.Tree;
-import de.saar.chorus.jgraph.LazyGraphSource;
+import de.saar.chorus.jgraph.improvedjgraph.LazyGraphSource;
 
 public class TagTreeSource extends LazyGraphSource<JTagTree> {
     private List<Tree> trees;
