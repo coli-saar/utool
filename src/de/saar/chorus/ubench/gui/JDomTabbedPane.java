@@ -1,6 +1,9 @@
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -97,12 +100,16 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 		InputMap iMap = daughter.getInputMap();
 		ActionMap aMap = daughter.getActionMap();
 		
+		int control = 
+	        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		int shift = 
+			InputEvent.SHIFT_MASK;
 	
 		aMap.put(browse.getValue(Action.NAME), browse);
-		iMap.put(KeyStroke.getKeyStroke("ctrl LESS"), browse.getValue(Action.NAME));
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, control), browse.getValue(Action.NAME));
 
 		aMap.put(browseBack.getValue(Action.NAME), browseBack);
-		iMap.put(KeyStroke.getKeyStroke("ctrl shift LESS"), browseBack.getValue(Action.NAME));
+		iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LESS, control+shift), browseBack.getValue(Action.NAME));
 
 	}
 	

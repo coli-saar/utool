@@ -95,35 +95,19 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 				[ [[],[:]] ]);
 	}
 	
-	
-	/** test cases for the solver bug in the FG-07 submission **/
-	
-	public void testNonfreeSuperfragment() {
-		// x is a seemingly free fragment, but its super-fragment is not free
-		// because v isn't (must be below y).
-		checkSolvedForms("[label(x f(x1)) label(y g(y1)) label(v h(v1 v2)) label(z a) label(w b) dom(v x1) dom(y1 z) dom(y1 w) dom(v1 z) dom(v2 w)]",
-				[ [[["y1","x"],["v1","z"],["v2","w"]],["x1":"v"]],
-				  [[["y1","v"],["v1","z"],["v2","w"],["v","x"]],[:]] ]);
+	public void testEmptyGraph() {
+		graph.clear();
+		labels.clear();
+		
+		List goldSolvedForms = [ [[],[:]] ];
+		
+		assert ChartSolver.solve(graph, chart) == true;
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		assert solvedFormsEqual(sfs, goldSolvedForms) : "sfs = " + sfs;
 	}
-	
-	public void testNonfreeCycle() {
-		// dominance cycle between a hole and a root; this is a counterexample
-		// against requiring that sub-fragments must not have incoming dominance edges
-		checkSolvedForms("[label(x f(x1)) label(y g(y2)) dom(x1 y) dom(y x1)]",
-				[ [[],["x1":"y"]] ]);
-	}
-	
-	public void testFreeDespiteBccs() {
-		// this graph is solvable, although the (unique) super-fragment contains
-		// a fragment whose wholes are in the same bcc
-		checkSolvedForms("[label(x f(x1)) label(y g(y1 y2)) label(z1 a) label(z2 b) dom(x1 z1) dom(x1 z2) dom(y1 z1) dom(y2 z2) dom(y x1)]",
-				[ [[["y1","z1"],["y2","z2"]],["x1":"y"]] ]);
-	}
-	
-	
-	
-	
-	
 	
 	/**** utility methods ****/
 	
@@ -131,6 +115,9 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 		TestingTools.decodeDomcon(domcon, graph, labels);
 		
 		assert ChartSolver.solve(graph, chart) == true;
+		
+		BigInteger predictedSolvedForms = chart.countSolvedForms();
+		assert predictedSolvedForms.equals(new BigInteger(goldSolvedForms.size())) : "predicated " + predictedSolvedForms + " solved forms";
 		
 		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);

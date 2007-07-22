@@ -8,9 +8,9 @@ import javax.swing.JPanel;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.gui.Preferences.LabelType;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
@@ -35,7 +35,7 @@ import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 public abstract class JGraphTab extends JScrollableJGraph {
 	//	the grapb is initialized empty
 	protected JDomGraph graph;
-
+	protected LayoutType layout;
 	protected boolean empty;
 	
 	protected DomGraph domGraph;
@@ -66,10 +66,14 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	protected CommandListener listener;
 	
 	protected ChartViewer cv;
+	
+	protected LabelType labelType;
 
 	// the tabs have to define their clone-methods themselves
 	public abstract JGraphTab clone();
 
+	abstract void drawGraph();
+	
 	
 	
 	
@@ -86,10 +90,10 @@ public abstract class JGraphTab extends JScrollableJGraph {
 			CommandListener lis, NodeLabels lab) {
 		super(jdg);
 		empty = false;
-		
 		graph = jdg;
 		domGraph = dg;
-		
+		labelType = Preferences.getInstance().getLabelType();
+		graph.setLabeltype(labelType);
 		defaultName = name;
 		listener = lis;
 		nodeLabels = lab;
@@ -316,6 +320,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	
 	public void setLabelType(LabelType lt) {
 		graph.setLabeltype(lt);
+		drawGraph();
 	}
 
 	/**
@@ -332,12 +337,17 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		recentLayout.setLayoutType(graph.getLayoutType());
 	}
 
+	
+	
 	public void setLayoutType(LayoutType lt) {
-		graph.setLayoutType(lt);
+		layout = lt;
+		graph.setLayouttype(lt);
+		
+		drawGraph();
 	}
 	
 	public LayoutType getLayoutType() {
-		return graph.getLayoutType();
+		return layout;
 	}
 	
 	/*** methods for hiding JDomGraph from classes in leonardo.gui ***/
@@ -362,8 +372,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 */
 	public void resetLayout() {
 		graph.setScale(1);
-		graph.computeLayout();
-		graph.adjustNodeWidths();
+		graph.clear();
+		drawGraph();
 	}
 
 	/**

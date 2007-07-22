@@ -9,6 +9,7 @@ package de.saar.chorus.domgraph.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -99,7 +100,11 @@ public class DomGraph implements Cloneable {
 	 * @return the holes of this node's fragment.
 	 */
 	public List<String> getHoles(String node) {
-		return getHoles(getFragment(node));
+		List<String> holes = new ArrayList<String>();
+		String root = getRoot(node);
+		holeDFS(holes, root);
+		return holes;
+		//return getHoles(getFragment(node));
 	}
 	
 	/**
@@ -118,6 +123,37 @@ public class DomGraph implements Cloneable {
 		}
 		
 		return holes;
+	}
+	
+	
+	private void holeDFS(Collection<String> holes, String current) {
+		if( getData(current).getType() == NodeType.UNLABELLED ) {
+			holes.add(current);
+		} else {
+			for(String child : getChildren(current, EdgeType.TREE)) {
+				holeDFS(holes, child);
+			}
+		}
+	}
+	
+	public String getRelativeRightSibling(String node, Set<String> subgraph) {
+		boolean foundmyself = false;
+		List<String> parents = getParents(node, null);
+		if(parents.isEmpty()) {
+			return null;
+		} 
+		
+		String father = parents.get(0);
+		
+		for(String sibling : getChildren(father,null)) {
+			if(foundmyself && subgraph.contains(sibling)) {
+				return sibling;
+			} else if(node.equals(sibling)) {
+				foundmyself = true;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -221,6 +257,24 @@ public class DomGraph implements Cloneable {
         cachedResults = null;
 		graph.addVertex(name);
 		nodeData.put(name,data);
+	}
+	
+	public boolean isRelativeLeaf(String node, Set<String> subgraph) {
+		for(String child : getChildren(node, null)) {
+			if(subgraph.contains(child)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean isRelativeRoot(String node, Set<String> subgraph) {
+		for(String parent : getParents(node, null)) {
+			if(subgraph.contains(parent)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
@@ -329,7 +383,7 @@ public class DomGraph implements Cloneable {
 		for( Edge e : getInEdges(node, type)) {
 			parents.add((String) e.getSource() );
 		}
-		
+		Collections.reverse(parents);
 		return parents;
 	}
 	
@@ -354,7 +408,7 @@ public class DomGraph implements Cloneable {
 				ret.add(edge);
 			}
 		}
-		
+	
 		return ret;
 	}
 	
@@ -401,7 +455,6 @@ public class DomGraph implements Cloneable {
 		for( Edge e : getOutEdges(node, type)) {
 			children.add((String) e.getTarget() );
 		}
-		
 		return children;
 	}
 	
@@ -919,6 +972,10 @@ public class DomGraph implements Cloneable {
             return ((Boolean) getCachedResult("isWeaklyNormal")).booleanValue();
         }
         
+        if( hasEmptyFragments() ) {
+        	return cacheResult("isWeaklyNormal", false);
+        }
+        
         for( String node : getAllNodes() ) {
 			if( getData(node).getType() == NodeType.UNLABELLED ) {
 				// unlabelled nodes must be leaves
@@ -1072,7 +1129,10 @@ public class DomGraph implements Cloneable {
 	 * calls <code>isHypernormallyConnectedFast</code> (if it is)
 	 * or <code>isHypernormallyConnectedSlow</code> (if it isn't).
 	 * Its overall runtime is O(n(n+m)) for solvable graphs and
-     * O(n^2 (n+m)) for unsolvable ones.
+     * O(n^2 (n+m)) for unsolvable ones.<p>
+     * 
+     * If the graph doesn't have a normal backbone (e.g. if it contains
+     * empty fragments), then this method returns <code>false</code>.
 	 * 
 	 * @return true iff the graph is hnc
 	 */
@@ -1082,7 +1142,10 @@ public class DomGraph implements Cloneable {
         }
         
         // non-normal graphs are hnc iff their normal backbone is hnc
-        if( !isNormal() ) {
+        if( hasEmptyFragments() ) {
+        	// not normalizable -- hnc makes no sense
+        	return cacheResult("isHypernormallyConnected", false);
+        } else if( !isNormal() ) {
         	return makeNormalBackbone().isHypernormallyConnected();
         } else if( OneSplitSource.isGraphSolvable(this) ) {
             return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
@@ -1131,12 +1194,18 @@ public class DomGraph implements Cloneable {
 	 * dominance graph, and thus runs in time O(m+n). However, <strong>it is
 	 * only correct if the graph is solvable</strong>; if the graph is unsolvable,
 	 * the method may claim that the graph is not hypernormally
-	 * connect although it is.
+	 * connect although it is.<p>
+	 * 
+	 * By default, the empty graph is assumed to be hypernormally connected.
 	 * 
 	 * @return true iff the graph is hnc
 	 */
 	private boolean isHypernormallyConnectedFast() {
 		Set<String> visited = new HashSet<String>();
+		
+		if( getAllNodes().isEmpty() ) {
+			return true;
+		}
 		
 		assert isNormal();
 		
@@ -1181,7 +1250,7 @@ public class DomGraph implements Cloneable {
 	
 	/**
 	 * Checks whether the graph is a simple solved form, i.e.
-	 * if it is normal, a tree, and every node has at most one outgoing
+	 * if it is normal, a forest, and every node has at most one outgoing
 	 * dominance edge.
 	 * 
 	 * @return true iff the graph is a simple solved form.
@@ -1215,13 +1284,42 @@ public class DomGraph implements Cloneable {
         return cacheResult("isSimpleSolvedForm", true);
 	}
 	
+
+	/**
+	 * Checks whether the graph is in solved form, i.e. if it is a forest.
+	 * 
+	 * @return true iff the graph is in solved form.
+	 */
+	public boolean isSolvedForm() {
+		if( hasCachedResult("isSolvedForm")) {
+            return ((Boolean) getCachedResult("isSolvedForm")).booleanValue();
+        }
+        
+		for( String node : getAllNodes() ) {
+			// no cycles
+			if( hasCycle(null, null)) {
+				return cacheResult("isSolvedForm", false);
+			}
+			
+			// no node with indeg > 1
+			if( indeg(node) > 1 ) {
+                return cacheResult("isSolvedForm", false);
+			}
+			
+		}
+		
+        return cacheResult("isSolvedForm", true);
+	}
+	
 	
 	/**
 	 * Check whether the weakly normal graph is "well-formed" in the sense of 
 	 * Bodirsky et al. 04. This means that every root of a dominance edge
 	 * dominates a hole of its fragment.<p>
 	 * 
-	 * This method assumes that the graph is weakly normal and compact.
+	 * This method assumes that the graph is weakly normal and compact.<p>
+	 * 
+	 * This method is currently unused.
 	 *  
 	 * @return true iff the graph is well-formed.
 	 */
@@ -1245,6 +1343,27 @@ public class DomGraph implements Cloneable {
 		}
 		
         return cacheResult("isWellFormed", true);
+	}
+	
+	/**
+	 * Checks whether the graph has an empty fragment, i.e. a fragment
+	 * that consists of a single unlabelled node.
+	 * 
+	 * @return true iff the graph has an empty fragment.
+	 */
+	public boolean hasEmptyFragments() {
+        if( hasCachedResult("hasEmptyFragments")) {
+            return ((Boolean) getCachedResult("hasEmptyFragments")).booleanValue();
+        }
+
+		for( String node : getAllNodes() ) {
+			if( getData(node).getType() == NodeType.UNLABELLED
+					&& getAdjacentEdges(node, EdgeType.TREE).isEmpty() ) {
+				return cacheResult("hasEmptyFragments", true);
+			}
+		}
+		
+		return cacheResult("hasEmptyFragments", false);
 	}
 	
 	
@@ -1492,6 +1611,8 @@ public class DomGraph implements Cloneable {
         setCachedResult(key, Boolean.valueOf(value));
         return value;
     }
+
+
     
     
     

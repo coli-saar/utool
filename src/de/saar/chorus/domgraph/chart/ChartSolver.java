@@ -104,7 +104,13 @@ public class ChartSolver {
      * @see #solve(DomGraph, Chart, SplitSource)
      */
     public static boolean solve(DomGraph graph, Chart chart) {
-        return solve(graph, chart, new CompleteSplitSource(graph));
+        boolean isSolvable = solve(graph, chart, new CompleteSplitSource(graph));
+        
+        if( !isSolvable ) {
+        	chart.clear();
+        }
+        
+        return isSolvable;
     }
     
 
@@ -136,9 +142,10 @@ public class ChartSolver {
      */
     private boolean solve() {
         List<Set<String>> wccs = graph.wccs();
-      
+        
         for( Set<String> wcc : wccs ) {
             chart.addToplevelSubgraph(wcc);
+
             if( !solve(wcc) ) {
                 return false;
             }

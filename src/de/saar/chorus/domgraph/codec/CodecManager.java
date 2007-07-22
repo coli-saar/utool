@@ -24,9 +24,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.testng.annotations.Configuration;
-import org.testng.annotations.Test;
-
 /**
  * A registry and factory for codecs. A codec manager is a place where different
  * codec classes can be registered, using the methods {@link #registerCodec(Class)}

@@ -213,19 +213,15 @@ public class ExampleViewer extends JFrame implements
                     
                     Ubench u = Ubench.getInstance();
                     
-					JDomGraph graph = 
-                        u.genericLoadGraph(u.getExampleManager().getExampleReader(selected), 
+					if(u.genericLoadGraph(u.getExampleManager().getExampleReader(selected), 
                                 u.getCodecManager().getInputCodecNameForFilename(selected),
-                                theDomGraph, labels, null);
-					
-					
-					if( graph != null ) {
+                                theDomGraph, labels, null)) {
 						
 						//	DomGraphTConverter conv = new DomGraphTConverter(graph);
 						
 						// setting up a new graph tab.
 						// the graph is painted and shown at once.
-						Ubench.getInstance().addNewTab(graph, selected, theDomGraph, true, true, labels);
+						Ubench.getInstance().addNewTab(new JDomGraph(), selected, theDomGraph, true, true, labels);
 					}
 				}
 			}.start();

@@ -198,9 +198,14 @@ public class Utool {
                             System.err.print("Total runtime: " + total_time + " ms (");
                             if( total_time > 0 ) {
                                 System.err.print((int) Math.floor(count * 1000.0 / total_time));
-                                System.err.print(" sfs/sec; ");
+                                System.err.print(" sfs/sec");
                             }
-                            System.err.println(1000 * total_time / count + " microsecs/sf)");
+                            
+                            if( count > 0 ) {
+                            	System.err.print("; " + 1000 * total_time / count + " microsecs/sf)");
+                            }
+                            
+                            System.err.println(")");
                         }
                     } catch (MalformedDomgraphException e) {
                         System.err.println("Output of the solved forms of this graph is not supported by this output codec.");

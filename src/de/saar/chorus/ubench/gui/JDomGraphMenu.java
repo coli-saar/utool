@@ -47,6 +47,7 @@ public class JDomGraphMenu extends JMenuBar {
 	// the menu items
 	private JMenuItem 
 		              loadGraph, 	// load a graph (from any supported file type)
+		              newTab,
 	  				  quit, 	 	// close the workbench
 					  saveUtool,	 // export a graph to a "utool" format
 					  pdfPrint, 	 // export a graph to a pdf
@@ -76,7 +77,7 @@ public class JDomGraphMenu extends JMenuBar {
 					  loadeqs,
 					  autoreduce,
 					  preferences,
-					  sugiyamalayout, jdomgraphlayout, chartlayout;
+					 jdomgraphlayout, chartlayout;
     
 	private ServerButton server;
 	
@@ -103,6 +104,11 @@ public class JDomGraphMenu extends JMenuBar {
 	 */
 	private void initialize() {
 		
+		
+		
+		
+		
+		
 		int control = 
 	        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
@@ -111,6 +117,13 @@ public class JDomGraphMenu extends JMenuBar {
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 		
 	
+		newTab = new JMenuItem("Open new Tab");
+		newTab.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, control));
+		newTab.setActionCommand("newTab");
+		newTab.addActionListener(listener);
+		
+		fileMenu.add(newTab);
+		
 		// item for xml-import
 		loadGraph = new JMenuItem("Open...");
 		loadGraph.setMnemonic(KeyEvent.VK_O);
@@ -140,6 +153,10 @@ public class JDomGraphMenu extends JMenuBar {
         graphSpecificItems.add(saveAll);
         
         fileMenu.add(saveAll);
+        
+        
+        
+        fileMenu.addSeparator();
         
         
         // item for pdf-export
@@ -201,7 +218,41 @@ public class JDomGraphMenu extends JMenuBar {
 		add(fileMenu);
 		
         
+
+		JMenu editMenu = new JMenu("Edit");
+		editMenu.setMnemonic(KeyEvent.VK_E);
+		add(editMenu);
+		
+        JMenu exportToClipboardMenu = new JMenu("Copy to clipboard");
+        editMenu.add(exportToClipboardMenu);
         
+        for( String codecname : Ubench.getInstance().getCodecManager().getAllOutputCodecs() ) {
+        	JMenuItem item = new JMenuItem("as " + codecname);
+        	exportToClipboardMenu.add(item);
+        	item.setActionCommand("export-clipboard-" + codecname );
+        	item.addActionListener(listener);
+
+        	if( codecname.equals("domcon-oz")) {
+        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, control));
+        	}
+        }
+
+        JMenu importFromClipboardMenu = new JMenu("Paste into new tab");
+        editMenu.add(importFromClipboardMenu);
+        
+        for( String codecname : Ubench.getInstance().getCodecManager().getAllInputCodecs() ) {
+        	JMenuItem item = new JMenuItem("as " + codecname);
+        	importFromClipboardMenu.add(item);
+        	item.setActionCommand("import-clipboard-" + codecname);
+        	item.addActionListener(listener);
+
+        	if( codecname.equals("domcon-oz")) {
+        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, control));
+        	}
+        }
+
+        
+
         
 		
 		// view Menu
@@ -254,10 +305,6 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		layoutMenu = new JMenu("Choose Layout");
 		
-		sugiyamalayout = new JCheckBoxMenuItem("Sugiyama Layout");
-		sugiyamalayout.addItemListener(listener);
-		listener.registerEventSource(sugiyamalayout, "layoutchange");
-		sugiyamalayout.setActionCommand("sugiyamalayout");
 		
 		jdomgraphlayout = new JCheckBoxMenuItem("JDomGraph Layout");
 		jdomgraphlayout.addItemListener(listener);
@@ -271,18 +318,15 @@ public class JDomGraphMenu extends JMenuBar {
 		
 		ButtonGroup layoutgroup = new ButtonGroup();
 		layoutgroup.add(jdomgraphlayout);
-		layoutgroup.add(sugiyamalayout);
 		layoutgroup.add(chartlayout);
 		
 
 		switch(Preferences.getInstance().getLayoutType()) {
 		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
-		case SUGIYAMA : sugiyamalayout.setSelected(true); break;
 		case CHARTLAYOUT : chartlayout.setSelected(true);
 		}
 		
 		layoutMenu.add(jdomgraphlayout);
-		layoutMenu.add(sugiyamalayout);
 		layoutMenu.add(chartlayout);
 		viewMenu.add(layoutMenu);
 		
@@ -467,7 +511,6 @@ public class JDomGraphMenu extends JMenuBar {
 
 		switch(Ubench.getInstance().getVisibleTab().getLayoutType()) {
 		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
-		case SUGIYAMA : sugiyamalayout.setSelected(true); break;
 		case CHARTLAYOUT : chartlayout.setSelected(true);
 		}
 		

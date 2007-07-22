@@ -2,23 +2,21 @@
 
 package de.saar.chorus.domgraph.codec.mrs;
 
-import java.util.Set;
-import java.util.Map;
 import java.util.Collection;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org._3pq.jgrapht.Edge;
 
-//import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.EdgeData;
+import de.saar.chorus.domgraph.graph.EdgeType;
+import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.domgraph.graph.NodeData;
 
 class MrsCodec {
 	
@@ -39,7 +37,7 @@ class MrsCodec {
 	
 	private NodeLabels labels;
 	
-	private Normaliser normaliser;
+	private Normalisation normalisation;
 	
 	private LabelStyle labelStyle;
 	
@@ -54,19 +52,8 @@ class MrsCodec {
 		this.sig = new TreeMap<String,Type>();
 		this.binder = new TreeMap<String,String>();
 		this.bound = new TreeMap<String,Set<String>>();
+		this.normalisation = normalisation;
 		this.labelStyle = labelStyle;
-		
-		switch (normalisation) {
-		case none:
-			this.normaliser = new NormaliseNone();
-			break;
-		case gnets:
-			this.normaliser = new NormaliseGeneralised();
-			break;
-		default:
-			this.normaliser = new NormaliseNets();
-		}
-		
 	}
 	
 	public void tellVariable(String name) throws MalformedDomgraphException
@@ -359,11 +346,11 @@ class MrsCodec {
 	
 	public void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
-		// StringBuffer errorText = new StringBuffer();
+		StringBuffer errorText = new StringBuffer();
 
 		addBindingEdges();
 		setTopHandle(handle);
-		/*
+		
 		switch (normalisation) {
 		case none:
 			return;
@@ -391,8 +378,6 @@ class MrsCodec {
 			if (errorCode != 0)
 				throw new MalformedDomgraphException(errorText.toString(), errorCode);
 		}
-		*/
-		normaliser.normalise(graph);
 	}
 	
 	boolean ignore(String attr)

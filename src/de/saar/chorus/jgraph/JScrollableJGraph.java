@@ -8,6 +8,7 @@
 package de.saar.chorus.jgraph;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -38,4 +39,7 @@ public class JScrollableJGraph extends JPanel {
 	public void resetSlider() {
 		slider.resetSlider();
 	}
+
+
+	
 }

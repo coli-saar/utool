@@ -1,14 +1,11 @@
 package de.saar.chorus.ubench.gui;
 
-import org.jgraph.layout.JGraphLayoutAlgorithm;
-import org.jgraph.layout.SugiyamaLayoutAlgorithm;
 
-import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.jgraph.GecodeTreeLayout;
-import de.saar.chorus.layout.chartlayout.DomGraphChartLayout;
-import de.saar.chorus.layout.domgraphlayout.DomGraphLayout;
-import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
+import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayout;
+import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayout;
+import de.saar.chorus.domgraph.layout.solvedformlayout.SFGecodeTreeLayout;
 
 /**
  * This contains several preferences for layouting and solving 
@@ -32,49 +29,52 @@ public class Preferences implements Cloneable {
     // static fields: per-application preferences 
     private static boolean autoCount = true;
     private static boolean fitToWindow = false;
-   
+    private static boolean fitWindowToGraph = true;
+    private static boolean removeRedundandEdges = true;
     
     // non-static fields: specific to each graph
     private LayoutType layouttype;
     private LabelType labeltype;
   
     
-    public enum LabelType {
-    	NAME, LABEL, BOTH;
-    }
-    
     public enum LayoutType {
-    	
-    	SUGIYAMA {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
-    				DomGraph domgraph) {
-    			return new SugiyamaLayoutAlgorithm();
-    		}
-    	} , 
     	JDOMGRAPH {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
-					DomGraph domgraph) {
-    			return new DomGraphLayout(graph);
+    		public LayoutAlgorithm getLayout() {
+    			return new DomGraphLayout();
+    		}
+
+    		@Override
+    		public boolean isApplicable(JDomGraphTab tab) {
+    			return true;
     		}
     	},
     	
     	TREELAYOUT {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
-					DomGraph domgraph) {
-    			return new GecodeTreeLayout(graph);
+    		public LayoutAlgorithm getLayout () {
+    			return new SFGecodeTreeLayout();
+    		}
+    		
+
+    		@Override
+    		public boolean isApplicable(JDomGraphTab tab) {
+    			return tab.getDomGraph().isSolvedForm();
     		}
     	} ,
     	
     	CHARTLAYOUT {
-    		public JGraphLayoutAlgorithm getLayout (JDomGraph graph, Chart chart,
-    				DomGraph domgraph) {
-    					return new DomGraphChartLayout(graph, chart, domgraph);
+    		public LayoutAlgorithm getLayout() {
+    					return new DomGraphChartLayout();
     			
+    		}
+
+    		@Override
+    		public boolean isApplicable(JDomGraphTab tab) {
+    			return tab.isSolvedYet() && tab.isSolvable();
     		}
     	};
     	
-    	public abstract JGraphLayoutAlgorithm getLayout(JDomGraph graph, Chart chart,
-    			DomGraph domgraph);
+    	public abstract LayoutAlgorithm getLayout();
+    	public abstract boolean isApplicable(JDomGraphTab tab);
     }
     
     
@@ -105,7 +105,17 @@ public class Preferences implements Cloneable {
     
 	
 	
-    public void setLayoutType(LayoutType lt) {
+    public static boolean isFitWindowToGraph() {
+		return fitWindowToGraph;
+	}
+
+
+	public static void setFitWindowToGraph(boolean findWindowToGraph) {
+		Preferences.fitWindowToGraph = findWindowToGraph;
+	}
+
+
+	public void setLayoutType(LayoutType lt) {
     	layouttype = lt;
     }
     
@@ -119,7 +129,17 @@ public class Preferences implements Cloneable {
 	
   
     
-    /**
+    public static boolean isRemoveRedundandEdges() {
+		return removeRedundandEdges;
+	}
+
+
+	public static void setRemoveRedundandEdges(boolean removeRedundandEdges) {
+		Preferences.removeRedundandEdges = removeRedundandEdges;
+	}
+
+
+	/**
      * Set to true, fitWindow will cause the visible and
      * all further opened graphs to be zoomed out if they 
      * oversize their tab. 

@@ -37,15 +37,12 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.jgraph.graph.DefaultGraphCell;
-
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.Fragment;
 import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.Ubench;
 
@@ -231,10 +228,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		prettyprint.getSelectionModel().addListSelectionListener(this);		
 		prettyprint.getColumnModel().getSelectionModel().addListSelectionListener(this);
 		
-		// column width
-		if(noOfSplits > 0)
-		initColumnSizes();
-		
+	
 		// layout
 		add(instruction);
 		JScrollPane printPane = new JScrollPane(prettyprint);
@@ -242,6 +236,11 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		noOfSolvedForms = chart.countSolvedForms();
 		noOfSplits = chart.size();
+		
+		// column width
+		if(noOfSplits > 0)
+		initColumnSizes();
+		
 		
 		// the information text on the bottom
 		makeStatusBar();
@@ -524,7 +523,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						
 						if( ! subgraph.isEmpty() ) {
 							// marking the subgraph in the main window
-							FormatManager.markSubgraph(subgraph, jdg);
+							FormatManager.markSubgraph(subgraph, jdg, dg);
 							
 						} else {
 							// and empty row -> unmarking the graph
@@ -599,10 +598,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		// the root fragment has a special color.
 		if(!root.equals("")) {
-			DefaultGraphCell rootNode = jdg.getNodeForName(root);
-			Fragment rootFrag = jdg.findFragment(rootNode);
 			
-			FormatManager.markRootFragment(rootFrag, jdg);
+			FormatManager.markRootFragment(root, jdg, dg);
 		}
 		
 		
@@ -623,7 +620,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				// get when there are several subgraphs
 				wcc.add(hole);
 				
-				FormatManager.markSubgraph(wcc, jdg, subgraphindex);
+				FormatManager.markSubgraph(wcc, jdg, subgraphindex, dg);
 				
 			}
 			// repainting the graph
@@ -1113,8 +1110,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		public void windowGainedFocus(WindowEvent e) {
 			
+			
 			int row = prettyprint.getSelectedRow();
 			int col = prettyprint.getSelectedColumn();
+			
 			markGraph(row,col);
 		}
 		
@@ -1148,6 +1147,10 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		
 		layout.setConstraints(solve, solveConstraints);
 		statusbar.add(solve);
+		
+		if(BigInteger.ZERO.equals(noOfSolvedForms)) {
+			solve.setEnabled(false);
+		}
 		
 		GridBagConstraints nofConstraint = new GridBagConstraints();
 		nofConstraint.fill = GridBagConstraints.HORIZONTAL;

@@ -34,7 +34,7 @@ public class Fragment extends DomGraphPopupTarget {
     private StringBuilder fragmentName;
    
     
-    Fragment(JDomGraph parent) {
+    public Fragment(JDomGraph parent) {
         super(parent);
         
         nodes = new HashSet<DefaultGraphCell>();
@@ -48,7 +48,7 @@ public class Fragment extends DomGraphPopupTarget {
      * 
      * @param node
      */
-    void add(DefaultGraphCell node) {
+    public void add(DefaultGraphCell node) {
         nodes.add(node);
         groupObject.add(node);
         fragmentName.append(((NodeData)node.getUserObject()).getName() + " ");
@@ -59,7 +59,7 @@ public class Fragment extends DomGraphPopupTarget {
      * 
      * @param edge
      */
-    void add(DefaultEdge edge) {
+    public void add(DefaultEdge edge) {
         edges.add(edge);
         groupObject.add(edge);
     }
@@ -71,7 +71,7 @@ public class Fragment extends DomGraphPopupTarget {
      * 
      * @param frag
      */
-    void addAll(Fragment frag) {
+    public void addAll(Fragment frag) {
         for( DefaultGraphCell node : frag.getNodes() ) {
             add(node);
         }
@@ -137,7 +137,7 @@ public class Fragment extends DomGraphPopupTarget {
      * 
      * @return the cell.
      */
-    DefaultGraphCell getGroupObject() {
+    public DefaultGraphCell getGroupObject() {
         return groupObject;
     }
     

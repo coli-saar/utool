@@ -11,7 +11,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,8 +22,10 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
+import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutOptions;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
 
 /**
@@ -41,7 +42,7 @@ import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
  */
 public class JSolvedFormTab extends JGraphTab {
 
-	
+	private DomGraph theSolvedForm;
 	/**
 	 * 
 	 */
@@ -60,33 +61,40 @@ public class JSolvedFormTab extends JGraphTab {
 	 * @param solv the solvedFormIterator related to the graph
 	 */
 	public JSolvedFormTab(JDomGraph solvedForm, String name, 
-			SolvedFormIterator solv, DomGraph origin, long form, long allForms, 
+			SolvedFormIterator solv, DomGraph origin, DomGraph originalForm, 
+			long form, long allForms, 
 			String gName, CommandListener lis, NodeLabels labels) {
 		
 		super(solvedForm, origin, name, lis, labels);
 		// initializing fields
 		solvedFormIterator = solv;
+		theSolvedForm = originalForm;
 		currentForm = form;
 		solvedForms = solv.getChart().countSolvedForms().longValue();
         recentLayout = null;
 		graphName = gName;
-		
+		layout = Preferences.LayoutType.TREELAYOUT;
 		// layouting the graph
-		graph.computeFragments();
-		
-		JFrame f = new JFrame("JGraph Test");
-		f.add(graph);
-		f.pack();
-        
-		graph.setLayoutType(LayoutType.TREELAYOUT);
-        
 		scrollpane = new JScrollPane(graph);
         add(scrollpane, BorderLayout.CENTER);
+        
 		
 		statusBar = new SolvedFormBar(solvedForms, form, gName);
 		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
+        
+		
 	}
 	
+	void drawGraph() {
+		JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
+		LayoutAlgorithm drawer = layout.getLayout();
+		
+		// this is a tree, there won't be redundand edges.
+		// saving time by hard-coding this...
+		drawer.layout(theSolvedForm, nodeLabels, canvas,new LayoutOptions(getLabelType(), 
+				false));
+		Ubench.getInstance().refresh();
+	}
    
    
    /**
@@ -353,9 +361,9 @@ public class JSolvedFormTab extends JGraphTab {
  */
 public JGraphTab clone() {
 	DomGraph cl = (DomGraph) domGraph.clone();
-	
+	DomGraph sf = (DomGraph) theSolvedForm.clone();
 	JSolvedFormTab myClone = new JSolvedFormTab(graph.clone(), defaultName, solvedFormIterator,
-			cl, currentForm, solvedForms, graphName, listener, nodeLabels);
+			cl, sf, currentForm, solvedForms, graphName, listener, nodeLabels);
 	
 	return myClone;
 }

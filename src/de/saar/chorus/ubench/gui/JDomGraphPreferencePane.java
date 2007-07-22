@@ -25,9 +25,9 @@ import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.ubench.ServerOptions;
-import de.saar.chorus.ubench.gui.Preferences.LabelType;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 
@@ -49,10 +49,10 @@ public class JDomGraphPreferencePane extends JFrame
 	JPanel servertab, layouttab;	// tab for server options
 	
 	// checkboxes for server warmup and server logging
-	JCheckBox warmup, logging;
+	JCheckBox warmup, logging, removeRedEdges;
 	
 	
-	JRadioButton port2802, systemerrout, ownport, ownlog, jdomgraph, chartlayout, sugiyama,
+	JRadioButton port2802, systemerrout, ownport, ownlog, jdomgraph, chartlayout,
 				showNames, showLabels, showBoth;
 	JTextField port, logfile;
 	JCheckBox allGraphs;
@@ -167,10 +167,7 @@ public class JDomGraphPreferencePane extends JFrame
 		 jdomgraph = new JRadioButton("JDomGraph Layout");
 		 layoutgroup.add(jdomgraph);
 		 layoutstyle.add(jdomgraph);
-		 
-		 sugiyama = new JRadioButton("Sugiyama Layout");
-		 layoutgroup.add(sugiyama);
-		 layoutstyle.add(sugiyama);
+
 
 		 layoutstyle.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), 
 				 "Standard Layout",
@@ -205,6 +202,17 @@ public class JDomGraphPreferencePane extends JFrame
 		 
 		 layouttab.add(labels);
 		 
+		 JPanel genlay = new JPanel(new GridLayout(0,2));
+		 
+		 removeRedEdges = new JCheckBox("Hide redundand dominance edges");
+		 genlay.add(removeRedEdges);
+		 
+		 genlay.setBorder(new TitledBorder(new LineBorder(Color.GRAY, 1, true), 
+				 "General",
+				 TitledBorder.LEADING,
+				 TitledBorder.ABOVE_TOP));
+		 
+		 layouttab.add(genlay);
 		 
 		 tabs.add(layouttab, ("Layout"));
 		 
@@ -268,7 +276,6 @@ public class JDomGraphPreferencePane extends JFrame
 
 		 switch(Preferences.getInstance().getLayoutType()) {
 		 	case JDOMGRAPH : jdomgraph.setSelected(true); break;
-		 	case SUGIYAMA : sugiyama.setSelected(true); break;
 		 	case CHARTLAYOUT : chartlayout.setSelected(true);
 		 }
 		 
@@ -277,6 +284,8 @@ public class JDomGraphPreferencePane extends JFrame
 		 	case NAME : showNames.setSelected(true); break;
 		 	case BOTH : showBoth.setSelected(true);
 		 }
+		 
+		 removeRedEdges.setSelected(Preferences.isRemoveRedundandEdges()) ;
 		
 		
 	}
@@ -325,9 +334,7 @@ public class JDomGraphPreferencePane extends JFrame
 			Preferences.getInstance().setLayoutType(LayoutType.JDOMGRAPH);
 		} else if(chartlayout.isSelected()) {
 			Preferences.getInstance().setLayoutType(LayoutType.CHARTLAYOUT);
-		} else if(sugiyama.isSelected()) {
-			Preferences.getInstance().setLayoutType(LayoutType.SUGIYAMA);
-		}
+		} 
 		
 		if(showLabels.isSelected()) {
 			Preferences.getInstance().setLabelType(LabelType.LABEL);
@@ -336,6 +343,8 @@ public class JDomGraphPreferencePane extends JFrame
 		} else if(showBoth.isSelected()) {
 			Preferences.getInstance().setLabelType(LabelType.BOTH);
 		}
+		
+		Preferences.setRemoveRedundandEdges(removeRedEdges.isSelected());
 		
 	}
 

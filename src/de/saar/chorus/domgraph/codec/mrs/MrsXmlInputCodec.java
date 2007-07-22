@@ -15,8 +15,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecConstructor;
+import de.saar.chorus.domgraph.codec.CodecMetadata;
 import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;

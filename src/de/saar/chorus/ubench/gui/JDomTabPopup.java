@@ -1,5 +1,6 @@
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JMenuItem;
@@ -46,8 +47,9 @@ public class JDomTabPopup extends JPopupMenu {
 		add(duplicate);
 		
 		// item to close the graph
+		
 		JMenuItem close = new JMenuItem("Close");
-		close.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
+		close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		close.setActionCommand("shut");
 		close.addActionListener(listener);
 		add(close);
