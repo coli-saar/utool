@@ -4,11 +4,15 @@
  */
 package de.saar.chorus.ubench.gui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -23,6 +27,7 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
@@ -623,6 +628,9 @@ public class Ubench {
 		Rectangle bounds = env.getMaximumWindowBounds();
 		f.setMaximizedBounds(bounds);
 		
+		f.setGlassPane(new MovingDefaultGraphCellPanel());
+		f.addMouseMotionListener(new GhostMovementListener(f));
+		
         return f;
     }
     
@@ -832,53 +840,31 @@ public class Ubench {
 		return tabs;
 	}
 	
+	public class GhostMovementListener extends MouseMotionAdapter
+	{
+	    private JFrame mainwindow;
 
+		public GhostMovementListener(JFrame mainwindow) {
+			this.mainwindow = mainwindow;
+		}
+
+		public void mouseDragged(MouseEvent e)
+	    {
+	        Component c = e.getComponent();
+	        MovingDefaultGraphCellPanel panneau = (MovingDefaultGraphCellPanel) 
+	        		this.mainwindow.getGlassPane();
+
+	        Point p = (Point) e.getPoint().clone();
+	        SwingUtilities.convertPointToScreen(p, c);
+	        SwingUtilities.convertPointFromScreen(p, panneau);
+	        panneau.setPoint(p);
+
+	        panneau.repaint();
+	    }
+	}
 	
 }
 
-/**
- * 
- * test inputs to send over the socket:
- * 
- * 
- * 
- * <gxl xmlns:xlink="http://www.w3.org/1999/xlink"><graph id="chain2"
- * edgeids="true" hypergraph="false" edgemode="directed"><!-- OF 1 --><node
- * id="X"><type xlink:href="root" /><attr name="label"><string>f</string></attr><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><node id="X1"><type xlink:href="hole" /><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="gridy-x1"><type
- * xlink:href="solid" /></edge><!-- OF 2 --><node id="Y"><type
- * xlink:href="root" /><attr name="label"><string>g</string></attr><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><node id="Y1"><type xlink:href="hole" /><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><edge from="Y" to="Y1" id="Y-Y1"><type
- * xlink:href="solid" /></edge><!-- UF 1 --><node id="Z"><type
- * xlink:href="root" /><attr name="label"><string>a</string></attr><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><!-- dominances --><edge from="X1"
- * to="Z" id="x1-z"><type xlink:href="dominance" /></edge><edge from="Y1"
- * to="Z" id="y1-z"><type xlink:href="dominance" /></edge></graph></gxl>
- * <gxl xmlns:xlink="http://www.w3.org/1999/xlink"><graph id="chain2b"
- * edgeids="true" hypergraph="false" edgemode="directed"><!-- OF 1 --><node
- * id="X"><type xlink:href="root" /><attr name="label"><string>g</string></attr><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><node id="X1"><type xlink:href="hole" /><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><edge from="X" to="X1" id="gridy-x1"><type
- * xlink:href="solid" /></edge><!-- OF 2 --><node id="Y"><type
- * xlink:href="root" /><attr name="label"><string>h</string></attr></node><node
- * id="Y1"><type xlink:href="hole" /><popup id="foo" label="Foo Foo" /><popup
- * id="bar" label="Bar Bar" /><popup id="baz" label="Baz Baz" /></node><edge
- * from="Y" to="Y1" id="Y-Y1"><type xlink:href="solid" /></edge><!-- UF 1 --><node
- * id="Z"><type xlink:href="root" /><attr name="label"><string>b</string></attr><popup
- * id="foo" label="Foo Foo" /><popup id="bar" label="Bar Bar" /><popup
- * id="baz" label="Baz Baz" /></node><!-- dominances --><edge from="X1"
- * to="Z" id="x1-z"><type xlink:href="dominance" /></edge><edge from="Y1"
- * to="Z" id="y1-z"><type xlink:href="dominance" /></edge></graph></gxl>
- * 
- * 
- */
+
+
 
