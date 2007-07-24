@@ -280,9 +280,16 @@ public class Fragment extends DomGraphPopupTarget {
 	    return fragmentName.toString();
 	}
 
+    /**
+     * This is a data storage for a <code>Fragment</code> to 
+     * be read out by a <code>JDomGraph</code>.
+     * 
+     * @author Michaela Regneri
+     *
+     */
     public class FragmentUserObject extends JLabel {
     	
-    	private StringBuilder fragname;
+    	private StringBuilder fragname; // the (dynamically built) name of the fragment
     	
     	FragmentUserObject(StringBuilder name) {
     		super();
@@ -290,13 +297,28 @@ public class Fragment extends DomGraphPopupTarget {
     		setOpaque(false);
     	}
     	
+    	/**
+    	 * This has to return "null" because the <code>DefaultGraphCell</code>
+    	 * representing the fragment may not display its own text.
+    	 * 
+    	 * @return null
+    	 */
     	public String toString() {
     		return null;
     	}
 
-		@Override
+		/**
+		 * This overrides the <code>getToopTipText</code> method in 
+		 * <code>JComponent</code>. Actually, this is meant to pass the right
+		 * tooltip text to the <code>JGraph</code> Object. Unfortunately, with the new
+		 * implementation (v. 5.10.1.3), the getToolTipText method of user objects
+		 * are not considered anymore. For principle reasons, this will still be the
+		 * way to get the tooltip text for a <code>FragmentUserObject</code>.
+		 * 
+		 * @return the fragment name 
+		 * @see javax.swing.JComponent#getToolTipText()
+		 */
 		public String getToolTipText() {
-			// TODO Auto-generated method stub
 			return fragname.toString();
 		}
     	
