@@ -656,28 +656,51 @@ public class JDomGraph extends JGraph implements Cloneable {
 
 
 
-	@Override
+	/**
+	 * This overrides the <code>getToolTipText(MouseEvent)</code> method of
+	 * JGraph. As JGraph overwrites it and ignores the tooltips returned by the user
+	 * objects of its cells, the tooltips are reconfigured here.
+	 * 
+	 * @return the tooltip text of the recent node
+	 * @see org.jgraph.JGraph#getToolTipText(MouseEvent)
+	 */
 	public String getToolTipText(MouseEvent e) {
 		java.awt.Point p = e.getPoint();
+		
+		// get the uppermost node under the mouse pointer
 		DefaultGraphCell cell = (DefaultGraphCell) 
 					getFirstCellForLocation(e.getX(), e.getY());
+		
+		// if there is actually a graph cell...
 		if(cell != null) {
+			
+			// find its associated user object
 			Object uo = cell.getUserObject();
 
 			if( uo instanceof NodeData ) {
+				// if it is a node, return the node's tooltip text
 				return ( (NodeData) uo).getToolTipText();
 			} else if( uo instanceof EdgeData) {
+				
+				// if it is an edge, check the cell behind the edge; this might
+				// be a fragment (for tree edges)
 				cell =
 					(DefaultGraphCell) getNextCellForLocation(cell, e.getX(), e.getY());
 				uo = cell.getUserObject();
 
 			} 
 
+			// if we are here, the uppermost cell is either a dominance edge
+			// or a tree edge or nothing of both, but in the range of a fragment.
+			// for the two latter cases, show the fragment tooltip.
 			if( uo instanceof FragmentUserObject ) {
 				return ( (FragmentUserObject) uo ).getToolTipText();
 			}
 
 		}
+		
+		// if there is no cell under the mouse pointer, 
+		// do what the JGraph would do by default.
 		return super.getToolTipText(e);
 
 	}
