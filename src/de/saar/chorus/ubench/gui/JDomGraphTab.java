@@ -89,6 +89,7 @@ public class JDomGraphTab extends JGraphTab  {
 		setMinimumSize(statusBar.getMinimumSize());
 		
 		theGraph.setMarqueeHandler(new DomgraphMarqueeHandler(this, origin, labels));
+		
 	}
 
 	/**

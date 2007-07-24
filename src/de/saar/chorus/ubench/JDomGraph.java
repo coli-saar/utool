@@ -7,7 +7,9 @@ package de.saar.chorus.ubench;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +30,7 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
+import de.saar.chorus.ubench.Fragment.FragmentUserObject;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
@@ -414,6 +417,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	}
 	
 	
+	
 
 	/**
 	 * Clones this graph.
@@ -647,6 +651,38 @@ public class JDomGraph extends JGraph implements Cloneable {
 	public void setUpperBoundFont(Font upperBoundFont) {
 		this.upperBoundFont = upperBoundFont;
 	}
+
+
+
+
+
+	@Override
+	public String getToolTipText(MouseEvent e) {
+		java.awt.Point p = e.getPoint();
+		DefaultGraphCell cell = (DefaultGraphCell) 
+					getFirstCellForLocation(e.getX(), e.getY());
+		if(cell != null) {
+			Object uo = cell.getUserObject();
+
+			if( uo instanceof NodeData ) {
+				return ( (NodeData) uo).getToolTipText();
+			} else if( uo instanceof EdgeData) {
+				cell =
+					(DefaultGraphCell) getNextCellForLocation(cell, e.getX(), e.getY());
+				uo = cell.getUserObject();
+
+			} 
+
+			if( uo instanceof FragmentUserObject ) {
+				return ( (FragmentUserObject) uo ).getToolTipText();
+			}
+
+		}
+		return super.getToolTipText(e);
+
+	}
+	
+	
 	
 	
 	
