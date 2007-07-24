@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JLabel;
+
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.util.JGraphUtilities;
@@ -32,7 +34,7 @@ public class Fragment extends DomGraphPopupTarget {
     private Set<DefaultEdge> edges;
     private DefaultGraphCell groupObject;
     private StringBuilder fragmentName;
-   
+    private FragmentUserObject fou;
     
     public Fragment(JDomGraph parent) {
         super(parent);
@@ -40,7 +42,8 @@ public class Fragment extends DomGraphPopupTarget {
         nodes = new HashSet<DefaultGraphCell>();
         edges = new HashSet<DefaultEdge>();
         fragmentName = new StringBuilder("fragment: ");
-        groupObject = new DefaultGraphCell();
+        fou = new FragmentUserObject(fragmentName);
+        groupObject = new DefaultGraphCell(fou);
         
         
     }
@@ -54,6 +57,7 @@ public class Fragment extends DomGraphPopupTarget {
         nodes.add(node);
         groupObject.add(node);
         fragmentName.append(((NodeData)node.getUserObject()).getName() + " ");
+        
     }
     
     /**
@@ -276,6 +280,29 @@ public class Fragment extends DomGraphPopupTarget {
 	    return fragmentName.toString();
 	}
 
+    public class FragmentUserObject extends JLabel {
+    	
+    	private StringBuilder fragname;
+    	
+    	FragmentUserObject(StringBuilder name) {
+    		super();
+    		fragname = name;
+    		setOpaque(false);
+    	}
+    	
+    	public String toString() {
+    		return null;
+    	}
+
+		@Override
+		public String getToolTipText() {
+			// TODO Auto-generated method stub
+			return fragname.toString();
+		}
+    	
+    	
+    	
+    }
 	
 	
 	
