@@ -13,6 +13,7 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
@@ -21,6 +22,7 @@ import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.gui.chartviewer.JDomGraphDummyLayout;
 
 public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 	private JDomGraph jgraph;
@@ -215,7 +217,6 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 		
 		AttributeMap map = jgraph.getModel().getAttributes(node);
 		GraphConstants.setBackground(map, color);
-		
 		viewMap.put(node, map);
 		
 		jgraph.getGraphLayoutCache().edit(viewMap, null, null, null);
@@ -238,4 +239,6 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 	private String gensym() {
 		return gensymPrefix + (gensymNext++);
 	}
+	
+	
 }

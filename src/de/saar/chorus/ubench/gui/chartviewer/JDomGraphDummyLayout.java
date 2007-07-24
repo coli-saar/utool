@@ -51,7 +51,7 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 		bounds.x = x;
 		bounds.y = y;
 		
-		AttributeMap map = graph.getModel().createAttributes();
+		AttributeMap map = graph.getModel().getAttributes(node);
 		GraphConstants.setBounds(map, (Rectangle2D) bounds.clone());
 		
 		viewMap.put(node, map);

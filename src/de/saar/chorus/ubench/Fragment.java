@@ -40,7 +40,9 @@ public class Fragment extends DomGraphPopupTarget {
         nodes = new HashSet<DefaultGraphCell>();
         edges = new HashSet<DefaultEdge>();
         fragmentName = new StringBuilder("fragment: ");
-        groupObject = new DefaultGraphCell(fragmentName);
+        groupObject = new DefaultGraphCell();
+        
+        
     }
     
     /**

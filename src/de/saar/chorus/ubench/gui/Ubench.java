@@ -11,6 +11,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
@@ -43,7 +44,6 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.Utool;
 import de.saar.chorus.ubench.JDomGraph;
-
 /**
  * The main class of Ubench.
  * This implements the "singleton pattern", so this class
@@ -627,10 +627,7 @@ public class Ubench {
         	GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = env.getMaximumWindowBounds();
 		f.setMaximizedBounds(bounds);
-		
-		f.setGlassPane(new MovingDefaultGraphCellPanel());
-		f.addMouseMotionListener(new GhostMovementListener(f));
-		
+	
         return f;
     }
     
@@ -840,28 +837,7 @@ public class Ubench {
 		return tabs;
 	}
 	
-	public class GhostMovementListener extends MouseMotionAdapter
-	{
-	    private JFrame mainwindow;
 
-		public GhostMovementListener(JFrame mainwindow) {
-			this.mainwindow = mainwindow;
-		}
-
-		public void mouseDragged(MouseEvent e)
-	    {
-	        Component c = e.getComponent();
-	        MovingDefaultGraphCellPanel panneau = (MovingDefaultGraphCellPanel) 
-	        		this.mainwindow.getGlassPane();
-
-	        Point p = (Point) e.getPoint().clone();
-	        SwingUtilities.convertPointToScreen(p, c);
-	        SwingUtilities.convertPointFromScreen(p, panneau);
-	        panneau.setPoint(p);
-
-	        panneau.repaint();
-	    }
-	}
 	
 }
 
