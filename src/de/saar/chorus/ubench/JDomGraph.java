@@ -138,6 +138,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	    edges = new HashSet<DefaultEdge>();
 	    nameToNode = new HashMap<String,DefaultGraphCell>();
 	    nodeFont = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN, 17);
+	    
 		dominanceEdges = new HashSet<DefaultEdge>();
 		upperBoundFont = GraphConstants.DEFAULTFONT
 		.deriveFont(Font.BOLD, 17);
@@ -194,7 +195,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	 * @return an AttributeMap object with reasonable style information.
 	 */
 	protected AttributeMap defaultNodeAttributes(NodeType type) {
-		AttributeMap map = getModel().createAttributes();
+		AttributeMap map = new AttributeMap();
 		
 		if( type.equals(NodeType.labelled) ) {
 			// labelled nodes
@@ -214,7 +215,27 @@ public class JDomGraph extends JGraph implements Cloneable {
 			GraphConstants.setForeground(map, Color.black);
 			GraphConstants.setFont(map, nodeFont);
 		}
+		
+		
 		return map;
+	}
+	
+	public Fragment addFragment(Fragment fragment) {
+		
+		AttributeMap map = new AttributeMap();
+		GraphConstants.setOpaque(map, true);
+		
+		DefaultGraphCell frag = fragment.getGroupObject();
+		
+		
+		Map attributes = new HashMap();
+        attributes.put(frag, map);
+        
+		
+		getModel().insert( new Object[] { frag },
+				attributes, null, null, null );
+		
+		return fragment;
 	}
 	
 	/**
@@ -225,14 +246,14 @@ public class JDomGraph extends JGraph implements Cloneable {
 	 */
 	protected AttributeMap defaultEdgeAttributes(EdgeType type) { 
 		if (type.getType() == EdgeType.solidVal) {
-			AttributeMap solidEdge = getModel().createAttributes();
+			AttributeMap solidEdge = new AttributeMap();
 			GraphConstants.setLineEnd(solidEdge, GraphConstants.ARROW_NONE);
 			GraphConstants.setEndSize(solidEdge, 10);
-			GraphConstants.setLineWidth(solidEdge, 1.7f);
+			GraphConstants.setLineWidth(solidEdge, 1.2f);
 			GraphConstants.setOpaque(solidEdge, true);
 			return solidEdge;
 		} else {
-			AttributeMap domEdge = getModel().createAttributes();
+			AttributeMap domEdge = new AttributeMap();
 			GraphConstants.setLineEnd(domEdge, GraphConstants.ARROW_CLASSIC);
 			GraphConstants.setEndSize(domEdge, 10);
 			GraphConstants.setLineColor(domEdge, Color.RED);

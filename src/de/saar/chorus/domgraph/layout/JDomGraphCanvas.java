@@ -35,6 +35,7 @@ public class JDomGraphCanvas implements Canvas {
 	Map<DefaultGraphCell, Fragment> nodeToFragment;
 	Set<Fragment> fragments;
 	Map<DefaultEdge, List<DefaultGraphCell>> treeEdges;
+	boolean fragmentscomputed;
 	
 	public JDomGraphCanvas(JDomGraph graph) {
 		jdomgraph = graph;
@@ -42,11 +43,23 @@ public class JDomGraphCanvas implements Canvas {
 		nodeToFragment = new HashMap<DefaultGraphCell, Fragment>();
 		fragments = new HashSet<Fragment>();
 		treeEdges = new HashMap<DefaultEdge, List<DefaultGraphCell>>();
+		fragmentscomputed = false;
 	}
 	
 	
 	
 	public void drawDominanceEdge(String src, String tgt) {
+		
+		if(! fragmentscomputed ) {
+			computeFragments();
+			
+//			 insert fragment cells into the graph.
+			for( Fragment frag : fragments ) {
+				jdomgraph.addFragment(frag);
+			}
+			fragmentscomputed = true;
+		}
+		
 		DefaultGraphCell source =
 			jdomgraph.getNodeForName(src);
 		DefaultGraphCell target = 
@@ -89,7 +102,8 @@ public class JDomGraphCanvas implements Canvas {
 		
 		
 
-		AttributeMap map = jdomgraph.getModel().getAttributes(node);
+		AttributeMap map = new AttributeMap();
+			//jdomgraph.getModel().getAttributes(node);
 		GraphConstants.setBounds(map, (Rectangle2D) bounds.clone());
 
 		viewMap.put(node, map);
@@ -189,6 +203,17 @@ public class JDomGraphCanvas implements Canvas {
 
 	public void drawLightDominanceEdge(String src, String tgt) {
 	
+		
+		if(! fragmentscomputed ) {
+			computeFragments();
+			
+//			 insert fragment cells into the graph.
+			for( Fragment frag : fragments ) {
+				jdomgraph.addFragment(frag);
+			}
+			fragmentscomputed = true;
+		}
+		
 		DefaultGraphCell source = jdomgraph.getNodeForName(src);
 		DefaultGraphCell target = jdomgraph.getNodeForName(tgt);
 		
@@ -229,15 +254,9 @@ public class JDomGraphCanvas implements Canvas {
 	
 	public void finish() {
 		jdomgraph.getGraphLayoutCache().edit(viewMap, null, null, null);
-		computeFragments();
 		
-//		 insert fragment cells into the graph.
-		for( Fragment frag : fragments ) {
-			
-			jdomgraph.getModel().insert( new Object[] { frag.getGroupObject() },
-					null, null, null, null );
-		}
 	//	JGraphUtilities.applyLayout(jdomgraph, new JDomGraphDummyLayout(jdomgraph));
+		//jdomgraph.setAntiAliased(true);
 		jdomgraph.validate();
 	}
 
