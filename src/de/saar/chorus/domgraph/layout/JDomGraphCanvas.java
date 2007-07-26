@@ -143,13 +143,12 @@ public class JDomGraphCanvas implements Canvas {
 
 				tFrag.add(edge);
 			}
-			System.out.println(fragments);
+			
 			
 		}
 	
 		
 		for(Fragment frag : fragments) {
-			System.err.println(frag);
 			jdomgraph.addFragment(frag);
 		}
 		
