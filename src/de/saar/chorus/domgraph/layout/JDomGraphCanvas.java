@@ -50,15 +50,6 @@ public class JDomGraphCanvas implements Canvas {
 	
 	public void drawDominanceEdge(String src, String tgt) {
 		
-		if(! fragmentscomputed ) {
-			computeFragments();
-			
-//			 insert fragment cells into the graph.
-			for( Fragment frag : fragments ) {
-				jdomgraph.addFragment(frag);
-			}
-			fragmentscomputed = true;
-		}
 		
 		DefaultGraphCell source =
 			jdomgraph.getNodeForName(src);
@@ -122,6 +113,13 @@ public class JDomGraphCanvas implements Canvas {
 	}
 	
 	private void computeFragments() {
+		
+		for(DefaultGraphCell node : jdomgraph.getNodes() ) {
+			if( ! nodeToFragment.containsKey(node) ) {
+				buildElementaryFragment(node);
+			}
+		}
+		
 		for(DefaultEdge edge : treeEdges.keySet()) {
 			List<DefaultGraphCell> pair = treeEdges.get(edge);
 			DefaultGraphCell source =
@@ -130,13 +128,7 @@ public class JDomGraphCanvas implements Canvas {
 			DefaultGraphCell target =
 				pair.get(1);
 
-			if(! nodeToFragment.containsKey(source)) {
-				buildElementaryFragment(source);
-			}
-
-			if(! nodeToFragment.containsKey(target)) {
-				buildElementaryFragment(target);
-			}
+		
 
 
 			Fragment sFrag = nodeToFragment.get(source);
@@ -151,7 +143,16 @@ public class JDomGraphCanvas implements Canvas {
 
 				tFrag.add(edge);
 			}
+			System.out.println(fragments);
+			
 		}
+	
+		
+		for(Fragment frag : fragments) {
+			System.err.println(frag);
+			jdomgraph.addFragment(frag);
+		}
+		
 	}
 
 	public void drawTreeEdge(String src, String tgt) {
@@ -161,15 +162,15 @@ public class JDomGraphCanvas implements Canvas {
 		DefaultGraphCell target = 
 			jdomgraph.getNodeForName(tgt);
 		
-		if( JGraphUtilities.getEdgesBetween(jdomgraph, source, target).length == 0) {
-			EdgeData data =  new EdgeData(EdgeType.solid, src + " --> " + tgt, jdomgraph );
-			DefaultEdge edge = jdomgraph.addEdge(data, source, target);
+		
+		EdgeData data =  new EdgeData(EdgeType.solid, src + " --> " + tgt, jdomgraph );
+		DefaultEdge edge = jdomgraph.addEdge(data, source, target);
 			
-			List<DefaultGraphCell> pair = new ArrayList<DefaultGraphCell>();
-			pair.add(source);
-			pair.add(target);
-			treeEdges.put(edge, pair);
-		}
+		
+		List<DefaultGraphCell> pair = new ArrayList<DefaultGraphCell>();
+		pair.add(source);
+		pair.add(target);
+		treeEdges.put(edge, pair);
 		
 		
 	}
@@ -204,15 +205,6 @@ public class JDomGraphCanvas implements Canvas {
 	public void drawLightDominanceEdge(String src, String tgt) {
 	
 		
-		if(! fragmentscomputed ) {
-			computeFragments();
-			
-//			 insert fragment cells into the graph.
-			for( Fragment frag : fragments ) {
-				jdomgraph.addFragment(frag);
-			}
-			fragmentscomputed = true;
-		}
 		
 		DefaultGraphCell source = jdomgraph.getNodeForName(src);
 		DefaultGraphCell target = jdomgraph.getNodeForName(tgt);
@@ -254,7 +246,7 @@ public class JDomGraphCanvas implements Canvas {
 	
 	public void finish() {
 		jdomgraph.getGraphLayoutCache().edit(viewMap, null, null, null);
-		
+		computeFragments();
 	//	JGraphUtilities.applyLayout(jdomgraph, new JDomGraphDummyLayout(jdomgraph));
 		//jdomgraph.setAntiAliased(true);
 		jdomgraph.validate();

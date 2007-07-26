@@ -48,6 +48,18 @@ public class Fragment extends DomGraphPopupTarget {
         
     }
     
+    
+    public boolean contains(DefaultGraphCell cell) {
+    	if( nodes.contains(cell) && edges.contains(cell) ) {
+    		return true;
+    	}
+    	return false;
+    }
+    
+    FragmentUserObject getFragmentUserObject() {
+    	return fou;
+    }
+    
     /**
      * Add a node to this fragment.
      * 
@@ -121,7 +133,7 @@ public class Fragment extends DomGraphPopupTarget {
      * 
      * @return the set of all edges.
      */
-    Set<DefaultEdge> getEdges() {
+    public Set<DefaultEdge> getEdges() {
         return edges;
     }
 
@@ -325,6 +337,18 @@ public class Fragment extends DomGraphPopupTarget {
     	
     	
     }
+
+	
+	public boolean equals(Object arg0) {
+		
+		return ( arg0 instanceof Fragment && ( (Fragment) arg0).getNodes().equals(nodes) );
+	}
+
+	@Override
+	public int hashCode() {
+		
+		return super.hashCode();
+	}
 	
 	
 	
