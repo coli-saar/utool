@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -63,6 +65,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	  // the nodes and edges of the graph
     private Set<DefaultGraphCell> nodes;
     private Set<DefaultEdge> edges;
+    private Set<Fragment> fragments;
     private Map<String,DefaultGraphCell> nameToNode;
   
     // A name or ID for the graph (displayed in window title, id attribute in graph element)
@@ -139,6 +142,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		boundingBox = new Rectangle();
 		nodes = new HashSet<DefaultGraphCell>();
 	    edges = new HashSet<DefaultEdge>();
+	    fragments = new HashSet<Fragment>();
 	    nameToNode = new HashMap<String,DefaultGraphCell>();
 	    nodeFont = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN, 17);
 	    
@@ -224,19 +228,14 @@ public class JDomGraph extends JGraph implements Cloneable {
 	}
 	
 	public Fragment addFragment(Fragment fragment) {
-		
-		AttributeMap map = new AttributeMap();
-		GraphConstants.setOpaque(map, true);
-		
-		DefaultGraphCell frag = fragment.getGroupObject();
-		
-		
-		Map attributes = new HashMap();
-        attributes.put(frag, map);
-        
-		
-		getModel().insert( new Object[] { frag },
-				attributes, null, null, null );
+		 
+		if(! fragments.contains(fragment)) {
+			
+
+			DefaultGraphCell frag = new DefaultGraphCell(fragment.getFragmentUserObject());
+			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
+			
+		}
 		
 		return fragment;
 	}
@@ -277,23 +276,27 @@ public class JDomGraph extends JGraph implements Cloneable {
      * @return a new DefaultGraphCell object in this graph.
      */
     public DefaultGraphCell addNode(String name, NodeData data) {
-        DefaultGraphCell ret = new DefaultGraphCell(data);
-        GraphModel model = getModel();
-        
-        AttributeMap style = defaultNodeAttributes(data.getType());
+    	DefaultGraphCell cell = getNodeForName(name);
+    	if(cell == null) {
+    		DefaultGraphCell ret = new DefaultGraphCell(data);
+    		GraphModel model = getModel();
 
-        Map attributes = new HashMap();
-        attributes.put(ret, style);
-        
-        DefaultPort port = new DefaultPort();
-        ret.add(port);
-        
-        model.insert(new Object[] { ret, port }, attributes, new ConnectionSet(), null, null);
-        
-        nodes.add(ret);
-        nameToNode.put(name, ret);
-        
-        return ret;
+    		AttributeMap style = defaultNodeAttributes(data.getType());
+
+    		Map attributes = new HashMap();
+    		attributes.put(ret, style);
+
+    		DefaultPort port = new DefaultPort();
+    		ret.add(port);
+
+    		model.insert(new Object[] { ret, port }, attributes, new ConnectionSet(), null, null);
+
+    		nodes.add(ret);
+    		nameToNode.put(name, ret);
+
+    		return ret;
+    	} 
+    	return cell;
     }
 	/**
 	 * Add some sample nodes and edges to the graph. 
@@ -330,25 +333,30 @@ public class JDomGraph extends JGraph implements Cloneable {
      * @param tgt the node cell at which the edge should end.
      * @return a new DefaultEdge object in this graph.
      */
-    public DefaultEdge addEdge(EdgeData data, DefaultGraphCell src, DefaultGraphCell tgt) {
-        
-        DefaultEdge ret = new DefaultEdge(data);
-        
-        
-        GraphModel model = getModel();
-        AttributeMap style = defaultEdgeAttributes(data.getType());
-        Map attributes = new HashMap();
-        attributes.put(ret, style);
-        
-    
-        ConnectionSet cs = new ConnectionSet();
-        cs.connect(ret, src.getChildAt(0), tgt.getChildAt(0));
-        model.insert(new Object[] { ret }, attributes, cs, null, null );
-        
-        edges.add(ret);
-        
-        return ret;
-    }
+	public DefaultEdge addEdge(EdgeData data, DefaultGraphCell src, DefaultGraphCell tgt) {
+
+		Object[] foundedges = JGraphUtilities.getEdgesBetween(this, src, tgt);
+
+		if(foundedges.length <= 0) {
+			DefaultEdge ret = new DefaultEdge(data);
+
+
+			GraphModel model = getModel();
+			AttributeMap style = defaultEdgeAttributes(data.getType());
+			Map attributes = new HashMap();
+			attributes.put(ret, style);
+
+
+			ConnectionSet cs = new ConnectionSet();
+			cs.connect(ret, src.getChildAt(0), tgt.getChildAt(0));
+			model.insert(new Object[] { ret }, attributes, cs, null, null );
+
+			edges.add(ret);
+
+			return ret;
+		}
+		return (DefaultEdge) foundedges[0];
+	}
 	
 	/**
 	 * @return Returns the dominanceEdges.
