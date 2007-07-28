@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -21,8 +21,8 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.gui.chartviewer.JDomGraphDummyLayout;
+import de.saar.chorus.ubench.chartviewer.JDomGraphDummyLayout;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 	private JDomGraph jgraph;

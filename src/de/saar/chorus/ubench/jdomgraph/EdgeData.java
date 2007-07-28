@@ -2,7 +2,7 @@
  * Created on 28.07.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import de.saar.chorus.jgraph.improvedjgraph.IEdgeData;
 
@@ -16,7 +16,7 @@ import de.saar.chorus.jgraph.improvedjgraph.IEdgeData;
  * @author Alexander Koller
  *
  */
-public class EdgeData extends DomGraphPopupTarget implements IEdgeData<EdgeType> {
+public class EdgeData implements IEdgeData<EdgeType> {
 	
 
 	private EdgeType type;
@@ -28,8 +28,7 @@ public class EdgeData extends DomGraphPopupTarget implements IEdgeData<EdgeType>
 	 * @param name
 	 */
 	public EdgeData(EdgeType type, String name, JDomGraph parent) {
-	    super(parent);
-	    
+	   
 		this.type = type;
 		this.name = name;
 	}
@@ -56,7 +55,7 @@ public class EdgeData extends DomGraphPopupTarget implements IEdgeData<EdgeType>
 	}
 	
 	/* (non-Javadoc)
-     * @see de.saar.chorus.ubench.DomGraphPopupTarget#getMenuLabel()
+     * @see de.saar.chorus.ubench.jdomgraph.DomGraphPopupTarget#getMenuLabel()
      */
     public String getMenuLabel() {
         return "Edge " + name;

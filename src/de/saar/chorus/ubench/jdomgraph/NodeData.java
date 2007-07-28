@@ -2,14 +2,14 @@
  * Created on 28.07.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.improvedjgraph.INodeData;
-import de.saar.chorus.ubench.gui.Preferences;
+import de.saar.chorus.ubench.Preferences;
 
 
 
@@ -23,7 +23,7 @@ import de.saar.chorus.ubench.gui.Preferences;
  * @author Alexander Koller
  *
  */
-public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType> {
+public class NodeData implements INodeData<NodeType> {
 	private String name;
     private String simplifiedLabel;
 	private String label;
@@ -38,7 +38,6 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 	 * @param type
 	 */
 	public NodeData(NodeType type, String name, String label, JDomGraph parent) {
-	    super(parent);
 	    
         this.name = name;
 		setLabel(label);
@@ -53,8 +52,6 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 	 * @param type
 	 */
 	public NodeData(NodeType type, String name, JDomGraph parent) {
-	    super(parent);
-	    
 		this.name = name;
 		this.type = type;
 		this.label = "";

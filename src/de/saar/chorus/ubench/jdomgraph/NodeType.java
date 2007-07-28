@@ -3,7 +3,7 @@
  */
 
 
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 
 /**

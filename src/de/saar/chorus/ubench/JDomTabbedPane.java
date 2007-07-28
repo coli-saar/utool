@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
