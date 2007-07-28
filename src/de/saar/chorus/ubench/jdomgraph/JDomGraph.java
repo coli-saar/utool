@@ -2,7 +2,7 @@
  * Created on 28.07.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,8 +32,8 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
-import de.saar.chorus.ubench.Fragment.FragmentUserObject;
-import de.saar.chorus.ubench.gui.Preferences.LayoutType;
+import de.saar.chorus.ubench.Preferences.LayoutType;
+import de.saar.chorus.ubench.jdomgraph.Fragment.FragmentUserObject;
 
 /**
  * A Swing component that represents a labelled dominance graph.
@@ -53,9 +53,6 @@ public class JDomGraph extends JGraph implements Cloneable {
 	private Set<DefaultEdge> dominanceEdges;
 	
 	
-	
-	// The set of DomGraphPopupListeners that have been registered for this graph.
-	private Set<DomGraphPopupListener> popupListeners;
 	
 	// If a popup menu is currently open, the cell the menu belongs to.
 	private DefaultGraphCell activePopupCell;
@@ -79,56 +76,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	private Font nodeFont;
 	private Font upperBoundFont;
 	
-	// This listener draws a popup menu when the right mouse button is ed.
-	/*private class PopupListener extends MouseAdapter {
-		public void mousePressed(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-		
-		public void mouseReleased(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-		
-		private void maybeShowPopup(MouseEvent e) {
-			if ((e != null) && e.isPopupTrigger()) {
-				int x = e.getX(), y = e.getY();
-				
-				activePopupCell = findNodeOrEdgeAt(x,y);
-				
-				if( activePopupCell != null ) {
-					JPopupMenu popup = new JPopupMenu();
-					Fragment frag = findFragment(activePopupCell);
-					
-					if( activePopupCell instanceof DefaultEdge ) {
-						// This instanceof test has to come first, because
-						// DefaultEdge is a subclass of DefaultGraphCell.
-						EdgeData data = (EdgeData) activePopupCell.getUserObject();
-						JMenuItem item = data.getMenu();
-						
-						if( item != null )
-							popup.add(item);	                        
-					} else {
-						NodeData data = (NodeData) activePopupCell.getUserObject();
-						JMenuItem item = data.getMenu();
-						
-						if( item != null )
-							popup.add(item);
-					}  
-					
-					if( frag != null ) {
-						JMenuItem item = frag.getMenu();
-						
-						if( item != null ) {
-							popup.add(item);
-						}
-					}
-					
-					popup.show(e.getComponent(), e.getX(), e.getY());	                    
-				}
-			}
-			
-		}
-	}*/
+	
 	
 	/**
 	 * Sets up an empty dominance graph.
@@ -149,9 +97,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		dominanceEdges = new HashSet<DefaultEdge>();
 		upperBoundFont = GraphConstants.DEFAULTFONT
 		.deriveFont(Font.BOLD, 17);
-		// set up popup handling
-		popupListeners = new HashSet<DomGraphPopupListener>();
-		//addMouseListener(new PopupListener());	
+		
 		clear();
 
 		setAntiAliased(true); 
@@ -367,43 +313,6 @@ public class JDomGraph extends JGraph implements Cloneable {
 	
 	
 	
-	//// popup handling methods
-	
-	/**
-	 * Add a popup listener. This listener will be called every time
-	 * the user selects an item from a (node or fragment) popup menu.
-	 * 
-	 * @param listener
-	 */
-	public void addPopupListener(DomGraphPopupListener listener) {
-		popupListeners.add(listener);
-	}
-	
-	/**
-	 * Remove a popup listener.
-	 * 
-	 * @param listener
-	 */
-	public void removePopupListener(DomGraphPopupListener listener) {
-		popupListeners.remove(listener);
-	}
-	
-	/**
-	 * Notify all registered popup listeners that the user selected
-	 * a popup menu item. This means that the <code>popupSelected</code>
-	 * methods of these listener objects are called.
-	 * 
-	 * @param menuItemLabel the label of the selected menu item.
-	 */
-/*	void notifyPopupListeners(String menuItemLabel) {
-		for( DomGraphPopupListener listener : popupListeners ) {
-			listener.popupSelected(activePopupCell, 
-					findFragment(activePopupCell), 
-					menuItemLabel);
-		}
-		
-		activePopupCell = null;
-	}*/
 	
 	
 	
@@ -446,7 +355,6 @@ public class JDomGraph extends JGraph implements Cloneable {
 			} else {
 				cloneData = new NodeData(NodeType.unlabelled, cellData.getName(), clone); 
 			}
-			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
 			clone.addNode(cellData.getName(), cloneData);
 		}
 		
@@ -463,7 +371,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 				cloneData = new EdgeData(EdgeType.dominance, cellData.getName(), clone );
 			}
 			
-			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
+		
 			clone.addEdge(cloneData, clone.getNodeForName(getNodeData(getSourceNode(edge)).getName()), 
 					clone.getNodeForName(getNodeData(getTargetNode(edge)).getName()));
 		}

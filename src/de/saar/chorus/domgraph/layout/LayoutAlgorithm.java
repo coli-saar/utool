@@ -12,7 +12,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
-import de.saar.chorus.ubench.gui.JDomGraphTab;
+import de.saar.chorus.ubench.JDomGraphTab;
 
 public abstract class LayoutAlgorithm {
 	

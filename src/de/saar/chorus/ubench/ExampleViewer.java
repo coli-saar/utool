@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,7 +26,7 @@ import javax.swing.event.ListSelectionListener;
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * A window showing the examples registered in the
