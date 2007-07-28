@@ -11,7 +11,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.JScrollableJGraph;
 import de.saar.chorus.ubench.Preferences.LayoutType;
-import de.saar.chorus.ubench.chartviewer.ChartViewer;
+import de.saar.chorus.ubench.chartviewertemp.ChartViewer;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 
