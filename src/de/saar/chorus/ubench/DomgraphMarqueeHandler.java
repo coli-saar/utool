@@ -21,7 +21,6 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.chartviewer.JDomGraphDummyLayout;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
