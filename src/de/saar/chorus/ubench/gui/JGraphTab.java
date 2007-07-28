@@ -303,15 +303,16 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public void repaintIfNecessary() {
+	public boolean repaintIfNecessary() {
 		if ((recentLayout == null)
 				|| Preferences.mustUpdateLayout(recentLayout)) {
-			System.err.println("Updating: Layout changes to " + 
-					Preferences.getInstance().getLayoutType());
+			
 			graph.setLabeltype(Preferences.getInstance().getLabelType());
 			graph.setLayoutType(Preferences.getInstance().getLayoutType());
 			updateRecentLayout();
+			return true;
 		}
+		return false;
 	}
 	
 	public LabelType getLabelType() {

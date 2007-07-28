@@ -103,20 +103,25 @@ public class JDomGraphTab extends JGraphTab  {
 	public void setDominanceGraph(DomGraph domgraph, NodeLabels labels) {
 		this.domGraph = domgraph;
 		this.nodeLabels = labels;
+		
+		
+		
 		isSolvedYet = false;
-
 		if(Preferences.isAutoCount()) {
 			Ubench.getInstance().showProgressBar();
 			solve();
 		} 
+		
 		
 		statusBar = new DominanceGraphBar();
 		barCode = Ubench.getInstance().getStatusBar().insertBar(statusBar);
 		
 
 		cv = null;
-		//graph.clear();
-		drawGraph();
+		if (! repaintIfNecessary()) {
+			graph.clear();
+			drawGraph();
+		}
 		Ubench.getInstance().refresh();
 	}
 	
@@ -266,14 +271,11 @@ public class JDomGraphTab extends JGraphTab  {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public void repaintIfNecessary() {
-		if ((recentLayout == null)
-				|| Preferences.mustUpdateLayout(recentLayout)) {
-			System.err.println("Updating: Layout changes to " + 
-					Preferences.getInstance().getLayoutType());
-
-
-			if(isSolvedYet || Preferences.getInstance().getLayoutType() != LayoutType.CHARTLAYOUT) {
+	public boolean repaintIfNecessary() {
+		if (recentLayout == null || Preferences.mustUpdateLayout(recentLayout) 
+				|| ! layout.isApplicable(this) ) {
+			
+			if(Preferences.getInstance().getLayoutType().isApplicable(this)) {
 				setLayoutType(Preferences.getInstance().getLayoutType());
 			} else {
 				setLayoutType(LayoutType.JDOMGRAPH);
@@ -282,7 +284,9 @@ public class JDomGraphTab extends JGraphTab  {
 			drawGraph();
 			updateRecentLayout();
 			validate();
+			return true;
 		}
+		return false;
 	}
 
 
