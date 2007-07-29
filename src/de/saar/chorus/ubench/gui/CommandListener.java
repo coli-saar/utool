@@ -5,7 +5,7 @@
  *  
  */
 
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.gui;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -68,8 +68,9 @@ import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager.State;
-import de.saar.chorus.ubench.Preferences.LayoutType;
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
+import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 /**
  * The main <code>ActionListener</code> and <code>ItemListener</code> 

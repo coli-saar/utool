@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.gui;
 
 import java.awt.Color;
 import java.awt.Insets;
@@ -19,6 +19,7 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
+import de.saar.chorus.ubench.ServerOptions;
 
 
 /**
