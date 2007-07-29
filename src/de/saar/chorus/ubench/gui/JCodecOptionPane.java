@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.jdomgraph;
+package de.saar.chorus.ubench.gui.chartviewer;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -12,8 +12,7 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.layout.JGraphLayoutAlgorithm;
 
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
-
+import de.saar.chorus.ubench.JDomGraph;
 
 /**
  * A <code>JGraphLayoutAlgorithm</code> designed to

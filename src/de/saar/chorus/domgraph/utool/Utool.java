@@ -23,7 +23,7 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
-import de.saar.chorus.ubench.Ubench;
+import de.saar.chorus.ubench.gui.Ubench;
 
 /**
  * The Utool main program for accessing the Domgraph functionality

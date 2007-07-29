@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,7 +27,8 @@ import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
-import de.saar.chorus.ubench.Preferences.LayoutType;
+import de.saar.chorus.ubench.ServerOptions;
+import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 
 /**

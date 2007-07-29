@@ -27,7 +27,6 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.Canvas;
 import de.saar.chorus.domgraph.layout.DomGraphLayoutParameters;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
-import de.saar.chorus.ubench.JDomGraphTab;
 
 
 

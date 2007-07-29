@@ -20,12 +20,12 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.jdomgraph.EdgeData;
-import de.saar.chorus.ubench.jdomgraph.EdgeType;
-import de.saar.chorus.ubench.jdomgraph.Fragment;
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
-import de.saar.chorus.ubench.jdomgraph.NodeData;
-import de.saar.chorus.ubench.jdomgraph.NodeType;
+import de.saar.chorus.ubench.EdgeData;
+import de.saar.chorus.ubench.EdgeType;
+import de.saar.chorus.ubench.Fragment;
+import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.NodeData;
+import de.saar.chorus.ubench.NodeType;
 
 public class JDomGraphCanvas implements Canvas {
 
