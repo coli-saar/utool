@@ -43,8 +43,8 @@
     <!-- file sets -->
     <property name="domgraph.jar" value="${build.lib}/Utool-${domgraph.version}.jar" />
     <property name="domgraph-compact.jar" value="${build.lib}/Utool-compact-${domgraph.version}.jar" />
-    <property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*, ${chorus}/ubench/*,${chorus}/layout/**/*,${chorus}/ubench/gui/*,${chorus}/ubench/gui/chartviewer/*,${chorus}/jgraph/**/*,${chorus}/gecode/*" />
-    <property name="domgraph.allsourcefiles" value="${chorus}/domgraph/**/*.java, ${chorus}/domgraph/**/*.jj, ${chorus}/domgraph/**/*.properties, ${coli}/basic/*.java, ${coli}/getopt/*.java,${chorus}/ubench/*.java,${chorus}/ubench/gui/chartviewer/*.java,${chorus}/gecode/*.java,${chorus}/ubench/gui/*.java,${chorus}/jgraph/**/*.java" />
+    <property name="domgraph.jar.classes" value="${chorus}/domgraph/**,${coli}/getopt/*,${coli}/basic/*, ${chorus}/ubench/*,${chorus}/ubench/jdomgraph/*,${chorus}/ubench/chartviewer/*,${chorus}/jgraph/**/*,${chorus}/gecode/*" />
+    <property name="domgraph.allsourcefiles" value="${chorus}/domgraph/**/*.java, ${chorus}/domgraph/**/*.jj, ${chorus}/domgraph/**/*.properties, ${coli}/basic/*.java, ${coli}/getopt/*.java,${chorus}/ubench/*.java,${chorus}/ubench/jdomgraph/*.java,${chorus}/ubench/chartviewer/*.java,${chorus}/gecode/*.java,${chorus}/ubench/gui/*.java,${chorus}/jgraph/**/*.java" />
     <property name="pictures" value="${prefix}/projects/Domgraph/pictures"/>
     
     <!-- parameters for the distribution -->
