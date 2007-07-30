@@ -90,8 +90,10 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 
 	
 	public void run(JGraph jgraph, Object[] cells, int step) {
-		if(! graph.getNodes().isEmpty())
-		placeNodes();
+		if(! graph.getNodes().isEmpty()) {
+			 placeNodes();
+		}
+		  
 	}
 
 }

@@ -4,16 +4,12 @@
  */
 package de.saar.chorus.ubench;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -26,14 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -318,18 +315,37 @@ public class Ubench {
         return tabbedPane.getSelectedIndex();
     }
     
-    /**
-     * Adding a complete tab to the window
-     * 
-     * @param tab
-     *            the tab to ad
-     * @param showNow
-     *            if set to true, the tab will be displayed at once
-     */
-    public void addTab(JGraphTab tab, boolean showNow) {
-        // Ubench, CommandListener#actionPerformed, ChartViewerListener#actionPerformed
-        addTab(tab, showNow, tabbedPane.getTabCount());
-        
+   
+    
+    boolean showFirstSolvedForm() {
+
+    	JGraphTab visible = getVisibleTab();
+    	try {
+    	if(visible instanceof JDomGraphTab) {
+    		JSolvedFormTab sFTab = ((JDomGraphTab)  visible).createFirstSolvedForm();
+    	
+    		if(addTab(sFTab, true, tabbedPane.getTabCount())) {
+    			getMenuBar().setPlusMinusEnabled(true,false);
+    			refresh();
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	} else {
+    		return false;
+    	}
+    	} catch(Exception e) {
+    		
+    		return false;
+    	}
+    }
+    
+    void duplicateVisibleTab() {
+    	try {
+    	addTab(getVisibleTab().clone(), true, tabbedPane.getTabCount());
+    	} catch(Exception e ) {
+    		
+    	}
     }
     
     /**
@@ -340,60 +356,60 @@ public class Ubench {
      * @param showNow
      *            if set to true, the tab will be displayed at once
      */
-    public void addTab(JGraphTab tab, boolean showNow, int ind) {
-    	
-    	//TODO note: Ubench, CommandListener#showSolvedFormWithIndex
-    	
+    private boolean addTab(JGraphTab tab, boolean showNow, int ind) throws Exception {
+
+
+
     	if(tab != null && (! tab.isEmpty())) {
     		
-    		int index;
-    		tabs.add(ind, tab);
-    		// registering the tab
-    		if (ind < (tabs.size() - 1)) {
-    			index = ind;
-    			
-    			tabbedPane.insertTab(tab.getDefaultName(), null, 
-    					tab, tab.getDefaultName(), index);
-    			
-    		} else {
-    			tabbedPane.addTab(tab.getDefaultName(), tab);
-    			//tabs.add(tab);
-    			index = tabs.size() - 1;
+    			int index;
+    			tabs.add(ind, tab);
+    			// registering the tab
+    			if (ind < (tabs.size() - 1)) {
+    				index = ind;
+
+    				tabbedPane.insertTab(tab.getDefaultName(), null, 
+    						tab, tab.getDefaultName(), index);
+
+    			} else {
+    				tabbedPane.addTab(tab.getDefaultName(), tab);
+    				//tabs.add(tab);
+    				index = tabs.size() - 1;
+    			}
+
+
+
+    			tab.drawGraph();
+    			ttm.registerComponent(tab.getGraph());
+
+    			// if it's the first tab added, the graph menus get enabled
+    			if (tabbedPane.getTabCount() == 1) {
+    				menuBar.setGraphSpecificItemsEnabled(true);
+    			}
+
+    			// if the tab shall be shown, the selected index is
+    			// the last one
+    			if (showNow) {
+    				tabbedPane.setSelectedIndex(index);
+    			}
+
+
+
+    			tabbedPane.validate();
+
+    			// aligning with preferences...
+
+    			// fitting?
+    			if (Preferences.isFitToWindow()) {
+    				tab.fitGraph();
+    			}
+
+
+
+
+    			return true;
     		}
-    		
-    		
-  
-    		tab.drawGraph();
-    		ttm.registerComponent(tab.getGraph());
-    		
-    		// if it's the first tab added, the graph menus get enabled
-    		if (tabbedPane.getTabCount() == 1) {
-    			menuBar.setGraphSpecificItemsEnabled(true);
-    		}
-    		
-    		// if the tab shall be shown, the selected index is
-    		// the last one
-    		if (showNow) {
-    			tabbedPane.setSelectedIndex(index);
-    		}
-    		
-    		
-    		
-    		tabbedPane.validate();
-    		
-    		// aligning with preferences...
-    		
-    		// fitting?
-    		if (Preferences.isFitToWindow()) {
-    			tab.fitGraph();
-    		}
-    		
-    		
-    	
-    	
-    		
-    	}
-    	
+    	return false;
     }
     
     /**
@@ -407,37 +423,7 @@ public class Ubench {
         menuBar.setSolvingEnabled(b);
     }
     
-    /**
-     * Adding a new tab to the window displaying the given
-     * <code>JDomGraph</Code>
-     * 
-     * @param graph the graph to display
-     * @param label the name for the tab
-     * @param paintNow if set to true, the graph is layoutet at once
-     * @param showNow if set to true, the tab will be shown after creating
-     * @return the tab or null if an error occured while setting up the tab
-     */
-    public JDomGraphTab addNewTab(JDomGraph graph, String label,
-            DomGraph origin, boolean paintNow, boolean showNow,
-            NodeLabels labels) {
-        
-    	// CommandListener#ActionPerformed, ExampleViewer
-        String normalisedLabel = normaliseTabLabel(label);
-        
-        // the new tab
-        JDomGraphTab tab = new JDomGraphTab(graph, origin, normalisedLabel, paintNow,
-                listener, labels);
-        if (tab.getGraph() != null && (! tab.isEmpty())) {
-            
-            // tab sucessfully created
-            addTab(tab, showNow);
-            return tab;
-        } else {
-            // something went wrong (the tab contains no graph)
-            return null;
-        }
-        
-    }
+     
     
     /**
      * 
@@ -470,18 +456,69 @@ public class Ubench {
      * @return true if the <code>DomGraph</code> was sucessfully 
      * 		   translated into a <code>JDomGraph</code>
      */
-    public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
+    public boolean addJDomGraphTab(String label, DomGraph graph, NodeLabels labels) {
         
-    	//TODO note: Utool#main, ServerThread#blabla
         JDomGraph jDomGraph = new JDomGraph();
-        
+       try {
         JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
                 true, listener, labels);
-        addTab(tab, true);
-        return true;
+        return addTab(tab, true, tabbedPane.getTabCount());
+       } catch(Exception e) {
+    	   JOptionPane pane = 
+				new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
+			JDialog dialog = 
+				pane.createDialog(window, "Error");
+			dialog.setModal(false);
+    	   return false;
+       }
+         
     }
     
-    
+   
+     public boolean addSolvedFormTab(String label, DomGraph sf, 
+    		 SolvedFormIterator sfi, long no,
+    		 long all, DomGraph graph, NodeLabels labels,
+    		 String graphname, boolean atEnd) {
+        JDomGraph jDomGraph = new JDomGraph();
+        
+        JSolvedFormTab tab = new JSolvedFormTab(jDomGraph, 
+				label, 
+				sfi, graph, sf,
+				1, all, 
+				graphname, 
+				Ubench.getInstance().getListener(), 
+				labels);
+        int place;
+        if( atEnd ) {
+        	// show some solved form (the one of a chart e.g.)
+        	place = tabbedPane.getTabCount();
+        } else {
+        	// solved form scrolling
+        	place = getVisibleTabIndex();
+        	closeCurrentTab();
+        	if(no > 1 && no < getVisibleTab().getSolvedForms()) {
+    			getMenuBar().setPlusMinusEnabled(true,true);
+    		} else if (no == 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
+    			getMenuBar().setPlusMinusEnabled(true,false);
+    		} else if (no > 1 && no == Ubench.getInstance().getVisibleTab().getSolvedForms()) {
+    			getMenuBar().setPlusMinusEnabled(false,true);
+    		} else {
+    			getMenuBar().setPlusMinusEnabled(false,false);
+    		}
+    		Ubench.getInstance().getStatusBar().showBar(tab.getBarCode());
+    		
+        }
+        try {
+        	return addTab(tab, true, place);
+        } catch(Exception e) {
+        	JOptionPane pane = 
+				new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
+			JDialog dialog = 
+				pane.createDialog(window, "Error");
+			dialog.setModal(false);
+    	   return false;
+        }
+    }
     
     /**
      * @return the <code>JDomGraph</code> currently displayed

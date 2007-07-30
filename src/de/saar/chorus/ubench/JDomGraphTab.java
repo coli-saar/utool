@@ -63,7 +63,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * @param paintNow if set to true, the graph is layoutet at once
 	 */
 	public JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
-			boolean paintNow, CommandListener lis, NodeLabels labels) {
+			boolean paintNow, CommandListener lis, NodeLabels labels) throws Exception {
 
 		super(theGraph, origin, name, lis, labels);
 		// initializing
@@ -100,7 +100,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * @param domgraph
 	 * @param labels
 	 */
-	public void setDominanceGraph(DomGraph domgraph, NodeLabels labels) {
+	public void setDominanceGraph(DomGraph domgraph, NodeLabels labels) throws Exception {
 		this.domGraph = domgraph;
 		this.nodeLabels = labels;
 		
@@ -125,7 +125,7 @@ public class JDomGraphTab extends JGraphTab  {
 		Ubench.getInstance().refresh();
 	}
 	
-	void drawGraph() {
+	void drawGraph() throws Exception {
 		
 		if(! domGraph.getAllNodes().isEmpty()) {
 		try {
@@ -152,16 +152,10 @@ public class JDomGraphTab extends JGraphTab  {
 		} catch (Exception e) {
 			//TODO find another way to notify Ubench about an empty tab
 			empty = true;
+			
+			throw new Exception("Layout error: Ubench cannot layout this graph." +
+					"Please make shure that your graph is valid.");
 
-			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"An error occurred while laying out this graph.\n"
-					+ "Probably the graph is constructed in a very strange way,\n"
-					+ "so Ubench unfortunately cannot display it.",
-					"Error during layout",
-					JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
-			Ubench.getInstance().refresh();
-			return;
 
 		}
 
@@ -271,7 +265,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public boolean repaintIfNecessary() {
+	public boolean repaintIfNecessary() throws Exception {
 		if (recentLayout == null || Preferences.mustUpdateLayout(recentLayout) 
 				|| ! layout.isApplicable(this) ) {
 			
@@ -512,11 +506,17 @@ public class JDomGraphTab extends JGraphTab  {
 	public JGraphTab clone() {
 		JDomGraph jdomCl = graph.clone();
 		DomGraph domCl = (DomGraph) domGraph.clone();
-
+		try {
 		JDomGraphTab myClone = new JDomGraphTab(jdomCl, domCl,
 				defaultName,true, listener, nodeLabels);
-
 		return myClone;
+		} catch( Exception e ) {
+			// actually, this cannot happen
+			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+					e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+		
 	}
 
 	/**

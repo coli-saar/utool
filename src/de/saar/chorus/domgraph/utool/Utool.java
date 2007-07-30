@@ -300,7 +300,7 @@ public class Utool {
             
         case display:
             if( options.getGraph() != null ) {
-                Ubench.getInstance().addNewTab(
+                Ubench.getInstance().addJDomGraphTab(
                         options.getInputName(),
                         options.getGraph(),
                         options.getLabels());

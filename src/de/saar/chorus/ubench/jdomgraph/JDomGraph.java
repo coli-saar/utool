@@ -169,10 +169,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 		if(! fragments.contains(fragment)) {
 
 			DefaultGraphCell frag = new DefaultGraphCell();
-		
 			fragments.add(fragment);
 			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
-			
 		}
 		
 		return fragment;
