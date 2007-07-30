@@ -201,8 +201,9 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
         
         while( (cell != null) && !cells.contains(cell) ) {
             cells.add(cell);
-
-            if( jgraph.getNodeData((DefaultGraphCell) cell) != null ) {
+            Object uo =  ( (DefaultGraphCell) cell).getUserObject();
+            
+            if(uo instanceof de.saar.chorus.ubench.jdomgraph.NodeData) {
             	return (DefaultGraphCell) cell;
             }
 
@@ -218,6 +219,7 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 		AttributeMap map = jgraph.getModel().getAttributes(node);
 		GraphConstants.setBackground(map, color);
 		viewMap.put(node, map);
+		
 		
 		jgraph.getGraphLayoutCache().edit(viewMap, null, null, null);
 	}

@@ -41,9 +41,7 @@ import de.saar.chorus.ubench.jdomgraph.Fragment.FragmentUserObject;
  * 
  */
 public class JDomGraph extends JGraph implements Cloneable {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 3205330183133471528L;
 
 	// Dominance edges don't belong to any fragment, so we remember them separately.
@@ -68,56 +66,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 	private Font nodeFont;
 	private Font upperBoundFont;
 	
-	// This listener draws a popup menu when the right mouse button is ed.
-	/*private class PopupListener extends MouseAdapter {
-		public void mousePressed(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-		
-		public void mouseReleased(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-		
-		private void maybeShowPopup(MouseEvent e) {
-			if ((e != null) && e.isPopupTrigger()) {
-				int x = e.getX(), y = e.getY();
-				
-				activePopupCell = findNodeOrEdgeAt(x,y);
-				
-				if( activePopupCell != null ) {
-					JPopupMenu popup = new JPopupMenu();
-					Fragment frag = findFragment(activePopupCell);
-					
-					if( activePopupCell instanceof DefaultEdge ) {
-						// This instanceof test has to come first, because
-						// DefaultEdge is a subclass of DefaultGraphCell.
-						EdgeData data = (EdgeData) activePopupCell.getUserObject();
-						JMenuItem item = data.getMenu();
-						
-						if( item != null )
-							popup.add(item);	                        
-					} else {
-						NodeData data = (NodeData) activePopupCell.getUserObject();
-						JMenuItem item = data.getMenu();
-						
-						if( item != null )
-							popup.add(item);
-					}  
-					
-					if( frag != null ) {
-						JMenuItem item = frag.getMenu();
-						
-						if( item != null ) {
-							popup.add(item);
-						}
-					}
-					
-					popup.show(e.getComponent(), e.getX(), e.getY());	                    
-				}
-			}
-			
-		}
-	}*/
+	
 	
 	/**
 	 * Sets up an empty dominance graph.
@@ -136,10 +85,10 @@ public class JDomGraph extends JGraph implements Cloneable {
 	    nodeFont = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN, 17);
 	    
 		dominanceEdges = new HashSet<DefaultEdge>();
-		upperBoundFont = GraphConstants.DEFAULTFONT
-		.deriveFont(Font.BOLD, 17);
+		upperBoundFont = GraphConstants.DEFAULTFONT.deriveFont(Font.BOLD, 17);
 		
-		
+		getGraphLayoutCache().setSelectsAllInsertedCells(false);
+		getGraphLayoutCache().setSelectLocalInsertedCells(false);
 		clear();
 
 		setAntiAliased(true); 
@@ -219,7 +168,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 		 
 		if(! fragments.contains(fragment)) {
 
-			DefaultGraphCell frag = fragment.getGroupObject();
+			DefaultGraphCell frag = new DefaultGraphCell();
+		
 			fragments.add(fragment);
 			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
 			
@@ -607,14 +557,14 @@ public class JDomGraph extends JGraph implements Cloneable {
 
 	/**
 	 * This overrides the <code>getToolTipText(MouseEvent)</code> method of
-	 * JGraph. As JGraph overwrites it and ignores the tooltips returned by the user
+	 * JGraph. As JGraph overwrites the original <code>Component</code> method
+	 * but ignores the tooltips returned by the user
 	 * objects of its cells, the tooltips are reconfigured here.
 	 * 
 	 * @return the tooltip text of the recent node
 	 * @see org.jgraph.JGraph#getToolTipText(MouseEvent)
 	 */
 	public String getToolTipText(MouseEvent e) {
-		java.awt.Point p = e.getPoint();
 		
 		// get the uppermost node under the mouse pointer
 		DefaultGraphCell cellfront = (DefaultGraphCell) 

@@ -44,12 +44,7 @@ public class Fragment  {
     }
     
     
-    public boolean contains(DefaultGraphCell cell) {
-    	if( nodes.contains(cell) && edges.contains(cell) ) {
-    		return true;
-    	}
-    	return false;
-    }
+ 
     
     FragmentUserObject getFragmentUserObject() {
     	return fou;
@@ -169,7 +164,7 @@ public class Fragment  {
      * @author Michaela Regneri
      *
      */
-    public class FragmentUserObject extends JLabel {
+    public class FragmentUserObject  {
     	
     	/**
 		 * 
@@ -178,9 +173,8 @@ public class Fragment  {
 		private StringBuilder fragname; // the (dynamically built) name of the fragment
     	
     	FragmentUserObject(StringBuilder name) {
-    		super();
+    		
     		fragname = name;
-    		setOpaque(false);
     	}
     	
     	/**
