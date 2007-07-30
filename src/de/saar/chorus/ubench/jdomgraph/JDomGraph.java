@@ -300,16 +300,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		addEdge(new EdgeData(EdgeType.dominance, "x1-y", this), nodeX1, nodeY);
 	}
 	
-	/**
-	 * Once the fragments have been computed, add some sample menu items to them.
-	 */
-	/*public void addSampleFragmentMenus() {
-		for( Fragment frag : fragments ) {
-			frag.addMenuItem("fFoo", "F Foo Foo");
-			frag.addMenuItem("fBar", "F Bar Bar");
-			frag.addMenuItem("fBaz", "F Baz Baz");
-		}
-	}*/
+	
 	
 	 /**
      * Adds a new edge to the graph (and the underlying model). The edge goes from the
@@ -343,6 +334,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 
 			return ret;
 		}
+		
+		// if we arrive here, there is at least one edge in 'foundedges'
 		return (DefaultEdge) foundedges[0];
 	}
 	
@@ -624,26 +617,48 @@ public class JDomGraph extends JGraph implements Cloneable {
 		java.awt.Point p = e.getPoint();
 		
 		// get the uppermost node under the mouse pointer
-		DefaultGraphCell cell = (DefaultGraphCell) 
+		DefaultGraphCell cellfront = (DefaultGraphCell) 
 					getFirstCellForLocation(e.getX(), e.getY());
 		
-		// if there is actually a graph cell...
-		if(cell != null) {
+		
+		// if there is actually a graph cell under the mousepointer...
+		if(cellfront != null) {
+			
+
 			
 			// find its associated user object
-			Object uo = cell.getUserObject();
+			Object uo = cellfront.getUserObject();
 
 			if( uo instanceof NodeData ) {
 				// if it is a node, return the node's tooltip text
 				return ( (NodeData) uo).getToolTipText();
-			} else if( uo instanceof EdgeData) {
-				
-				// if it is an edge, check the cell behind the edge; this might
-				// be a fragment (for tree edges)
-				cell =
-					(DefaultGraphCell) getNextCellForLocation(cell, e.getX(), e.getY());
-				uo = cell.getUserObject();
+			} else {
 
+				// no node at te front, so look at the cell behind it
+				DefaultGraphCell cellback = (DefaultGraphCell)
+							getNextCellForLocation(cellfront, e.getX(), e.getY());
+			
+				if( cellback != null ) {
+				Object uob = cellback.getUserObject();
+				
+				// if it is a node (the fragment was at the front),
+				// return the node's tooltip text
+					if(uob instanceof NodeData) {
+						return ( (NodeData) uob).getToolTipText();
+					} else {
+					// no node under the mouse pointer, so 
+					// let's display the fragment's tool tip (in case there is one).
+						if( uob instanceof FragmentUserObject ) {
+							return ( (FragmentUserObject) uo ).getToolTipText();
+						}
+					}
+				} else {
+					// nothing behind the front cell and the front
+					// cell is no node, but perhaps the front is part of a fragment
+					if( uo instanceof FragmentUserObject ) {
+						return ( (FragmentUserObject) uo ).getToolTipText();
+					}
+				}
 			} 
 
 			// if we are here, the uppermost cell is either a dominance edge
