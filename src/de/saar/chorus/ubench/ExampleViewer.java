@@ -221,7 +221,7 @@ public class ExampleViewer extends JFrame implements
 						
 						// setting up a new graph tab.
 						// the graph is painted and shown at once.
-						Ubench.getInstance().addNewTab(selected, theDomGraph, labels);
+						Ubench.getInstance().addJDomGraphTab(selected, theDomGraph, labels);
 					}
 				}
 			}.start();

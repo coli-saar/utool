@@ -19,9 +19,7 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.JSolvedFormTab;
 import de.saar.chorus.ubench.Ubench;
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * This <code>ActionListener</code> processes all actions
@@ -142,15 +140,14 @@ public class ChartViewerListener implements ActionListener {
 			NodeLabels labels = viewer.getLabels().makeSolvedForm(spec);
 			
 			
-			JSolvedFormTab sFTab = new JSolvedFormTab(new JDomGraph(), 
-					viewer.getTitle()  + "  SF #1", 
-					sfi, (DomGraph) viewer.getDg(), firstForm,
-					1, chart.countSolvedForms().longValue(), 
-					viewer.getTitle(), 
-					Ubench.getInstance().getListener(), 
-					labels);
 			
-			Ubench.getInstance().addTab(sFTab, true);
+			
+			Ubench.getInstance().addSolvedFormTab(viewer.getTitle()  + "  SF #1",
+					firstForm, sfi, 1, chart.countSolvedForms().longValue(), 
+					(DomGraph) viewer.getDg(), labels, viewer.getTitle(), true) ;
+					
+			
+			
 		} else if ( command.equals("resetchart") ) {
 			// display the original chart again
 			

@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -96,6 +97,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 * Creates a new Instance of <code>CommandListener</code>.
 	 */
 	public CommandListener() {
+		
 		CodecManager codecman = Ubench.getInstance().getCodecManager();		
 		ConnectionManager.addListener(this);
 		
@@ -155,9 +157,9 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		
 		/* Handling the known actions by identifying their command */
-		
+		try {
 		 if(command.equals("newTab") ) {
-			 Ubench.getInstance().addNewTab(
+			 Ubench.getInstance().addJDomGraphTab(
 					  "New Graph", new DomGraph(),  new NodeLabels());
 			 
 		 } else if( command.equals("preferences") ) {
@@ -242,7 +244,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 								
 								// setting up a new graph tab.
 								// the graph is painted and shown at once.,
-								Ubench.getInstance().addNewTab(file.getName(), theDomGraph, labels);
+								Ubench.getInstance().addJDomGraphTab(file.getName(), theDomGraph, labels);
 							}
 						}
 					}.start();
@@ -368,7 +370,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 							NodeLabels labels = new NodeLabels();
 
 							if( Ubench.getInstance().genericLoadGraph(reader, codecname, graph, labels, null) ) {
-								Ubench.getInstance().addNewTab(new JDomGraph(), "(from clipboard)", graph, true, true, labels);
+								Ubench.getInstance().addJDomGraphTab("(from clipboard)"	, graph, labels);
 							}
 						}
 					}.start();
@@ -376,7 +378,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					
 					// duplicating the visible graph
 					if(Ubench.getInstance().getVisibleTab() != null) {
-						Ubench.getInstance().addTab(Ubench.getInstance().getVisibleTab().clone(), true);
+						Ubench.getInstance().duplicateVisibleTab();
 						
 						
 					}
@@ -441,12 +443,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 					// "solve" button in the status bar
 					new Thread() {
 						public void run() {
-							JSolvedFormTab sFTab = ((JDomGraphTab) Ubench.getInstance().getVisibleTab()).createFirstSolvedForm();
-							if( sFTab != null ) {
-								Ubench.getInstance().addTab(sFTab, true);
-								Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,false);
-								Ubench.getInstance().refresh();
-							}
+							Ubench.getInstance().showFirstSolvedForm();
 						}
 					}.start();
 					
@@ -890,6 +887,14 @@ ItemListener, ConnectionManager.StateChangeListener {
 					} 
 				}
 		}
+		 } catch(Exception exc) {
+				JOptionPane pane = 
+    				new JOptionPane(exc.getMessage(), JOptionPane.ERROR_MESSAGE);
+    			JDialog dialog = 
+    				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
+    			dialog.setModal(false);
+
+		}
 	}
 	
 	
@@ -901,7 +906,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 */
 	public void itemStateChanged(ItemEvent e) {
 		String desc = lookupEventSource(e.getSource());
-
+		try {
 		// unknown event
 		if( desc == null ) {
 			System.err.println("Unknown item state change event!");
@@ -1006,6 +1011,15 @@ ItemListener, ConnectionManager.StateChangeListener {
 							}
 						}
 					}
+		}
+	
+		} catch (Exception ex) {
+			JOptionPane pane = 
+				new JOptionPane(ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+			JDialog dialog = 
+				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
+			dialog.setModal(false);
+
 		}
 		}
 	
@@ -1182,38 +1196,17 @@ ItemListener, ConnectionManager.StateChangeListener {
 		SolvedFormSpec domEdges = solver.getSolvedForm((int) no-1);
 		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels().makeSolvedForm(domEdges);
 		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getDomGraph().makeSolvedForm(domEdges);
-		
-		int toInsertHere = Ubench.getInstance().getVisibleTabIndex();
+
 		
 		// converting the form to a JDomGraph
-		//JDomGraph domSolvedForm = new JDomGraph();
-		//JDomDataFactory fac = new JDomDataFactory(nextForm, labels, domSolvedForm);
-		//ImprovedJGraphAdapter.convert(nextForm, fac, domSolvedForm);
+		
+		JGraphTab tab = Ubench.getInstance().getVisibleTab();
+		Ubench.getInstance().addSolvedFormTab(tab.getGraphName() + "  SF #" + no, nextForm, 
+				solver, no, tab.getSolvedForms(),
+				tab.getDomGraph(), labels, tab.getGraphName(), false);
 		
 		
 		
-		// setting up the new tab
-		JSolvedFormTab solvedFormTab = new JSolvedFormTab(new JDomGraph(), 
-				Ubench.getInstance().getVisibleTab().getGraphName()  + "  SF #" + no, solver,
-				Ubench.getInstance().getVisibleTab().getDomGraph(), nextForm,
-				no, Ubench.getInstance().getVisibleTab().getSolvedForms(), 
-				Ubench.getInstance().getVisibleTab().getGraphName(), 
-				Ubench.getInstance().getListener(), 
-				labels);
-		// closing the tab with the previous solved form and
-		// showing the recent one.
-		Ubench.getInstance().closeCurrentTab();
-		Ubench.getInstance().addTab(solvedFormTab, true, toInsertHere);
-		if(no > 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
-			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,true);
-		} else if (no == 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
-			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(true,false);
-		} else if (no > 1 && no == Ubench.getInstance().getVisibleTab().getSolvedForms()) {
-			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(false,true);
-		} else {
-			Ubench.getInstance().getMenuBar().setPlusMinusEnabled(false,false);
-		}
-		Ubench.getInstance().getStatusBar().showBar(solvedFormTab.getBarCode());
 		
 	}
 	

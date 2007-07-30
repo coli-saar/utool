@@ -250,7 +250,7 @@ class ServerThread extends Thread {
         case display:
         	
         	if( options.getGraph() != null ) {
-                if(Ubench.getInstance().addNewTab(
+                if(Ubench.getInstance().addJDomGraphTab(
                         options.getInputName(),
                         options.getGraph(),
                         options.getLabels()))  {

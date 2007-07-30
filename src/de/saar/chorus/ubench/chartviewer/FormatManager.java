@@ -317,9 +317,11 @@ public class FormatManager {
 				
 			
 		}
+	
 		
 		for ( String node : toMark) {
 			DefaultGraphCell gc = graph.getNodeForName(node);
+			
 				markNode(gc, color, graph, markedNodeFont);
 				for (DefaultEdge edg : graph.getOutEdges(gc)) {
 					markEdge(edg, color, graph, markedEdgeWidth);

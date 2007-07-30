@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.DefaultGraphCell;
@@ -105,15 +108,24 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 	}
 	
 	@Override
-	public void mouseReleased(MouseEvent arg0) {
+	public void mouseReleased(MouseEvent arg0)  {
 		if( start != null ) {
 			if( addingDominanceEdge ) {
 				if( targetNode != null ) {
 					graph.addEdge(jgraph.getNodeData(sourceNode).getName(),
 							jgraph.getNodeData(targetNode).getName(),
 							new EdgeData(EdgeType.DOMINANCE));
+					try {
 					tab.setDominanceGraph(graph, labels);
-				}
+					} catch(Exception e) {
+						JOptionPane pane = 
+							new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
+						JDialog dialog = 
+							pane.createDialog(Ubench.getInstance().getWindow(), "Error");
+						dialog.setModal(false);
+		
+					}
+ 				}
 			} else {
 				if( numHoles >= 0 ) {
 					// add root to graph
@@ -128,7 +140,15 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 						graph.addEdge(rootName, name, new EdgeData(EdgeType.TREE));
 					}
 					
+					try {
 					tab.setDominanceGraph(graph, labels);
+					} catch(Exception e) {
+						JOptionPane pane = 
+							new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
+						JDialog dialog = 
+							pane.createDialog(Ubench.getInstance().getWindow(), "Error");
+						dialog.setModal(false);
+					}
 				}
 				
 			}

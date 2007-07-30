@@ -542,7 +542,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	/**
 	 * This is to init the widths of each column according to 
 	 * the longest entry of a column.
-	 * TODO SWING appearantly does not really care about this but
+	 * TODO SWING apparently does not really care about this but
 	 *      restricts the widths to a certain maximum of which only
 	 *      SWING knows the origin...
 	 *

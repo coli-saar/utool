@@ -72,7 +72,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	// the tabs have to define their clone-methods themselves
 	public abstract JGraphTab clone();
 
-	abstract void drawGraph();
+	abstract void drawGraph() throws Exception;
 	
 	
 	
@@ -303,7 +303,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public boolean repaintIfNecessary() {
+	public boolean repaintIfNecessary() throws Exception {
 		if ((recentLayout == null)
 				|| Preferences.mustUpdateLayout(recentLayout)) {
 			
@@ -319,7 +319,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		return graph.getLabeltype();
 	}
 	
-	public void setLabelType(LabelType lt) {
+	public void setLabelType(LabelType lt) throws Exception {
 		graph.setLabeltype(lt);
 		drawGraph();
 	}
@@ -340,7 +340,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 
 	
 	
-	public void setLayoutType(LayoutType lt) {
+	public void setLayoutType(LayoutType lt) throws Exception {
 		layout = lt;
 		graph.setLayouttype(lt);
 		
@@ -371,7 +371,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Resets the layout to its initial 
 	 * version.
 	 */
-	public void resetLayout() {
+	public void resetLayout() throws Exception {
 		graph.setScale(1);
 		graph.clear();
 		drawGraph();
