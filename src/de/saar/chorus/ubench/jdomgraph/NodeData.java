@@ -66,8 +66,6 @@ public class NodeData implements INodeData<NodeType> {
     }
 	
 	
-	
-	
 	/**
 	 * @return Returns the label.
 	 */

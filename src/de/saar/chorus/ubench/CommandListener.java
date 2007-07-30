@@ -158,7 +158,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 		
 		 if(command.equals("newTab") ) {
 			 Ubench.getInstance().addNewTab(
-					 new JDomGraph(), "New Graph", new DomGraph(), true, true, new NodeLabels());
+					  "New Graph", new DomGraph(),  new NodeLabels());
 			 
 		 } else if( command.equals("preferences") ) {
 			// show settings (so far only server settings)
@@ -241,8 +241,8 @@ ItemListener, ConnectionManager.StateChangeListener {
 								//	DomGraphTConverter conv = new DomGraphTConverter(graph);
 								
 								// setting up a new graph tab.
-								// the graph is painted and shown at once.
-								Ubench.getInstance().addNewTab(new JDomGraph(), file.getName(), theDomGraph, true, true, labels);
+								// the graph is painted and shown at once.,
+								Ubench.getInstance().addNewTab(file.getName(), theDomGraph, labels);
 							}
 						}
 					}.start();

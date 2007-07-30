@@ -327,7 +327,7 @@ public class Ubench {
      *            if set to true, the tab will be displayed at once
      */
     public void addTab(JGraphTab tab, boolean showNow) {
-        
+        // Ubench, CommandListener#actionPerformed, ChartViewerListener#actionPerformed
         addTab(tab, showNow, tabbedPane.getTabCount());
         
     }
@@ -342,7 +342,7 @@ public class Ubench {
      */
     public void addTab(JGraphTab tab, boolean showNow, int ind) {
     	
-    	
+    	//TODO note: Ubench, CommandListener#showSolvedFormWithIndex
     	
     	if(tab != null && (! tab.isEmpty())) {
     		
@@ -421,6 +421,7 @@ public class Ubench {
             DomGraph origin, boolean paintNow, boolean showNow,
             NodeLabels labels) {
         
+    	// CommandListener#ActionPerformed, ExampleViewer
         String normalisedLabel = normaliseTabLabel(label);
         
         // the new tab
@@ -471,7 +472,7 @@ public class Ubench {
      */
     public boolean addNewTab(String label, DomGraph graph, NodeLabels labels) {
         
-
+    	//TODO note: Utool#main, ServerThread#blabla
         JDomGraph jDomGraph = new JDomGraph();
         
         JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
