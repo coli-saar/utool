@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui.chartviewer;
+package de.saar.chorus.ubench.chartviewer;
 
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
@@ -27,7 +27,7 @@ import de.saar.chorus.ubench.gui.Ubench;
  * This <code>ActionListener</code> processes all actions
  * of one (and only one) <code>ChartViewer</code>. 
  * 
- * @see de.saar.chorus.ubench.gui.chartviewer.ChartViewer
+ * @see de.saar.chorus.ubench.chartviewer.ChartViewer
  * @author Michaela Regneri
  *
  */

@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui.chartviewer;
+package de.saar.chorus.ubench.chartviewer;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;

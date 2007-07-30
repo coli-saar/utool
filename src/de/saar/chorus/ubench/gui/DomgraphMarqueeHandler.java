@@ -22,7 +22,7 @@ import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.gui.chartviewer.JDomGraphDummyLayout;
+import de.saar.chorus.ubench.chartviewer.JDomGraphDummyLayout;
 
 public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 	private JDomGraph jgraph;
