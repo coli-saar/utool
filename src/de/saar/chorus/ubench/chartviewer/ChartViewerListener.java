@@ -19,8 +19,8 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.gui.JSolvedFormTab;
-import de.saar.chorus.ubench.gui.Ubench;
+import de.saar.chorus.ubench.JSolvedFormTab;
+import de.saar.chorus.ubench.Ubench;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**

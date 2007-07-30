@@ -32,7 +32,7 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
-import de.saar.chorus.ubench.gui.Preferences.LayoutType;
+import de.saar.chorus.ubench.Preferences.LayoutType;
 import de.saar.chorus.ubench.jdomgraph.Fragment.FragmentUserObject;
 
 /**

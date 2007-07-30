@@ -2,7 +2,7 @@
  * Created on 27.07.2004
  *
  */
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench;
 
 import java.awt.Component;
 import java.awt.Dimension;
