@@ -26,7 +26,7 @@ import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
 import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
 import de.saar.chorus.domgraph.layout.LayoutOptions;
 import de.saar.chorus.ubench.JDomGraph;
-import de.saar.chorus.ubench.gui.chartviewer.ChartViewer;
+import de.saar.chorus.ubench.chartviewer.ChartViewer;
 
 /**
  * A <code>JPanel</code> displaying a <code>JDomGraph</code>
