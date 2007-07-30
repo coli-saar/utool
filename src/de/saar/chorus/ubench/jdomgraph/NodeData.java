@@ -2,7 +2,7 @@
  * Created on 28.07.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

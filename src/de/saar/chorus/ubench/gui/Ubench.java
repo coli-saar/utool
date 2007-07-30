@@ -43,7 +43,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.Utool;
-import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 /**
  * The main class of Ubench.
  * This implements the "singleton pattern", so this class

@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import org._3pq.jgrapht.Edge;
 
@@ -38,10 +38,10 @@ public class DomGraphTConverter {
 		for(String node : domGraph.getAllNodes() ) {
 			NodeData cloneData;
 			if( domGraph.getData(node).getType().equals(NodeType.LABELLED) ) {
-				cloneData = new NodeData(de.saar.chorus.ubench.NodeType.labelled, 
+				cloneData = new NodeData(de.saar.chorus.ubench.jdomgraph.NodeType.labelled, 
 						node, labels.getLabel(node), jDomGraph);
 			} else {
-				cloneData = new NodeData(de.saar.chorus.ubench.NodeType.unlabelled, 
+				cloneData = new NodeData(de.saar.chorus.ubench.jdomgraph.NodeType.unlabelled, 
 						node, jDomGraph);
 			}
 			

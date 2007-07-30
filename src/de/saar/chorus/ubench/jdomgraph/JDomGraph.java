@@ -2,7 +2,7 @@
  * Created on 28.07.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,8 +32,8 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
-import de.saar.chorus.ubench.Fragment.FragmentUserObject;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
+import de.saar.chorus.ubench.jdomgraph.Fragment.FragmentUserObject;
 
 /**
  * A Swing component that represents a labelled dominance graph.
