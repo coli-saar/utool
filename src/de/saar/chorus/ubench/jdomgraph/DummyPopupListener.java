@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -6,7 +6,7 @@ import org.jgraph.graph.DefaultGraphCell;
 public class DummyPopupListener implements DomGraphPopupListener {
 
 	/* (non-Javadoc)
-	 * @see de.saar.chorus.ubench.DomGraphPopupListener#popupSelected(org.jgraph.graph.DefaultGraphCell, de.saar.chorus.ubench.Fragment, java.lang.String)
+	 * @see de.saar.chorus.ubench.jdomgraph.DomGraphPopupListener#popupSelected(org.jgraph.graph.DefaultGraphCell, de.saar.chorus.ubench.jdomgraph.Fragment, java.lang.String)
 	 */
 	public void popupSelected(DefaultGraphCell source, Fragment fragment, String menuItem) {
 

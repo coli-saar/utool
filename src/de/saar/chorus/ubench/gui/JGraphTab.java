@@ -10,9 +10,9 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.JScrollableJGraph;
-import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.chartviewer.ChartViewer;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 
 /**

@@ -19,15 +19,15 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.JSolvedFormTab;
 import de.saar.chorus.ubench.gui.Ubench;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * This <code>ActionListener</code> processes all actions
  * of one (and only one) <code>ChartViewer</code>. 
  * 
- * @see de.saar.chorus.ubench.chartviewer.ChartViewer
+ * @see de.saar.chorus.ubench.jdomgraph.chartviewer.ChartViewer
  * @author Michaela Regneri
  *
  */

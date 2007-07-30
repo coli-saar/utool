@@ -2,7 +2,7 @@
  * Created on 03.08.2004
  *
  */
-package de.saar.chorus.ubench;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

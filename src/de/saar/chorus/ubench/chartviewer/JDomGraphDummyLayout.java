@@ -12,7 +12,7 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.layout.JGraphLayoutAlgorithm;
 
-import de.saar.chorus.ubench.JDomGraph;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * A <code>JGraphLayoutAlgorithm</code> designed to

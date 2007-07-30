@@ -27,7 +27,6 @@ import javax.swing.border.TitledBorder;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
-import de.saar.chorus.ubench.ServerOptions;
 import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 
 

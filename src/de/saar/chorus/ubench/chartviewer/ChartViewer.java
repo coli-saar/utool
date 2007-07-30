@@ -43,8 +43,8 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.JDomGraph;
 import de.saar.chorus.ubench.gui.Ubench;
+import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * A <code>JFrame</code> containing a GUI for visualising a 
@@ -52,7 +52,7 @@ import de.saar.chorus.ubench.gui.Ubench;
  * highlighting parts of it in a <code>JDomGraph</code>.
  * 
  * @see de.saar.chorus.domgraph.chart.Chart
- * @see de.saar.chorus.ubench.JDomGraph
+ * @see de.saar.chorus.ubench.jdomgraph.JDomGraph
  * @author Michaela Regneri
  * @author Alexander Koller
  *

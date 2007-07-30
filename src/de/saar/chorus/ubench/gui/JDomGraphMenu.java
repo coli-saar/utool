@@ -19,7 +19,6 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
-import de.saar.chorus.ubench.ServerOptions;
 
 
 /**
