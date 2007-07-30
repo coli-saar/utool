@@ -7,10 +7,8 @@ package de.saar.chorus.ubench.jdomgraph;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +20,6 @@ import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -51,14 +48,6 @@ public class JDomGraph extends JGraph implements Cloneable {
 
 	// Dominance edges don't belong to any fragment, so we remember them separately.
 	private Set<DefaultEdge> dominanceEdges;
-	
-	
-	
-	// The set of DomGraphPopupListeners that have been registered for this graph.
-	private Set<DomGraphPopupListener> popupListeners;
-	
-	// If a popup menu is currently open, the cell the menu belongs to.
-	private DefaultGraphCell activePopupCell;
 	
 	private Rectangle boundingBox;
 	
@@ -149,9 +138,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 		dominanceEdges = new HashSet<DefaultEdge>();
 		upperBoundFont = GraphConstants.DEFAULTFONT
 		.deriveFont(Font.BOLD, 17);
-		// set up popup handling
-		popupListeners = new HashSet<DomGraphPopupListener>();
-		//addMouseListener(new PopupListener());	
+		
+		
 		clear();
 
 		setAntiAliased(true); 
@@ -230,9 +218,9 @@ public class JDomGraph extends JGraph implements Cloneable {
 	public Fragment addFragment(Fragment fragment) {
 		 
 		if(! fragments.contains(fragment)) {
-			
 
-			DefaultGraphCell frag = new DefaultGraphCell(fragment.getFragmentUserObject());
+			DefaultGraphCell frag = fragment.getGroupObject();
+			fragments.add(fragment);
 			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
 			
 		}
@@ -367,48 +355,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 	
 	
 	
-	//// popup handling methods
-	
-	/**
-	 * Add a popup listener. This listener will be called every time
-	 * the user selects an item from a (node or fragment) popup menu.
-	 * 
-	 * @param listener
-	 */
-	public void addPopupListener(DomGraphPopupListener listener) {
-		popupListeners.add(listener);
-	}
-	
-	/**
-	 * Remove a popup listener.
-	 * 
-	 * @param listener
-	 */
-	public void removePopupListener(DomGraphPopupListener listener) {
-		popupListeners.remove(listener);
-	}
-	
-	/**
-	 * Notify all registered popup listeners that the user selected
-	 * a popup menu item. This means that the <code>popupSelected</code>
-	 * methods of these listener objects are called.
-	 * 
-	 * @param menuItemLabel the label of the selected menu item.
-	 */
-/*	void notifyPopupListeners(String menuItemLabel) {
-		for( DomGraphPopupListener listener : popupListeners ) {
-			listener.popupSelected(activePopupCell, 
-					findFragment(activePopupCell), 
-					menuItemLabel);
-		}
-		
-		activePopupCell = null;
-	}*/
 	
 	
-	
-	
-	//// tooltips
 	
 	/**
 	 * @return Returns the boundingBox.
@@ -446,7 +394,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 			} else {
 				cloneData = new NodeData(NodeType.unlabelled, cellData.getName(), clone); 
 			}
-			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
+	
 			clone.addNode(cellData.getName(), cloneData);
 		}
 		
@@ -463,7 +411,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 				cloneData = new EdgeData(EdgeType.dominance, cellData.getName(), clone );
 			}
 			
-			cloneData.addMenuItem(cellData.getMenuLabel(), cellData.getName());
+	
 			clone.addEdge(cloneData, clone.getNodeForName(getNodeData(getSourceNode(edge)).getName()), 
 					clone.getNodeForName(getNodeData(getTargetNode(edge)).getName()));
 		}

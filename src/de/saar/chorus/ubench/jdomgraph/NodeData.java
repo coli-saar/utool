@@ -23,7 +23,7 @@ import de.saar.chorus.ubench.Preferences;
  * @author Alexander Koller
  *
  */
-public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType> {
+public class NodeData implements INodeData<NodeType> {
 	private String name;
     private String simplifiedLabel;
 	private String label;
@@ -38,8 +38,6 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 	 * @param type
 	 */
 	public NodeData(NodeType type, String name, String label, JDomGraph parent) {
-	    super(parent);
-	    
         this.name = name;
 		setLabel(label);
 		this.type = type;
@@ -53,8 +51,6 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
 	 * @param type
 	 */
 	public NodeData(NodeType type, String name, JDomGraph parent) {
-	    super(parent);
-	    
 		this.name = name;
 		this.type = type;
 		this.label = "";
@@ -69,13 +65,6 @@ public class NodeData extends DomGraphPopupTarget implements INodeData<NodeType>
         this.label = label;
     }
 	
-	public String getMenuLabel() {
-	    if( label.equals("") ) {
-	        return "Node " + name + " (hole)";
-	    } else {
-	        return "Node " + name + " (" + label + ")";
-	    }
-	}
 	
 	
 	
