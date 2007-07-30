@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.gui;
+package de.saar.chorus.ubench;
 
 import java.awt.Color;
 
@@ -10,8 +10,8 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.JScrollableJGraph;
+import de.saar.chorus.ubench.Preferences.LayoutType;
 import de.saar.chorus.ubench.chartviewer.ChartViewer;
-import de.saar.chorus.ubench.gui.Preferences.LayoutType;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 
