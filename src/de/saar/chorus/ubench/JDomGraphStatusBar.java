@@ -17,7 +17,7 @@ import javax.swing.JProgressBar;
  * @author Michaela Regneri
  *
  */
-public class JDomGraphStatusBar extends JPanel {
+class JDomGraphStatusBar extends JPanel {
 	
 	/**
 	 * 
@@ -50,7 +50,7 @@ public class JDomGraphStatusBar extends JPanel {
      * 
      * @param listener the listener for the status bar
      */
-	public JDomGraphStatusBar(CommandListener listener) {
+	JDomGraphStatusBar(CommandListener listener) {
 		super();
         
 		label = 0;
@@ -87,7 +87,7 @@ public class JDomGraphStatusBar extends JPanel {
 	 * Makes the layout show the bar for
 	 * empty windows.
 	 */
-	public void showEmptybar() {
+	void showEmptybar() {
 
 		layout.show(this,"empty");
 		validate();
@@ -100,7 +100,7 @@ public class JDomGraphStatusBar extends JPanel {
 	 * the classify-symbols are refreshed if necessary.
 	 *
 	 */
-	public void refresh() {
+	void refresh() {
 		
 		// empty window
 		if(Ubench.getInstance().getVisibleTab() == null) {
@@ -115,7 +115,7 @@ public class JDomGraphStatusBar extends JPanel {
      * Makes the layout show the bar indicatin that
      * the solving process is running.
      */
-    public void showProgressBar() {
+    void showProgressBar() {
     	layout.show(this, "progress");
     }
 

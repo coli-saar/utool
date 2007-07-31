@@ -31,15 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 
@@ -54,11 +50,9 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.codec.CodecManager;
-import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.OutputCodec;
-import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -82,8 +76,8 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  * @author Michaela Regneri
  *
  */
-public class CommandListener implements ActionListener, 
-ItemListener, ConnectionManager.StateChangeListener {
+class CommandListener implements ActionListener, 
+			ItemListener, ConnectionManager.StateChangeListener {
 	
 	
 	private List<GenericFileFilter> ffInputCodecs;
@@ -96,7 +90,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	/**
 	 * Creates a new Instance of <code>CommandListener</code>.
 	 */
-	public CommandListener() {
+	CommandListener() {
 		
 		CodecManager codecman = Ubench.getInstance().getCodecManager();		
 		ConnectionManager.addListener(this);
@@ -1064,7 +1058,7 @@ ItemListener, ConnectionManager.StateChangeListener {
 	 * @param source
 	 * @param desc
 	 */
-	public void registerEventSource(Object source, String desc) {
+	void registerEventSource(Object source, String desc) {
 		eventSources.put(source,desc);
 	}
 	

@@ -9,7 +9,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -196,7 +195,7 @@ public class Ubench {
      * 
      * @return the height
      */
-    public double getTabHeight() {
+    double getTabHeight() {
         int index = tabbedPane.getSelectedIndex();
         if (index > -1) {
             Rectangle tabRect = tabbedPane.getBoundsAt(tabbedPane
@@ -213,7 +212,7 @@ public class Ubench {
      * 
      * @return the width
      */
-    public double getTabWidth() {
+    double getTabWidth() {
        
         return tabbedPane.getWidth();
     }
@@ -226,7 +225,7 @@ public class Ubench {
     /**
      * Refreshes the menu, the slider and the status bar.
      */
-    public void refresh() {
+    void refresh() {
         if (getVisibleTab() != null) {
             if(getVisibleTab().getClass() == JSolvedFormTab.class ) {
                 setSolvingEnabled(false);
@@ -278,7 +277,7 @@ public class Ubench {
     /**
      * Closes the currently shown tab (if there is one).
      */
-    public void closeCurrentTab() {
+    void closeCurrentTab() {
         int index = tabbedPane.getSelectedIndex();
         
         if (index > -1) {
@@ -298,7 +297,7 @@ public class Ubench {
     /**
      * @return the currently shown tab or null if there is none
      */
-    public JGraphTab getVisibleTab() {
+    JGraphTab getVisibleTab() {
         int index = tabbedPane.getSelectedIndex();
         
         if (index > -1)
@@ -311,7 +310,7 @@ public class Ubench {
      * 
      * @return the index of the currently shown tab
      */
-    public int getVisibleTabIndex() {
+    int getVisibleTabIndex() {
         return tabbedPane.getSelectedIndex();
     }
     
@@ -419,7 +418,7 @@ public class Ubench {
      * 
      * @param b if false, solving becomes disabled. 
      */
-    public void setSolvingEnabled(boolean b) {
+    void setSolvingEnabled(boolean b) {
         menuBar.setSolvingEnabled(b);
     }
     
@@ -469,6 +468,8 @@ public class Ubench {
 			JDialog dialog = 
 				pane.createDialog(window, "Error");
 			dialog.setModal(false);
+			dialog.setVisible(true);
+			refresh();
     	   return false;
        }
          
@@ -545,7 +546,7 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public boolean genericLoadGraph(Reader reader, String codec, 
+    boolean genericLoadGraph(Reader reader, String codec, 
     		DomGraph graph, NodeLabels nl, Map<String, String> options) {
     	InputCodec inputCodec;
     	if(options != null ) {
@@ -612,7 +613,7 @@ public class Ubench {
      * @return a new <code>JDomGraph</code> representation for the
      * labelled graph
      */
-    public boolean genericLoadGraph(String filename, DomGraph graph, 
+    boolean genericLoadGraph(String filename, DomGraph graph, 
     		NodeLabels nl, Map<String,String> options) {
         try {
             return genericLoadGraph(new InputStreamReader(new FileInputStream(filename)),
@@ -688,7 +689,7 @@ public class Ubench {
      * @param listener
      *            The listener to set.
      */
-    public void setListener(CommandListener listener) {
+    void setListener(CommandListener listener) {
         this.listener = listener;
     }
     
@@ -719,7 +720,7 @@ public class Ubench {
      * 
      * @return the codecManager
      */
-    public CodecManager getCodecManager() {
+    CodecManager getCodecManager() {
         return codecManager;
     }
     
@@ -727,7 +728,7 @@ public class Ubench {
      * 
      * @return the exampleManager
      */
-    public ExampleManager getExampleManager() {
+    ExampleManager getExampleManager() {
         return exampleManager;
     }
     
@@ -824,7 +825,7 @@ public class Ubench {
 	/**
 	 * @return Returns the eqs.
 	 */
-	public EquationSystem getEquationSystem() {
+    public EquationSystem getEquationSystem() {
 		return eqs;
 	}
 
@@ -844,6 +845,7 @@ public class Ubench {
 	/**
 	 * @return Returns the eqsname.
 	 */
+	 
 	public String getEqsname() {
 		return eqsname;
 	}

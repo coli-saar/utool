@@ -221,7 +221,7 @@ public class Preferences implements Cloneable {
      * @param previousLayoutPreferences the preferences to compare to
      * @return true if the previous preferences are out of date
      */
-    public static boolean mustUpdateLayout(Preferences previousLayoutPreferences) {
+    static boolean mustUpdateLayout(Preferences previousLayoutPreferences) {
         return (
         		(previousLayoutPreferences.layouttype != getInstance().layouttype) ||
         		(previousLayoutPreferences.labeltype != getInstance().labeltype));

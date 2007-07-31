@@ -43,7 +43,7 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  * @author Michaela Regneri
  *
  */
-public class JDomGraphTab extends JGraphTab  {
+class JDomGraphTab extends JGraphTab  {
 
 
 	/**
@@ -62,7 +62,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * @param name the name for the tab
 	 * @param paintNow if set to true, the graph is layoutet at once
 	 */
-	public JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
+	JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
 			boolean paintNow, CommandListener lis, NodeLabels labels) throws Exception {
 
 		super(theGraph, origin, name, lis, labels);
@@ -144,9 +144,9 @@ public class JDomGraphTab extends JGraphTab  {
 					Preferences.setFitWindowToGraph(false);
 				
 				}
-			})
+			});
 
-			;
+			
 
 			// error message if layout fails
 		} catch (Exception e) {
@@ -234,11 +234,11 @@ public class JDomGraphTab extends JGraphTab  {
 	/**
 	 * @param isSolvedYet The isSolvedYet to set.
 	 */
-	public void setSolvedYet(boolean isSolvedYet) {
+	void setSolvedYet(boolean isSolvedYet) {
 		this.isSolvedYet = isSolvedYet;
 	}
 
-	public void displayChart() {
+	void displayChart() {
 
 		Cursor waitcursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
@@ -265,7 +265,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public boolean repaintIfNecessary() throws Exception {
+     boolean repaintIfNecessary() throws Exception {
 		if (recentLayout == null || Preferences.mustUpdateLayout(recentLayout) 
 				|| ! layout.isApplicable(this) ) {
 			
@@ -525,7 +525,7 @@ public class JDomGraphTab extends JGraphTab  {
 	 * 
 	 * @return the complete tab with the first solved form.
 	 */
-	public JSolvedFormTab createFirstSolvedForm() {
+	JSolvedFormTab createFirstSolvedForm() {
 
 		// solve if not solved yet
 		if(! isSolvedYet ) {

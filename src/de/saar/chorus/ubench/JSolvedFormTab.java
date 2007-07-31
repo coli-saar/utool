@@ -40,7 +40,8 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  * @author Michaela Regneri
  *
  */
-public class JSolvedFormTab extends JGraphTab {
+
+class JSolvedFormTab extends JGraphTab {
 
 	private DomGraph theSolvedForm;
 	/**
@@ -48,7 +49,7 @@ public class JSolvedFormTab extends JGraphTab {
 	 */
 	private static final long serialVersionUID = -8144093325748384465L;
 
-	long currentForm; // current solved form
+	private long currentForm; // current solved form
 	   
     //  shows the number of the recent solved form
 	private JTextField solvedForm;
@@ -60,7 +61,7 @@ public class JSolvedFormTab extends JGraphTab {
 	 * @param name the name for the tab
 	 * @param solv the solvedFormIterator related to the graph
 	 */
-	public JSolvedFormTab(JDomGraph solvedForm, String name, 
+	JSolvedFormTab(JDomGraph solvedForm, String name, 
 			SolvedFormIterator solv, DomGraph origin, DomGraph originalForm, 
 			long form, long allForms, 
 			String gName, CommandListener lis, NodeLabels labels) {
@@ -310,14 +311,14 @@ public class JSolvedFormTab extends JGraphTab {
    	
    }
 	
-	public void resetSolvedFormText() {
+	void resetSolvedFormText() {
 		solvedForm.setText(String.valueOf(currentForm));
 	}
 	
 	/**
 	 * @return Returns the solvedForm.
 	 */
-	public JTextField getSolvedForm() {
+	JTextField getSolvedForm() {
 		return solvedForm;
 	}
 
@@ -326,7 +327,7 @@ public class JSolvedFormTab extends JGraphTab {
 	/**
 	 * @return Returns the currentForm.
 	 */
-	public long getCurrentForm() {
+	long getCurrentForm() {
 		return currentForm;
 	}
 
@@ -334,8 +335,8 @@ public class JSolvedFormTab extends JGraphTab {
 
 	/**
 	 * @param currentForm The currentForm to set.
-	 */
-	public void setCurrentForm(long currentForm) {
+	 */ 
+	void setCurrentForm(long currentForm) {
 		this.currentForm = currentForm;
 	}
 
@@ -348,7 +349,7 @@ public class JSolvedFormTab extends JGraphTab {
 	/**
 	 * @param solvedForm The solvedForm to set.
 	 */
-	public void setSolvedForm(JTextField solvedForm) {
+	void setSolvedForm(JTextField solvedForm) {
 		this.solvedForm = solvedForm;
 	}
 
@@ -369,7 +370,7 @@ public JGraphTab clone() {
 }
 
 @Override
-public void displayChart() {
+void displayChart() {
 	Chart c = new Chart();
 	ChartSolver.solve(domGraph,c);
 	cv = new ChartViewer(c, domGraph,

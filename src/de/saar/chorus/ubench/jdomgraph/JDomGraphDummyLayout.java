@@ -1,4 +1,4 @@
-package de.saar.chorus.ubench.chartviewer;
+package de.saar.chorus.ubench.jdomgraph;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -12,7 +12,6 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.layout.JGraphLayoutAlgorithm;
 
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * A <code>JGraphLayoutAlgorithm</code> designed to
@@ -69,7 +68,7 @@ public class JDomGraphDummyLayout extends JGraphLayoutAlgorithm {
 			Map<DefaultGraphCell,AttributeMap> viewMap = new 
 			HashMap<DefaultGraphCell,AttributeMap>();
 
-			DefaultGraphCell node = graph.getNodes().iterator().next();
+			DefaultGraphCell node =  graph.getNodes().iterator().next();
 
 			int x = (int) graph.getCellBounds(node).getMinX() + 1;
 			int y = (int) graph.getCellBounds(node).getMinY() + 1 ;

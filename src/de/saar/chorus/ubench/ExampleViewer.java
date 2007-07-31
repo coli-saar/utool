@@ -26,7 +26,6 @@ import javax.swing.event.ListSelectionListener;
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**
  * A window showing the examples registered in the
@@ -40,7 +39,7 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  *
  * @see de.saar.chorus.domgraph.ExampleManager
  */
-public class ExampleViewer extends JFrame implements 
+class ExampleViewer extends JFrame implements 
 		ListSelectionListener, ActionListener {
 	
 	
@@ -84,7 +83,7 @@ public class ExampleViewer extends JFrame implements
 	 * 
 	 * @throws IOException when there are no examples registered
 	 */
-	public ExampleViewer() throws IOException {
+	ExampleViewer() throws IOException {
 		super("Open Example");
 		setLayout(layout);
 		setAlwaysOnTop(true);
