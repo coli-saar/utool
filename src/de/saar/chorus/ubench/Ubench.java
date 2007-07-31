@@ -517,6 +517,7 @@ public class Ubench {
 			JDialog dialog = 
 				pane.createDialog(window, "Error");
 			dialog.setModal(false);
+			dialog.setVisible(true);
     	   return false;
         }
     }
