@@ -887,6 +887,7 @@ class CommandListener implements ActionListener,
     			JDialog dialog = 
     				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
     			dialog.setModal(false);
+    			dialog.setVisible(true);
 
 		}
 	}
@@ -1013,6 +1014,7 @@ class CommandListener implements ActionListener,
 			JDialog dialog = 
 				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
 			dialog.setModal(false);
+			dialog.setVisible(true);
 
 		}
 		}
