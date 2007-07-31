@@ -46,7 +46,7 @@ import de.saar.chorus.domgraph.codec.CodecManager;
  * @author Michaela Regneri
  *
  */
-public class JCodecFileChooser extends JFileChooser
+class JCodecFileChooser extends JFileChooser
 			implements PropertyChangeListener, ActionListener {
 	private JPanel empty,	// if there is no codec selected
 				   button;  // the panel shown when options are hidden
@@ -79,7 +79,7 @@ public class JCodecFileChooser extends JFileChooser
 	 * @author Alexander Koller
 	 *
 	 */
-	public static enum Type {
+	static enum Type {
 		OPEN                 ("Open USR", true),
 		EXPORT               ("Export USR", false),
 		EXPORT_SOLVED_FORMS  ("Export solved forms", false);
@@ -101,7 +101,7 @@ public class JCodecFileChooser extends JFileChooser
 	 * @param path the path for the file view
 	 * @param type the task type 
 	 */
-	public JCodecFileChooser(String path, Type type) {
+	JCodecFileChooser(String path, Type type) {
 		super(path);
 		
 		setDialogTitle(type.dialogTitle);
@@ -146,7 +146,7 @@ public class JCodecFileChooser extends JFileChooser
 	 * 
 	 * @param filters the <code>List</code> of file filters
 	 */
-	public void addCodecFileFilters(List<GenericFileFilter> filters) {
+	void addCodecFileFilters(List<GenericFileFilter> filters) {
 		for( GenericFileFilter ff : filters ) {
 			addChoosableFileFilter(ff);
 			allKnownTypesFileFilter.addExtension(ff.getExtension());
@@ -171,7 +171,7 @@ public class JCodecFileChooser extends JFileChooser
 	 * 
 	 * @return the user selection of options
 	 */
-	public Map<String,String> getCodecOptions() {
+	Map<String,String> getCodecOptions() {
 		if( options != null) {
 			return options.getOptionMap();
 		} else return new HashMap<String,String>();

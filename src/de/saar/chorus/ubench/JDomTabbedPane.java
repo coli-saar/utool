@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
  *
  */
 
-public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
+class JDomTabbedPane extends JTabbedPane implements ChangeListener {
     
 	/**
 	 * 
@@ -39,7 +39,7 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 	 *
 	 * @param listener a listener for the popup dialog
 	 */
-	public JDomTabbedPane(CommandListener listener) {
+	JDomTabbedPane(CommandListener listener) {
 		super();
 		addChangeListener(this);
 		setComponentPopupMenu(new JDomTabPopup(listener));
@@ -96,7 +96,7 @@ public class JDomTabbedPane extends JTabbedPane implements ChangeListener {
 	 * 
 	 * @param daughter the Component to copy the shortcuts to
 	 */
-	public void copyShortcuts(JComponent daughter) {
+	void copyShortcuts(JComponent daughter) {
 		InputMap iMap = daughter.getInputMap();
 		ActionMap aMap = daughter.getActionMap();
 		

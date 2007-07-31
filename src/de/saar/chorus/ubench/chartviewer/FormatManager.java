@@ -19,6 +19,7 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.ubench.jdomgraph.EdgeType;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
+import de.saar.chorus.ubench.jdomgraph.JDomGraphDummyLayout;
 
 /**
  * This is a class providing methods to mark Splits and Subgraphs

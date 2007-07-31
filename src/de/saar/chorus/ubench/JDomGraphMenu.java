@@ -30,7 +30,7 @@ import de.saar.chorus.domgraph.utool.server.ConnectionManager;
  * @author Alexander Koller
  * @author Michaela Regneri
  */
-public class JDomGraphMenu extends JMenuBar {
+class JDomGraphMenu extends JMenuBar {
 
 	/**
 	 * 
@@ -90,7 +90,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 * Initializing the menu with a listener.
 	 * @param listener the listener for the menu 
 	 */
-	public JDomGraphMenu(CommandListener listener) {
+	JDomGraphMenu(CommandListener listener) {
 		super();
         this.listener = listener;
         graphSpecificItems = new HashSet<JMenuItem>();
@@ -102,11 +102,6 @@ public class JDomGraphMenu extends JMenuBar {
 	 * Setting up the whole menubar.
 	 */
 	private void initialize() {
-		
-		
-		
-		
-		
 		
 		int control = 
 	        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
@@ -482,7 +477,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 * on the visible graph.
 	 * @param b set to false the items get disabled
 	 */
-	public void setGraphSpecificItemsEnabled(boolean b) {
+	 void setGraphSpecificItemsEnabled(boolean b) {
 		for( JMenuItem item : graphSpecificItems ) {
 		
 			item.setEnabled(b);
@@ -499,14 +494,14 @@ public class JDomGraphMenu extends JMenuBar {
 	 * Enables or disables the menu item for solving.
 	 * @param b
 	 */
-	public void setSolvingEnabled(boolean b) {
+	void setSolvingEnabled(boolean b) {
 		solve.setEnabled(b);
 		chartlayout.setEnabled(b);
 		if(! countAndSolve.isSelected() )
 			cSolvForms.setEnabled(b);
 	}
 	
-	public void refresh() {
+	void refresh() {
 
 		switch(Ubench.getInstance().getVisibleTab().getLayoutType()) {
 		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
@@ -526,7 +521,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 * @param plus enables or disables the "forward" button
 	 * @param minus enalbes or disables the "backward" button
 	 */
-	public void setPlusMinusEnabled(boolean plus, boolean minus) {
+	void setPlusMinusEnabled(boolean plus, boolean minus) {
 		next.setEnabled(plus);
 		previous.setEnabled(minus);
 	}
@@ -535,7 +530,7 @@ public class JDomGraphMenu extends JMenuBar {
 	 * Enables or disables export of solved forms.
 	 * @param b if set to true, the menu item for solved form export is enabled
 	 */
-	public void setSaveAllEnabled(boolean b) {
+	void setSaveAllEnabled(boolean b) {
 		saveAll.setEnabled(b);
 	}
 	
@@ -543,19 +538,19 @@ public class JDomGraphMenu extends JMenuBar {
 		autoreduce.setEnabled(b);
 	}
 	
-	public static class ServerButton extends JToggleButton {
+	static class ServerButton extends JToggleButton {
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = -9122903869661066502L;
 
-		public ServerButton(CommandListener listener) {
+	    ServerButton(CommandListener listener) {
 			super();
 			addActionListener(listener);
 			initialise();
 		}
 		
-		private void initialise() {
+		void initialise() {
 			URL picurl = null;
 	        picurl = Thread.currentThread().getContextClassLoader().getResource("projects/Domgraph/pictures/Ch5.gif");
 	        if(picurl == null) {

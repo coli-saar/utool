@@ -11,10 +11,12 @@ import javax.swing.KeyStroke;
  * A <code>JPopupMenu</code> that allows to duplicate or close the 
  * currently visible tab.
  * 
+ * TODO this might as well be a private class of JDomTabbedPane
+ * 
  * @author Michaela Regneri
  *
  */
-public class JDomTabPopup extends JPopupMenu {
+class JDomTabPopup extends JPopupMenu {
 
 	/**
 	 * 
@@ -26,7 +28,7 @@ public class JDomTabPopup extends JPopupMenu {
 	 * 
 	 * @param listener the listener for the menu items
 	 */
-	public JDomTabPopup(CommandListener listener) {
+	JDomTabPopup(CommandListener listener) {
 		super();
 		
 		JMenuItem chartView = new JMenuItem("Display Chart");

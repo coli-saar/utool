@@ -16,7 +16,6 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
@@ -24,7 +23,6 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.chartviewer.JDomGraphDummyLayout;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 public class DomgraphMarqueeHandler extends BasicMarqueeHandler {

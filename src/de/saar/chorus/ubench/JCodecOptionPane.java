@@ -29,7 +29,7 @@ import javax.swing.JTextField;
  * @see de.saar.chorus.domgraph.codec.CodecConstructor
  *
  */
-public class JCodecOptionPane extends JComponent {
+class JCodecOptionPane extends JComponent {
 
 	
 	private static final long serialVersionUID = 5201435318585726488L;
@@ -56,7 +56,7 @@ public class JCodecOptionPane extends JComponent {
 	 * 
 	 * @param options
 	 */
-	public JCodecOptionPane(Map<String,Class> options) {
+	JCodecOptionPane(Map<String,Class> options) {
 		optionTypes = options;
 
 		layout = new GridBagLayout();
@@ -88,7 +88,7 @@ public class JCodecOptionPane extends JComponent {
 	 * @param parameter the parameter name
 	 * @param value the default value as string
 	 */
-	public void setDefault(String parameter, String value) {
+	void setDefault(String parameter, String value) {
 		if(value != null) {
 			if( booleans.containsKey(parameter) ) {
 				booleans.get(parameter).setSelected(
@@ -201,7 +201,7 @@ public class JCodecOptionPane extends JComponent {
 	 * 
 	 * @return a Map containg the parameter names and their values as string
 	 */
-	public Map<String,String> getOptionMap() {
+	Map<String,String> getOptionMap() {
 		Map<String,String> ret = new HashMap<String,String>();
 		
 		for(String opt : booleans.keySet() ) {
@@ -225,7 +225,7 @@ public class JCodecOptionPane extends JComponent {
 	 * 
 	 * @return
 	 */
-	public String getOptionString() {
+	String getOptionString() {
 		StringBuffer ret = new StringBuffer();
 		boolean first = true;
 		

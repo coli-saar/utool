@@ -853,21 +853,32 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 
 		if (lastroot != null) {
 			boolean lefthole = true; // the first hole is the left hole.
-			
-			for (String hole : getFragHoles(currentRoot)) {
+			boolean openhole = false; //found an open hole (-> wn edge) on my way
+			boolean sourcefound = false;
+			List<String> openholes = domgraph.getOpenHoles(currentRoot);
+			holes : for (String hole : getFragHoles(currentRoot)) {
 				for (String child : domgraph.getChildren(hole, EdgeType.DOMINANCE)) {
+					
 					if(lastroot.equals(domgraph.getRoot(child)) ) {	
-						
+						sourcefound = true;
 						if (! lefthole) {
 							cross++; // if the last fragment was not the
 							// child of the left hole...
 						}
+						break holes;
 					}
 					
+					
 				}
+				if ( openholes.contains(lastroot) ) {
+					openhole = true;
+				} 
 				if (lefthole) {
 					lefthole = false;
 				}
+			}
+			if(openhole && ! sourcefound) {
+				cross++;
 			}
 		}
 

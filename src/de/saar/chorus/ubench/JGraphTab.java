@@ -32,7 +32,7 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  *
  */
 
-public abstract class JGraphTab extends JScrollableJGraph {
+abstract class JGraphTab extends JScrollableJGraph {
 	//	the grapb is initialized empty
 	protected JDomGraph graph;
 	protected LayoutType layout;
@@ -86,7 +86,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * @param lis the <code>ActionListener</code> for this tab
 	 * @param lab storage for the nodelables of the graph to display
 	 */
-	public JGraphTab(JDomGraph jdg, DomGraph dg, String name,
+	JGraphTab(JDomGraph jdg, DomGraph dg, String name,
 			CommandListener lis, NodeLabels lab) {
 		super(jdg);
 		empty = false;
@@ -106,7 +106,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	/**
 	 * @return graph the <code>JDomGraph</code>
 	 */
-	public JDomGraph getGraph() {
+	 JDomGraph getGraph() {
 		return graph;
 	}
 
@@ -122,7 +122,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * 
 	 * @return nodeLabels the <code>NodeLabels</code> object
 	 */
-	public NodeLabels getNodeLabels() {
+	NodeLabels getNodeLabels() {
 		return nodeLabels;
 	}
 
@@ -130,7 +130,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Scales the graph so as to fit in the 
 	 * recent window.
 	 */
-	public void fitGraph() {
+	void fitGraph() {
 
 		JDomGraph graph = getGraph();
 
@@ -154,7 +154,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	/**
 	 * @return Returns the barCode.
 	 */
-	public String getBarCode() {
+
+    String getBarCode() {
 		return barCode;
 	}
 
@@ -162,140 +163,140 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Scales the graph with the given factor.
 	 * @param scale the scale factor
 	 */
-	public void setGraphScale(double scale) {
+	void setGraphScale(double scale) {
 		graph.setScale(scale);
 	}
 
 	/**
 	 * @return the scale (percentage of the original one)
 	 */
-	public double getGraphScale() {
+	double getGraphScale() {
 		return graph.getScale();
 	}
 
 	/**
 	 * @return Returns the defaultName.
 	 */
-	public String getDefaultName() {
+	String getDefaultName() {
 		return defaultName;
 	}
 
 	/**
 	 * @param defaultName The defaultName to set.
 	 */
-	public void setDefaultName(String defaultName) {
+	void setDefaultName(String defaultName) {
 		this.defaultName = defaultName;
 	}
 
 	/**
 	 * @return Returns the domGraph.
 	 */
-	public DomGraph getDomGraph() {
+	DomGraph getDomGraph() {
 		return domGraph;
 	}
 
 	/**
 	 * @param domGraph The domGraph to set.
 	 */
-	public void setDomGraph(DomGraph domGraph) {
+	void setDomGraph(DomGraph domGraph) {
 		this.domGraph = domGraph;
 	}
 
 	/**
 	 * @return Returns the graphName.
 	 */
-	public String getGraphName() {
+	String getGraphName() {
 		return graphName;
 	}
 
 	/**
 	 * @param graphName The graphName to set.
 	 */
-	public void setGraphName(String graphName) {
+	void setGraphName(String graphName) {
 		this.graphName = graphName;
 	}
 
 	/**
 	 * @return Returns the listener.
 	 */
-	public CommandListener getListener() {
+	CommandListener getListener() {
 		return listener;
 	}
 
 	/**
 	 * @param listener The listener to set.
 	 */
-	public void setListener(CommandListener listener) {
+	void setListener(CommandListener listener) {
 		this.listener = listener;
 	}
 
 	/**
 	 * @return Returns the recentLayout.
 	 */
-	public Preferences getRecentLayout() {
+	Preferences getRecentLayout() {
 		return recentLayout;
 	}
 
 	/**
 	 * @return Returns the solvedFormIterator.
 	 */
-	public SolvedFormIterator getSolvedFormIterator() {
+	SolvedFormIterator getSolvedFormIterator() {
 		return solvedFormIterator;
 	}
 
 	/**
 	 * @param solvedFormIterator The solvedFormIterator to set.
 	 */
-	public void setSolvedFormIterator(SolvedFormIterator solvedFormIterator) {
+	void setSolvedFormIterator(SolvedFormIterator solvedFormIterator) {
 		this.solvedFormIterator = solvedFormIterator;
 	}
 
 	/**
 	 * @return Returns the statusBar.
 	 */
-	public JPanel getStatusBar() {
+	JPanel getStatusBar() {
 		return statusBar;
 	}
 
 	/**
 	 * @param statusBar The statusBar to set.
 	 */
-	public void setStatusBar(JPanel statusBar) {
+	void setStatusBar(JPanel statusBar) {
 		this.statusBar = statusBar;
 	}
 
 	/**
 	 * @param barCode The barCode to set.
 	 */
-	public void setBarCode(String barCode) {
+	void setBarCode(String barCode) {
 		this.barCode = barCode;
 	}
 
 	/**
 	 * @param graph The graph to set.
 	 */
-	public void setGraph(JDomGraph graph) {
+	void setGraph(JDomGraph graph) {
 		this.graph = graph;
 	}
 
 	/**
 	 * @param nodeLabels The nodeLabels to set.
 	 */
-	public void setNodeLabels(NodeLabels nodeLabels) {
+	void setNodeLabels(NodeLabels nodeLabels) {
 		this.nodeLabels = nodeLabels;
 	}
 
 	/**
 	 * @param solvedForms The solvedForms to set.
 	 */
-	public void setSolvedForms(long solvedForms) {
+	void setSolvedForms(long solvedForms) {
 		this.solvedForms = solvedForms;
 	}
 
 	/**
 	 * @param recentLayout The recentLayout to set.
 	 */
-	public void setRecentLayout(Preferences recentLayout) {
+	void setRecentLayout(Preferences recentLayout) {
 		this.recentLayout = recentLayout;
 	}
 
@@ -303,7 +304,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Repaints the graph if its layout is not consistent
 	 * with the recent layout preferences.
 	 */
-	public boolean repaintIfNecessary() throws Exception {
+	boolean repaintIfNecessary() throws Exception {
 		if ((recentLayout == null)
 				|| Preferences.mustUpdateLayout(recentLayout)) {
 			
@@ -315,11 +316,11 @@ public abstract class JGraphTab extends JScrollableJGraph {
 		return false;
 	}
 	
-	public LabelType getLabelType() {
+	LabelType getLabelType() {
 		return graph.getLabeltype();
 	}
 	
-	public void setLabelType(LabelType lt) throws Exception {
+	void setLabelType(LabelType lt) throws Exception {
 		graph.setLabeltype(lt);
 		drawGraph();
 	}
@@ -329,7 +330,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * by adopting the recent global layout 
 	 * preferences.
 	 */
-	public void updateRecentLayout() {
+	void updateRecentLayout() {
 		if (recentLayout == null) {
 			recentLayout = Preferences.getInstance().clone();
 		} else {
@@ -340,14 +341,14 @@ public abstract class JGraphTab extends JScrollableJGraph {
 
 	
 	
-	public void setLayoutType(LayoutType lt) throws Exception {
+	void setLayoutType(LayoutType lt) throws Exception {
 		layout = lt;
 		graph.setLayouttype(lt);
 		
 		drawGraph();
 	}
 	
-	public LayoutType getLayoutType() {
+	LayoutType getLayoutType() {
 		return layout;
 	}
 	
@@ -356,14 +357,14 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	/**
 	 * @return number of the graph's nodes
 	 */
-	public int numGraphNodes() {
+	int numGraphNodes() {
 		return graph.getNodes().size();
 	}
 
 	/**
 	 * @return a clone of the displayed graph
 	 */
-	public JDomGraph getCloneOfGraph() {
+	JDomGraph getCloneOfGraph() {
 		return graph.clone();
 	}
 
@@ -371,7 +372,7 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	 * Resets the layout to its initial 
 	 * version.
 	 */
-	public void resetLayout() throws Exception {
+	void resetLayout() throws Exception {
 		graph.setScale(1);
 		graph.clear();
 		drawGraph();
@@ -392,13 +393,13 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	}
 
 	
-	public abstract void displayChart(); 
+	abstract void displayChart(); 
 	
 	/**
 	 * 
 	 * @return true if the graph to display cannot be drawn
 	 */
-	public boolean isEmpty() {
+	boolean isEmpty() {
 		return empty;
 	}
 
@@ -406,11 +407,11 @@ public abstract class JGraphTab extends JScrollableJGraph {
 	/**
 	 * @return Returns the hasActiveChartViewer.
 	 */
-	public boolean hasVisibleChartViewer() {
+	boolean hasVisibleChartViewer() {
 		return (cv != null  && cv.isVisible() == true);
 	}
 
-	public JFrame getChartViewer() {
+	JFrame getChartViewer() {
 		return cv;
 	}
 	
@@ -419,8 +420,8 @@ public abstract class JGraphTab extends JScrollableJGraph {
 			cv.setEQSLoaded(true);
 		}
 	}
-	
-	public void focusChart() {
+  
+	void focusChart() {
 		if(cv != null) 
 			cv.toFront();
 	}

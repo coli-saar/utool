@@ -17,7 +17,6 @@ import de.saar.chorus.gecode.BoundingBox;
 import de.saar.chorus.gecode.PostOrderNodeVisitor;
 import de.saar.chorus.gecode.PreOrderNodeVisitor;
 import de.saar.chorus.gecode.Shape;
-import de.saar.chorus.ubench.JDomGraphTab;
 
 
 /**

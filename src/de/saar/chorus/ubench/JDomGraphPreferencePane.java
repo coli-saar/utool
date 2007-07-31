@@ -37,7 +37,7 @@ import de.saar.chorus.ubench.Preferences.LayoutType;
  * @author Michaela Regneri
  *
  */
-public class JDomGraphPreferencePane extends JFrame
+class JDomGraphPreferencePane extends JFrame
 				implements ActionListener {
 	
 	
@@ -64,7 +64,7 @@ public class JDomGraphPreferencePane extends JFrame
 	 * editing the settings.
 	 *
 	 */
-	public JDomGraphPreferencePane() {
+	JDomGraphPreferencePane() {
 		super("Settings");
 		setAlwaysOnTop(true);
 		tabs = new JTabbedPane();
@@ -293,7 +293,7 @@ public class JDomGraphPreferencePane extends JFrame
 	 * Updating the settings wherever the changes 
 	 * made by the user may be relevant.
 	 */
-	public void applySettings() {
+	private void applySettings() {
 		ServerOptions.setWarmup(warmup.isSelected());
 		ServerOptions.setLogging(logging.isSelected());
 		if(port2802.isSelected()) {
