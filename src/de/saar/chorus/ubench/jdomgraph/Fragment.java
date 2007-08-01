@@ -7,8 +7,6 @@ package de.saar.chorus.ubench.jdomgraph;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JLabel;
-
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 

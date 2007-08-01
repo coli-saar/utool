@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
 import de.saar.chorus.jgraph.improvedjgraph.INodeData;
-import de.saar.chorus.ubench.Preferences;
 
 
 

@@ -26,6 +26,7 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
+import org.jgraph.graph.ParentMap;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
@@ -66,6 +67,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 	private Font nodeFont;
 	private Font upperBoundFont;
 	
+	private boolean fragmented;
+	
 	
 	
 	/**
@@ -83,14 +86,16 @@ public class JDomGraph extends JGraph implements Cloneable {
 	    fragments = new HashSet<Fragment>();
 	    nameToNode = new HashMap<String,DefaultGraphCell>();
 	    nodeFont = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN, 17);
-	    
+	    fragmented = false;
 		dominanceEdges = new HashSet<DefaultEdge>();
 		upperBoundFont = GraphConstants.DEFAULTFONT.deriveFont(Font.BOLD, 17);
 		
-		getGraphLayoutCache().setSelectsAllInsertedCells(false);
-		getGraphLayoutCache().setSelectLocalInsertedCells(false);
 		clear();
 
+		getGraphLayoutCache().setSelectsAllInsertedCells(false);
+		getGraphLayoutCache().setSelectLocalInsertedCells(false);
+
+		
 		setAntiAliased(true); 
 		
 		// set up tooltip handling
@@ -165,16 +170,18 @@ public class JDomGraph extends JGraph implements Cloneable {
 	}
 	
 	public Fragment addFragment(Fragment fragment) {
-		 
+		 if(! fragmented) {
+			 fragmented = true;
+		 }
 		if(! fragments.contains(fragment)) {
-
-			DefaultGraphCell frag = new DefaultGraphCell();
-			fragments.add(fragment);
-			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
+			getGraphLayoutCache().insertGroup(new DefaultGraphCell(), fragment.getAllCells().toArray());
+			
 		}
-		
+	
 		return fragment;
 	}
+	
+	
 	
 	/**
 	 * Compute JGraph attributes for a node of the given type.
