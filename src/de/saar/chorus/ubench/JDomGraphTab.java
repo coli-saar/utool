@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -132,8 +133,7 @@ class JDomGraphTab extends JGraphTab  {
 			SwingUtilities.invokeLater(new Thread() {
 				public void run() {
 					
-					
-					
+					try {
 					JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
 					LayoutAlgorithm drawer = graph.getLayoutType().getLayout();
 					drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), 
@@ -142,7 +142,18 @@ class JDomGraphTab extends JGraphTab  {
 					
 					Ubench.getInstance().refresh(true);
 					Preferences.setFitWindowToGraph(false);
-				
+					} catch (Exception e) {
+						empty = true;
+						   JOptionPane pane = 
+								new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
+							JDialog dialog = 
+								pane.createDialog(Ubench.getInstance().getWindow(), "Error");
+							dialog.setModal(false);
+							dialog.setVisible(true);
+							Ubench.getInstance().refresh();
+							
+				    	   return;
+					}
 				}
 			});
 

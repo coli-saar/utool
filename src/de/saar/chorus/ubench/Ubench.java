@@ -139,7 +139,7 @@ public class Ubench {
 		}
 		
 
-        
+        Thread.setDefaultUncaughtExceptionHandler(new DomGraphUnhandledExceptionHandler());
         eqs = null;
         eqsname = null;
         reduceAutomatically = false;
@@ -226,12 +226,16 @@ public class Ubench {
      * Refreshes the menu, the slider and the status bar.
      */
     void refresh() {
-        if (getVisibleTab() != null) {
-            if(getVisibleTab().getClass() == JSolvedFormTab.class ) {
+    	JGraphTab current = getVisibleTab();
+    	
+        if (current != null) {
+            if(current.isEmpty()) {
+            	closeCurrentTab();
+            } else if(current.getClass() == JSolvedFormTab.class ) {
                 setSolvingEnabled(false);
                 menuBar.setSaveAllEnabled(false);
             } else {
-                if( ((JDomGraphTab) getVisibleTab()).isSolvable()) {
+                if( ((JDomGraphTab) current).isSolvable()) {
                     setSolvingEnabled(true);
                     menuBar.setSaveAllEnabled(true);
                 } else {
@@ -244,6 +248,8 @@ public class Ubench {
         } else {
             menuBar.setGraphSpecificItemsEnabled(false);
         }
+        
+       
         resetSlider();
         statusBar.refresh();
        
@@ -463,6 +469,8 @@ public class Ubench {
                 true, listener, labels);
         return addTab(tab, true, tabbedPane.getTabCount());
        } catch(Exception e) {
+    	   
+    	  
     	   JOptionPane pane = 
 				new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
 			JDialog dialog = 
