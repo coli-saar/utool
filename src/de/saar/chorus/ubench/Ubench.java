@@ -219,8 +219,8 @@ public class Ubench {
     
     void refresh(boolean resize) {
     	useNextTabToResizeFrame = resize;
-	if(resize) {
-	    window.pack();
+	if(Preferences.isFitWindowToGraph() && resize) {
+	   window.pack();
 	}
     	refresh();
     }
@@ -258,22 +258,20 @@ public class Ubench {
        
         
           if( Preferences.isFitWindowToGraph() && useNextTabToResizeFrame ) {
-        	  
-        	  
     			// This is the first tab we're opening; use its size to resize the Ubench window.
     			// We try to make the window just big enough to fit the graph, but no bigger
     			// than the screen size.
     
-	     
+        	  
     			GraphicsEnvironment env =
     	        	GraphicsEnvironment.getLocalGraphicsEnvironment();
     			Rectangle bounds = env.getMaximumWindowBounds();
-    			
-			window.validate();
     			Dimension graphsize = window.getSize();
     			Dimension windowsize = new Dimension(Math.min(bounds.width, graphsize.width), Math.min(bounds.height, graphsize.height));
+    		
     			window.setSize(windowsize);
     			window.validate();
+    			window.repaint();
     			useNextTabToResizeFrame = false;
     			
     		}
