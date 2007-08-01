@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
@@ -84,10 +86,14 @@ public class FormatManager {
 	 */
 	private static void markNode(DefaultGraphCell node, Color color,
 			JDomGraph graph, Font font) {
-		GraphConstants.setForeground(graph.getModel().getAttributes(node),
-				color);
-		GraphConstants.setFont(graph.getModel().getAttributes(node), font);
 		
+		CellView cv = graph.getGraphLayoutCache().getMapping(node, false);
+		AttributeMap map = cv.getAttributes();
+		
+		GraphConstants.setForeground(map,color);
+		GraphConstants.setFont(map, font);
+		
+		graph.getGraphLayoutCache().update(cv);
 	}
 	
 	/**
@@ -98,10 +104,14 @@ public class FormatManager {
 	 */
 	private static void markEdge(DefaultEdge edge, Color color, JDomGraph graph,
 			float width) {
-		GraphConstants
-			.setLineColor(graph.getModel().getAttributes(edge), color);
-		GraphConstants
-			.setLineWidth(graph.getModel().getAttributes(edge), width);
+		
+		CellView cv = graph.getGraphLayoutCache().getMapping(edge, false);
+		AttributeMap map = cv.getAttributes();
+		
+		GraphConstants.setLineColor(map, color);
+		GraphConstants.setLineWidth(map, width);
+		
+		graph.getGraphLayoutCache().update(cv);
 	}
 	
 	/**
@@ -112,13 +122,19 @@ public class FormatManager {
 	 */
 	private static void unmarkNode(DefaultGraphCell node, JDomGraph graph) {
 		
-		GraphModel model = graph.getModel();
+		CellView cv = graph.getGraphLayoutCache().getMapping(node, false);
+		AttributeMap map =
+			cv.getAttributes();
 		
-		GraphConstants.setForeground(model.getAttributes(node),
+		GraphConstants.setForeground(map,
 				standardNodeForeground);
-		GraphConstants.setBackground(model.getAttributes(node),
+		GraphConstants.setBackground(map,
 				standardNodeBackground);
-		GraphConstants.setFont(model.getAttributes(node), standardNodeFont);
+		GraphConstants.setFont(map, standardNodeFont);
+		
+
+		graph.getGraphLayoutCache().update(cv);
+		
 	}
 	
 	/**
@@ -129,22 +145,27 @@ public class FormatManager {
 	 */
 	private static void unmarkEdge(DefaultEdge edge, JDomGraph graph) {
 		
-		GraphModel model = graph.getModel();
+		CellView cv = graph.getGraphLayoutCache().getMapping(edge, false);
+		AttributeMap map =
+			cv.getAttributes();
+		
 		EdgeType type = graph.getEdgeData(edge).getType();
 		boolean isSolid = type == EdgeType.solid;
 		
 		if (isSolid) {
-			GraphConstants.setLineColor(model.getAttributes(edge),
+			GraphConstants.setLineColor(map,
 					standardSolidEdgeColor);
-			GraphConstants.setLineWidth(model.getAttributes(edge),
+			GraphConstants.setLineWidth(map,
 					standardSolidEdgeWidth);
 		} else {
-			GraphConstants.setLineColor(model.getAttributes(edge),
+			GraphConstants.setLineColor(map,
 					standardDomEdgeColor);
-			GraphConstants.setLineWidth(model.getAttributes(edge),
+			GraphConstants.setLineWidth(map,
 					standardDomEdgeWidth);
 		}
 		
+
+		graph.getGraphLayoutCache().update(cv);
 	}
 	
 	/**
@@ -154,7 +175,7 @@ public class FormatManager {
 	 * @param graph the graph
 	 */
 	public static void unmark(JDomGraph graph) {
-		
+
 		for (DefaultEdge edge : graph.getEdges()) {
 			unmarkEdge(edge, graph);
 		}
@@ -163,6 +184,7 @@ public class FormatManager {
 		}
 		
 		refreshGraphLayout(graph);
+
 	}
 	
 	
@@ -176,7 +198,7 @@ public class FormatManager {
 	 */
 	public static void markSubgraph(Set<String> roots, JDomGraph graph, int subgraphindex, DomGraph dg) {
 		int color = subgraphindex % subgraphcolors.length;
-		
+
 		markSubgraph(roots, subgraphcolors[color], graph, false, dg);
 	}
 	
@@ -188,7 +210,7 @@ public class FormatManager {
 	 * @param graph
 	 */
 	public static void markSubgraph(Set<String> roots, JDomGraph graph, DomGraph dg) {
-		
+
 		markSubgraph(roots, subgraphcolors[subgraphcolorindex],
 				graph,true, dg);
 		
@@ -338,6 +360,7 @@ public class FormatManager {
 	 * @param graph
 	 */
 	public static void markGraph(Color color, JDomGraph graph) {
+
 		for (DefaultGraphCell node : graph.getNodes()) {
 			markNode(node, color, graph, markedNodeFont);
 		}
@@ -377,6 +400,7 @@ public class FormatManager {
 	 * @param graph the parent graph
 	 */
 	public static void markRootFragment(String root, JDomGraph graph, DomGraph dg) {
+		
 		for( String node : dg.getFragment(root)) {
 			DefaultGraphCell rfn = graph.getNodeForName(node);
 			markNode(rfn, rootcolor, graph, markedNodeFont);

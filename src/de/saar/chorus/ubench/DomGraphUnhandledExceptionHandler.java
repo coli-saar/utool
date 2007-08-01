@@ -24,6 +24,9 @@ public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExcepti
 	 * 
 	 */
 	public void uncaughtException(Thread arg0, Throwable arg1) {
+		
+	
+		
 		 JOptionPane pane = 
 				new JOptionPane(arg1.getMessage(), JOptionPane.ERROR_MESSAGE);
 			JDialog dialog = 
