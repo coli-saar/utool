@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import de.saar.basic.XMLFilter;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
@@ -191,7 +192,7 @@ public class ChartViewerListener implements ActionListener {
 		JFileChooser fc = new JFileChooser();
 
 		fc.setDialogTitle("Select the equation system");
-		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
+		fc.setFileFilter(new XMLFilter());
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		int fcVal = fc.showOpenDialog(viewer);	
 		

@@ -37,7 +37,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileView;
 
 import com.lowagie.text.DocumentException;
 
@@ -45,6 +44,7 @@ import de.saar.basic.ExportUtilities;
 import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
+import de.saar.basic.XMLFilter;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -1022,7 +1022,7 @@ class CommandListener implements ActionListener,
 	private void loadEQS() {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle("Choose the equation system input file");
-		fc.setFileFilter(Ubench.getInstance().getListener().new XMLFilter());
+		fc.setFileFilter(new XMLFilter());
 		
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 		
@@ -1077,43 +1077,7 @@ class CommandListener implements ActionListener,
 	
 	
 	
-	/**
-	 * A <code>FileFilter</code> that 
-	 * accepts files with *.xml-extension.
-	 * 
-	 * @author Michaela Regneri
-	 *
-	 */
-	public class XMLFilter extends FileFilter {
-		
-		/**
-		 * Overwrites the <code>accept</code> method
-		 * of <code>Filefilter</code>.
-		 * 
-		 * @return true if the file has an xml extension
-		 */
-		public boolean accept(File f) {
-			String fileName = f.getName();
-			if( f.isDirectory() ) {
-				return true;
-			} 
-			if(fileName.indexOf(".xml") > 0) {
-				return true;
-			}
-			return false;
-		}
-		
-		/**
-		 * Overwrites the <code>getDescription</code> 
-		 * method of <code>FileFilter</code>.
-		 * 
-		 * @return just "XML"
-		 */
-		public String getDescription() {
-			
-			return "XML";
-		}
-	}
+	
 	
 	/**
 	 * A <code>FileFilter</code> that 
@@ -1122,7 +1086,7 @@ class CommandListener implements ActionListener,
 	 * @author Michaela Regneri
 	 *
 	 */
-	public class PDFFilter extends FileFilter {
+	private class PDFFilter extends FileFilter {
 		
 		/**
 		 * Overwrites the <code>accept</code> method
@@ -1153,30 +1117,7 @@ class CommandListener implements ActionListener,
 		
 	}
 	
-	/**
-	 * A <code>FileView</code> that shows 
-	 * PDF-Files.
-	 * 
-	 * @author Michaela Regneri
-	 *
-	 */
-	public class PDFView extends FileView {
-		
-		/**
-		 * Overwrites the <code>getDescription</code>
-		 * method of <code>FileView</code>.
-		 * 
-		 * @return "PDF-file" if there is a pdf-file,
-		 * 			otherwise the standard-description
-		 */
-		public String getDescription(File f) {
-			if(f.getName().indexOf(".pdf") > 0) {
-				return "PDF-file";
-			} 
-			return super.getDescription(f);
-		}
-		
-	}
+	
 	
 	/**
 	 * Picks the solved form with the given number and 
