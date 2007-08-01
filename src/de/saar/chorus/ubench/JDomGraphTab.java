@@ -134,6 +134,7 @@ class JDomGraphTab extends JGraphTab  {
 				public void run() {
 					
 					try {
+					    
 					JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
 					LayoutAlgorithm drawer = graph.getLayoutType().getLayout();
 					drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), 
