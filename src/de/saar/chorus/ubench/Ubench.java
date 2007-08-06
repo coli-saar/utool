@@ -467,16 +467,10 @@ public class Ubench {
         JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
                 true, listener, labels);
         return addTab(tab, true, tabbedPane.getTabCount());
-       } catch(Exception e) {
+      } catch(Exception e) {
     	   
     	  
-    	   JOptionPane pane = 
-				new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = 
-				pane.createDialog(window, "Error");
-			dialog.setModal(false);
-			dialog.setVisible(true);
-			refresh();
+    	  DomGraphUnhandledExceptionHandler.showErrorDialog(e);
     	   return false;
        }
          
@@ -519,12 +513,7 @@ public class Ubench {
         try {
         	return addTab(tab, true, place);
         } catch(Exception e) {
-        	JOptionPane pane = 
-				new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = 
-				pane.createDialog(window, "Error");
-			dialog.setModal(false);
-			dialog.setVisible(true);
+        	 DomGraphUnhandledExceptionHandler.showErrorDialog(e);
     	   return false;
         }
     }

@@ -249,6 +249,7 @@ public class JDomGraphCanvas implements Canvas {
 	//	JGraphUtilities.applyLayout(jdomgraph, new JDomGraphDummyLayout(jdomgraph));
 		//jdomgraph.setAntiAliased(true);
 		jdomgraph.validate();
+
 	}
 
 }
