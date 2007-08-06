@@ -443,7 +443,7 @@ class CommandListener implements ActionListener,
 					
 				} else if (command.equals("about") ) {
 					JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-							"Underspecification Workbench running Domgraph version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
+							"Underspecification Workbench running Utool version " + GlobalDomgraphProperties.getVersion() + System.getProperty("line.separator")
 							+ "created by the CHORUS project, SFB 378, Saarland University"
 							+ System.getProperty("line.separator") + System.getProperty("line.separator") 
 							+ "http://" + GlobalDomgraphProperties.getHomepage()
@@ -882,12 +882,7 @@ class CommandListener implements ActionListener,
 				}
 		}
 		 } catch(Exception exc) {
-				JOptionPane pane = 
-    				new JOptionPane(exc.getMessage(), JOptionPane.ERROR_MESSAGE);
-    			JDialog dialog = 
-    				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
-    			dialog.setModal(false);
-    			dialog.setVisible(true);
+			 DomGraphUnhandledExceptionHandler.showErrorDialog(exc);
 
 		}
 	}
@@ -1009,13 +1004,7 @@ class CommandListener implements ActionListener,
 		}
 	
 		} catch (Exception ex) {
-			JOptionPane pane = 
-				new JOptionPane(ex.getMessage(), JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = 
-				pane.createDialog(Ubench.getInstance().getWindow(), "Error");
-			dialog.setModal(false);
-			dialog.setVisible(true);
-
+			 DomGraphUnhandledExceptionHandler.showErrorDialog(ex);
 		}
 		}
 	

@@ -145,15 +145,10 @@ class JDomGraphTab extends JGraphTab  {
 					Preferences.setFitWindowToGraph(false);
 					} catch (Exception e) {
 						empty = true;
-						   JOptionPane pane = 
-								new JOptionPane(e.getMessage(), JOptionPane.ERROR_MESSAGE);
-							JDialog dialog = 
-								pane.createDialog(Ubench.getInstance().getWindow(), "Error");
-							dialog.setModal(false);
-							dialog.setVisible(true);
-							Ubench.getInstance().refresh();
+						DomGraphUnhandledExceptionHandler.showErrorDialog(e);
+						Ubench.getInstance().refresh();
 							
-				    	   return;
+				    	return;
 					}
 				}
 			});
@@ -209,10 +204,7 @@ class JDomGraphTab extends JGraphTab  {
 						"Out of memory",
 						JOptionPane.ERROR_MESSAGE);
 			} catch( Exception e ) {
-				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-						"An error occurred while solving this graph.\n",
-						"Dolver Error",
-						JOptionPane.ERROR_MESSAGE);
+				 DomGraphUnhandledExceptionHandler.showErrorDialog(e);
 			}
 		}
 
