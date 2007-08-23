@@ -185,7 +185,6 @@ public class HolesemComsemInputCodec extends InputCodec {
 	}
 	
 	if( emptyTopFragment != null ) {
-		System.err.println("top = " + emptyTopFragment);
 		graph.remove(emptyTopFragment);
 	}
 
