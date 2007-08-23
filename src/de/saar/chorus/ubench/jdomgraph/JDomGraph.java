@@ -94,7 +94,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 
 		getGraphLayoutCache().setSelectsAllInsertedCells(false);
 		getGraphLayoutCache().setSelectLocalInsertedCells(false);
-
+		
 		
 		setAntiAliased(true); 
 		
