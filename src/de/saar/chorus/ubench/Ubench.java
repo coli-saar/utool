@@ -131,13 +131,6 @@ public class Ubench {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (Exception e) {
 		}
-		
-		// MacOS-specific system properties
-		if( System.getProperty("os.name").equals("Mac OS X")) {
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Ubench");  // doesn't work -- why not?
-			System.setProperty("apple.laf.useScreenMenuBar", "true");
-		}
-		
 
         Thread.setDefaultUncaughtExceptionHandler(new DomGraphUnhandledExceptionHandler());
         eqs = null;
