@@ -28,6 +28,8 @@ public class DomgraphTestSuite extends TestSuite {
     	addDomgraphTest("codec/CodecManager");
     	addDomgraphTest("codec/basic/Chain");
     	addDomgraphTest("codec/domcon/DomconOzInputCodec");
+    	addDomgraphTest("codec/domcon/DomconOzOutputCodec");
+    	addDomgraphTest("codec/holesem/HolesemCodec");
         addDomgraphTest("graph/DomGraph");
         addDomgraphTest("chart/SplitComputer");
         addDomgraphTest("chart/SolvedFormIterator");

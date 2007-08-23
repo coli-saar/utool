@@ -117,12 +117,28 @@ class DomGraphTest extends GroovyTestCase {
 	        			"[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b) label(x1 g(x2)) ]",
 	        			"[label(x f(y)) dom(y z) label(z a) label(w b) label(x1 g(x2))]");
 	        }
+	        
+	        
+	        /*********** test cases for graph classification ***********/
+	        public void testWeaklyNormalEmptyTopFragment() {
+	        	decode("[dom(x y) dom(x z) label(y a) label(z a)]");
+	        	assert !graph.isWeaklyNormal();
+	        }
+	        
+	        public void testWeaklyNormalEmptyFragment() {
+	        	decode("[label(u f(v)) dom(v x) dom(x y) label(y a)]");
+	        	assert !graph.isWeaklyNormal();
+	        }
 
 	        
 	        
 	        
 	        
 	        //////////////////////////////////////////////////////////////////////////////////////////
+	        
+	        private void decode(String clls) {
+	        	ozcodec.decode(new StringReader(clls), graph, labels);
+	        }
 	        
 	        
 	        private void backboneTest(String original, String wnBackbone, String nBackbone) {

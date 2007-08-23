@@ -980,7 +980,6 @@ public class DomGraph implements Cloneable {
 			if( getData(node).getType() == NodeType.UNLABELLED ) {
 				// unlabelled nodes must be leaves
 				if( !isLeaf(node) ) {
-					//System.err.println(node + " is unlabelled but no leaf!");
 					return cacheResult("isWeaklyNormal", false);
 				}
 				
@@ -1009,7 +1008,6 @@ public class DomGraph implements Cloneable {
 			if( getData(edge).getType() == EdgeType.DOMINANCE ) {
 				// dominance edges go into roots
 				if( !isRoot((String) edge.getTarget()) ) {
-					//                  System.err.println(edge + " is a dom-edge into a non-root!");
                     return cacheResult("isWeaklyNormal", false);
 				}
 			}
@@ -1349,7 +1347,7 @@ public class DomGraph implements Cloneable {
 	 * Checks whether the graph has an empty fragment, i.e. a fragment
 	 * that consists of a single unlabelled node.
 	 * 
-	 * @return true iff the graph has an empty fragment.
+	 * @return true iff the graph has an empty fragment
 	 */
 	public boolean hasEmptyFragments() {
         if( hasCachedResult("hasEmptyFragments")) {
@@ -1358,7 +1356,7 @@ public class DomGraph implements Cloneable {
 
 		for( String node : getAllNodes() ) {
 			if( getData(node).getType() == NodeType.UNLABELLED
-					&& getAdjacentEdges(node, EdgeType.TREE).isEmpty() ) {
+					&& getAdjacentEdges(node, EdgeType.TREE).isEmpty()  ) {
 				return cacheResult("hasEmptyFragments", true);
 			}
 		}

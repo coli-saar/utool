@@ -165,6 +165,29 @@ public class HolesemComsemInputCodec extends InputCodec {
 	}
 	
 	CodecTools.graphLabelsConsistencyAssertion(graph, labels);
+	
+	// if there is an empty top fragment, remove it from the graph
+	String emptyTopFragment = null;
+	for( String node : graph.getAllNodes() ) {
+		if( graph.getData(node).getType() == NodeType.UNLABELLED
+			&& graph.getAdjacentEdges(node, EdgeType.TREE).isEmpty() ) {
+				if( graph.indeg(node) > 0 ) {
+					throw new MalformedDomgraphException("The graph is not normal (nontrivial empty fragments)", ERROR_GRAPH_NOT_NORMAL);
+				} else {
+					if( emptyTopFragment == null ) {
+						// we allow a single empty top fragment by removing it from the graph
+						emptyTopFragment = node;
+					} else {
+						throw new MalformedDomgraphException("The graph is not normal (multiple top fragments)", ERROR_GRAPH_NOT_NORMAL);
+					}
+				}
+			}
+	}
+	
+	if( emptyTopFragment != null ) {
+		System.err.println("top = " + emptyTopFragment);
+		graph.remove(emptyTopFragment);
+	}
 
 	// at this point, the graph must be normal; otherwise, the
 	// encoding was not applicable in the first place.

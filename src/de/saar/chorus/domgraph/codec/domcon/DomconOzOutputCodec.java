@@ -50,7 +50,13 @@ public class DomconOzOutputCodec extends MultiOutputCodec {
                 
                 List<String> children = graph.getChildren(node, EdgeType.TREE);
                 if( !children.isEmpty() ) {
-                    sb.append("(" + StringTools.join(children, " ") + ")");
+                    sb.append("(" + CodecTools.atomify(children.get(0)));
+                    
+                    for( int i = 1; i < children.size(); i++ ) {
+                    	sb.append(" " + CodecTools.atomify(children.get(i)));
+                    }
+                    
+                    sb.append(")");
                 }
                 
                 sb.append(")");
@@ -62,7 +68,8 @@ public class DomconOzOutputCodec extends MultiOutputCodec {
         // iterate through the dominance edges and output dominance atoms for them
         for( Edge edge : graph.getAllEdges() ) {
             if( graph.getData(edge).getType() == EdgeType.DOMINANCE ) {
-                atoms.add("dom(" + edge.getSource() + " " + edge.getTarget() + ")");
+                atoms.add("dom(" + CodecTools.atomify((String) edge.getSource()) 
+                		+ " " + CodecTools.atomify((String) edge.getTarget()) + ")");
             }
         }
         
