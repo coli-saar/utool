@@ -52,6 +52,12 @@ public class Utool {
             System.exit(e.getExitcode());
         }
         
+        // if we run on a Mac, set the application name here
+		if( System.getProperty("os.name").equals("Mac OS X")) {
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Utool");
+			System.setProperty("apple.laf.useScreenMenuBar", "true");
+		}
+        
         
         // check statistics and compactify graph
         if( options.getOperation().requiresInput ) {
