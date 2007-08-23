@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
@@ -131,6 +130,7 @@ public class Ubench {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 		} catch (Exception e) {
 		}
+
 
         Thread.setDefaultUncaughtExceptionHandler(new DomGraphUnhandledExceptionHandler());
         eqs = null;
@@ -339,7 +339,7 @@ public class Ubench {
     
     void duplicateVisibleTab() {
     	try {
-    	addTab(getVisibleTab().clone(), true, tabbedPane.getTabCount());
+    		addTab(getVisibleTab().clone(), true, tabbedPane.getTabCount());
     	} catch(Exception e ) {
     		
     	}
@@ -350,9 +350,10 @@ public class Ubench {
      * 
      * @param tab
      *            the tab to ad
-     * @param showNow
-     *            if set to true, the tab will be displayed at once
-     */
+     * @param showNow if set to true, the new tab will be focused after insertion
+     * TODO document me (better)
+     *      
+     **/
     private boolean addTab(JGraphTab tab, boolean showNow, int ind) throws Exception {
 
 
@@ -443,14 +444,14 @@ public class Ubench {
     }
     
     /**
-     * Allowes to set up a new Tab by submitting the 
+     * Allows to set up a new Tab by submitting the 
      * <code>DomGraph</code> to display and a <code>NodeLabels</code>
      * object along with the graph's name.
      * 
      * @param label name of the graph (resp. the tab)
      * @param graph the <code>DomGraph</code> to display
      * @param labels the storage for the node labels
-     * @return true if the <code>DomGraph</code> was sucessfully 
+     * @return true if the <code>DomGraph</code> was successfully 
      * 		   translated into a <code>JDomGraph</code>
      */
     public boolean addJDomGraphTab(String label, DomGraph graph, NodeLabels labels) {
@@ -470,6 +471,25 @@ public class Ubench {
     }
     
    
+    /**
+     *  Allows to set up a new Tab by submitting the 
+     * <code>DomGraph</code> in solved form to display and a <code>NodeLabels</code>
+     * object along with the graph's name and some information about the source graph.
+     * 
+     * Note: This is public because the <code>ChartViewerListener</code> uses it.
+     * 
+     * @param label the label of the tab
+     * @param sf the graph in solved form
+     * @param sfi the solved form iterator which has produced the sf
+     * @param no the index of the solved forms
+     * @param all the number of solved forms the source graph has
+     * @param graph the source graph
+     * @param labels the labels of the graph (and the solved form)
+     * @param graphname the name of the solved form
+     * @param atEnd if set to true, this tab will be the last tab. 
+     *              If set to false, it will succeed the visible tab immediately.
+     * @return
+     */
      public boolean addSolvedFormTab(String label, DomGraph sf, 
     		 SolvedFormIterator sfi, long no,
     		 long all, DomGraph graph, NodeLabels labels,
@@ -479,7 +499,7 @@ public class Ubench {
         JSolvedFormTab tab = new JSolvedFormTab(jDomGraph, 
 				label, 
 				sfi, graph, sf,
-				1, all, 
+				no, all, 
 				graphname, 
 				Ubench.getInstance().getListener(), 
 				labels);
@@ -490,7 +510,7 @@ public class Ubench {
         } else {
         	// solved form scrolling
         	place = getVisibleTabIndex();
-        	closeCurrentTab();
+        	
         	if(no > 1 && no < getVisibleTab().getSolvedForms()) {
     			getMenuBar().setPlusMinusEnabled(true,true);
     		} else if (no == 1 && no < Ubench.getInstance().getVisibleTab().getSolvedForms()) {
@@ -501,7 +521,7 @@ public class Ubench {
     			getMenuBar().setPlusMinusEnabled(false,false);
     		}
     		Ubench.getInstance().getStatusBar().showBar(tab.getBarCode());
-    		
+    		closeCurrentTab();
         }
         try {
         	return addTab(tab, true, place);
@@ -593,15 +613,15 @@ public class Ubench {
 
     
     /**
-     * Loads a labelled dominance graph from a file.
+     * Loads a labeled dominance graph from a file.
      * 
      * @param filename the file name
      * @param graph a <code>DomGraph</code> which this method sets
-     * to the dominance graph part of the labelled graph
+     * to the dominance graph part of the labeled graph
      * @param nl a <code>NodeLabels</code> object which this method
-     * fills with the node labelling part of the labelled graph
+     * fills with the node labeling part of the labeled graph
      * @return a new <code>JDomGraph</code> representation for the
-     * labelled graph
+     * labeled graph
      */
     boolean genericLoadGraph(String filename, DomGraph graph, 
     		NodeLabels nl, Map<String,String> options) {

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -365,6 +364,8 @@ class CommandListener implements ActionListener,
 
 							if( Ubench.getInstance().genericLoadGraph(reader, codecname, graph, labels, null) ) {
 								Ubench.getInstance().addJDomGraphTab("(from clipboard)"	, graph, labels);
+							} else {
+								Ubench.getInstance().refresh();
 							}
 						}
 					}.start();
