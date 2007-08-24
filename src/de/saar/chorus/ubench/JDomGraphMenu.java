@@ -106,6 +106,12 @@ class JDomGraphMenu extends JMenuBar {
 		int control = 
 	        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
+
+    	displayCodecs = new JMenuItem("Show all codecs...");
+    	displayCodecs.setActionCommand("showcodecs");
+    	displayCodecs.addActionListener(listener);
+    	
+		
 		// file Menu
 		fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -148,6 +154,9 @@ class JDomGraphMenu extends JMenuBar {
         
         fileMenu.add(saveAll);
         
+        if( MacIntegration.isMac() ) {
+        	fileMenu.add(displayCodecs);
+        }
         
         
         fileMenu.addSeparator();
@@ -198,15 +207,16 @@ class JDomGraphMenu extends JMenuBar {
         fileMenu.add(closeAll);
         
         
-        fileMenu.addSeparator();
-        
-        
 		// item for quitting Leonardo
-		quit = new JMenuItem("Quit");
-		quit.setActionCommand("quit");
-		quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, control));
-		quit.addActionListener(listener);
-		fileMenu.add(quit);
+        if( !MacIntegration.isMac() ) {
+            fileMenu.addSeparator();
+            
+        	quit = new JMenuItem("Quit");
+        	quit.setActionCommand("quit");
+        	quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, control));
+        	quit.addActionListener(listener);
+        	fileMenu.add(quit);
+        }
 		
 		fileMenu.validate();
 		add(fileMenu);
@@ -421,30 +431,30 @@ class JDomGraphMenu extends JMenuBar {
 		add(utoolMenu);
         graphSpecificItems.add(cSolvForms);
         
-        helpMenu = new JMenu("Help");
-        helpMenu.setActionCommand("help");
-        helpMenu.addActionListener(listener);
-        helpMenu.setMnemonic(KeyEvent.VK_H);
         
-        displayCodecs = new JMenuItem("Show all codecs...");
-        displayCodecs.setActionCommand("showcodecs");
-        displayCodecs.addActionListener(listener);
         
-        helpMenu.add(displayCodecs);
-        
-        about = new JMenuItem("About...");
-        about.setActionCommand("about");
-        about.addActionListener(listener);
-        about.setMnemonic(KeyEvent.VK_A);
-        
-        helpMenu.add(about);
-        
-        preferences = new JMenuItem("Settings...");
-        preferences.setActionCommand("preferences");
-        preferences.addActionListener(listener);
-        helpMenu.add(preferences);
-        
-        add(helpMenu);
+        if( !MacIntegration.isMac() ) {
+        	helpMenu = new JMenu("Help");
+        	helpMenu.setActionCommand("help");
+        	helpMenu.addActionListener(listener);
+        	helpMenu.setMnemonic(KeyEvent.VK_H);
+
+        	helpMenu.add(displayCodecs);
+
+        	about = new JMenuItem("About...");
+        	about.setActionCommand("about");
+        	about.addActionListener(listener);
+        	about.setMnemonic(KeyEvent.VK_A);
+
+        	helpMenu.add(about);
+
+        	preferences = new JMenuItem("Settings...");
+        	preferences.setActionCommand("preferences");
+        	preferences.addActionListener(listener);
+        	helpMenu.add(preferences);
+
+        	add(helpMenu);
+        } 
         
         
         

@@ -23,6 +23,7 @@ import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
+import de.saar.chorus.ubench.MacIntegration;
 import de.saar.chorus.ubench.Ubench;
 
 /**
@@ -38,7 +39,6 @@ import de.saar.chorus.ubench.Ubench;
  */
 public class Utool {
     public static void main(String[] args) {
-    	
         CommandLineParser optionsParser = new CommandLineParser();
         AbstractOptions options = null;
 
@@ -54,10 +54,7 @@ public class Utool {
         }
         
         // if we run on a Mac, set the application name here
-		if( System.getProperty("os.name").equals("Mac OS X")) {
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Utool");
-			System.setProperty("apple.laf.useScreenMenuBar", "true");
-		}
+        MacIntegration.integrate();
         
         
         // check statistics and compactify graph
