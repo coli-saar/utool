@@ -158,7 +158,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		} else {
 			//holes
 			//TODO how to draw smaller rectangles??
-			GraphConstants.setBounds(map, map.createRect(0, 0, 15, 15));
+			GraphConstants.setBounds(map, map.createRect(0, 0, 30, 25));
 			
 			//GraphConstants.setBorder(map, BorderFactory.createLineBorder(Color.black));
 			GraphConstants.setSize(map, new Dimension(15,15));
