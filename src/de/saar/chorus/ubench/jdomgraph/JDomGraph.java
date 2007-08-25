@@ -203,7 +203,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		} else {
 			AttributeMap domEdge = new AttributeMap();
 			GraphConstants.setLineEnd(domEdge, GraphConstants.ARROW_CLASSIC);
-			GraphConstants.setEndSize(domEdge, 10);
+			GraphConstants.setEndSize(domEdge, 5);
 			GraphConstants.setLineColor(domEdge, Color.RED);
 			GraphConstants.setLineWidth(domEdge, 1.2f);
 			GraphConstants.setDashPattern(domEdge, new float[] { 3, 3 });
