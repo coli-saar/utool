@@ -150,17 +150,12 @@ public class JDomGraph extends JGraph implements Cloneable {
 		
 		if( type.equals(NodeType.labelled) ) {
 			// labelled nodes
-			GraphConstants.setBounds(map, map.createRect(0, 0, 30, 30));
-			
 			GraphConstants.setBackground(map, Color.white);
 			GraphConstants.setForeground(map, Color.black);
 			GraphConstants.setFont(map, nodeFont);
 		} else {
 			//holes
-			//TODO how to draw smaller rectangles??
-			GraphConstants.setBounds(map, map.createRect(0, 0, 30, 25));
 			
-			//GraphConstants.setBorder(map, BorderFactory.createLineBorder(Color.black));
 			GraphConstants.setSize(map, new Dimension(15,15));
 			GraphConstants.setBackground(map, Color.white);
 			GraphConstants.setForeground(map, Color.black);
