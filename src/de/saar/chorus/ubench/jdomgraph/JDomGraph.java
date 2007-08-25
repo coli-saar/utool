@@ -96,6 +96,9 @@ public class JDomGraph extends JGraph implements Cloneable {
 		getGraphLayoutCache().setSelectsAllInsertedCells(false);
 		getGraphLayoutCache().setSelectLocalInsertedCells(false);
 		
+		Color selection =
+			new Color(100, 149, 237);
+		setHighlightColor(selection);
 		
 		setAntiAliased(true); 
 		
@@ -162,6 +165,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 			GraphConstants.setFont(map, nodeFont);
 		}
 		
+		GraphConstants.setEditable(map, false);
+		GraphConstants.setSizeable(map, false);
 		
 		return map;
 	}
@@ -171,9 +176,10 @@ public class JDomGraph extends JGraph implements Cloneable {
 			 fragmented = true;
 		 }
 		if(! fragments.contains(fragment)) {
-			getGraphLayoutCache().insertGroup(new DefaultGraphCell(
-					fragment.getFragmentUserObject()), fragment.getAllCells().toArray());
+			DefaultGraphCell frag = new DefaultGraphCell(fragment.getFragmentUserObject());
+			getGraphLayoutCache().insertGroup(frag, fragment.getAllCells().toArray());
 			
+			GraphConstants.setSizeable(getModel().getAttributes(frag), false);
 		}
 	
 		return fragment;
@@ -194,6 +200,10 @@ public class JDomGraph extends JGraph implements Cloneable {
 			GraphConstants.setEndSize(solidEdge, 10);
 			GraphConstants.setLineWidth(solidEdge, 1.2f);
 			GraphConstants.setOpaque(solidEdge, true);
+
+			GraphConstants.setEditable(solidEdge, false);
+			GraphConstants.setSizeable(solidEdge, false);
+			
 			return solidEdge;
 		} else {
 			AttributeMap domEdge = new AttributeMap();
@@ -203,6 +213,10 @@ public class JDomGraph extends JGraph implements Cloneable {
 			GraphConstants.setLineWidth(domEdge, 1.2f);
 			GraphConstants.setDashPattern(domEdge, new float[] { 3, 3 });
 			GraphConstants.setOpaque(domEdge, true);
+
+			GraphConstants.setEditable(domEdge, false);
+			GraphConstants.setSizeable(domEdge, false);
+			
 			return domEdge;
 		}
 		
@@ -602,7 +616,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 					// no node under the mouse pointer, so 
 					// let's display the fragment's tool tip (in case there is one).
 						if( uob instanceof FragmentUserObject ) {
-							return ( (FragmentUserObject) uo ).getToolTipText();
+							return ( (FragmentUserObject) uob).getToolTipText();
 						}
 					}
 				} else {
