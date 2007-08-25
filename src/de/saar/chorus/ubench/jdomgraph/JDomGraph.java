@@ -20,6 +20,7 @@ import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -105,7 +106,8 @@ public class JDomGraph extends JGraph implements Cloneable {
 	
 	
 
-	
+
+
 	public Font getUpperBoundFont() {
 		return upperBoundFont;
 	}
