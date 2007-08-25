@@ -150,13 +150,16 @@ class JSolvedFormTab extends JGraphTab {
    		// button to go forward
    		sLeft = new JButton("<");
    		sLeft.setFont(new Font("SansSerif",Font.BOLD,16));
-   		sLeft.setPreferredSize(new Dimension(50,20));
+   		sLeft.setMargin(new Insets(1,1,2,1));
+   		sLeft.setPreferredSize(new Dimension(25,20));
    		sLeft.setActionCommand("minus");
    		sLeft.addActionListener(listener);
    		
    		// button to go backwards
    		sRight = new JButton(">");
-   		sRight.setPreferredSize(new Dimension(50,20));
+
+   		sRight.setMargin(new Insets(1,1,2,1));
+   		sRight.setPreferredSize(new Dimension(25,20));
    		sRight.setFont(new Font("SansSerif",Font.BOLD,16));
    		sRight.setActionCommand("plus");
    		sRight.addActionListener(listener);
@@ -175,6 +178,7 @@ class JSolvedFormTab extends JGraphTab {
    		
    		solvedForm = new JTextField(String.valueOf(form));
    		solvedForm.setColumns(5);
+   		solvedForm.setMinimumSize(new Dimension(solvedForm.getPreferredSize().width/3, solvedForm.getPreferredSize().height));
    		solvedForm.setHorizontalAlignment(JTextField.RIGHT);
    		solvedForm.addActionListener(listener);
    		solvedForm.setActionCommand("solvedFormDirectSelection");
