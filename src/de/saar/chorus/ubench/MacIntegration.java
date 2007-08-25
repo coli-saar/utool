@@ -34,19 +34,19 @@ public class MacIntegration {
 	}
 	
 	private static class UtoolApplicationListener implements ApplicationListener {
-		@Override
+		
 		public void handleAbout(ApplicationEvent e) {
 			Ubench.getInstance().displayAboutDialog();
 			e.setHandled(true);
 		}
 
-		@Override
+
 		public void handlePreferences(ApplicationEvent e) {
 			Ubench.getInstance().setPreferenceDialogVisible(true);
 			e.setHandled(true);
 		}
 		
-		@Override
+
 		public void handleQuit(ApplicationEvent e) {
 			Ubench.getInstance().quit();
 			e.setHandled(true);

@@ -67,6 +67,8 @@ class JSolvedFormTab extends JGraphTab {
 			String gName, CommandListener lis, NodeLabels labels) {
 		
 		super(solvedForm, origin, name, lis, labels);
+		
+		
 		// initializing fields
 		solvedFormIterator = solv;
 		theSolvedForm = originalForm;
@@ -94,7 +96,11 @@ class JSolvedFormTab extends JGraphTab {
 		// saving time by hard-coding this...
 		drawer.layout(theSolvedForm, nodeLabels, canvas,new LayoutOptions(getLabelType(), 
 				false));
+		graph.setEditable(false);
+		graph.setMoveable(false);
+		graph.setSelectionEnabled(false);
 		Ubench.getInstance().refresh();
+		
 	}
    
    
