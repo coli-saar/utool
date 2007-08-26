@@ -25,6 +25,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
 import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
 import de.saar.chorus.domgraph.layout.LayoutOptions;
+import de.saar.chorus.ubench.JGraphTab.ClassifyLabel;
 import de.saar.chorus.ubench.chartviewer.ChartViewer;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
@@ -219,47 +220,12 @@ class JSolvedFormTab extends JGraphTab {
    		 * symbol itself).
    		 */
    		
-   		ll = new JLabel("L") {
-   			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 8577612771757000214L;
+   		ll = new ClassifyLabel("L",60);
+		ll.setForeground(Color.RED);
 
-			public Point getToolTipLocation(MouseEvent e) {
-   				
-   				Point p1 = ll.getLocation();
-   				Point toReturn = new Point(p1.x, p1.y-25);
-   				return toReturn;
-   			}
-   		};
-   		ll.setForeground(Color.RED);
-   		
-   		hn = new JLabel("H") {
-   			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 4662083424900606811L;
-
-			public Point getToolTipLocation(MouseEvent e) {
-   				Point p1 =hn.getLocation();
-   				Point toReturn = new Point(p1.x, p1.y-25);
-   				return toReturn;
-   			}
-   		};
-   		hn.setForeground(Color.RED);
-   		
-   		norm = new JLabel("N") {
-   			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1253480187037359978L;
-
-			public Point getToolTipLocation(MouseEvent e) {
-   				Point p1 = norm.getLocation();
-   				Point toReturn = new Point(p1.x, p1.y-25);
-   				return toReturn;
-   			}
-   		};
+		hn = new ClassifyLabel("H", 140);
+		hn.setForeground(Color.RED);
+		norm = new ClassifyLabel("N", 20);
    		norm.setForeground(Color.RED);
    		
    	
