@@ -1,8 +1,11 @@
 package de.saar.chorus.ubench;
 
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -424,6 +427,76 @@ abstract class JGraphTab extends JScrollableJGraph {
 	void focusChart() {
 		if(cv != null) 
 			cv.toFront();
+	}
+	
+	/**
+	 * This is a class especially for the "Classification Labels" shown in the status bar.
+	 * It's a special kind of <code>JLabel</code>.
+	 * The main purpose of instantiating an own class for this is the placement of the 
+	 * tooltips which are sometimes strangely arranged by the SWING classes (outside the
+	 * main window e.g.).
+	 * 
+	 * @author Michaela Regneri
+	 *
+	 */
+	class ClassifyLabel extends JLabel {
+		
+		// the tooltip location which is determined every time the mouse
+		// enters the JLabel
+		private Point ttlocation = null;
+		
+		// this indicates the offset of the tooltip with respect to its JLabel
+		private int xdistance;
+		private static final long serialVersionUID = 8863314788555183758L;
+
+		/**
+		 * A <code>JLabel</code> with a specified distance to the left for
+		 * tooltips.
+		 * 
+		 * @param str the label text
+		 * @param xdi the tooltip offset
+		 */
+		ClassifyLabel(String str, int xdi) {
+			super(str);
+			xdistance = xdi;
+		}
+		
+		/**
+		 * This overrides the JComponent method.
+		 * If the mouse enters the JLabel, its position determines the 
+		 * tooltip position which will remain the same as long as the tooltip
+		 * is shown. 
+		 * 
+		 * @see JComponent#getToolTipLocation(MouseEvent e)
+		 */
+		public Point getToolTipLocation(MouseEvent e) {
+			if(ttlocation == null) {
+				// the last mouse position was outside the Label -
+				// determine the mouse position and calculate the
+				// tooltip location
+				Point p1 = e.getPoint();
+				ttlocation = new Point(p1.x - xdistance, p1.y-30);
+			}
+			return ttlocation;
+		}
+
+		/**
+		 * When the mouse cursor drops out of the JLabel,
+		 * the formerly determined tooltip location is deleted.
+		 * This is necessary for the case of window resizing or moving e.g.
+		 * When the mouse enters the Label again, the position will
+		 * be recalculated.
+		 * 
+		 * @see JComponent#processMouseEvent(MouseEvent e)
+		 */
+		protected void processMouseEvent(MouseEvent e) {
+			super.processMouseEvent(e);
+			if(e.getID() == MouseEvent.MOUSE_EXITED ) {
+				ttlocation = null;
+			}
+		}
+		
+		
 	}
 	
 

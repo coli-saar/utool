@@ -8,11 +8,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -388,55 +388,23 @@ class JDomGraphTab extends JGraphTab  {
 			classified = new JPanel();
 			classifyLabels = new HashSet<JLabel>();
 
-			ll = new JLabel("L") {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-
-				public Point getToolTipLocation(MouseEvent e) {
-
-					Point p1 = ll.getLocation();
-					Point toReturn = new Point(p1.x, p1.y-25);
-					return toReturn;
-				}
-			};
+			ll = new ClassifyLabel("L",60);
+			
 			ll.setForeground(Color.RED);
 			classifyLabels.add(ll);
 
-			hn = new JLabel("H") {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 4038867197509964748L;
-
-				public Point getToolTipLocation(MouseEvent e) {
-					Point p1 =hn.getLocation();
-					Point toReturn = new Point(p1.x, p1.y-25);
-					return toReturn;
-				}
-			};
+			hn = new ClassifyLabel("H", 140);
+			
+			
 			hn.setForeground(Color.RED);
 			classifyLabels.add(hn);
 
-			norm = new JLabel("N") {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = -4917910242640525112L;
-
-				public Point getToolTipLocation(MouseEvent e) {
-					Point p1 = norm.getLocation();
-					Point toReturn = new Point(p1.x, p1.y-25);
-					return toReturn;
-				}
-			};
+			norm = new ClassifyLabel("N", 20);
 			norm.setForeground(Color.RED);
 			classifyLabels.add(norm);
 
 
-
-
+			
 
 			if(domGraph.isNormal()) {
 				norm.setText("N");
@@ -490,6 +458,9 @@ class JDomGraphTab extends JGraphTab  {
 
 
 		}
+		
+		
+		
 	}
 
 

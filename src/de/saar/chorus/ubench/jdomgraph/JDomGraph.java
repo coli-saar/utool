@@ -20,14 +20,12 @@ import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
-import org.jgraph.graph.ParentMap;
 import org.jgraph.util.JGraphUtilities;
 
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
