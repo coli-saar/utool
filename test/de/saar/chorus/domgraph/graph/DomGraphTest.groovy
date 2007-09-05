@@ -130,7 +130,27 @@ class DomGraphTest extends GroovyTestCase {
 	        	assert !graph.isWeaklyNormal();
 	        }
 
+	        public void testUnsolvableHnc1() {
+	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]");
+	        	assert graph.isHypernormallyConnected();
+	        }
 	        
+	        public void testUnsolvableHnc2() {
+	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n2 n3)]");
+	        	assert graph.isHypernormallyConnected();
+	        }
+	        
+	        // This graph used to crash the hnc test because it runs into an endless loop trying to
+	        // compute a normal backbone which is normal (ticket #270).
+	        public void testNonNormalizableHnc() {
+	        	decode("[label(x f(y)) label(y g(x))]");
+	        	assert !graph.isHypernormallyConnected();
+	        }
+	        
+	        public void testNotHnc1() {
+	        	decode("[label(n0 f(n1 n2 n2b)) label(n3 a) label(n4 b) label(n5 c) dom(n1 n3) dom(n1 n4) dom(n2 n5) dom(n2b n5)]");
+	        	assert !graph.isHypernormallyConnected();
+	        }
 	        
 	        
 	        

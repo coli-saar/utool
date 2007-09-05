@@ -9,6 +9,9 @@ unreleased  3.2
       and looks much better than the old layout algorithm for many
       graphs.
 
+    - Improved integration with MacOS.  Utool should now look and
+      feel like a native application on a Mac.
+
 
 2006-11-24  3.1.1
     - Some minor bugfixes.

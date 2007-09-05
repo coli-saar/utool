@@ -1,14 +1,8 @@
 package de.saar.chorus.ubench;
 
-import javax.swing.JOptionPane;
-
 import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
-
-import de.saar.chorus.domgraph.GlobalDomgraphProperties;
-import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class MacIntegration {
 	public static boolean isMac() {
