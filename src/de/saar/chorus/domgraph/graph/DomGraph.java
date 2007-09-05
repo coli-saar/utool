@@ -1144,7 +1144,13 @@ public class DomGraph implements Cloneable {
         	// not normalizable -- hnc makes no sense
         	return cacheResult("isHypernormallyConnected", false);
         } else if( !isNormal() ) {
-        	return makeNormalBackbone().isHypernormallyConnected();
+        	DomGraph backbone = makeNormalBackbone();
+        	
+        	if( backbone.isNormal() ) {
+        		return backbone.isHypernormallyConnected();
+        	} else {
+        		return cacheResult("isHypernormallyConnected", false);
+        	}
         } else if( OneSplitSource.isGraphSolvable(this) ) {
             return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
 		} else {
@@ -1169,6 +1175,35 @@ public class DomGraph implements Cloneable {
 	private boolean isHypernormallyConnectedSlow() {
 		assert isNormal();
 		
+		// TODO get rid of the hashmap, this will be terribly slow
+		Map<String,Map<String,Set<Edge>>> reachabilityTable = new HashMap<String, Map<String,Set<Edge>>>();
+		for( String u : getAllNodes() ) {
+			Map<String,Set<Edge>> here = new HashMap<String, Set<Edge>>();
+			reachabilityTable.put(u, here);
+			
+			for( String v : getAllNodes() ) {
+				here.put(v,new HashSet<Edge>());
+			}
+		}
+		
+
+		for( String v : getAllNodes() ) {
+			hncVisit(v, new ArrayList<String>(), null, reachabilityTable);
+		}
+		
+		// System.err.println("after visit: " + reachabilityTable);
+		
+		for( String u : getAllNodes() ) {
+			for( String v : getAllNodes() ) {
+				if( !u.equals(v) && reachabilityTable.get(u).get(v).isEmpty() 
+						&& reachabilityTable.get(v).get(u).isEmpty() ) {
+					return false;
+				}
+			}
+		}
+		
+		
+		/*
 		for( String u : getAllNodes() ) {
 			for( String v : getAllNodes() ) {
 				if( !u.equals(v) ) {
@@ -1178,10 +1213,41 @@ public class DomGraph implements Cloneable {
 				}
 			}
 		}
+		*/
 		
 		return true;
 	}
 	
+	private void hncVisit(String node, ArrayList<String> history, Edge lastEdge, Map<String, Map<String, Set<Edge>>> reachabilityTable) {
+		boolean seenIt = true;
+		
+		if( history.contains(node)) {
+			return;
+		}
+		
+		for( String v : history ) {
+			if( ! reachabilityTable.get(v).get(node).contains(lastEdge) ) {
+				reachabilityTable.get(v).get(node).add(lastEdge);
+				seenIt = false;
+			}
+		}
+		
+		if( !seenIt || (lastEdge == null)) {
+			for( Edge e : getAdjacentEdges(node) ) {
+				if( !e.equals(lastEdge) ) { // NB lastEdge may be null
+					if( (lastEdge == null) ||
+							! (getData(e).getType() == EdgeType.DOMINANCE && node.equals(e.getSource())
+									&& getData(lastEdge).getType() == EdgeType.DOMINANCE && node.equals(lastEdge.getSource())) ) {
+						history.add(node);
+						hncVisit((String) e.oppositeVertex(node), history, e, reachabilityTable);
+						history.remove(node);
+					}
+				}
+			}
+		}
+	}
+
+
 	/**
 	 * Checks whether the graph is hypernormally connected. A graph
 	 * is hypernormally connected iff each pair of
