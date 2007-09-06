@@ -46,10 +46,12 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 		 
 		// iterating over the fragments
 		for (String frag : fragments) {
+			
 			// the recent root
 			String root = domgraph.getRoot(frag);
 			// computing the x-positions, dependent on the _direct_
-			// parent
+			
+			
 			DomGraphLayoutCursor layCursor = new DomGraphLayoutCursor(root, canvas, this,
 					domgraph, domgraph.getFragment(frag), nodeToLabel);
 			
@@ -57,14 +59,15 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 					layCursor);
 			postVisitor.run();
 
-			// another DFS computes the y- and x-positions relativ to the
+			// another DFS computes the y- and x-positions relative to the
 			// _root_
-		
+			
+			
 			DomGraphDrawingCursor drawCursor = new DomGraphDrawingCursor(root, this,
 					domgraph, domgraph.getFragment(frag));
 			PreOrderNodeVisitor preVisitor = new PreOrderNodeVisitor(drawCursor);
 			preVisitor.run();
-
+			
 		}
 
 	}

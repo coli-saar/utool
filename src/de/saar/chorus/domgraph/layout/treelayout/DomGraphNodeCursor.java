@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.gecode.NodeCursorInterface;
 
 /**
@@ -27,6 +28,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
     private String node;		// the recently processed node
     private DomGraph graph;			// the graph to layout
     private Set<String> nodesToLayout;
+    protected EdgeType validEdges;
 	
     /**
      * A new instance of <code>DomGraphNodeCursor<code>
@@ -40,7 +42,10 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
         this.node = theNode;
 		this.graph = theGraph;
 		nodesToLayout = theGraph.getAllNodes();
+		validEdges = null;
     }
+    
+    
     
     /**
      * A new instance of <code>DomGraphNodeCursor<code>
@@ -56,7 +61,27 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
         this.node = theNode;
 		this.graph = theGraph;
 		nodesToLayout = allowedNodes;
+		validEdges = null;
     }
+    
+    /**
+     * A new instance of <code>DomGraphNodeCursor<code>
+     * 
+     * @param theNode the graph root
+     * @param theGraph the graph to layout
+     * @param allowedNodes nodes the layout shall arrange, all are taken if not specified
+     */
+    public DomGraphNodeCursor(String theNode, 
+								DomGraph theGraph,
+								Set<String> allowedNodes,
+								EdgeType edges) {
+        this.startNode = theNode;
+        this.node = theNode;
+		this.graph = theGraph;
+		nodesToLayout = allowedNodes;
+		validEdges = edges;
+    }
+    
 	
     /**
      * Returns the recently processed node.
@@ -78,7 +103,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
     	 * graph root.
     	 */
     	boolean parentfound = false;
-    	for(Object par : graph.getParents(node,null)) {
+    	for(Object par : graph.getParents(node, validEdges)) {
     		if(nodesToLayout.contains(par)) {
     			parentfound = true;
     			break;
@@ -94,7 +119,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
      */
     public void moveUpwards() {
     	List<String> parents = 
-    		new ArrayList<String>(graph.getParents(node,null));
+    		new ArrayList<String>(graph.getParents(node, validEdges));
     	parents.retainAll(nodesToLayout);
     	
         node =  parents.get(0);
@@ -108,7 +133,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
      */
     public boolean mayMoveDownwards() {
     	boolean childfound = false;
-    	for(Object par : graph.getChildren(node, null)) {
+    	for(Object par : graph.getChildren(node, validEdges)) {
     		if(nodesToLayout.contains(par)) {
     			childfound = true;
     			break;
@@ -124,7 +149,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
      */
     public void moveDownwards() {
     	List<String> children = 
-    		new ArrayList<String>(graph.getChildren(node, null));
+    		new ArrayList<String>(graph.getChildren(node, validEdges));
     	children.retainAll(nodesToLayout);
     	
         node = children.get(0);
@@ -137,7 +162,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
      * @return true if there is a right sibling
      */
     public boolean mayMoveSidewards() {
-		String sibling = graph.getRelativeRightSibling(node, nodesToLayout);
+		String sibling = graph.getRelativeRightSibling(node, nodesToLayout, validEdges);
 		
         return sibling != null;
     }
@@ -152,7 +177,7 @@ public abstract  class DomGraphNodeCursor implements NodeCursorInterface {
      */
     public void moveSidewards() {
     	
-        node = graph.getRelativeRightSibling(node, nodesToLayout);
+        node = graph.getRelativeRightSibling(node, nodesToLayout, validEdges);
     }
     
     abstract public void processCurrentNode(); 

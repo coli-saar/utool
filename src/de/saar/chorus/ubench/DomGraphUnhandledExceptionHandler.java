@@ -37,7 +37,8 @@ public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExcepti
 	
 	
 	public static void showErrorDialog(Throwable arg1) {
-
+		
+		
 		String logfile = 
 			writeLogFile(arg1);
 		
@@ -76,7 +77,10 @@ public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExcepti
 	 * 
 	 */
 	public void uncaughtException(Thread arg0, Throwable arg1) {
+		
 			showErrorDialog(arg1);
+			//DEBUG
+	
 		
 	}
 	

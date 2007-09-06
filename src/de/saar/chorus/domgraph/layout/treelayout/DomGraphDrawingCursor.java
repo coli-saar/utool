@@ -5,15 +5,16 @@ import static de.saar.chorus.domgraph.layout.treelayout.GecodeTreeLayoutSettings
 import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
 
 
 /**
  * A class to determine the coordinates of a node relative to the graph root.
- * This converts the positions (relative to the direct parent) computet by a
+ * This converts the positions (relative to the direct parent) computed by a
  * <code>DomGraphLayoutCursor</code> into positions relative to the
  *  root.
- * The computet coordinates are stored in maps of the given 
+ * The computed coordinates are stored in maps of the given 
  * <code>SolvedFormLayout</code> and processed there.
  * 
  * A subclass of <code>DomGraphNodeCursor</code>.
@@ -30,21 +31,7 @@ public class DomGraphDrawingCursor extends DomGraphNodeCursor {
     						 // the coordinates in
     
 	
-	/**
-	 * Creates a new <code>DomGraphDrawingCursor</code>
-	 * 
-	 * @param theNode the graph root
-	 * @param theLayout the layout algorithm to store the coordinates
-	 * @param aGraph the graph to layout
-	 */
-    public DomGraphDrawingCursor(String theNode, 
-						FragmentLayoutAlgorithm theLayout, DomGraph aGraph) {
-        super(theNode, aGraph);
-        this.x = 0;
-        this.y = 0;
-		layout = theLayout;
-    }
-    
+	
     /**
 	 * Creates a new <code>DomGraphDrawingCursor</code>
 	 * 
@@ -56,7 +43,7 @@ public class DomGraphDrawingCursor extends DomGraphNodeCursor {
     public DomGraphDrawingCursor(String theNode,
 						FragmentLayoutAlgorithm theLayout, DomGraph aGraph, 
 						 Set<String> theNodes) {
-        super(theNode, aGraph, theNodes);
+        super(theNode, aGraph, theNodes, EdgeType.TREE);
         this.x = 0;
         this.y = 0;
 		layout = theLayout;

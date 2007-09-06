@@ -461,7 +461,6 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 				lightDominanceEdges.add(edge);
 			}
 		}
-
 	}
 
 	/**
@@ -834,6 +833,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 	private int fragBoxDFS(FragmentBox box, int x, Set<String> visited,
 			String current, int crossings, String lastroot) {
 
+			
 		// initialising
 		Set<String> frags = box.getFrags(); // the fragments to consider
 		int cross = crossings; // counter for crossings
