@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.layout.Canvas;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
 import de.saar.chorus.gecode.Extent;
@@ -64,7 +65,7 @@ public class DomGraphLayoutCursor extends DomGraphNodeCursor {
 	    public DomGraphLayoutCursor(String theNode,  Canvas canv,
 	    		FragmentLayoutAlgorithm theLayout, DomGraph theGraph, 
 								Set<String> theNodes, Map<String, String> nl) {
-	        super(theNode, theGraph, theNodes);
+	        super(theNode, theGraph, theNodes, EdgeType.TREE);
 			
 	        nodelabels = nl;
 			graph=theGraph;
@@ -89,15 +90,15 @@ public class DomGraphLayoutCursor extends DomGraphNodeCursor {
 	        boolean containsParents = false;
 	        
 	        
-			if( graph.isRelativeRoot(currentNode, nodes) )  {
+			if( graph.isRelativeRoot(currentNode, nodes, validEdges) )  {
                 layout.addRelXtoParent(currentNode,0);
 			}
           
 			Extent extent = new Extent(canvas.getNodeWidth(nodelabels.get(currentNode)));
 			Shape shape;
-			List<String> children = graph.getChildren(currentNode, null);
+			List<String> children = graph.getChildren(currentNode, validEdges);
 			children.retainAll(nodes);
-			if ( graph.isRelativeLeaf(currentNode, nodes) ) {
+			if ( graph.isRelativeLeaf(currentNode, nodes, validEdges) ) {
 				shape = new Shape(extent);
 			} else {
 				ShapeList childShapes = new ShapeList(nodeXDistance);

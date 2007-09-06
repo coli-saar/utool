@@ -136,16 +136,17 @@ public class DomGraph implements Cloneable {
 		}
 	}
 	
-	public String getRelativeRightSibling(String node, Set<String> subgraph) {
+	public String getRelativeRightSibling(String node, Set<String> subgraph,
+			EdgeType e) {
 		boolean foundmyself = false;
-		List<String> parents = getParents(node, null);
+		List<String> parents = getParents(node, e);
 		if(parents.isEmpty()) {
 			return null;
 		} 
 		
 		String father = parents.get(0);
 		
-		for(String sibling : getChildren(father,null)) {
+		for(String sibling : getChildren(father,e)) {
 			if(foundmyself && subgraph.contains(sibling)) {
 				return sibling;
 			} else if(node.equals(sibling)) {
@@ -259,8 +260,12 @@ public class DomGraph implements Cloneable {
 		nodeData.put(name,data);
 	}
 	
+	
 	public boolean isRelativeLeaf(String node, Set<String> subgraph) {
-		for(String child : getChildren(node, null)) {
+		return isRelativeLeaf(node, subgraph, null);
+	}
+	public boolean isRelativeLeaf(String node, Set<String> subgraph, EdgeType type) {
+		for(String child : getChildren(node, type)) {
 			if(subgraph.contains(child)) {
 				return false;
 			}
@@ -268,8 +273,13 @@ public class DomGraph implements Cloneable {
 		return true;
 	}
 	
-	public boolean isRelativeRoot(String node, Set<String> subgraph) {
-		for(String parent : getParents(node, null)) {
+	public boolean isRelativeRoot(String node, Set<String> subgraph){
+		return isRelativeRoot(node, subgraph,null);
+	}
+	
+	public boolean isRelativeRoot(String node, Set<String> subgraph,
+			EdgeType type) {
+		for(String parent : getParents(node, type)) {
 			if(subgraph.contains(parent)) {
 				return false;
 			}

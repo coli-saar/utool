@@ -12,10 +12,10 @@ import de.saar.chorus.jgraph.improvedjgraph.layout.ImprovedJGraphLayout;
 
 /**
  * A class to determine the coordinates of a node relative to the graph root.
- * This converts the positions (relative to the direct parent) computet by a
+ * This converts the positions (relative to the direct parent) computed by a
  * <code>GraphLayoutCursor</code> into positions relative to the
  *  root.
- * The computet coordinates are stored in maps of the given 
+ * The computed coordinates are stored in maps of the given 
  * <code>SolvedFormLayout</code> and processed there.
  * 
  * A subclass of <code>GraphNodeCursor</code>.
