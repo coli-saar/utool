@@ -130,11 +130,15 @@ class DomGraphTest extends GroovyTestCase {
 	        	assert !graph.isWeaklyNormal();
 	        }
 
+	        // In the old hnc test for unsolvable graphs (isHncSlow), the order in which dom edges
+	        // were visited could prevent correct recognition of hnc (#222).
 	        public void testUnsolvableHnc1() {
 	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]");
 	        	assert graph.isHypernormallyConnected();
 	        }
 	        
+	        // In the old hnc test for unsolvable graphs (isHncSlow), the order in which dom edges
+	        // were visited could prevent correct recognition of hnc (#222).
 	        public void testUnsolvableHnc2() {
 	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n2 n3)]");
 	        	assert graph.isHypernormallyConnected();
