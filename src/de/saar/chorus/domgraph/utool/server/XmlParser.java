@@ -21,7 +21,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import sun.security.pkcs.ParsingException;
 import de.saar.basic.Logger;
 import de.saar.basic.LoggingReader;
 import de.saar.basic.XmlDecodingException;
@@ -234,8 +233,9 @@ class XmlParser extends DefaultHandler {
         try {
             return XmlEntities.decode(x);
         } catch (XmlDecodingException e) {
-            throw new SAXException(new AbstractOptionsParsingException("An XML entity could not be resolved.",
-                    new ParsingException(e.getMessage()), ExitCodes.PARSING_ERROR_INPUT_GRAPH));
+            throw new SAXException(
+            		new AbstractOptionsParsingException("An XML entity could not be resolved: " + e.getMessage(),
+                    ExitCodes.PARSING_ERROR_INPUT_GRAPH));
         }
     }
 
