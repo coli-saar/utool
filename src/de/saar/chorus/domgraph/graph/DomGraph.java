@@ -1185,32 +1185,16 @@ public class DomGraph implements Cloneable {
 	private boolean isHypernormallyConnectedSlow() {
 		assert isNormal();
 		
-		// TODO get rid of the hashmap, this will be terribly slow
-		Map<String,Map<String,Set<Edge>>> reachabilityTable = new HashMap<String, Map<String,Set<Edge>>>();
-		for( String u : getAllNodes() ) {
-			Map<String,Set<Edge>> here = new HashMap<String, Set<Edge>>();
-			reachabilityTable.put(u, here);
-			
-			for( String v : getAllNodes() ) {
-				here.put(v,new HashSet<Edge>());
-			}
-		}
+		HncReachabilityTable reachabilityTable = new HncReachabilityTable(getAllNodes());
+		HncReachabilityTable localReachabilityTable = new HncReachabilityTable(getAllNodes());
 		
-
 		for( String v : getAllNodes() ) {
-			hncVisit(v, new ArrayList<String>(), null, reachabilityTable);
+			localReachabilityTable.clear();
+			hncVisit(v, new ArrayList<String>(), null, localReachabilityTable);
+			reachabilityTable.combine(localReachabilityTable);
 		}
 		
-		// System.err.println("after visit: " + reachabilityTable);
-		
-		for( String u : getAllNodes() ) {
-			for( String v : getAllNodes() ) {
-				if( !u.equals(v) && reachabilityTable.get(u).get(v).isEmpty() 
-						&& reachabilityTable.get(v).get(u).isEmpty() ) {
-					return false;
-				}
-			}
-		}
+		return reachabilityTable.isComplete();
 		
 		
 		/*
@@ -1224,11 +1208,68 @@ public class DomGraph implements Cloneable {
 			}
 		}
 		*/
-		
-		return true;
 	}
 	
-	private void hncVisit(String node, ArrayList<String> history, Edge lastEdge, Map<String, Map<String, Set<Edge>>> reachabilityTable) {
+	private static class HncReachabilityTable {
+		// TODO get rid of the hashmap, this will be terribly slow
+		
+		private Map<String,Map<String,Set<Edge>>> table;
+		private Set<String> nodes;
+		
+		public HncReachabilityTable(Set<String> nodes) {
+			this.nodes = nodes;
+			
+			table = new HashMap<String, Map<String,Set<Edge>>>();
+			
+			for( String u : nodes ) {
+				Map<String,Set<Edge>> here = new HashMap<String, Set<Edge>>();
+				table.put(u, here);
+				
+				for( String v : nodes ) {
+					here.put(v,new HashSet<Edge>());
+				}
+			}
+		}
+		
+		public void clear() {
+			for( String u : nodes ) {
+				for( String v : nodes ) {
+					table.get(u).get(v).clear();
+				}
+			}
+		}
+		
+		public Set<Edge> get(String u, String v) {
+			return table.get(u).get(v);
+		}
+		
+		public void combine(HncReachabilityTable other) {
+			for( String u : nodes) {
+				for( String v : nodes ) {
+					get(u,v).addAll(other.get(u,v));
+				}
+			}
+		}
+		
+		public boolean isComplete() {
+			for( String u : nodes ) {
+				for( String v : nodes ) {
+					if( !u.equals(v) && get(u,v).isEmpty() ) {
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return table.toString();
+		}
+	}
+		
+	private void hncVisit(String node, ArrayList<String> history, Edge lastEdge, HncReachabilityTable table) {
 		boolean seenIt = true;
 		
 		if( history.contains(node)) {
@@ -1236,8 +1277,8 @@ public class DomGraph implements Cloneable {
 		}
 		
 		for( String v : history ) {
-			if( ! reachabilityTable.get(v).get(node).contains(lastEdge) ) {
-				reachabilityTable.get(v).get(node).add(lastEdge);
+			if( ! table.get(v,node).contains(lastEdge) ) {
+				table.get(v,node).add(lastEdge);
 				seenIt = false;
 			}
 		}
@@ -1249,7 +1290,7 @@ public class DomGraph implements Cloneable {
 							! (getData(e).getType() == EdgeType.DOMINANCE && node.equals(e.getSource())
 									&& getData(lastEdge).getType() == EdgeType.DOMINANCE && node.equals(lastEdge.getSource())) ) {
 						history.add(node);
-						hncVisit((String) e.oppositeVertex(node), history, e, reachabilityTable);
+						hncVisit((String) e.oppositeVertex(node), history, e, table);
 						history.remove(node);
 					}
 				}
