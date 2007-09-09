@@ -173,6 +173,56 @@ class DomGraphTest extends GroovyTestCase {
 	    		decode("[label(x f(x1 x2)) label(x1 a1) label(x2 a2) label(y b) dom(x y)]");
 	    		assert !graph.isWellFormed();
 	    	}
+	    	
+			// ensure that the output codec refuses to encode graphs whose labelling information
+	    	// is inconsistent with the NodeLabels object (see #169).
+	    	public void testNonWellLabeled1() {
+	    		graph.addNode("x", new NodeData(NodeType.LABELLED));
+	    		graph.addNode("y", new NodeData(NodeType.LABELLED));
+	    		graph.addNode("z", new NodeData(NodeType.LABELLED));
+	    		
+	    		graph.addEdge("x", "y", new EdgeData(EdgeType.TREE));
+	    		graph.addEdge("y", "z", new EdgeData(EdgeType.DOMINANCE));
+	    		
+	    		labels.addLabel("x", "f");
+	    		labels.addLabel("z", "a");
+	    		
+	    		assert !graph.isLabellingConsistent(labels);
+	    		
+	    	}
+	    	
+	    	public void testNonWellLabeled2() {
+	    		graph.addNode("x", new NodeData(NodeType.UNLABELLED));
+	    		graph.addNode("y", new NodeData(NodeType.UNLABELLED));
+	    		graph.addNode("z", new NodeData(NodeType.LABELLED));
+	    		
+	    		graph.addEdge("x", "y", new EdgeData(EdgeType.TREE));
+	    		graph.addEdge("y", "z", new EdgeData(EdgeType.DOMINANCE));
+	    		
+	    		labels.addLabel("x", "f");
+	    		labels.addLabel("z", "a");
+	    		
+	    		assert !graph.isLabellingConsistent(labels);
+	    	}
+	    	
+	    	public void testNonWellLabeled3() {
+	    		graph.addNode("x", new NodeData(NodeType.LABELLED));
+	    		graph.addNode("y", new NodeData(NodeType.UNLABELLED));
+	    		graph.addNode("z", new NodeData(NodeType.LABELLED));
+	    		
+	    		graph.addEdge("x", "y", new EdgeData(EdgeType.TREE));
+	    		graph.addEdge("y", "z", new EdgeData(EdgeType.DOMINANCE));
+	    		
+	    		labels.addLabel("x", "f");
+	    		labels.addLabel("z", "a");
+	    		
+	    		assert graph.isLabellingConsistent(labels);
+	    	}
+	    	
+	    	
+	    	
+	    	
+	    	
 	        
 	        
 	        //////////////////////////////////////////////////////////////////////////////////////////

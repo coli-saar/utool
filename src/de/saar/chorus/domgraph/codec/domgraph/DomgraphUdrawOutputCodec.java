@@ -64,6 +64,11 @@ public class DomgraphUdrawOutputCodec extends OutputCodec {
 	{
 		Set<String> indeg0 = new HashSet<String>();
 		
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+
+		
 		for (String node : graph.getAllRoots()) {
 			if (graph.indeg(node) == 0)
 				indeg0.add(node);

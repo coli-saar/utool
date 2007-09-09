@@ -34,6 +34,10 @@ public class CodegenOutputCodec extends MultiOutputCodec {
 
     @Override
     public void encode(DomGraph graph, NodeLabels labels, Writer writer) throws IOException, MalformedDomgraphException {
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+    	
         writer.write("\n    public void makeGraph" + (methIdx++) + "(DomGraph graph, NodeLabels labels) {\n");
         writer.write("        graph.clear();\n");
         writer.write("        labels.clear();\n\n");

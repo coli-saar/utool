@@ -40,6 +40,10 @@ public class DomconOzOutputCodec extends MultiOutputCodec {
             throws IOException, MalformedDomgraphException {
         List<String> atoms = new ArrayList<String>();
         
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+        
         // iterate through the labelled nodes and output labelling atoms for them
         for( String node : graph.getAllNodes() ) {
             if( graph.getData(node).getType() == NodeType.LABELLED ) {

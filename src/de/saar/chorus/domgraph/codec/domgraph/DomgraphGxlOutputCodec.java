@@ -23,7 +23,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 /**
- * An output codec for weakly normal dominance graphs in GXL syntax.
+ * An output codec for arbitrary dominance graphs in GXL syntax.
  * For further documentation of this format, see {@link de.saar.chorus.domgraph.codec.domgraph.DomgraphGxlInputCodec}.
  * 
  * @author Alexander Koller
@@ -36,7 +36,10 @@ public class DomgraphGxlOutputCodec extends MultiOutputCodec {
             throws IOException, MalformedDomgraphException {
         int count = 0;
         
-        assert graph.isWeaklyNormal();
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+
         
         writer.write("   <graph id=\"utool-graph\" edgeids=\"true\" hypergraph=\"false\" edgemode=\"directed\">\n");
         
