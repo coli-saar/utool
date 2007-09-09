@@ -45,7 +45,11 @@ public class DotOutputCodec extends OutputCodec {
     @Override
     public void encode(DomGraph graph, NodeLabels labels, Writer writer)
             throws IOException, MalformedDomgraphException {
-        
+
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+
         writer.write("digraph domgraph {\n");
         
         if( enforceEdgeOrder ) {

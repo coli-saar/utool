@@ -67,6 +67,11 @@ public class TermOutputCodec extends MultiOutputCodec {
         List<String> terms = new ArrayList<String>();
         boolean first = true;
         
+    	if( !graph.isLabellingConsistent(labels)) {
+    		throw new MalformedDomgraphException("Graph labelling information is inconsistent with node labels.");
+    	}
+
+        
         // check whether graph is in simple solved form
         if( !graph.isSimpleSolvedForm() || !graph.isLeafLabelled() || !graph.isNormal() ) {
             throw new MalformedDomgraphException("Graph must be a leaf-labelled simple normal solved form",
