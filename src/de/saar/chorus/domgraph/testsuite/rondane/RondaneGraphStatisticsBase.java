@@ -14,6 +14,7 @@ import java.util.Map;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -48,9 +49,13 @@ public class RondaneGraphStatisticsBase {
     }
     
     public static BigInteger getNumSolvedForms(DomGraph graph) {
-        Chart c = new Chart();
-        ChartSolver.solve(graph, c);
-        return c.countSolvedForms();
+    	try {
+    		Chart c = new Chart();
+    		ChartSolver.solve(graph, c);
+    		return c.countSolvedForms();
+    	} catch(SolverNotApplicableException e) {
+    		return null;
+    	}
     }
     
     public void testEquals(int id, DomGraph graph, NodeLabels labels) {

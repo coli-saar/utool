@@ -27,6 +27,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.Canvas;
 import de.saar.chorus.domgraph.layout.DomGraphLayoutParameters;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutException;
 
 
 
@@ -73,7 +74,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 		
 	}
 	
-	public void initialise(DomGraph gr, NodeLabels labels, Canvas canv) {
+	public void initialise(DomGraph gr, NodeLabels labels, Canvas canv) throws LayoutException {
 		
 		super.initialise(gr, labels, canv);
 		movedRoot = null;

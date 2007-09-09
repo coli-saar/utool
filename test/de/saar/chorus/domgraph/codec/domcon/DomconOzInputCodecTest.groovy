@@ -53,4 +53,16 @@ class DomconOzInputCodecTest extends GroovyTestCase {
 	        assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
     	}
     
+	public void testEmptyGraph() {
+		DomGraph graph = new DomGraph();
+		NodeLabels labels = new NodeLabels();
+		
+		DomGraph myGraph = new DomGraph();
+		NodeLabels myLabels = new NodeLabels();
+		
+		DomconOzInputCodec codec = new DomconOzInputCodec();
+		codec.decode(new StringReader("[]"), myGraph, myLabels);
+		
+		assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
+	}
 }

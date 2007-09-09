@@ -47,7 +47,7 @@ public class ExitCodes {
     public static final int NO_INPUT = 150;
     public static final int NO_INPUT_CODEC_SPECIFIED = 151;
     public static final int NO_SUCH_INPUT_CODEC = 152;
-    public static final int ILLFORMED_INPUT_GRAPH = 153;
+    public static final int SOLVER_NOT_APPLICABLE = 153;
 
     public static final int NO_OUTPUT_CODEC_SPECIFIED = 160;
     public static final int NO_SUCH_OUTPUT_CODEC = 161;

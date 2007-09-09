@@ -156,6 +156,23 @@ class DomGraphTest extends GroovyTestCase {
 	        	assert !graph.isHypernormallyConnected();
 	        }
 	        
+	        public void testEmptyFragment() {
+	    		// a graph with an empty fragment
+	    		decode("[label(x f(x1)) dom(x1 x2) dom(x2 y) label(y a)]");
+	    		assert graph.hasEmptyFragments();
+	    	}
+	    	
+	    	public void testWellFormed() {
+	    		// a non-well-formed graph in the sense of Bodirsky et al. 04
+	    		decode("[label(x a) label(y b) dom(x y)]");
+	    		assert !graph.isWellFormed();
+	    	}
+	    	
+	    	public void testWellFormed2() {
+	    		// a non-well-formed graph in the sense of Bodirsky et al. 04
+	    		decode("[label(x f(x1 x2)) label(x1 a1) label(x2 a2) label(y b) dom(x y)]");
+	    		assert !graph.isWellFormed();
+	    	}
 	        
 	        
 	        //////////////////////////////////////////////////////////////////////////////////////////

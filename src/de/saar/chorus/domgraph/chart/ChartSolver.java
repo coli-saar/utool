@@ -57,15 +57,20 @@ public class ChartSolver {
      * solvable or not. It will also fill the given chart with the splits
      * that are necessary to later enumerate solved forms of the
      * dominance graph. It will use the given split source in order to
-     * compute the splits for each subgraph. 
+     * compute the splits for each subgraph. <p>
+     * 
+     * The solver throws an <code>SolverNotApplicableException</code> if the dominance
+     * graph doesn't belong to a fragment that the solver understands.  Currently the
+     * only restriction is that the graph must not contain empty fragments.
      * 
      * @param graph an arbitrary dominance graph
      * @param chart a chart which will be filled with the splits of this graph
      * @param splitsource a split source
      * @return true if the graph is solvable, false otherwise
      */
-    public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) {
+    public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) throws SolverNotApplicableException {
     	DomGraph preprocessed = null;
+    	boolean isSolvable;
     	
     	// Try to preprocess the graph. If this fails (i.e. preprocess() throws
     	// an exception), the graph is trivially unsolvable and we can return immediately.
@@ -79,38 +84,52 @@ public class ChartSolver {
     		return false;
     	}
     	
+    	checkApplicability(graph);
+    	
     	// Otherwise, solve the preprocessed graph.
         ChartSolver solver = new ChartSolver(preprocessed, chart, splitsource);
-        return solver.solve();
+        isSolvable = solver.solve();
+        
+        if( ! isSolvable ) {
+        	chart.clear();
+        }
+        
+        return isSolvable;
     }
     
-    private static boolean obviouslyUnsolvable(DomGraph graph) {
+    private static void checkApplicability(DomGraph graph) throws SolverNotApplicableException {
+    	if( graph.hasEmptyFragments() ) {
+    		throw new SolverNotApplicableException("The graph has empty fragments.");
+    	}
+	}
+    
+
+	private static boolean obviouslyUnsolvable(DomGraph graph) {
     	for( String node : graph.getAllNodes() ) {
     		if( graph.indeg(node, EdgeType.TREE) > 1 ) {
     			return true;
     		}
     	}
     	
+    	if( ! graph.isWellFormed() ) {
+    		return true;
+    	}
     	
     	return false;
     }
+    
 
     /**
      * Solves the given dominance graph using a 
      * {@link de.saar.chorus.domgraph.chart.CompleteSplitSource}.
      * This method will create a new <code>CompleteSplitSource</code> object for
      * the graph and then call {@link #solve(DomGraph, Chart, SplitSource)}.
+     * @throws SolverNotApplicableException 
      * 
      * @see #solve(DomGraph, Chart, SplitSource)
      */
-    public static boolean solve(DomGraph graph, Chart chart) {
-        boolean isSolvable = solve(graph, chart, new CompleteSplitSource(graph));
-        
-        if( !isSolvable ) {
-        	chart.clear();
-        }
-        
-        return isSolvable;
+    public static boolean solve(DomGraph graph, Chart chart) throws SolverNotApplicableException {
+        return solve(graph, chart, new CompleteSplitSource(graph));
     }
     
 

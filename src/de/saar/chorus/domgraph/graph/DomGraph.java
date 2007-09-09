@@ -1161,7 +1161,7 @@ public class DomGraph implements Cloneable {
         	} else {
         		return cacheResult("isHypernormallyConnected", false);
         	}
-        } else if( OneSplitSource.isGraphSolvable(this) ) {
+        } else if( OneSplitSource.canSolveGraph(this) ) {
             return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
 		} else {
             return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
@@ -1431,38 +1431,87 @@ public class DomGraph implements Cloneable {
 	 * Check whether the weakly normal graph is "well-formed" in the sense of 
 	 * Bodirsky et al. 04. This means that every root of a dominance edge
 	 * dominates a hole of its fragment.<p>
-	 * 
-	 * This method assumes that the graph is weakly normal and compact.<p>
-	 * 
-	 * This method is currently unused.
 	 *  
 	 * @return true iff the graph is well-formed.
 	 */
 	public boolean isWellFormed() {
-		assert isWeaklyNormal();
-		assert isCompact();
+		List<String> ancestorsWithOutgoingDomEdges = new ArrayList<String>();
 		
         if( hasCachedResult("isWellFormed")) {
             return ((Boolean) getCachedResult("isWellFormed")).booleanValue();
         }
+
+        for( String node : getAllRoots() ) {
+        	ancestorsWithOutgoingDomEdges.clear();
+        	
+        	if( outdeg(node, EdgeType.DOMINANCE) > 0 ) {
+        		ancestorsWithOutgoingDomEdges.add(node);
+        	}
+        	
+        	if( !isWellFormedDfs(node, ancestorsWithOutgoingDomEdges) ) {
+        		return cacheResult("isWellFormed", false);
+        	}
+        }
         
-		
-		for( Edge edge : getAllEdges()) {
-			String src = (String) edge.getSource();
-			
-			// this check assumes that the graph is compact 
-			if( (getData(src).getType() == NodeType.LABELLED)
-					&& isLeaf(src) ) {
-				return cacheResult("isWellFormed", false);
-			}
-		}
-		
         return cacheResult("isWellFormed", true);
 	}
 	
+	private boolean isWellFormedDfs(String node, List<String> ancestorsWithOutgoingDomEdges) {
+		boolean haveOutgoingDomEdges = outdeg(node, EdgeType.DOMINANCE) > 0;
+		
+		if( isHole(node) ) {
+			ancestorsWithOutgoingDomEdges.clear();
+			return true;
+		} else if( isLeaf(node) ) {
+			return ! haveOutgoingDomEdges;
+		} else {
+			if( haveOutgoingDomEdges ) {
+				ancestorsWithOutgoingDomEdges.add(node);
+			}
+			
+			for( String child : getChildren(node, EdgeType.TREE) ) {
+				if( !isWellFormedDfs(child, ancestorsWithOutgoingDomEdges) ) {
+					return false;
+				}
+			}
+			
+			if( haveOutgoingDomEdges ) {
+				if( !ancestorsWithOutgoingDomEdges.isEmpty() ) {
+					return false;
+				}
+			}
+			
+			return true;
+		}
+	}
+
+
 	/**
-	 * Checks whether the graph has an empty fragment, i.e. a fragment
-	 * that consists of a single unlabelled node.
+	 * Checks whether the classification of nodes as labelled or unlabelled is consistent
+	 * with the presence of labels in the <code>labels</code> argument.
+	 * 
+	 * @param labels a NodeLabels object that labels this graph
+	 * @return true iff the labelling information is consistent
+	 */
+	public boolean isLabellingConsistent(NodeLabels labels) {
+		if( hasCachedResult("isLabellingConsistent")) {
+            return ((Boolean) getCachedResult("isLabellingConsistent")).booleanValue();
+        }
+		
+		for( String node : getAllNodes() ) {
+			if( getData(node).getType() != (labels.getLabel(node) != null ? NodeType.LABELLED : NodeType.UNLABELLED) ) {
+				return cacheResult("isLabellingConsistent", false);
+			}
+		}
+		
+		return cacheResult("isLabellingConsistent", true);
+	}
+	
+	/**
+	 * Checks whether the graph has an empty fragment.  Utool considers a fragment
+	 * empty if it contains a node that has an outgoing dominance edge, but no adjacent
+	 * tree edges.  This means that single-node fragments are ok as long as they have
+	 * no outgoing dominance edges.
 	 * 
 	 * @return true iff the graph has an empty fragment
 	 */
@@ -1472,7 +1521,7 @@ public class DomGraph implements Cloneable {
         }
 
 		for( String node : getAllNodes() ) {
-			if( getData(node).getType() == NodeType.UNLABELLED
+			if( !getOutEdges(node, EdgeType.DOMINANCE).isEmpty()
 					&& getAdjacentEdges(node, EdgeType.TREE).isEmpty()  ) {
 				return cacheResult("hasEmptyFragments", true);
 			}

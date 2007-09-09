@@ -45,37 +45,37 @@ class JDomGraphMenu extends JMenuBar {
 	
 	// the menu items
 	private JMenuItem 
-		              loadGraph, 	// load a graph (from any supported file type)
-		              newTab,
-	  				  quit, 	 	// close the workbench
-					  saveUtool,	 // export a graph to a "utool" format
-					  pdfPrint, 	 // export a graph to a pdf
-					  close,    	 // close the visible graphs
-					  closeAll, 	 // close all graphs (but not the window!)
-					  duplicate,	 // duplicate the visible graph
+		             // loadGraph, 	// load a graph (from any supported file type)
+		             // newTab,
+	  				//  quit, 	 	// close the workbench
+					 // saveUtool,	 // export a graph to a "utool" format
+					 // pdfPrint, 	 // export a graph to a pdf
+					 // close,    	 // close the visible graphs
+					 // closeAll, 	 // close all graphs (but not the window!)
+					 // duplicate,	 // duplicate the visible graph
 					  cSolvForms,    // solve the visible graph
 					  countAndSolve, // checkbox indicating whether or not to 
 					  				 // solve every loaded graph at once
 					  				 
 					  showLabels,    showNames, showBoth,
-					  resetLayout,   // drawing the "first" layout again
-					  fitAll,        // checkbox indicating whether or not the recent
+					//  resetLayout,   // drawing the "first" layout again
+					//  fitAll,        // checkbox indicating whether or not the recent
 									 // and all further loaded graphs shall be zoomed
 									 // out until fitting the window
 				
-					  about,
+					//  about,
 					  solve,
 					  next,
 					  previous,
-					  pictureExport,
-					  print,
-					  loadExample,
+					//  pictureExport,
+					//  print,
+					//  loadExample,
 					  saveAll,
 					  displayChart,
 					  displayCodecs,
-					  loadeqs,
+					//  loadeqs,
 					  autoreduce,
-					  preferences,
+					//  preferences,
 					 jdomgraphlayout, chartlayout;
     
 	private ServerButton server;
@@ -112,132 +112,56 @@ class JDomGraphMenu extends JMenuBar {
     	displayCodecs.addActionListener(listener);
     	
 		
-		// file Menu
+		// File menu
 		fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
+		add(fileMenu);
 		
-	
-		newTab = new JMenuItem("Open new Tab");
-		newTab.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, control));
-		newTab.setActionCommand("newTab");
-		newTab.addActionListener(listener);
+		makeMenuItem(fileMenu, "Open new tab", "newTab", -1, KeyStroke.getKeyStroke(KeyEvent.VK_T, control));
+		makeMenuItem(fileMenu, "Open...", "loadGXL", KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, control));
+		makeMenuItem(fileMenu, "Open example...", "loadExample");
+		graphSpecificItems.add(makeMenuItem(fileMenu, "Export...", "saveUtool", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, control)));
+		saveAll = makeMenuItem(fileMenu, "Export solved forms...", "saveAll");
+		graphSpecificItems.add(saveAll);
 		
-		fileMenu.add(newTab);
-		
-		// item for xml-import
-		loadGraph = new JMenuItem("Open...");
-		loadGraph.setMnemonic(KeyEvent.VK_O);
-		loadGraph.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, control));
-		loadGraph.setActionCommand("loadGXL");
-		loadGraph.addActionListener(listener);
-		fileMenu.add(loadGraph);
-
-		loadExample = new JMenuItem("Open Example...");
-		loadExample.setActionCommand("loadExample");
-		loadExample.addActionListener(listener);
-		fileMenu.add(loadExample);
-		
-		
-        // item for utool-export
-        saveUtool = new JMenuItem("Export...");
-        saveUtool.setActionCommand("saveUtool");
-        saveUtool.setMnemonic(KeyEvent.VK_E);
-        saveUtool.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, control));
-        saveUtool.addActionListener(listener);
-        fileMenu.add(saveUtool);
-        graphSpecificItems.add(saveUtool);
-        
-        saveAll = new JMenuItem("Export Solved Forms...");
-        saveAll.setActionCommand("saveAll");
-        saveAll.addActionListener(listener);
-        graphSpecificItems.add(saveAll);
-        
-        fileMenu.add(saveAll);
-        
         if( MacIntegration.isMac() ) {
         	fileMenu.add(displayCodecs);
         }
         
-        
         fileMenu.addSeparator();
         
-        
-        // item for pdf-export
-		pdfPrint = new JMenuItem("Export as PDF...");
-		pdfPrint.setActionCommand("pdf");
-		pdfPrint.addActionListener(listener);
-		graphSpecificItems.add(pdfPrint);
-		fileMenu.add(pdfPrint);
-		 // item for pdf-export
-		pictureExport = new JMenuItem("Export as Image...");
-		pictureExport.setActionCommand("pic");
-		pictureExport.addActionListener(listener);
-		graphSpecificItems.add(pictureExport);
-		fileMenu.add(pictureExport);
-        
-		print = new JMenuItem("Print...");
-		print.setActionCommand("print");
-		print.addActionListener(listener);
-		graphSpecificItems.add(print);
-		fileMenu.add(print);
-        
+        graphSpecificItems.add(makeMenuItem(fileMenu, "Export as PDF...", "pdf"));
+        graphSpecificItems.add(makeMenuItem(fileMenu, "Export as image...", "pic"));
+        graphSpecificItems.add(makeMenuItem(fileMenu, "Print...", "print"));
+                
         fileMenu.addSeparator();
         
+        makeMenuItem(fileMenu, "Duplicate tab", "dup", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, control));
+        makeMenuItem(fileMenu, "Close tab", "shut", -1, KeyStroke.getKeyStroke(KeyEvent.VK_W, control));
+        makeMenuItem(fileMenu, "Close all tabs", "closeAll");
         
-        
-        // item to duplicate the visible graph
-        duplicate = new JMenuItem("Duplicate Tab");
-        duplicate.setActionCommand("dup");
-        duplicate.setMnemonic(KeyEvent.VK_D);
-        duplicate.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, control));
-        duplicate.addActionListener(listener);
-        fileMenu.add(duplicate);
-        
-        // item to close the graph
-        close = new JMenuItem("Close Tab");
-        close.setActionCommand("shut");
-        close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, control));
-        close.addActionListener(listener);
-        fileMenu.add(close);
-        
-        // item to close all loaded graphs
-        closeAll = new JMenuItem("Close All Tabs");
-        closeAll.setActionCommand("closeAll");
-        closeAll.addActionListener(listener);
-        fileMenu.add(closeAll);
-        
-        
-		// item for quitting Leonardo
         if( !MacIntegration.isMac() ) {
             fileMenu.addSeparator();
-            
-        	quit = new JMenuItem("Quit");
-        	quit.setActionCommand("quit");
-        	quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, control));
-        	quit.addActionListener(listener);
-        	fileMenu.add(quit);
+            makeMenuItem(fileMenu, "Quit", "quit", -1, KeyStroke.getKeyStroke(KeyEvent.VK_Q, control));
         }
 		
-		fileMenu.validate();
-		add(fileMenu);
-		
-        
 
+
+		// Edit menu
 		JMenu editMenu = new JMenu("Edit");
 		editMenu.setMnemonic(KeyEvent.VK_E);
 		add(editMenu);
 		
         JMenu exportToClipboardMenu = new JMenu("Copy to clipboard");
         editMenu.add(exportToClipboardMenu);
+        graphSpecificItems.add(exportToClipboardMenu);
         
         for( String codecname : Ubench.getInstance().getCodecManager().getAllOutputCodecs() ) {
-        	JMenuItem item = new JMenuItem("as " + codecname);
-        	exportToClipboardMenu.add(item);
-        	item.setActionCommand("export-clipboard-" + codecname );
-        	item.addActionListener(listener);
-
         	if( codecname.equals("domcon-oz")) {
-        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, control));
+        		makeMenuItem(exportToClipboardMenu, "as " + codecname, "export-clipboard-" + codecname,
+        				-1, KeyStroke.getKeyStroke(KeyEvent.VK_C, control));
+        	} else {
+        		makeMenuItem(exportToClipboardMenu, "as " + codecname, "export-clipboard-" + codecname);
         	}
         }
 
@@ -245,215 +169,99 @@ class JDomGraphMenu extends JMenuBar {
         editMenu.add(importFromClipboardMenu);
         
         for( String codecname : Ubench.getInstance().getCodecManager().getAllInputCodecs() ) {
-        	JMenuItem item = new JMenuItem("as " + codecname);
-        	importFromClipboardMenu.add(item);
-        	item.setActionCommand("import-clipboard-" + codecname);
-        	item.addActionListener(listener);
-
         	if( codecname.equals("domcon-oz")) {
-        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, control));
+        		makeMenuItem(importFromClipboardMenu, "as " + codecname, "import-clipboard-" + codecname,
+        				-1, KeyStroke.getKeyStroke(KeyEvent.VK_V, control));
+        	} else {
+        		makeMenuItem(importFromClipboardMenu, "as " + codecname, "import-clipboard-" + codecname);
         	}
         }
 
         
 
-        
-		
-		// view Menu
+        // View menu
 		viewMenu = new JMenu("View");
 		viewMenu.setMnemonic(KeyEvent.VK_V);
-
+		add(viewMenu);
 		
-		labelMenu = new JMenu("Node Labels");
+		labelMenu = new JMenu("Node labels");
 		ButtonGroup labelgroup = new ButtonGroup();
-		
-        // Checkbox indicating label/name - view
-		showLabels = new JCheckBoxMenuItem("Show Labels");
-		showLabels.setSelected(true);
-		showLabels.addItemListener(listener);
-		listener.registerEventSource(showLabels, "showLabels");
-		labelMenu.add(showLabels);
-		labelgroup.add(showLabels);
-		
-		
-		showNames = new JCheckBoxMenuItem("Show Names");
-		showNames.addItemListener(listener);
-		listener.registerEventSource(showNames, "showNames");
-		labelMenu.add(showNames);
-		labelgroup.add(showNames);
-		
-		
-		showBoth = new JCheckBoxMenuItem("Show Names and Labels");
-		showBoth.addItemListener(listener);
-		listener.registerEventSource(showBoth, "showBoth");
-		labelMenu.add(showBoth);
-		labelgroup.add(showBoth);
-		
 		viewMenu.add(labelMenu);
+
+		showLabels = makeCheckboxMenuItem(labelMenu, labelgroup, "Show labels", "showLabels");
+		showNames = makeCheckboxMenuItem(labelMenu, labelgroup, "Show names", "showNames");
+		showBoth = makeCheckboxMenuItem(labelMenu, labelgroup, "Show names and labels", "showBoth");
+		showLabels.setSelected(true);
 		
-		// Checkbox indicating whether the graphs should be
-		// scaled town in order to fit the window
-		fitAll = new JCheckBoxMenuItem("Fit Graphs To Window");
-		fitAll.addItemListener(listener);
-		fitAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, control));
-        listener.registerEventSource(fitAll,"fitAll");
-		viewMenu.add(fitAll);
+		makeCheckboxMenuItem(viewMenu, null, "Fit graphs to window", "fitAll")
+			.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, control));
 		
-		// item to rebuild the initial layout again
-		resetLayout = new JMenuItem("Reset Layout");
-		resetLayout.setActionCommand("resL");
-		resetLayout.addActionListener(listener);
-		viewMenu.add(resetLayout);	
-		graphSpecificItems.add(resetLayout);
+		graphSpecificItems.add(makeMenuItem(viewMenu, "Reset layout", "resL"));
 		
 		
 		layoutMenu = new JMenu("Choose Layout");
-		
-		
-		jdomgraphlayout = new JCheckBoxMenuItem("JDomGraph Layout");
-		jdomgraphlayout.addItemListener(listener);
-		listener.registerEventSource(jdomgraphlayout, "layoutchange");
-		
-		
-		chartlayout = new JCheckBoxMenuItem("Chart Layout");
-		chartlayout.addItemListener(listener);
-		listener.registerEventSource(chartlayout, "layoutchange");
-		
-		
 		ButtonGroup layoutgroup = new ButtonGroup();
-		layoutgroup.add(jdomgraphlayout);
-		layoutgroup.add(chartlayout);
+		jdomgraphlayout = makeCheckboxMenuItem(layoutMenu, layoutgroup, "JDomGraph layout", "layoutchange");
+		chartlayout = makeCheckboxMenuItem(layoutMenu, layoutgroup, "Chart layout", "layoutchange");
+		viewMenu.add(layoutMenu);
 		
-
 		switch(Preferences.getInstance().getLayoutType()) {
 		case JDOMGRAPH : jdomgraphlayout.setSelected(true); break;
 		case CHARTLAYOUT : chartlayout.setSelected(true);
 		}
 		
-		layoutMenu.add(jdomgraphlayout);
-		layoutMenu.add(chartlayout);
-		viewMenu.add(layoutMenu);
-		
 		viewMenu.addSeparator();
 		
-		displayChart = new JMenuItem("Display Chart");
-		displayChart.setMnemonic(KeyEvent.VK_C);
-		displayChart.setAccelerator(KeyStroke.getKeyStroke("alt C"));
-		displayChart.setActionCommand("chartView");
-		displayChart.addActionListener(listener);
+		displayChart = makeMenuItem(viewMenu, "Display chart", "chartView", KeyEvent.VK_C, KeyStroke.getKeyStroke("alt C"));
 		graphSpecificItems.add(displayChart);
-		viewMenu.add(displayChart);
+
 		
 		
 		
-		
-		viewMenu.validate();
-		add(viewMenu);
-		
-		
-		// utool-Menu
+		// Solver menu
 		utoolMenu = new JMenu("Solver");
 		utoolMenu.setMnemonic(KeyEvent.VK_S);
-		
-		// checkbox indicating whether all graphs loaded
-		// shall be solved at once
-		countAndSolve = new JCheckBoxMenuItem("Count Solved Forms Automatically");
-		countAndSolve.addItemListener(listener);
-        listener.registerEventSource(countAndSolve, "countAndSolve");
-		
-		utoolMenu.add(countAndSolve);
-		
-		// item to solve the visible graph "manually".
-		// Doesn't make sense if "countAndSolve" is selected!
-		cSolvForms = new JMenuItem("Count Solved Forms");
-		cSolvForms.setActionCommand("cSF");
-		cSolvForms.addActionListener(listener);
-		utoolMenu.add(cSolvForms);
-		
-		utoolMenu.add(cSolvForms);
-		graphSpecificItems.add(cSolvForms);
-
-		
-		
-		
-		showLabels.setSelected(true);
-
-		
-        countAndSolve.setSelected(true);
-        cSolvForms.setEnabled(false);
-       
-        
-        solve = new JMenuItem("Show first solved form");
-        solve.setActionCommand("solve");
-        solve.addActionListener(listener);
-        graphSpecificItems.add(solve);
-        utoolMenu.addSeparator();
-        utoolMenu.add(solve);
-        
-        next = new JMenuItem("Show next solved form");
-        next.setActionCommand("plus");
-        graphSpecificItems.add(next);
-        next.addActionListener(listener);
-        next.setEnabled(false);
-        
-        previous = new JMenuItem("Show previous solved form");
-        previous.setActionCommand("minus");
-        previous.addActionListener(listener);
-        graphSpecificItems.add(previous);
-        previous.setEnabled(false);
-        
-        utoolMenu.add(next);
-        utoolMenu.add(previous);
-        
-        utoolMenu.addSeparator();
-        
-        loadeqs = new JMenuItem("Load Equation System...");
-		loadeqs.setActionCommand("loadeqs");
-		loadeqs.addActionListener(listener);
-		utoolMenu.add(loadeqs);
-			
-		
-		autoreduce = new JCheckBoxMenuItem("Reduce Chart Automatically");
-		
-		if(Ubench.getInstance().reduceAutomatically) {
-			autoreduce.setSelected(true);
-		} else {
-			autoreduce.setSelected(false);
-		}
-
-
-		autoreduce.addItemListener(listener);
-		autoreduce.setEnabled(Ubench.getInstance().isEquationSystemLoaded());
-		
-		listener.registerEventSource(autoreduce, "autoreduce");
-		utoolMenu.add(autoreduce);
-		
 		add(utoolMenu);
-        graphSpecificItems.add(cSolvForms);
-        
-        
+
+		countAndSolve = makeCheckboxMenuItem(utoolMenu, null, "Count solved forms automatically", "countAndSolve");
+		countAndSolve.setSelected(true);
+		
+		cSolvForms = makeMenuItem(utoolMenu, "Count solved forms", "cSF");
+		graphSpecificItems.add(cSolvForms);
+		cSolvForms.setEnabled(false);
+		
+		utoolMenu.addSeparator();
+		
+		solve = makeMenuItem(utoolMenu, "Show first solved form", "solve");
+		graphSpecificItems.add(solve);
+		next = makeMenuItem(utoolMenu, "Show next solved form", "plus");
+		next.setEnabled(false);
+		graphSpecificItems.add(next);
+		previous = makeMenuItem(utoolMenu, "Show previous solved form", "minus");
+		previous.setEnabled(false);
+		graphSpecificItems.add(previous);
+		
+        utoolMenu.addSeparator();
+
+        makeMenuItem(utoolMenu, "Load equation system...", "loadeqs");
+        autoreduce = makeCheckboxMenuItem(utoolMenu, null, "Reduce chart automatically", "autoreduce");
+        autoreduce.setSelected(Ubench.getInstance().reduceAutomatically);
+		autoreduce.setEnabled(Ubench.getInstance().isEquationSystemLoaded());
+
+
+		
+		// Help menu
+		// (skip this when running on a Mac)
         
         if( !MacIntegration.isMac() ) {
         	helpMenu = new JMenu("Help");
-        	helpMenu.setActionCommand("help");
-        	helpMenu.addActionListener(listener);
         	helpMenu.setMnemonic(KeyEvent.VK_H);
+        	add(helpMenu);
 
         	helpMenu.add(displayCodecs);
-
-        	about = new JMenuItem("About...");
-        	about.setActionCommand("about");
-        	about.addActionListener(listener);
-        	about.setMnemonic(KeyEvent.VK_A);
-
-        	helpMenu.add(about);
-
-        	preferences = new JMenuItem("Settings...");
-        	preferences.setActionCommand("preferences");
-        	preferences.addActionListener(listener);
-        	helpMenu.add(preferences);
-
-        	add(helpMenu);
+        	
+        	makeMenuItem(helpMenu, "About...", "about");
+        	makeMenuItem(helpMenu, "Settings...", "preferences");
         } 
         
         
@@ -464,6 +272,43 @@ class JDomGraphMenu extends JMenuBar {
         add(server);      
         
 	}
+	
+	private JMenuItem makeMenuItem(JMenu menu, String label, String command, int keyEvent, KeyStroke keystroke) {
+		JMenuItem ret = new JMenuItem(label);
+		
+		if( keyEvent > -1 ) { ret.setMnemonic(keyEvent); }
+		ret.setAccelerator(keystroke);
+		ret.setActionCommand(command);
+		ret.addActionListener(listener);
+		
+		menu.add(ret);
+		
+		return ret;
+	}
+	
+	private JMenuItem makeMenuItem(JMenu menu, String label, String command) {
+		JMenuItem ret = new JMenuItem(label);
+		
+		ret.setActionCommand(command);
+		ret.addActionListener(listener);
+		
+		menu.add(ret);
+		
+		return ret;
+	}
+	
+	private JCheckBoxMenuItem makeCheckboxMenuItem(JMenu menu, ButtonGroup group, String label, String command) {
+		JCheckBoxMenuItem ret = new JCheckBoxMenuItem(label);
+		
+		ret.addItemListener(listener);
+		listener.registerEventSource(ret, command);
+		
+		menu.add(ret);
+		if( group != null ) { group.add(ret); }
+		
+		return ret;
+	}
+	
 	
 	/**
 	 * Enable or disable the countSolvedForms menu item
@@ -507,8 +352,10 @@ class JDomGraphMenu extends JMenuBar {
 	void setSolvingEnabled(boolean b) {
 		solve.setEnabled(b);
 		chartlayout.setEnabled(b);
-		if(! countAndSolve.isSelected() )
+		if(! countAndSolve.isSelected() ) {
 			cSolvForms.setEnabled(b);
+		}
+		displayChart.setEnabled(b);
 	}
 	
 	void refresh() {
@@ -598,5 +445,9 @@ class JDomGraphMenu extends JMenuBar {
 		}
 		
 		
+	}
+
+	public void setLayoutSelectionEnabled(boolean b) {
+		layoutMenu.setEnabled(b);
 	}
 }

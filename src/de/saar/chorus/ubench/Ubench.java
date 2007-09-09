@@ -230,7 +230,9 @@ public class Ubench {
             } else if(current.getClass() == JSolvedFormTab.class ) {
                 setSolvingEnabled(false);
                 menuBar.setSaveAllEnabled(false);
+                menuBar.setLayoutSelectionEnabled(false);
             } else {
+            	menuBar.setLayoutSelectionEnabled(true);
                 if( ((JDomGraphTab) current).isSolvable()) {
                     setSolvingEnabled(true);
                     menuBar.setSaveAllEnabled(true);

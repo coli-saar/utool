@@ -23,6 +23,7 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
@@ -247,22 +248,33 @@ class JDomGraphTab extends JGraphTab  {
 		Cursor waitcursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
 
 		changeCursorGlobally(waitcursor);
+		
+		try {
 
-		if(cv == null ) {
-			if(!isSolvedYet) {
-				isSolvedYet = true;
-				chart = new Chart();
-				ChartSolver.solve(domGraph, chart);
+			if(cv == null ) {
+				if(!isSolvedYet) {
+					isSolvedYet = true;
+					chart = new Chart();
+					ChartSolver.solve(domGraph, chart);
+				}
+
+				cv = new ChartViewer( chart, 
+						domGraph, defaultName, graph, nodeLabels);
+			} else {
+				ChartViewer temp = new ChartViewer( chart, 
+						domGraph, defaultName, graph, nodeLabels);
 			}
 
-			cv = new ChartViewer( chart, 
-					domGraph, defaultName, graph, nodeLabels);
-		} else {
-			ChartViewer temp = new ChartViewer( chart, 
-					domGraph, defaultName, graph, nodeLabels);
+			changeCursorGlobally(Cursor.getDefaultCursor());
+		} catch(SolverNotApplicableException e) {
+			changeCursorGlobally(Cursor.getDefaultCursor());
+
+			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(), 
+					"The solver is not applicable for this graph:\n" + e.getMessage(),
+					"Solver not applicable",
+					JOptionPane.ERROR_MESSAGE);
 		}
 
-		changeCursorGlobally(Cursor.getDefaultCursor());
 	}
 
 	/**

@@ -16,6 +16,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
@@ -57,7 +58,7 @@ public class Utool {
         MacIntegration.integrate();
         
         
-        // check statistics and compactify graph
+        // check statistics
         if( options.getOperation().requiresInput ) {
             weaklyNormal = options.getGraph().isWeaklyNormal();
             normal = options.getGraph().isNormal();
@@ -90,25 +91,34 @@ public class Utool {
                     System.err.print("Checking graph for solvability (without chart) ... ");
                 }
                 
-                long start_solver = System.currentTimeMillis();
-                boolean solvable = OneSplitSource.isGraphSolvable(options.getGraph());
-                long end_solver = System.currentTimeMillis();
-                long time_solver = end_solver - start_solver;
+                try {
+                	long start_solver = System.currentTimeMillis();
+                	boolean solvable = OneSplitSource.isGraphSolvable(options.getGraph());
+                	long end_solver = System.currentTimeMillis();
+                	long time_solver = end_solver - start_solver;
 
-                if( solvable ) {
-                    if( options.hasOptionStatistics() ) {
-                        System.err.println("it is solvable.");
-                        System.err.println("Time to determine solvability: " + time_solver + " ms");
-                    }
-                    
-                    System.exit(1);
-                } else {
-                    if( options.hasOptionStatistics() ) {
-                        System.err.println("it is unsolvable.");
-                        System.err.println("Time to determine unsolvability: " + time_solver + " ms");
-                    }
-                    
-                    System.exit(0);
+                	if( solvable ) {
+                		if( options.hasOptionStatistics() ) {
+                			System.err.println("it is solvable.");
+                			System.err.println("Time to determine solvability: " + time_solver + " ms");
+                		}
+
+                		System.exit(1);
+                	} else {
+                		if( options.hasOptionStatistics() ) {
+                			System.err.println("it is unsolvable.");
+                			System.err.println("Time to determine unsolvability: " + time_solver + " ms");
+                		}
+
+                		System.exit(0);
+                	}
+                } catch(SolverNotApplicableException e) {
+                	if( options.hasOptionStatistics() ) {
+            			System.err.println("solver not applicable.");
+            			System.err.println("Reason: " + e.getMessage());
+                	}
+                	
+                	System.exit(ExitCodes.SOLVER_NOT_APPLICABLE);
                 }
             }
                 
@@ -139,98 +149,108 @@ public class Utool {
             Chart chart = new Chart();
             boolean solvable;
             
-            if( options.hasOptionEliminateEquivalence() ) {
-                solvable = 
-                    ChartSolver.solve(graph, chart, 
-                            new RedundancyEliminationSplitSource(
-                                    new IndividualRedundancyElimination(graph, 
-                                            options.getLabels(), options.getEquations()), graph));
-                
-            } else {
-                solvable = ChartSolver.solve(graph, chart); 
-            }
+            try {
+            	if( options.hasOptionEliminateEquivalence() ) {
+            		solvable = 
+            			ChartSolver.solve(graph, chart, 
+            					new RedundancyEliminationSplitSource(
+            							new IndividualRedundancyElimination(graph, 
+            									options.getLabels(), options.getEquations()), graph));
+
+            	} else {
+            		solvable = ChartSolver.solve(graph, chart); 
+            	}
             
-            long end_solver = System.currentTimeMillis();
-            long time_solver = end_solver - start_solver;
-            
-            if( solvable ) {
-            	MultiOutputCodec outputcodec = 
-            		options.hasOptionNoOutput() ? null : (MultiOutputCodec) options.getOutputCodec();
+            	long end_solver = System.currentTimeMillis();
+            	long time_solver = end_solver - start_solver;
+
+            	if( solvable ) {
+            		MultiOutputCodec outputcodec = 
+            			options.hasOptionNoOutput() ? null : (MultiOutputCodec) options.getOutputCodec();
+
+            		if( options.hasOptionStatistics() ) {
+            			System.err.println("it is solvable.");
+            			printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), graph);
+            		}
+
+            		// TODO runtime prediction (see ticket #11)
+
+            		if( options.getOperation() == Operation.solve ) {
+            			try {
+            				if( !options.hasOptionNoOutput() ) {
+            					outputcodec.print_header(options.getOutput());
+            					outputcodec.print_start_list(options.getOutput());
+            				}
+
+            				// extract solved forms
+            				long start_extraction = System.currentTimeMillis();
+            				long count = 0;
+            				SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
+            				while( it.hasNext() ) {
+            					SolvedFormSpec domedges = it.next();
+            					count++;
+
+            					if( !options.hasOptionNoOutput() ) {
+            						if( count > 1 ) {
+            							outputcodec.print_list_separator(options.getOutput());
+            						}
+            						outputcodec.encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), options.getOutput());
+            					}
+            				}
+            				long end_extraction = System.currentTimeMillis();
+            				long time_extraction = end_extraction - start_extraction;
+
+            				if( !options.hasOptionNoOutput() ) {
+            					outputcodec.print_end_list(options.getOutput());
+            					outputcodec.print_footer(options.getOutput());
+            					options.getOutput().flush();
+            				}
+
+            				if( options.hasOptionStatistics() ) {
+            					System.err.println("Found " + count + " solved forms.");
+            					System.err.println("Time spent on extraction: " + time_extraction + " ms");
+            					long total_time = time_extraction + time_solver;
+            					System.err.print("Total runtime: " + total_time + " ms (");
+            					if( total_time > 0 ) {
+            						System.err.print((int) Math.floor(count * 1000.0 / total_time));
+            						System.err.print(" sfs/sec");
+            					}
+
+            					if( count > 0 ) {
+            						System.err.print("; " + 1000 * total_time / count + " microsecs/sf)");
+            					}
+
+            					System.err.println(")");
+            				}
+            			} catch (MalformedDomgraphException e) {
+            				System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
+            				System.err.println(e);
+            				System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
+            			} catch (IOException e) {
+            				System.err.println("An error occurred while trying to print the results.");
+            				//e.printStackTrace();
+            				System.exit(ExitCodes.IO_ERROR);
+            			}
+            		} // if operation == solve
+
+            		System.exit(1);
+            	} else {
+            		// not solvable
+            		if( options.hasOptionStatistics() ) {
+            			System.err.println("it is unsolvable!");
+            		}
+
+            		System.exit(0);
+            	}
+            } catch(SolverNotApplicableException e) {
+            	if( options.hasOptionStatistics() ) {
+            		System.err.println("solver is not applicable!");
+            		System.err.println("Reason: " + e.getMessage() );
+            	}
             	
-                if( options.hasOptionStatistics() ) {
-                    System.err.println("it is solvable.");
-                    printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), graph);
-                }
-                
-                // TODO runtime prediction (see ticket #11)
-                
-                if( options.getOperation() == Operation.solve ) {
-                    try {
-                        if( !options.hasOptionNoOutput() ) {
-                            outputcodec.print_header(options.getOutput());
-                            outputcodec.print_start_list(options.getOutput());
-                        }
-                        
-                        // extract solved forms
-                        long start_extraction = System.currentTimeMillis();
-                        long count = 0;
-                        SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
-                        while( it.hasNext() ) {
-                            SolvedFormSpec domedges = it.next();
-                            count++;
-                            
-                            if( !options.hasOptionNoOutput() ) {
-                                if( count > 1 ) {
-                                    outputcodec.print_list_separator(options.getOutput());
-                                }
-                                outputcodec.encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), options.getOutput());
-                            }
-                        }
-                        long end_extraction = System.currentTimeMillis();
-                        long time_extraction = end_extraction - start_extraction;
-                        
-                        if( !options.hasOptionNoOutput() ) {
-                            outputcodec.print_end_list(options.getOutput());
-                            outputcodec.print_footer(options.getOutput());
-                            options.getOutput().flush();
-                        }
-                        
-                        if( options.hasOptionStatistics() ) {
-                            System.err.println("Found " + count + " solved forms.");
-                            System.err.println("Time spent on extraction: " + time_extraction + " ms");
-                            long total_time = time_extraction + time_solver;
-                            System.err.print("Total runtime: " + total_time + " ms (");
-                            if( total_time > 0 ) {
-                                System.err.print((int) Math.floor(count * 1000.0 / total_time));
-                                System.err.print(" sfs/sec");
-                            }
-                            
-                            if( count > 0 ) {
-                            	System.err.print("; " + 1000 * total_time / count + " microsecs/sf)");
-                            }
-                            
-                            System.err.println(")");
-                        }
-                    } catch (MalformedDomgraphException e) {
-                        System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
-                        System.err.println(e);
-                        System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
-                    } catch (IOException e) {
-                        System.err.println("An error occurred while trying to print the results.");
-                        //e.printStackTrace();
-                        System.exit(ExitCodes.IO_ERROR);
-                    }
-                } // if operation == solve
-                
-                System.exit(1);
-            } else {
-                // not solvable
-                if( options.hasOptionStatistics() ) {
-                    System.err.println("it is unsolvable!");
-                }
-                
-                System.exit(0);
+            	System.exit(ExitCodes.SOLVER_NOT_APPLICABLE);
             }
+            
             break;
             
         

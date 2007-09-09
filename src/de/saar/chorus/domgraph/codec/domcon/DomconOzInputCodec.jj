@@ -124,7 +124,7 @@ void Input() :
 {}
 {
   // Input -> [ Atom+ ]
-    "[" (Atom())+ "]"
+    "[" (Atom())* "]"
 }
 
 void Atom() :

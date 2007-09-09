@@ -44,7 +44,6 @@ import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
 import de.saar.basic.XMLFilter;
-import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
@@ -56,6 +55,7 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutException;
 import de.saar.chorus.domgraph.layout.LayoutOptions;
 import de.saar.chorus.domgraph.layout.PDFCanvas;
 import de.saar.chorus.domgraph.layout.LayoutOptions.LabelType;
@@ -844,12 +844,17 @@ class CommandListener implements ActionListener,
 									} catch (IOException io) {
 										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 												"The output file can't be opened.",
-												"Error from PDF printer",
+												"PDF error",
 												JOptionPane.ERROR_MESSAGE);
 									} catch(DocumentException de) {
 										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
 												"The output file can't be opened.",
-												"Error from PDF printer",
+												"PDF error",
+												JOptionPane.ERROR_MESSAGE);
+									} catch(LayoutException e) {
+										JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+												"An error occurred during layout:\n" + e.getMessage(),
+												"Layout error",
 												JOptionPane.ERROR_MESSAGE);
 									}
 									progress.endTask();

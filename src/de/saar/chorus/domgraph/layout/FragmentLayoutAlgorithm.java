@@ -242,7 +242,7 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 		nodesToShape.put(node, shape);
 	}
 	
-	public void initialise(DomGraph graph, NodeLabels labels, Canvas canv) {
+	public void initialise(DomGraph graph, NodeLabels labels, Canvas canv) throws LayoutException {
 		domgraph = graph; 
 		fragments = domgraph.getAllRoots();
 		canvas = canv;
@@ -268,7 +268,7 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 	protected abstract void placeNodes();
 	protected abstract void drawEdges();
 	
-	protected void layout(DomGraph graph, NodeLabels labels, Canvas canvas) {
+	protected void layout(DomGraph graph, NodeLabels labels, Canvas canvas) throws LayoutException {
 		initialise(graph, labels,canvas);
 		computeFragDimensions();
 		computeFragmentPositions();

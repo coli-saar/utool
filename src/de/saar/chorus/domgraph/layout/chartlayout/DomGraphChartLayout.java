@@ -15,6 +15,7 @@ import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
@@ -22,6 +23,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.Canvas;
 import de.saar.chorus.domgraph.layout.DomGraphLayoutParameters;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
+import de.saar.chorus.domgraph.layout.LayoutException;
 
 /**
  * This is a draft for a new chart-based layout algorithm.
@@ -647,21 +649,25 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 
 	}
 
-	public void initialise(DomGraph graph, NodeLabels labels, Canvas canv) {
+	public void initialise(DomGraph graph, NodeLabels labels, Canvas canv) throws LayoutException {
 		super.initialise(graph, labels, canv);
 		
 		
 		chart = new Chart();
 		toExtent = new HashMap<Integer,Integer>();
 		
-		// checking whether or not the DomGraph is weakly normal
-		if (domgraph.isWeaklyNormal()) {
-			// if so, proceed with the "normal" chart
-			ChartSolver.solve(domgraph, chart);
-		} else {
-			// if the graph is not wn, compute the chart of the wn backbone.
-			DomGraph wnbackbone = domgraph.makeWeaklyNormalBackbone();
-			ChartSolver.solve(wnbackbone, chart);
+		try {
+			// checking whether or not the DomGraph is weakly normal
+			if (domgraph.isWeaklyNormal()) {
+				// if so, proceed with the "normal" chart
+				ChartSolver.solve(domgraph, chart);
+			} else {
+				// if the graph is not wn, compute the chart of the wn backbone.
+				DomGraph wnbackbone = domgraph.makeWeaklyNormalBackbone();
+				ChartSolver.solve(wnbackbone, chart);
+			}
+		} catch(SolverNotApplicableException e) {
+			throw new LayoutException(e.getMessage());
 		}
 		
 		

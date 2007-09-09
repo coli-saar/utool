@@ -17,10 +17,10 @@ public abstract class LayoutAlgorithm {
 	
 	protected Map<String, String> nodeToLabel;
 	
-	protected abstract void layout(DomGraph graph, NodeLabels labels, Canvas canvas);
+	protected abstract void layout(DomGraph graph, NodeLabels labels, Canvas canvas) throws LayoutException;
 	
 	public void layout(DomGraph graph, NodeLabels labels, Canvas canvas,
-			LayoutOptions lo) {
+			LayoutOptions lo) throws LayoutException {
 
 
 		nodeToLabel = new HashMap<String, String>();
