@@ -48,9 +48,17 @@ public class OneSplitSource extends SplitSource {
         return ret.iterator();
     }
 
-    public static boolean isGraphSolvable(DomGraph graph) {
+    public static boolean isGraphSolvable(DomGraph graph) throws SolverNotApplicableException {
         Chart chart = new Chart();
         
         return ChartSolver.solve(graph, chart, new OneSplitSource(graph));
+    }
+    
+    public static boolean canSolveGraph(DomGraph graph) {
+    	try {
+			return isGraphSolvable(graph);
+		} catch (SolverNotApplicableException e) {
+			return false;
+		}
     }
 }

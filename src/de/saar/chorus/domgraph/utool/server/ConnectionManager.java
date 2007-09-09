@@ -17,6 +17,7 @@ import de.saar.basic.Logger;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
@@ -247,26 +248,30 @@ public class ConnectionManager {
      * 
      */
     private static void warmup() {
-        final int PASSES = 2;
-        DomGraph graph = new DomGraph();
-        NodeLabels labels = new NodeLabels();
-        makeWarmupGraph(graph, labels);
-        
-        System.err.println("Warming up the server (" + PASSES + " passes) ... ");
-        
-        for( int i = 0; i < PASSES; i++ ) {
-            Chart chart = new Chart();
-            System.err.println("  - pass " + (i+1));
-            
-            ChartSolver.solve(graph, chart);
-            SolvedFormIterator it = new SolvedFormIterator(chart,graph);
-            while( it.hasNext() ) {
-                it.next();
-            }
-        }
-        
-        
-        System.err.println("Utool is now warmed up.");
+    	try {
+    		final int PASSES = 2;
+    		DomGraph graph = new DomGraph();
+    		NodeLabels labels = new NodeLabels();
+    		makeWarmupGraph(graph, labels);
+
+    		System.err.println("Warming up the server (" + PASSES + " passes) ... ");
+
+    		for( int i = 0; i < PASSES; i++ ) {
+    			Chart chart = new Chart();
+    			System.err.println("  - pass " + (i+1));
+
+    			ChartSolver.solve(graph, chart);
+    			SolvedFormIterator it = new SolvedFormIterator(chart,graph);
+    			while( it.hasNext() ) {
+    				it.next();
+    			}
+    		}
+
+
+    		System.err.println("Utool is now warmed up.");
+    	} catch(SolverNotApplicableException e) {
+    		// solver will be happy with warmup graph, no need to handle this exception
+    	}
     }
 
 

@@ -24,6 +24,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
@@ -104,14 +105,20 @@ class ServerThread extends Thread {
         switch(options.getOperation()) {
         case solvable:
             if( options.hasOptionNochart() ) {
-                long start_solver = System.currentTimeMillis();
-                boolean solvable = OneSplitSource.isGraphSolvable(options.getGraph());
-                long end_solver = System.currentTimeMillis();
-                long time_solver = end_solver - start_solver;
-                
-                out.println("<result solvable='" + solvable + "' "
-                        + "fragments='" + options.getGraph().getAllRoots().size() + "' "
-                        + "time='" + time_solver + "' />");
+            	try {
+            		long start_solver = System.currentTimeMillis();
+            		boolean solvable = OneSplitSource.isGraphSolvable(options.getGraph());
+            		long end_solver = System.currentTimeMillis();
+            		long time_solver = end_solver - start_solver;
+
+            		out.println("<result solvable='" + solvable + "' "
+            				+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+            				+ "time='" + time_solver + "' />");
+            	} catch(SolverNotApplicableException e) {
+            		sendError(out, ExitCodes.SOLVER_NOT_APPLICABLE,
+            				"The solver is not applicable to this graph: " + e.getMessage());
+            	}
+            	
                 break;
             }
             
@@ -126,68 +133,75 @@ class ServerThread extends Thread {
             Chart chart = new Chart();
             boolean solvable;
             
-            if( options.hasOptionEliminateEquivalence() ) {
-                solvable = ChartSolver.solve(graph, chart, 
-                        new RedundancyEliminationSplitSource(
-                                new IndividualRedundancyElimination(graph, 
-                                        options.getLabels(), options.getEquations()), graph));
-            } else {
-                solvable = ChartSolver.solve(graph, chart); 
+            try {
+
+            	if( options.hasOptionEliminateEquivalence() ) {
+            		solvable = ChartSolver.solve(graph, chart, 
+            				new RedundancyEliminationSplitSource(
+            						new IndividualRedundancyElimination(graph, 
+            								options.getLabels(), options.getEquations()), graph));
+            	} else {
+            		solvable = ChartSolver.solve(graph, chart); 
+            	}
+
+
+            	long end_solver = System.currentTimeMillis();
+            	long time_solver = end_solver - start_solver;
+
+            	if( options.getOperation() == Operation.solvable ) {
+            		// Operation = solvable
+            		out.println("<result solvable='" + solvable + "' "
+            				+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+            				+ "count='" + chart.countSolvedForms() + "' "
+            				+ "chartsize='" + chart.size() + "' "
+            				+ "time='" + time_solver + "' />");
+            	} else {
+            		// Operation = solve
+            		if( !solvable ) {
+            			out.println("<result solvable='false' count='0' "
+            					+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+            					+ "chartsize='" + chart.size() + "' "
+            					+ "time-chart='" + time_solver + "' />");
+            		} else {
+            			StringWriter buf = new StringWriter();
+            			XmlEncodingWriter enc = new XmlEncodingWriter(buf);
+            			long count = 0;
+
+            			// extract solved forms
+            			try {
+            				long start_extraction = System.currentTimeMillis();
+            				SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
+            				while( it.hasNext() ) {
+            					SolvedFormSpec domedges = it.next();
+            					count++;
+
+            					if( !options.hasOptionNoOutput() ) {
+            						buf.append("  <solution string='");
+            						options.getOutputCodec().encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), enc);
+            						buf.append("' />\n");
+            					}
+            				}
+            				long end_extraction = System.currentTimeMillis();
+            				long time_extraction = end_extraction - start_extraction;
+
+            				out.println("<result solvable='true' count='" + count + "' "
+            						+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+            						+ " chartsize='" + chart.size() + "' "
+            						+ " time-chart='" + time_solver + "' "
+            						+ " time-extraction='" + time_extraction + "' >");
+            				out.print(buf.toString());
+            				out.println("</result>");
+            			} catch (MalformedDomgraphException e) {
+            				sendError(out, e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT, "Output of the solved forms of this graph is not supported by this output codec.");
+            				return;
+            			}
+            		}
+            	}
+            } catch(SolverNotApplicableException e) {
+            	sendError(out, ExitCodes.SOLVER_NOT_APPLICABLE, 
+            			"The solver is not applicable to this graph: " + e.getMessage());
             }
-            
-            
-            long end_solver = System.currentTimeMillis();
-            long time_solver = end_solver - start_solver;
-            
-            if( options.getOperation() == Operation.solvable ) {
-                // Operation = solvable
-                out.println("<result solvable='" + solvable + "' "
-                        + "fragments='" + options.getGraph().getAllRoots().size() + "' "
-                        + "count='" + chart.countSolvedForms() + "' "
-                        + "chartsize='" + chart.size() + "' "
-                        + "time='" + time_solver + "' />");
-            } else {
-                // Operation = solve
-                if( !solvable ) {
-                    out.println("<result solvable='false' count='0' "
-                            + "fragments='" + options.getGraph().getAllRoots().size() + "' "
-                            + "chartsize='" + chart.size() + "' "
-                            + "time-chart='" + time_solver + "' />");
-                } else {
-                    StringWriter buf = new StringWriter();
-                    XmlEncodingWriter enc = new XmlEncodingWriter(buf);
-                    long count = 0;
-                    
-                    // extract solved forms
-                    try {
-                        long start_extraction = System.currentTimeMillis();
-                        SolvedFormIterator it = new SolvedFormIterator(chart,options.getGraph());
-                        while( it.hasNext() ) {
-                            SolvedFormSpec domedges = it.next();
-                            count++;
-                            
-                            if( !options.hasOptionNoOutput() ) {
-                                buf.append("  <solution string='");
-                                options.getOutputCodec().encode(options.getGraph().makeSolvedForm(domedges), options.getLabels().makeSolvedForm(domedges), enc);
-                                buf.append("' />\n");
-                            }
-                        }
-                        long end_extraction = System.currentTimeMillis();
-                        long time_extraction = end_extraction - start_extraction;
-                        
-                        out.println("<result solvable='true' count='" + count + "' "
-                                + "fragments='" + options.getGraph().getAllRoots().size() + "' "
-                                + " chartsize='" + chart.size() + "' "
-                                + " time-chart='" + time_solver + "' "
-                                + " time-extraction='" + time_extraction + "' >");
-                        out.print(buf.toString());
-                        out.println("</result>");
-                    } catch (MalformedDomgraphException e) {
-                        sendError(out, e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT, "Output of the solved forms of this graph is not supported by this output codec.");
-                        return;
-                    }
-                }
-            }
+            	
             break;
             
             
