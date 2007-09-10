@@ -837,7 +837,7 @@ class CommandListener implements ActionListener,
 										al.layout(Ubench.getInstance().getVisibleTab().getDomGraph(),
 												Ubench.getInstance().getVisibleTab().getNodeLabels(), canv, 
 												new LayoutOptions(Ubench.getInstance().getVisibleTab().getLabelType(), 
-														Preferences.isRemoveRedundandEdges()));
+														Preferences.isRemoveRedundantEdges()));
 										canv.finish();
 										
 										//ExportUtilities.exportPDF(Ubench.getInstance().getVisibleTab().getGraph(), filepath);

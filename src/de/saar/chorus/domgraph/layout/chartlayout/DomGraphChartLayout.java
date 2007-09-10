@@ -660,11 +660,15 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 			// checking whether or not the DomGraph is weakly normal
 			if (domgraph.isWeaklyNormal()) {
 				// if so, proceed with the "normal" chart
-				ChartSolver.solve(domgraph, chart);
+				if( !ChartSolver.solve(domgraph, chart) ) {
+					throw new LayoutException("Cannot compute a chart layout because the graph is unsolvable.");
+				}
 			} else {
 				// if the graph is not wn, compute the chart of the wn backbone.
 				DomGraph wnbackbone = domgraph.makeWeaklyNormalBackbone();
-				ChartSolver.solve(wnbackbone, chart);
+				if( !ChartSolver.solve(wnbackbone, chart) ) {
+					throw new LayoutException("Cannot compute a chart layout because the graph is unsolvable.");
+				}
 			}
 		} catch(SolverNotApplicableException e) {
 			throw new LayoutException(e.getMessage());

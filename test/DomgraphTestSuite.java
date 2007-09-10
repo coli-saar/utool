@@ -33,8 +33,8 @@ public class DomgraphTestSuite extends TestSuite {
         addDomgraphTest("graph/DomGraph");
         addDomgraphTest("chart/SplitComputer");
         addDomgraphTest("chart/SolvedFormIterator");
-        
-        //addTest("de/saar/chorus/layout/chartlayout/DomGraphChartLayout");
+        addDomgraphTest("layout/chartlayout/DomGraphChartLayout");
+        addDomgraphTest("layout/domgraphlayout/DomGraphLayout");
     	
         return suite;
     }

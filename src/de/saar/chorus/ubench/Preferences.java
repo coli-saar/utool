@@ -129,7 +129,7 @@ public class Preferences implements Cloneable {
 	
   
     
-    public static boolean isRemoveRedundandEdges() {
+    public static boolean isRemoveRedundantEdges() {
 		return removeRedundandEdges;
 	}
 
