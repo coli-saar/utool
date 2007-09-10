@@ -30,6 +30,7 @@ public class DomgraphTestSuite extends TestSuite {
     	addDomgraphTest("codec/domcon/DomconOzInputCodec");
     	addDomgraphTest("codec/domcon/DomconOzOutputCodec");
     	addDomgraphTest("codec/holesem/HolesemCodec");
+    	addDomgraphTest("codec/mrs/MrsCodec");
         addDomgraphTest("graph/DomGraph");
         addDomgraphTest("chart/SplitComputer");
         addDomgraphTest("chart/SolvedFormIterator");

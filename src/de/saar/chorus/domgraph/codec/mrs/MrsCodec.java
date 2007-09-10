@@ -10,6 +10,7 @@ import java.util.TreeSet;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
@@ -17,6 +18,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
+import de.saar.chorus.domgraph.utool.ExitCodes;
 
 class MrsCodec {
 	
@@ -350,13 +352,15 @@ class MrsCodec {
 
 		addBindingEdges();
 		setTopHandle(handle);
-		
+
+		CodecTools.removeTopEmptyFragment(graph, ErrorCodes.NO_UNIQUE_TOP_FRAGMENT);
+
 		switch (normalisation) {
 		case none:
 			return;
 		case nets:
 			normalise();
-
+			
 			int errorCode = 0;
 
 			if (! graph.isWeaklyNormal())

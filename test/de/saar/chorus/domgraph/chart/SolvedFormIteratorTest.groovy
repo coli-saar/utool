@@ -126,52 +126,12 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 	
 	private void checkSolvedForms(String domcon, List goldSolvedForms) {
 		TestingTools.decodeDomcon(domcon, graph, labels);
-		
-		assert ChartSolver.solve(graph, chart) == true;
-		
-		BigInteger predictedSolvedForms = chart.countSolvedForms();
-		assert predictedSolvedForms.equals(new BigInteger(goldSolvedForms.size())) : "predicated " + predictedSolvedForms + " solved forms";
-		
-		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
-		List sfs = TestingTools.collectIteratorValues(sfi);
-		
-		assert solvedFormsEqual(sfs, goldSolvedForms) : "sfs = " + sfs;
+		TestingTools.checkSolvedForms(graph, goldSolvedForms);
 	}
 	
 	private void checkUnsolvable(String domcon) {
 		TestingTools.decodeDomcon(domcon, graph, labels);
-		assert ChartSolver.solve(graph, chart) == false;
-	}
-	
-
-	
-	// Compare two lists of solved forms. The first (result) is a list of SolvedFormSpecs
-	// as returned by a SolvedFormIterator. The second (gold) has the following form:
-	//    gold     -> List(sf)
-	//    sf       -> [List(domedge), substitution)
-	//    domedge  -> [source,target]
-	//    substitution -> map(string->string)
-	private boolean solvedFormsEqual(List result, List gold) {
-		List goldSolvedFormSpecs = gold.collect { sf ->
-			List domEdges = sf.get(0).collect { new DomEdge(it.get(0), it.get(1)) };
-			Map substitution = sf.get(1);
-			
-			new SolvedFormSpec(domEdges,substitution);
-		};
-		
-		if( result.size() != gold.size() ) {
-			return false;
-		}
-		
-		for( spec in goldSolvedFormSpecs ) {
-			if( result.find { 
-				  (new HashSet(it.getDomEdges()).equals(new HashSet(spec.getDomEdges()))) && it.getSubstitution().equals(spec.getSubstitution()) 
-				} == null ) {
-				return false;
-			}
-		}
-		
-		return true;
+		TestingTools.checkUnsolvable(graph);
 	}
 	
 }
