@@ -78,6 +78,21 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 		checkUnsolvable("[label(x1 f(x2 x3)) label(x2 a) label(x3 b) dom(x2 x3)]");
 	}
 	
+	
+	public void testPreprocessing4() {
+		checkUnsolvable("[label(x f(x1 x2)) dom(x1 x)]");
+	}
+	
+	public void testPreprocessing5() {
+		TestingTools.decodeDomcon("[label(x f(x1 x2)) dom(x1 x2)]", graph, labels);
+		TestingTools.expectException(DomGraph.PreprocessingException,
+				{ graph.preprocess(); } );
+	}
+	
+	
+	
+	
+	
 	public void testNonTreeFragmentTwoInEdges() {
 		// a graph with a node that has two incoming tree edges
 		checkUnsolvable("[label(x1 f(x2 x3)) label(x2 g(x4)) label(x3 g(x4)) label(x4 a)]");
@@ -121,6 +136,7 @@ class SolvedFormIteratorTest extends GroovyTestCase {
 		// a non-well-formed graph in the sense of Bodirsky et al. 04
 		checkUnsolvable("[label(x f(x1 x2)) label(x1 a1) label(x2 a2) label(y b) dom(x y)]");
 	}
+	
 	
 	/**** utility methods ****/
 	

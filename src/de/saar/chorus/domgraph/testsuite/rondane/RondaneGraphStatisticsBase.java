@@ -17,6 +17,7 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.DomGraph.PreprocessingException;
 
 public class RondaneGraphStatisticsBase {
     Map<Integer,BigInteger> readings = new HashMap<Integer,BigInteger>();
@@ -51,11 +52,13 @@ public class RondaneGraphStatisticsBase {
     public static BigInteger getNumSolvedForms(DomGraph graph) {
     	try {
     		Chart c = new Chart();
-    		ChartSolver.solve(graph, c);
+    		ChartSolver.solve(graph.preprocess(), c);
     		return c.countSolvedForms();
     	} catch(SolverNotApplicableException e) {
     		return null;
-    	}
+    	} catch (PreprocessingException e) {
+    		return BigInteger.ZERO;
+		}
     }
     
     public void testEquals(int id, DomGraph graph, NodeLabels labels) {

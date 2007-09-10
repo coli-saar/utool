@@ -84,6 +84,7 @@ class ServerThread extends Thread {
         boolean weaklyNormal = false;
         boolean normal = false;
         boolean compact = false;
+        boolean triviallyUnsolvable = false;
 
 
         
@@ -93,13 +94,47 @@ class ServerThread extends Thread {
         
         long afterParsing = System.currentTimeMillis();
         
-        // check statistics and compactify graph
+        // check statistics 
         if( options.getOperation().requiresInput ) {
             weaklyNormal = options.getGraph().isWeaklyNormal();
             normal = options.getGraph().isNormal();
             compact = options.getGraph().isCompact();
-        }            
+        }
         
+        
+        // for solving operations (but not convert or display), preprocess the graph
+        switch(options.getOperation()) {
+        case solvable:
+        case solve:
+        	triviallyUnsolvable = ! options.preprocessGraph();
+        }
+        
+        // if it turned out that the graph is trivially unsolvable, report that
+        if( triviallyUnsolvable ) {
+        	 switch(options.getOperation()) {
+             case solvable:
+            	 if( options.hasOptionNochart() ) {
+            		 out.println("<result solvable='false' "
+             				+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+             				+ "time='0' />");
+            	 } else {
+            		 out.println("<result solvable='false' "
+              				+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+              				+ "count='0' "
+              				+ "chartsize='0' "
+              				+ "time='0' />");
+            	 }
+            	 
+            	 return;
+            	 
+             case solve:
+            	 out.println("<result solvable='false' count='0' "
+         					+ "fragments='" + options.getGraph().getAllRoots().size() + "' "
+         					+ "chartsize='0' "
+         					+ "time-chart='0' />");
+            	 return;
+        	 }
+        }
         
         // now do something, depending on the specified operation
         switch(options.getOperation()) {
@@ -118,7 +153,7 @@ class ServerThread extends Thread {
             		sendError(out, ExitCodes.SOLVER_NOT_APPLICABLE,
             				"The solver is not applicable to this graph: " + e.getMessage());
             	}
-            	
+
                 break;
             }
             

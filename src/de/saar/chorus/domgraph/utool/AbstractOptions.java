@@ -393,6 +393,13 @@ public class AbstractOptions {
         this.optionWarmup = optionWarmup;
     }
 
-
+    public boolean preprocessGraph() {
+    	try {
+			graph = graph.preprocess();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+    }
 
 }

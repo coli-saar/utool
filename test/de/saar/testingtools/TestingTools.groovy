@@ -56,8 +56,9 @@ public class TestingTools {
 	
 	public static void checkSolvedForms(DomGraph graph, List goldSolvedForms) {
 		Chart chart = new Chart();	
+		DomGraph preprocessed = graph.preprocess();
 	
-		assert ChartSolver.solve(graph, chart) == true;
+		assert ChartSolver.solve(preprocessed, chart) == true;
 		
 		BigInteger predictedSolvedForms = chart.countSolvedForms();
 		assert predictedSolvedForms.equals(new BigInteger(goldSolvedForms.size())) : "predicated " + predictedSolvedForms + " solved forms";
@@ -70,7 +71,12 @@ public class TestingTools {
 	
 	public static void checkUnsolvable(DomGraph graph) {
 		Chart chart = new Chart();
-		assert ChartSolver.solve(graph, chart) == false;
+		
+		try {
+			assert ChartSolver.solve(graph.preprocess(), chart) == false;
+		} catch(DomGraph.PreprocessingException e) {
+			
+		}
 	}
 	
 

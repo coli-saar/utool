@@ -27,7 +27,8 @@ class RedundancyEliminationTest extends GroovyTestCase {
 	public void testSM1() {
 		ozcodec.decode(new StringReader("[label(h3 '[one_q ARG0:x4, BODY:h6, RSTR:h5]'(h5 h6)) label(h7 '[compound_rel ARG0:x4, ARG1:x8]&[bag ARG0:x4]') label(h9 '[udef_q ARG0:x8, BODY:h7, RSTR:h10]'(h10 h7)) label(h11 '[leather ARG0:x8]') label(h12 '[past ARG0:e2, ARG3:h13]'(h13)) label(h13 '[see ARG0:e2, ARG1:i14, ARG2:x4]') dom(h5 h7) dom(h10 h11) dom(h6 h12)]"),
 				graph, labels);
-
+		graph = graph.preprocess();
+		
 		RedundancyElimination elim = new IndividualRedundancyElimination(graph, labels, makeEqSystem(eqSystemSM));
 
 		ChartSolver.solve(graph,chart);

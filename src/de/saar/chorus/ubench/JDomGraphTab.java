@@ -164,7 +164,7 @@ class JDomGraphTab extends JGraphTab  {
 
 				chart = new Chart();
 
-				if(ChartSolver.solve(domGraph, chart))  {
+				if(ChartSolver.solve(domGraph.preprocess(), chart))  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);
@@ -195,6 +195,10 @@ class JDomGraphTab extends JGraphTab  {
 						+ e.getMessage(),
 						"Solver error",
 						JOptionPane.ERROR_MESSAGE);
+			} catch( DomGraph.PreprocessingException e ) {
+				// silently record the unsolvability of this graph
+				chart = null;
+				isSolvedYet = false;
 			} catch( Exception e ) {
 				 DomGraphUnhandledExceptionHandler.showErrorDialog(e, domGraph, nodeLabels);
 			}
@@ -246,7 +250,7 @@ class JDomGraphTab extends JGraphTab  {
 				if(!isSolvedYet) {
 					isSolvedYet = true;
 					chart = new Chart();
-					ChartSolver.solve(domGraph, chart);
+					ChartSolver.solve(domGraph.preprocess(), chart);
 				}
 
 				cv = new ChartViewer( chart, 
@@ -263,6 +267,15 @@ class JDomGraphTab extends JGraphTab  {
 			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(), 
 					"The solver is not applicable for this graph:\n" + e.getMessage(),
 					"Solver not applicable",
+					JOptionPane.ERROR_MESSAGE);
+		} catch (DomGraph.PreprocessingException e) {
+			// domGraph.preprocess() threw an exception to signal that the graph is
+			// trivially unsolvable
+			isSolvedYet = false;
+			
+			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(), 
+					"The graph has trivially unsolvable dominance edges;\nno chart is available.",
+					"Trivially unsolvable graph",
 					JOptionPane.ERROR_MESSAGE);
 		}
 

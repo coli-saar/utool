@@ -20,6 +20,7 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.DomGraph.PreprocessingException;
 import de.saar.chorus.domgraph.layout.Canvas;
 import de.saar.chorus.domgraph.layout.DomGraphLayoutParameters;
 import de.saar.chorus.domgraph.layout.FragmentLayoutAlgorithm;
@@ -660,17 +661,21 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 			// checking whether or not the DomGraph is weakly normal
 			if (domgraph.isWeaklyNormal()) {
 				// if so, proceed with the "normal" chart
-				if( !ChartSolver.solve(domgraph, chart) ) {
+				if( !ChartSolver.solve(domgraph.preprocess(), chart) ) {
 					throw new LayoutException("Cannot compute a chart layout because the graph is unsolvable.");
 				}
 			} else {
 				// if the graph is not wn, compute the chart of the wn backbone.
-				DomGraph wnbackbone = domgraph.makeWeaklyNormalBackbone();
+				DomGraph wnbackbone = domgraph.preprocess().makeWeaklyNormalBackbone();
 				if( !ChartSolver.solve(wnbackbone, chart) ) {
 					throw new LayoutException("Cannot compute a chart layout because the graph is unsolvable.");
 				}
 			}
 		} catch(SolverNotApplicableException e) {
+			throw new LayoutException(e.getMessage());
+		} catch (PreprocessingException e) {
+			// this shouldn't happen because the chart layout only gets applied for
+			// solvable graphs in the first place
 			throw new LayoutException(e.getMessage());
 		}
 		
