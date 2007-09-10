@@ -457,21 +457,19 @@ public class Ubench {
      * 		   translated into a <code>JDomGraph</code>
      */
     public boolean addJDomGraphTab(String label, DomGraph graph, NodeLabels labels) {
-        
-        JDomGraph jDomGraph = new JDomGraph();
-       try {
-        JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
-                true, listener, labels);
-        return addTab(tab, true, tabbedPane.getTabCount());
-      } catch(Exception e) {
-    	   
-    	  
-    	  DomGraphUnhandledExceptionHandler.showErrorDialog(e);
-    	   return false;
-       }
-         
+
+    	JDomGraph jDomGraph = new JDomGraph();
+    	try {
+    		JDomGraphTab tab = new JDomGraphTab(jDomGraph, graph, normaliseTabLabel(label),
+    				true, listener, labels);
+    		return addTab(tab, true, tabbedPane.getTabCount());
+    	} catch(Exception e) {
+    		DomGraphUnhandledExceptionHandler.showErrorDialog(e, graph, labels);
+    		return false;
+    	}
+
     }
-    
+
    
     /**
      *  Allows to set up a new Tab by submitting the 
@@ -528,7 +526,7 @@ public class Ubench {
         try {
         	return addTab(tab, true, place);
         } catch(Exception e) {
-        	 DomGraphUnhandledExceptionHandler.showErrorDialog(e);
+        	 DomGraphUnhandledExceptionHandler.showErrorDialog(e, sf, labels);
     	   return false;
         }
     }
@@ -915,7 +913,22 @@ public class Ubench {
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 	
+	
+	public DomGraph getVisibleDomGraph() {
+		if( getVisibleTab() == null ) {
+			return null;
+		} else {
+			return getVisibleTab().getDomGraph();
+		}
+	}
 
+	public NodeLabels getVisibleNodeLabels() {
+		if( getVisibleTab() == null ) {
+			return null;
+		} else {
+			return getVisibleTab().getNodeLabels();
+		}
+	}
 }
 
 

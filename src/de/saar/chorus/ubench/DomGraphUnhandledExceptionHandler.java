@@ -10,6 +10,10 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.domcon.DomconOzOutputCodec;
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 
 
 /**
@@ -24,23 +28,37 @@ import de.saar.chorus.domgraph.GlobalDomgraphProperties;
  * @see Thread.UncaughtExceptionHandler
  *
  */
-public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExceptionHandler {
+class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 	private static Calendar cal = Calendar.getInstance();
 	private static String date = cal.get(Calendar.YEAR) + "-" +
 		cal.get(Calendar.MONTH) + "-" +
-		cal.get(Calendar.DAY_OF_MONTH);
+		cal.get(Calendar.DAY_OF_MONTH) + "-" +
+		cal.get(Calendar.HOUR_OF_DAY) + "-" +
+		cal.get(Calendar.MINUTE) + "-" +
+		cal.get(Calendar.SECOND);
+	
 	private static String n = System.getProperty("line.separator");
 	private static String w = "     ";
 	private static String line = "-------------------------------------------------------------------------" + n;
 	
 	
+	private static DomGraph getGraph() {
+		return Ubench.getInstance().getVisibleDomGraph();
+	}
+	
+	private static NodeLabels getLabels() {
+		return Ubench.getInstance().getVisibleNodeLabels();
+	}
+	
 	
 	public static void showErrorDialog(Throwable arg1) {
-		
-		
+		showErrorDialog(arg1, getGraph(), getLabels());
+	}
+	
+	public static void showErrorDialog(Throwable arg1, DomGraph graph, NodeLabels labels) {
 		String logfile = 
-			writeLogFile(arg1);
+			writeLogFile(arg1, graph, labels);
 		
 		JOptionPane pane = 
 			new JOptionPane("An unexpected error occured while running Utool." +n +
@@ -84,7 +102,7 @@ public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExcepti
 		
 	}
 	
-	public static String writeLogFile(Throwable e) {
+	public static String writeLogFile(Throwable e, DomGraph graph, NodeLabels labels) {
 		try {
 			
 			
@@ -101,17 +119,35 @@ public class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExcepti
 			log.append("OS: " + System.getProperty("os.name") + w
 					   + System.getProperty("os.version") + w + 
 					   System.getProperty("os.arch") + n );
+			
 			log.append(n + line + n);
+			
 			log.append(e.getMessage());
 			log.append(n +n );
+			
+			
+			
+			
+			
 			PrintWriter writer = new PrintWriter(new FileWriter(file));
 			writer.append(log);
 			e.printStackTrace(writer);
+
+			if( graph != null ) {
+				writer.append(n + line + n);
+				writer.println("Offending graph:");
+				new DomconOzOutputCodec().encode(graph, labels, writer);
+			}
+			
 			writer.close();
+			
 			return file.getAbsolutePath();
 		} catch(IOException ex) {
 			
+		} catch (MalformedDomgraphException ex) {
+			// This shouldn't happen in domcon-oz output codec
 		}
+		
 		return null;
 	}
 

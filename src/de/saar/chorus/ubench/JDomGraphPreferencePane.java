@@ -284,7 +284,7 @@ class JDomGraphPreferencePane extends JFrame
 		 	case BOTH : showBoth.setSelected(true);
 		 }
 		 
-		 removeRedEdges.setSelected(Preferences.isRemoveRedundandEdges()) ;
+		 removeRedEdges.setSelected(Preferences.isRemoveRedundantEdges()) ;
 		
 		
 	}

@@ -127,48 +127,30 @@ class JDomGraphTab extends JGraphTab  {
 		Ubench.getInstance().refresh();
 	}
 	
-	void drawGraph() throws Exception {
-		
+	void drawGraph() {
 		if(! domGraph.getAllNodes().isEmpty()) {
-		try {
 			SwingUtilities.invokeLater(new Thread() {
 				public void run() {
-					
 					try {
-					    
-					JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
-					LayoutAlgorithm drawer = graph.getLayoutType().getLayout();
-					drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), 
-							Preferences.isRemoveRedundandEdges()));
-					canvas.finish();
-					
-					Ubench.getInstance().refresh(true);
-					Preferences.setFitWindowToGraph(false);
+						JDomGraphCanvas canvas = new JDomGraphCanvas(graph);
+						LayoutAlgorithm drawer = graph.getLayoutType().getLayout();
+						drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), 
+								Preferences.isRemoveRedundantEdges()));
+						canvas.finish();
+
+						Ubench.getInstance().refresh(true);
+						Preferences.setFitWindowToGraph(false);
 					} catch (Exception e) {
 						empty = true;
-						DomGraphUnhandledExceptionHandler.showErrorDialog(e);
+						DomGraphUnhandledExceptionHandler.showErrorDialog(e, domGraph, nodeLabels);
 						Ubench.getInstance().refresh();
-							
-				    	return;
+
+						return;
 					}
 				}
 			});
 
-			
-
-			// error message if layout fails
-		} catch (Exception e) {
-			//TODO find another way to notify Ubench about an empty tab
-			empty = true;
-			
-			throw new Exception("Layout error: Ubench cannot layout this graph." +
-					"Please make shure that your graph is valid.");
-
-
-		}
-
-		//validate();
-		revalidate();
+			revalidate();
 		}
 	}
 
@@ -204,8 +186,17 @@ class JDomGraphTab extends JGraphTab  {
 						+ "Try increasing the heap size with the -Xmx option.",
 						"Out of memory",
 						JOptionPane.ERROR_MESSAGE);
+			} catch( SolverNotApplicableException e ) {
+				chart = null;
+				isSolvedYet = false;
+
+				JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
+						"The solver reported an error while solving this graph:\n"
+						+ e.getMessage(),
+						"Solver error",
+						JOptionPane.ERROR_MESSAGE);
 			} catch( Exception e ) {
-				 DomGraphUnhandledExceptionHandler.showErrorDialog(e);
+				 DomGraphUnhandledExceptionHandler.showErrorDialog(e, domGraph, nodeLabels);
 			}
 		}
 
