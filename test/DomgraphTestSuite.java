@@ -36,6 +36,7 @@ public class DomgraphTestSuite extends TestSuite {
         addDomgraphTest("chart/SolvedFormIterator");
         addDomgraphTest("layout/chartlayout/DomGraphChartLayout");
         addDomgraphTest("layout/domgraphlayout/DomGraphLayout");
+        addDomgraphTest("equivalence/RedundancyElimination");
     	
         return suite;
     }
