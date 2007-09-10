@@ -45,6 +45,7 @@ public class Utool {
 
         boolean weaklyNormal = false;
         boolean normal = false;
+        boolean triviallyUnsolvable = false;
         
         // parse command-line options and load graph
         try {
@@ -79,8 +80,51 @@ public class Utool {
                     System.err.println("I will eliminate equivalences (" + options.getEquations().size() + " equations).");
                 }
             }
-            
-        }            
+        }
+        
+        // for solving operations (but not convert or display), preprocess the graph
+        switch(options.getOperation()) {
+        case solvable:
+        case solve:
+        	triviallyUnsolvable = ! options.preprocessGraph();
+        }
+        
+        // if it turned out that the graph is trivially unsolvable, report that and return
+        if( triviallyUnsolvable ) {
+        	if( options.hasOptionStatistics() ) {
+        		System.err.println("The graph has trivially unsolvable dominance edges within fragments.");
+        	}
+        	
+        	if( (options.getOperation() == Operation.solve) ) {
+        		if(  ! (options.getOutputCodec() instanceof MultiOutputCodec)
+                 		&& ! options.hasOptionNoOutput() ) {
+                 	System.err.println("This output codec doesn't support the printing of multiple solved forms!");
+                 	System.exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
+                 }
+            	 
+            	 MultiOutputCodec outputcodec = 
+         			options.hasOptionNoOutput() ? null : (MultiOutputCodec) options.getOutputCodec();
+            	 
+            	 try {
+            		 if( !options.hasOptionNoOutput() ) {
+            			 outputcodec.print_header(options.getOutput());
+            			 outputcodec.print_start_list(options.getOutput());
+            		 }
+
+            		 if( !options.hasOptionNoOutput() ) {
+            			 outputcodec.print_end_list(options.getOutput());
+            			 outputcodec.print_footer(options.getOutput());
+            			 options.getOutput().flush();
+            		 }
+            	 } catch (IOException e) {
+     				System.err.println("An error occurred while trying to print the results.");
+     				//e.printStackTrace();
+     				System.exit(ExitCodes.IO_ERROR);
+     			}
+        	 }
+        	
+        	System.exit(0);
+        }
         
         
         // now do something, depending on the specified operation

@@ -43,6 +43,7 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.DomGraph.PreprocessingException;
 import de.saar.chorus.ubench.Ubench;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
@@ -989,16 +990,23 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			return;
 		}
 		if(! reduced ) {
-			IndividualRedundancyElimination elim = new IndividualRedundancyElimination(
-					(DomGraph) dg.clone(), labels,
-					eqs);
-			
-			elim.eliminate(chart);
-			reduced = true;
-			eqsname = eqsn;
-			if(statusbar != null)
-			refreshTitleAndStatus();
-			
+			try {
+				IndividualRedundancyElimination elim;
+				
+				elim = new IndividualRedundancyElimination(
+						((DomGraph) dg.clone()).preprocess(), labels,
+						eqs);
+
+
+				elim.eliminate(chart);
+				reduced = true;
+				eqsname = eqsn;
+				if(statusbar != null)
+					refreshTitleAndStatus();
+			} catch (PreprocessingException e) {
+				// This shouldn't happen -- can't reduce chart of an unsolvable graph
+				throw new RuntimeException(e);
+			}
 		}
 	}
 	

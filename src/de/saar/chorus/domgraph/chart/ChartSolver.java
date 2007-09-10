@@ -24,10 +24,11 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  * can be seen as an implementation of the Bodirsky et al. 2005 graph
  * solver.<p>
  * 
- * This solver requires that the input dominance graph is weakly normal
- * and compact. It will successively compute the splits corresponding
+ * The solver successively computes the splits corresponding
  * to the free fragments of the subgraphs of the dominance graph, and
- * adds them to the chart.<p>
+ * adds them to the chart.  It assumes that the input dominance graph has
+ * only dominance edges into roots or from roots to holes; this can be
+ * achieved e.g. by calling the {@link DomGraph#preprocess()} method first.<p>
  * 
  * The solver relies on an object of a subclass of {@link SplitSource} 
  * to provide the splits of a subgraph. By default, it uses
@@ -61,7 +62,9 @@ public class ChartSolver {
      * 
      * The solver throws an <code>SolverNotApplicableException</code> if the dominance
      * graph doesn't belong to a fragment that the solver understands.  Currently the
-     * only restriction is that the graph must not contain empty fragments.
+     * only restriction is that the graph must not contain empty fragments.  However,
+     * the solver makes certain assumptions about the form of the dominance edges that
+     * can be achieved by calling {@link DomGraph#preprocess()} on it first.
      * 
      * @param graph an arbitrary dominance graph
      * @param chart a chart which will be filled with the splits of this graph
@@ -69,16 +72,8 @@ public class ChartSolver {
      * @return true if the graph is solvable, false otherwise
      */
     public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) throws SolverNotApplicableException {
-    	DomGraph preprocessed = null;
+    	DomGraph preprocessed = graph;
     	boolean isSolvable;
-    	
-    	// Try to preprocess the graph. If this fails (i.e. preprocess() throws
-    	// an exception), the graph is trivially unsolvable and we can return immediately.
-    	try {
-    		preprocessed = graph.preprocess();
-    	} catch(Exception e) {
-    		return false;
-    	}
     	
     	if( obviouslyUnsolvable(preprocessed) ) {
     		return false;

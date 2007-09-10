@@ -255,6 +255,8 @@ class XmlParser extends DefaultHandler {
         
         return null;
     }
+    
+    
 
     /*** codec management ***/
     

@@ -910,6 +910,15 @@ public class DomGraph implements Cloneable {
     	return ret;
     }
 	
+    
+    public static class PreprocessingException extends Exception {
+
+		public PreprocessingException(String arg0) {
+			super(arg0);
+			// TODO Auto-generated constructor stub
+		}
+    	
+    }
 
 	/**
 	 * Brings a dominance graph into a normal form in which every dominance edge
@@ -920,9 +929,9 @@ public class DomGraph implements Cloneable {
 	 * @return a dominance graph with the same nodes and tree edges as this graph,
 	 * and cleaned-up dominance edges
 	 * @throws Exception if the graph contains a dominance edge within one fragment
-	 * whose source doesn't dominate its target.
+	 * whose source doesn't dominate its target; such graphs are automatically unsolvable.
 	 */
-	public DomGraph preprocess() throws Exception {
+	public DomGraph preprocess() throws PreprocessingException {
 		DomGraph ret = stripDomEdges();
 		
 		for( DomEdge edge : getAllDomEdges() ) {
@@ -934,7 +943,7 @@ public class DomGraph implements Cloneable {
 					srcRoot = getParents(srcRoot, EdgeType.TREE).get(0);
 					if( srcRoot.equals(tgt) ) {
 						// tgt is above src in same fragment => trivially unsolvable
-						throw new Exception("Unsolvable dominance edge from " + src + " to " + tgt);
+						throw new PreprocessingException("Unsolvable dominance edge from " + src + " to " + tgt);
 					}
 				}
 				
@@ -949,7 +958,7 @@ public class DomGraph implements Cloneable {
 				if( srcRoot.equals(tgtRoot)) {
 					// src and tgt are in same fragment, but don't dominate each other
 					// => trivially unsolvable
-					throw new Exception("Unsolvable dominance edge from " + src + " to " + tgt);
+					throw new PreprocessingException("Unsolvable dominance edge from " + src + " to " + tgt);
 				}
 				
 				if( isHole(tgt) && isRoot(src) ) {
