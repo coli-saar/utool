@@ -8,4 +8,5 @@ public class ErrorCodes {
     public static final int  NOT_HYPERNORMALLY_CONNECTED = 8;
     
     public static final int  NOT_WELLFORMED = 16;
+	public static final int NO_UNIQUE_TOP_FRAGMENT = 32;
 }

@@ -972,7 +972,8 @@ public class DomGraph implements Cloneable {
 	 * <ul>
 	 * <li> all holes are leaves;
 	 * <li> fragments are trees (NB: acyclicity not yet implemented);
-	 * <li> all dominance edges go into roots.
+	 * <li> all dominance edges go into roots or come out of holes
+	 * (the latter can be normalized into hole-to-root edges by DomGraph#preprocess).
 	 * </ul>
 	 *  
 	 * @return true iff the graph is weakly normal
@@ -1017,7 +1018,7 @@ public class DomGraph implements Cloneable {
 		for( Edge edge : getAllEdges() ) {
 			if( getData(edge).getType() == EdgeType.DOMINANCE ) {
 				// dominance edges go into roots
-				if( !isRoot((String) edge.getTarget()) ) {
+				if( !isRoot((String) edge.getTarget()) && !isHole((String) edge.getSource()) ) {
                     return cacheResult("isWeaklyNormal", false);
 				}
 			}

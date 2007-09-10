@@ -8,6 +8,7 @@
 package de.saar.chorus.domgraph.codec;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
@@ -80,9 +81,33 @@ public class CodecTools {
     public static void graphLabelsConsistencyAssertion(DomGraph graph, NodeLabels labels) {
         for( String node : graph.getAllNodes() ) {
             if( graph.getData(node).getType() == NodeType.LABELLED ) {
-                assert (labels.getLabel(node) != null) : "no label for labelled node " + node;
+               assert (labels.getLabel(node) != null) : "no label for labelled node " + node;
             }
         }
     }
 
+    public static void removeTopEmptyFragment(DomGraph graph, int errorcode) throws MalformedDomgraphException {
+    	// if there is an empty top fragment, remove it from the graph
+    	String emptyTopFragment = null;
+    	for( String node : graph.getAllNodes() ) {
+    		if( graph.getData(node).getType() == NodeType.UNLABELLED
+    			&& graph.getAdjacentEdges(node, EdgeType.TREE).isEmpty() ) {
+    				if( graph.indeg(node) > 0 ) {
+    					throw new MalformedDomgraphException("The graph is not normal (nontrivial empty fragments)", errorcode);
+    				} else {
+    					if( emptyTopFragment == null ) {
+    						// we allow a single empty top fragment by removing it from the graph
+    						emptyTopFragment = node;
+    					} else {
+    						throw new MalformedDomgraphException("The graph is not normal (multiple top fragments)", errorcode);
+    					}
+    				}
+    			}
+    	}
+    	
+    	if( emptyTopFragment != null ) {
+    		graph.remove(emptyTopFragment);
+    	}
+
+    }
 }
