@@ -1191,7 +1191,7 @@ public class DomGraph implements Cloneable {
 		
 		for( String v : getAllNodes() ) {
 			localReachabilityTable.clear();
-			hncVisit(v, new ArrayList<String>(), null, localReachabilityTable);
+			hncVisit(v, new HashSet<String>(), null, localReachabilityTable);
 			reachabilityTable.combine(localReachabilityTable);
 		}
 		
@@ -1270,7 +1270,7 @@ public class DomGraph implements Cloneable {
 		}
 	}
 		
-	private void hncVisit(String node, ArrayList<String> history, Edge lastEdge, HncReachabilityTable table) {
+	private void hncVisit(String node, Set<String> history, Edge lastEdge, HncReachabilityTable table) {
 		boolean seenIt = true;
 		
 		if( history.contains(node)) {

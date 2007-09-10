@@ -173,6 +173,20 @@ class DomGraphTest extends GroovyTestCase {
 	        	assert !graph.isHypernormallyConnected();
 	        }
 	        
+	        // This graph is a counterexample for a dfs-based hnc test which marks a (node,edge) pair as
+	        // black and never uses it again if the DFS returned from that node via that adjacent edge.
+	        public void testUnsolvableHnc3() {
+	        	decode("[label(x f(x2 x3)) label(y g(y1)) label(z f(z1)) label(v a) label(w b) dom(x2 y) dom(x2 z) dom(x3 z) dom(y1 v) dom(z1 v) dom(z1 w)]");
+	        	assert graph.isHypernormallyConnected();
+	        }
+	        
+			// This graph is a counterexample for a dfs-based hnc test which marks a (node,edge) pair as
+	        // black and never uses it again if the DFS returned from that node via that adjacent edge.
+	        public void testUnsolvableHnc4() {
+	        	decode("[label(x f(x2 x3)) label(y g(y1)) label(z f(z1)) label(v a) label(w b) dom(x2 y) dom(x2 z) dom(x3 z) dom(z1 v) dom(y1 v) dom(z1 w)]");
+	        	assert graph.isHypernormallyConnected();
+	        }
+	        
 	        public void testEmptyFragment() {
 	    		// a graph with an empty fragment
 	    		decode("[label(x f(x1)) dom(x1 x2) dom(x2 y) label(y a)]");

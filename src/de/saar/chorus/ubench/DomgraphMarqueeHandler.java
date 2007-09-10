@@ -134,7 +134,6 @@ public class DomgraphMarqueeHandler extends BasicMarqueeHandler {
 					for( int i = 0; i < numHoles; i++ ) {
 						String name = gensym();
 						graph.addNode(name, new NodeData(NodeType.UNLABELLED));
-						labels.addLabel(name, "a");
 						graph.addEdge(rootName, name, new EdgeData(EdgeType.TREE));
 					}
 					
