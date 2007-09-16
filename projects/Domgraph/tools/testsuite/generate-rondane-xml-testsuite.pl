@@ -155,3 +155,4 @@ EOP
 
 
     
+system "gzip $testsuitename.xml";
