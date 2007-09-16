@@ -40,10 +40,10 @@ public class CodecTools {
     	for (int i = 1; i < label.length(); ++i) {
     		// we cannot use Character.isLetterOrDigit here because the result of this
     		// method depends on the encoding (i.e., possibly treats umlauts etc. as letters).
-    		if ((label.charAt(0) < 'a' || label.charAt(0) > 'z') &&
-    			(label.charAt(0) < 'A' || label.charAt(0) > 'Z') &&
-    			(label.charAt(0) < '0' || label.charAt(0) > '9') &&
-    			(label.charAt(0) != '_'))
+    		if ((label.charAt(i) < 'a' || label.charAt(i) > 'z') &&
+    			(label.charAt(i) < 'A' || label.charAt(i) > 'Z') &&
+    			(label.charAt(i) < '0' || label.charAt(i) > '9') &&
+    			(label.charAt(i) != '_'))
     			return ("'" + label + "'");    		
     	}
      	return label;	
