@@ -1,5 +1,8 @@
 package testsuite.rondane;
 
+import java.io.*;
+import java.util.zip.*;
+
 import de.saar.chorus.domgraph.codec.*;
 import de.saar.chorus.domgraph.graph.*;
 import de.saar.chorus.domgraph.utool.*;
@@ -28,9 +31,9 @@ class RondaneTestsuite extends GroovyTestCase {
     }
     
 	void testRondaneTestsuite() {
-		String filename = "projects/Domgraph/testsuites/rondane-mrs-jul06.xml";
+		String filename = "projects/Domgraph/testsuites/rondane-mrs-jul06.xml.gz";
 		
-		def testsuite = new XmlSlurper().parse(filename);
+		def testsuite = new XmlSlurper().parse(new GZIPInputStream(new FileInputStream(filename)));
 		testsuite.usr.each {
 			def id = it.@id.text();
 			def codecname = it.@codec.text();
