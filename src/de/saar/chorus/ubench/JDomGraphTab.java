@@ -94,6 +94,11 @@ class JDomGraphTab extends JGraphTab  {
 		
 	}
 
+	
+	DomGraph getSourceGraph() {
+		return domGraph;
+	}
+	
 	/**
 	 * Destructively changes the dominance graph underlying this JDomGraphTab.
 	 * This method updates the graph display, re-solves the graph, and updates

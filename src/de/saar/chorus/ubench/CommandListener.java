@@ -1106,7 +1106,7 @@ class CommandListener implements ActionListener,
 		SolvedFormIterator solver = Ubench.getInstance().getVisibleTab().getSolvedFormIterator();
 		SolvedFormSpec domEdges = solver.getSolvedForm((int) no-1);
 		NodeLabels labels = Ubench.getInstance().getVisibleTab().getNodeLabels().makeSolvedForm(domEdges);
-		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getDomGraph().makeSolvedForm(domEdges);
+		DomGraph nextForm =   Ubench.getInstance().getVisibleTab().getSourceGraph().makeSolvedForm(domEdges);
 
 		
 		// converting the form to a JDomGraph
@@ -1114,7 +1114,7 @@ class CommandListener implements ActionListener,
 		JGraphTab tab = Ubench.getInstance().getVisibleTab();
 		Ubench.getInstance().addSolvedFormTab(tab.getGraphName() + "  SF #" + no, nextForm, 
 				solver, no, tab.getSolvedForms(),
-				tab.getDomGraph(), labels, tab.getGraphName(), false);
+				tab.getSourceGraph(), labels, tab.getGraphName(), false);
 		
 		
 		
