@@ -198,6 +198,8 @@ abstract class JGraphTab extends JScrollableJGraph {
 		return domGraph;
 	}
 
+	abstract DomGraph getSourceGraph();
+	
 	/**
 	 * @param domGraph The domGraph to set.
 	 */

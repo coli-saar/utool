@@ -46,7 +46,7 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 class JSolvedFormTab extends JGraphTab {
 
-	private DomGraph theSolvedForm;
+	private DomGraph sourceGraph;
 	/**
 	 * 
 	 */
@@ -69,12 +69,12 @@ class JSolvedFormTab extends JGraphTab {
 			long form, long allForms, 
 			String gName, CommandListener lis, NodeLabels labels) {
 
-		super(solvedForm, origin, name, lis, labels);
+		super(solvedForm, originalForm, name, lis, labels);
 
 
 		// initializing fields
 		solvedFormIterator = solv;
-		theSolvedForm = originalForm;
+		sourceGraph = origin;
 		currentForm = form;
 		solvedForms = solv.getChart().countSolvedForms().longValue();
 		recentLayout = null;
@@ -98,7 +98,7 @@ class JSolvedFormTab extends JGraphTab {
 		// this is a tree, there won't be redundant edges or layout exceptions.
 		// Saving time by hard-coding this...
 		try {
-			drawer.layout(theSolvedForm, nodeLabels, canvas, new LayoutOptions(getLabelType(), false));
+			drawer.layout(domGraph, nodeLabels, canvas, new LayoutOptions(getLabelType(), false));
 		} catch (LayoutException e) {
 		}
 		
@@ -109,6 +109,10 @@ class JSolvedFormTab extends JGraphTab {
 	}
 
 
+	DomGraph getSourceGraph() {
+		return sourceGraph;
+	}
+	
 	/**
 	 * A <code>JPanel</code> representing a status bar for 
 	 * a solved form, to be inserted into the <code>CardLayout</code>
@@ -341,8 +345,8 @@ class JSolvedFormTab extends JGraphTab {
 	 * <code>JDomGraph</code>
 	 */
 	public JGraphTab clone() {
-		DomGraph cl = (DomGraph) domGraph.clone();
-		DomGraph sf = (DomGraph) theSolvedForm.clone();
+		DomGraph cl = (DomGraph) sourceGraph.clone();
+		DomGraph sf = (DomGraph) domGraph.clone();
 		JSolvedFormTab myClone = new JSolvedFormTab(graph.clone(), defaultName, solvedFormIterator,
 				cl, sf, currentForm, solvedForms, graphName, listener, nodeLabels);
 
