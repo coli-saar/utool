@@ -78,6 +78,12 @@ class DomGraphTest extends GroovyTestCase {
 	           assert graph.wccs(new HashSet([])).isEmpty();
 	       }
 
+	        // In an earlier version, trivial edges like these were not removed correctly.
+	        public void testPreprocessTrivialEdge() {
+	        	decode("[label(x f(y)) label(y g(z)) dom(x z)]");
+	        	DomGraph graph2 = graph.preprocess();
+	        	assert( graph2.outdeg("x", EdgeType.DOMINANCE) == 0);
+	        }
 	        
 	        
 	        /*********** test cases for makeSolvedForm ***************/
