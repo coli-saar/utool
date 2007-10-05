@@ -3,6 +3,29 @@ package de.saar.chorus.domgraph.codec.domcon;
 import de.saar.chorus.domgraph.graph.*;
 
 class DomconOzInputCodecTest extends GroovyTestCase {
+	public void testTrivialDomEdge() throws Exception {
+		DomGraph graph = new DomGraph();
+		NodeLabels labels = new NodeLabels();
+		
+		DomGraph myGraph = new DomGraph();
+		NodeLabels myLabels = new NodeLabels();
+		
+		DomconOzInputCodec codec = new DomconOzInputCodec();
+		codec.decode(new StringReader("[label(x f(y)) dom(x y)]"),
+		 myGraph, myLabels);
+		
+		assert myGraph.outdeg("x", EdgeType.TREE) == 1;
+		assert myGraph.outdeg("x", EdgeType.DOMINANCE) == 1;
+
+		graph.addNode("x", new NodeData(NodeType.LABELLED));
+		labels.addLabel("x", "f");
+		graph.addNode("y", new NodeData(NodeType.UNLABELLED));
+		graph.addEdge("x", "y", new EdgeData(EdgeType.TREE));
+		graph.addEdge("x", "y", new EdgeData(EdgeType.DOMINANCE));
+		
+		assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
+	}
+	
 	public void testChain3() throws Exception {
     		DomGraph graph = new DomGraph();
     		NodeLabels labels = new NodeLabels();
