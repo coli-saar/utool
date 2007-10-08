@@ -56,7 +56,7 @@ public class Utool {
             options = optionsParser.parse(args);
         } catch( AbstractOptionsParsingException e ) {
             System.err.print(e.comprehensiveErrorMessage());
-            System.exit(e.getExitcode());
+            exit(e.getExitcode());
         }
 
         // if we run on a Mac, set the application name here
@@ -104,7 +104,7 @@ public class Utool {
             if( (options.getOperation() == Operation.solve) ) {
                 if( ! (options.getOutputCodec() instanceof MultiOutputCodec) && !options.hasOptionNoOutput() ) {
                     System.err.println("This output codec doesn't support the printing of multiple solved forms!");
-                    System.exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
+                    exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
                 }
 
                 MultiOutputCodec outputcodec = options.hasOptionNoOutput() ? null
@@ -124,11 +124,11 @@ public class Utool {
                 } catch( IOException e ) {
                     System.err.println("An error occurred while trying to print the results.");
                     // e.printStackTrace();
-                    System.exit(ExitCodes.IO_ERROR);
+                    exit(ExitCodes.IO_ERROR);
                 }
             }
 
-            exit();
+            exit(0);
         }
 
         // now do something, depending on the specified operation
@@ -151,14 +151,14 @@ public class Utool {
                             System.err.println("Time to determine solvability: " + time_solver + " ms");
                         }
 
-                        System.exit(1);
+                        exit(1);
                     } else {
                         if( options.hasOptionStatistics() ) {
                             System.err.println("it is unsolvable.");
                             System.err.println("Time to determine unsolvability: " + time_solver + " ms");
                         }
 
-                        exit();
+                        exit(0);
                     }
                 } catch( SolverNotApplicableException e ) {
                     if( options.hasOptionStatistics() ) {
@@ -166,7 +166,7 @@ public class Utool {
                         System.err.println("Reason: " + e.getMessage());
                     }
 
-                    System.exit(ExitCodes.SOLVER_NOT_APPLICABLE);
+                    exit(ExitCodes.SOLVER_NOT_APPLICABLE);
                 }
             }
 
@@ -178,7 +178,7 @@ public class Utool {
             if( (options.getOperation() == Operation.solve) && ! (options.getOutputCodec() instanceof MultiOutputCodec)
                     && !options.hasOptionNoOutput() ) {
                 System.err.println("This output codec doesn't support the printing of multiple solved forms!");
-                System.exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
+                exit(ExitCodes.OUTPUT_CODEC_NOT_MULTI);
             }
 
             if( options.hasOptionStatistics() ) {
@@ -269,22 +269,22 @@ public class Utool {
                         } catch( MalformedDomgraphException e ) {
                             System.err.println("Output of the solved forms of this graph is not supported by this output codec.");
                             System.err.println(e);
-                            System.exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
+                            exit(e.getExitcode() + ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT);
                         } catch( IOException e ) {
                             System.err.println("An error occurred while trying to print the results.");
                             // e.printStackTrace();
-                            System.exit(ExitCodes.IO_ERROR);
+                            exit(ExitCodes.IO_ERROR);
                         }
                     } // if operation == solve
 
-                    System.exit(1);
+                    exit(1);
                 } else {
                     // not solvable
                     if( options.hasOptionStatistics() ) {
                         System.err.println("it is unsolvable!");
                     }
 
-                    exit();
+                    exit(0);
                 }
             } catch( SolverNotApplicableException e ) {
                 if( options.hasOptionStatistics() ) {
@@ -292,7 +292,7 @@ public class Utool {
                     System.err.println("Reason: " + e.getMessage());
                 }
 
-                System.exit(ExitCodes.SOLVER_NOT_APPLICABLE);
+                exit(ExitCodes.SOLVER_NOT_APPLICABLE);
             }
 
             break;
@@ -306,11 +306,11 @@ public class Utool {
                 } catch( MalformedDomgraphException e ) {
                     System.err.println("This graph is not supported by the specified output codec.");
                     System.err.println(e);
-                    System.exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
+                    exit(ExitCodes.MALFORMED_DOMGRAPH_BASE_OUTPUT + e.getExitcode());
                 } catch( IOException e ) {
                     System.err.println("An I/O error occurred while trying to print the results.");
                     System.err.println(e);
-                    System.exit(ExitCodes.IO_ERROR);
+                    exit(ExitCodes.IO_ERROR);
                 }
             }
 
@@ -360,7 +360,7 @@ public class Utool {
                 }
             }
 
-            System.exit(programExitCode);
+            exit(programExitCode);
 
         case display:
             if( options.getGraph() != null ) {
@@ -376,25 +376,25 @@ public class Utool {
                 ConnectionManager.startServer(options);
             } catch( IOException e ) {
                 System.err.println("An I/O error occurred while running the server: " + e);
-                System.exit(ExitCodes.SERVER_IO_ERROR);
+                exit(ExitCodes.SERVER_IO_ERROR);
             }
-            exit();
+            exit(0);
 
         case help:
             displayHelp(options.getHelpArgument());
-            exit();
+            exit(0);
 
         case _helpOptions:
             displayHelpOptions();
-            exit();
+            exit(0);
 
         case _displayCodecs:
             optionsParser.getCodecManager().displayAllCodecs(System.out);
-            exit();
+            exit(0);
 
         case _version:
             displayVersion();
-            exit();
+            exit(0);
 
         }
     }
@@ -438,9 +438,9 @@ public class Utool {
     
    
     
-    public static void exit() {
+    public static void exit(int syscode) {
     	UserProperties.saveProperties();
-    	System.exit(0);
+    	System.exit(syscode);
     }
     
     private static void displayVersion() {

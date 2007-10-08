@@ -121,7 +121,7 @@ public class Ubench {
             		System.getProperty("line.separator") + 
             		e + " (cause: " + e.getCause() + ")");
         	
-            System.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
+            Utool.exit(ExitCodes.EXAMPLE_PARSING_ERROR);
         }
 
         // Set look and feel. Currently we are only setting the Windows L&F, as
@@ -180,7 +180,7 @@ public class Ubench {
      * Closing Ubench.
      */
     public void quit() {
-    	Utool.exit();
+    	Utool.exit(0);
     }
     
     /**
@@ -669,7 +669,7 @@ public class Ubench {
         
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                Utool.exit();
+                Utool.exit(0);
             }
         });
         
@@ -722,7 +722,7 @@ public class Ubench {
         			JOptionPane.ERROR_MESSAGE
         			);
            
-            System.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
+            Utool.exit(ExitCodes.CODEC_REGISTRATION_ERROR);
         }
         
     }
