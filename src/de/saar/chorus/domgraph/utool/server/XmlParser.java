@@ -25,7 +25,7 @@ import de.saar.basic.Logger;
 import de.saar.basic.LoggingReader;
 import de.saar.basic.XmlDecodingException;
 import de.saar.basic.XmlEntities;
-import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -52,7 +52,7 @@ class XmlParser extends DefaultHandler {
         this.logger = logger;
         
         codecManager = new CodecManager();
-        codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
+        codecManager.setAllowExperimentalCodecs(UserProperties.allowExperimentalCodecs());
         registerAllCodecs(codecManager);
     }
 

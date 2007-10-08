@@ -10,6 +10,7 @@ package de.saar.chorus.domgraph.utool;
 import java.io.IOException;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.ChartSolver;
@@ -41,6 +42,8 @@ import de.saar.chorus.ubench.Ubench;
  */
 public class Utool {
     public static void main(String[] args) {
+    	
+    
         CommandLineParser optionsParser = new CommandLineParser();
         AbstractOptions options = null;
 
@@ -125,7 +128,7 @@ public class Utool {
                 }
             }
 
-            System.exit(0);
+            exit();
         }
 
         // now do something, depending on the specified operation
@@ -155,7 +158,7 @@ public class Utool {
                             System.err.println("Time to determine unsolvability: " + time_solver + " ms");
                         }
 
-                        System.exit(0);
+                        exit();
                     }
                 } catch( SolverNotApplicableException e ) {
                     if( options.hasOptionStatistics() ) {
@@ -281,7 +284,7 @@ public class Utool {
                         System.err.println("it is unsolvable!");
                     }
 
-                    System.exit(0);
+                    exit();
                 }
             } catch( SolverNotApplicableException e ) {
                 if( options.hasOptionStatistics() ) {
@@ -375,23 +378,23 @@ public class Utool {
                 System.err.println("An I/O error occurred while running the server: " + e);
                 System.exit(ExitCodes.SERVER_IO_ERROR);
             }
-            System.exit(0);
+            exit();
 
         case help:
             displayHelp(options.getHelpArgument());
-            System.exit(0);
+            exit();
 
         case _helpOptions:
             displayHelpOptions();
-            System.exit(0);
+            exit();
 
         case _displayCodecs:
             optionsParser.getCodecManager().displayAllCodecs(System.out);
-            System.exit(0);
+            exit();
 
         case _version:
             displayVersion();
-            System.exit(0);
+            exit();
 
         }
     }
@@ -432,7 +435,14 @@ public class Utool {
             System.err.println(op.longDescription);
         }
     }
-
+    
+   
+    
+    public static void exit() {
+    	UserProperties.saveProperties();
+    	System.exit(0);
+    }
+    
     private static void displayVersion() {
         System.err.println("Utool (The Swiss Army Knife of Underspecification), " + "version "
                 + GlobalDomgraphProperties.getVersion());

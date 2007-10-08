@@ -369,7 +369,7 @@ class JDomGraphPreferencePane extends JFrame
 		} else if(command.equals("browse")) {
 			// chose a logfile
 			JFileChooser fc = 
-				new JFileChooser(System.getProperty("user.dir"));
+				new JFileChooser(Ubench.getInstance().getLastPath());
 			int ret = fc.showOpenDialog(this);
 			if(ret == JFileChooser.APPROVE_OPTION ) {
 				File lf = fc.getSelectedFile();

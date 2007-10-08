@@ -65,6 +65,11 @@ public class GlobalDomgraphProperties {
         return (String) props.get("utool.homepage");
     }
     
+    /**
+     * 
+     * @return true if experimental codecs shall be integrated in Utool
+     * @deprecated use {@link UserProperties#allowExperimentalCodecs()} instead
+     */
     public static boolean allowExperimentalCodecs() {
     	String entry = (String) props.get("utool.allowExperimentalCodecs");
     	

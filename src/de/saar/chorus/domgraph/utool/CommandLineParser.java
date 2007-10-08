@@ -19,6 +19,7 @@ import java.util.List;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
@@ -45,13 +46,16 @@ class CommandLineParser {
     
     public CommandLineParser() {
         codecManager = new CodecManager();
-        codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
+        codecManager.setAllowExperimentalCodecs(UserProperties.allowExperimentalCodecs());
         registerAllCodecs(codecManager);
         
         try {
             exampleManager = new ExampleManager();
-            exampleManager.addAllExamples("examples");
-            exampleManager.addAllExamples("projects/Domgraph/examples");
+            /*exampleManager.addAllExamples("examples");
+            exampleManager.addAllExamples("projects/Domgraph/examples");*/
+            for( String dir : UserProperties.getExampleDirectories() ) {
+            	exampleManager.addAllExamples(dir);
+            }
         } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
             System.err.println("A parsing error occurred while reading an examples declaration.");
             System.err.println(e + " (cause: " + e.getCause() + ")");
