@@ -889,14 +889,14 @@ class CommandListener implements ActionListener,
 			if(e.getStateChange() == ItemEvent.SELECTED ) {
 				String selectedItem = ((JMenuItem) e.getSource()).getText();
 				
-				if(selectedItem.equals("JDomGraph Layout")) {
+				if(selectedItem.equals("JDomGraph layout")) {
 
 					
 					if(Ubench.getInstance().getVisibleTab() != null) {
 						Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.JDOMGRAPH);
 					}
 
-				}  else if ( selectedItem.equals("Chart Layout") ) {
+				}  else if ( selectedItem.equals("Chart layout") ) {
 						if(Ubench.getInstance().getVisibleTab() != null) {
 							Ubench.getInstance().getVisibleTab().setLayoutType(LayoutType.CHARTLAYOUT);
 							
