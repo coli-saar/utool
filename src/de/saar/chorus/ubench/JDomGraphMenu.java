@@ -18,6 +18,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
 
 
@@ -156,8 +157,11 @@ class JDomGraphMenu extends JMenuBar {
         editMenu.add(exportToClipboardMenu);
         graphSpecificItems.add(exportToClipboardMenu);
         
+        String definput = UserProperties.getDefaultInputCodec();
+        String defoutput = UserProperties.getDefaultOutputCodec();
+        
         for( String codecname : Ubench.getInstance().getCodecManager().getAllOutputCodecs() ) {
-        	if( codecname.equals("domcon-oz")) {
+        	if( codecname.equals(defoutput)) {
         		makeMenuItem(exportToClipboardMenu, "as " + codecname, "export-clipboard-" + codecname,
         				-1, KeyStroke.getKeyStroke(KeyEvent.VK_C, control));
         	} else {
@@ -169,7 +173,7 @@ class JDomGraphMenu extends JMenuBar {
         editMenu.add(importFromClipboardMenu);
         
         for( String codecname : Ubench.getInstance().getCodecManager().getAllInputCodecs() ) {
-        	if( codecname.equals("domcon-oz")) {
+        	if( codecname.equals(definput)) {
         		makeMenuItem(importFromClipboardMenu, "as " + codecname, "import-clipboard-" + codecname,
         				-1, KeyStroke.getKeyStroke(KeyEvent.VK_V, control));
         	} else {
