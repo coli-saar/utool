@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<examples>
+	
+	
+	<example filename="discourse-example.ds.xml"
+		description="A discourse, in preds-based segmentation. It describes 
+		a German lawsuit concerning absence during community service."/>
+		
+	<example filename="preds-example.pr.xml"
+		description="A Preds parse of a discourse. It's the same text 
+		as in &#60;i&#62;discourse-example &#60;&#47;i&#62;." />
+	
+	<example filename="chain107.pr.xml" 
+		description="A (longer) German lawsuit text about house building regularities.&#60;br&#62;
+		&#60;b&#62;Turn off automatic solving before loading this!!! &#60;&#47;b&#62;" />
+		
+	 <example filename="wsj_0603_out.dis"  
+ 	                description="A short WSJ text annotated with RST relations and distributed with Mick O'Donnel's RSTTool." /> 
+</examples>
