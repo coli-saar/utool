@@ -19,6 +19,10 @@ import de.saar.chorus.ubench.Ubench;
  * If the file contains only some of the properties, the other properties are initialized
  * with their default value. 
  * 
+ * To add a new property type,
+ * 	1) specify an enum with its name and default value in the <code>PropertyNames</code>
+ * 	2) implement convenient / necessary getters and setters
+ * 
  * @author Michaela Regneri
  *
  */
@@ -60,8 +64,10 @@ public class UserProperties {
 				properties.load(new FileInputStream(file));
 			} catch ( IOException e) {
 				properties = getDefaults();
+				update = true;
 			} catch ( IllegalArgumentException e ) {
 				properties = getDefaults();
+				update = true;
 			}
 			
 			// to avoid "partial" initializing
