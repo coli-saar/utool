@@ -62,7 +62,7 @@ class JDomGraphTab extends JGraphTab  {
 	 * 
 	 * @param theGraph the graph
 	 * @param name the name for the tab
-	 * @param paintNow if set to true, the graph is layoutet at once
+	 * @param paintNow if set to true, the graph is layouted at once
 	 */
 	JDomGraphTab(JDomGraph theGraph, DomGraph origin, String name, 
 			boolean paintNow, CommandListener lis, NodeLabels labels) throws Exception {
@@ -80,7 +80,9 @@ class JDomGraphTab extends JGraphTab  {
 			solve();
 		} 
 		
-		if( Preferences.getInstance().getLayoutType().isApplicable(this) ) {
+		if( isSolvedYet && domGraph.isSolvedForm() ) {
+			setLayoutType(LayoutType.TREELAYOUT);
+		} else if( Preferences.getInstance().getLayoutType().isApplicable(this) ) {
 			setLayoutType(Preferences.getInstance().getLayoutType());
 		} else {
 			setLayoutType(LayoutType.JDOMGRAPH);
