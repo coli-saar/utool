@@ -271,7 +271,7 @@ public class UserProperties {
 	private enum PropertyNames {
 		EXPERIMENTAL_CODECS {
 			String getKeyString() {
-				return "show experimental codecs";
+				return "utool.codec.experimental";
 			}
 			
 			String getDefaultValue() {
@@ -281,7 +281,7 @@ public class UserProperties {
 		
 		INPUT_CODEC {
 			String getKeyString() {
-				return "default input codec";
+				return "utool.codec.default.input";
 			}
 			
 			String getDefaultValue() {
@@ -291,7 +291,7 @@ public class UserProperties {
 		
 		OUTPUT_CODEC {
 			String getKeyString() {
-				return "default output codec";
+				return "utool.codec.default.output";
 			}
 			
 			String getDefaultValue() {
@@ -302,7 +302,7 @@ public class UserProperties {
 		WORKING_DIRECTORY {
 			
 			String getKeyString() {
-				return "utool working directory";
+				return "utool.workingdir";
 			}
 			
 			String getDefaultValue() {
@@ -312,7 +312,7 @@ public class UserProperties {
 		
 		EXAMPLE_DIRECTORIES {
 			String getKeyString() {
-				return "example directories";
+				return "utool.exampledirs";
 			}
 			
 			String getDefaultValue() {
