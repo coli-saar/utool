@@ -109,10 +109,12 @@ public class Ubench {
         registerAllCodecs(codecManager);
         
         lastPath = new File(UserProperties.getWorkingDirectory());
+        
         try {
             exampleManager = new ExampleManager();
-            exampleManager.addAllExamples("examples");
-            exampleManager.addAllExamples("projects/Domgraph/examples");
+            for( String dir : UserProperties.getExampleDirectories() ) {
+            	exampleManager.addAllExamples(dir);
+            }
          
         } catch (de.saar.chorus.domgraph.ExampleManager.ParserException e) {
             JOptionPane.showMessageDialog(window,

@@ -7,6 +7,7 @@
 
 package de.saar.chorus.domgraph;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,7 +92,7 @@ public class ExampleManager extends DefaultHandler {
     }
     
     private InputStream getExampleStream(String name, String directory) {    
-    	return Thread.currentThread().getContextClassLoader().getResourceAsStream(directory + "/" + name);
+    	return Thread.currentThread().getContextClassLoader().getResourceAsStream(directory + File.separator + name);
     }
     
 
@@ -115,7 +116,7 @@ public class ExampleManager extends DefaultHandler {
      */
     public void addAllExamples(String directory) throws ParserException {
         // strip off trailing /
-        while( directory.charAt(directory.length()-1) == '/' ) {
+        while( directory.charAt(directory.length()-1) == File.separatorChar ) {
             directory = directory.substring(0, directory.length()-1);
         }
         
@@ -124,7 +125,6 @@ public class ExampleManager extends DefaultHandler {
         try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
             InputSource insrc = new InputSource(getExampleStream("examples.xml", directory));
-        
             parser.parse(insrc, this);   
         } catch(IOException e) {
 
@@ -144,6 +144,7 @@ public class ExampleManager extends DefaultHandler {
      * @param description
      */
     public void addExample(String filename, String directory, String description) {
+
         if( getExampleStream(filename, directory) != null ) {
         	
             exampleNames.add(filename);
@@ -156,7 +157,6 @@ public class ExampleManager extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if( "example".equals(qName)) {
             addExample(attributes.getValue("filename"), currentDirectory, attributes.getValue("description"));
-           
         }
     }
 
