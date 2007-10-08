@@ -28,6 +28,7 @@ import javax.swing.UIManager;
 
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
@@ -104,10 +105,10 @@ public class Ubench {
     	
     	// register codecs
         codecManager = new CodecManager();
-        codecManager.setAllowExperimentalCodecs(GlobalDomgraphProperties.allowExperimentalCodecs());
+        codecManager.setAllowExperimentalCodecs(UserProperties.allowExperimentalCodecs());
         registerAllCodecs(codecManager);
         
-        lastPath = new File(System.getProperty("user.home"));
+        lastPath = new File(UserProperties.getWorkingDirectory());
         try {
             exampleManager = new ExampleManager();
             exampleManager.addAllExamples("examples");
@@ -179,7 +180,7 @@ public class Ubench {
      * Closing Ubench.
      */
     public void quit() {
-        System.exit(0);
+    	Utool.exit();
     }
     
     /**
@@ -668,7 +669,7 @@ public class Ubench {
         
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+                Utool.exit();
             }
         });
         
@@ -877,6 +878,7 @@ public class Ubench {
 	 */
 	public void setLastPath(File lastPath) {
 		this.lastPath = lastPath;
+		UserProperties.setWorkingDirectory(lastPath.getAbsolutePath());
 	}
 
 	/**
