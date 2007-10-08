@@ -120,6 +120,7 @@ public class UserProperties {
 	 * 			there were no updates.
 	 */
 	public static boolean saveProperties() {
+	
 		if(update) {
 			try {
 				FileOutputStream fo = new FileOutputStream(file);
