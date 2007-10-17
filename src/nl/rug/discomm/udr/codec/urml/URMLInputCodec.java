@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.saar.chorus.domgraph.codec.CodecMetadata;
+import de.saar.chorus.domgraph.codec.CodecTools;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
@@ -61,7 +62,7 @@ public class URMLInputCodec extends InputCodec {
 		
 		private DomGraph graph;
 		private NodeLabels labels;
-		private Set<String> relationTags, domTags;
+		private Set<String> relationTags, domTags, relationalRoots;
 		private String nodeToLabel, lastRoot;
 		private StringBuffer currentLabel;
 		private boolean collectLabel;
@@ -85,6 +86,7 @@ public class URMLInputCodec extends InputCodec {
 			domTags.add("satellite");
 			domTags.add("element");
 			
+			relationalRoots  = new HashSet<String>();
 			domEdges = new HashMap<String, String>();
 			rootsToDepth = new HashMap<String, Integer>();
 		}
@@ -102,10 +104,12 @@ public class URMLInputCodec extends InputCodec {
 				Attributes attributes) throws SAXException {
 			
 			if( name.equals("segment") ) {
+				
 				String next = attributes.getValue("id");
 				nodeToLabel = next;
 				graph.addNode(next, new NodeData(NodeType.LABELLED));
 				currentLabel = new StringBuffer();
+				collectLabel = true;
 			} else if ( name.equals("sign") ) {
 				collectLabel = true;
 			} else if( relationTags.contains(name) ) {
@@ -115,11 +119,18 @@ public class URMLInputCodec extends InputCodec {
 					label = "rel";
 				}
 				createRelationFragment(root, label);
+				
+				
 			} else if( domTags.contains(name) ) {
 				if( holesToPlug.isEmpty() ) {
 					makeSandwichFragment(lastRoot);
 				}
 				domEdges.put(holesToPlug.pop(), attributes.getValue("id"));
+				if( name.equals("nucleus") ) {
+					String newLabel = labels.getLabel(lastRoot) + "(" + (2-holesToPlug.size()) + ")";
+					labels.addLabel(lastRoot, newLabel);
+					
+				}
 			}
 		}
 
@@ -127,7 +138,15 @@ public class URMLInputCodec extends InputCodec {
 		public void endElement(String uri, String localName, String name)
 				throws SAXException {
 			if( name.equals("segment") ) {
-				labels.addLabel(nodeToLabel, currentLabel.toString());
+				String label = currentLabel.toString();
+				if(! label.equals("")) {
+				label = label.trim();
+				label = label.replaceAll("\\s+", " ");
+				label = label.replaceAll("\\.|,|-|\'","_");
+				labels.addLabel(nodeToLabel, label);
+				} else {
+					graph.remove(nodeToLabel);
+				}
 				collectLabel = false;
 			}
 		}
@@ -137,9 +156,13 @@ public class URMLInputCodec extends InputCodec {
 		
 		@Override
 		public void endDocument() throws SAXException {
+		
 			for( Map.Entry<String, String> dompair : domEdges.entrySet()) {
-				graph.addEdge(dompair.getKey(), dompair.getValue(), new EdgeData(EdgeType.DOMINANCE));
+				String hole = dompair.getKey(), root = dompair.getValue();
+				graph.addEdge(hole, root, new EdgeData(EdgeType.DOMINANCE));
 			}
+			
+	
 		}
 
 		
@@ -182,6 +205,7 @@ public class URMLInputCodec extends InputCodec {
 			labels.addLabel(upper_root, type);
 			rootsToDepth.put(upper_root, 1);
 			lastRoot = upper_root;
+			relationalRoots.add(upper_root);
 			
 			graph.addNode(upper_lefthole, new NodeData(NodeType.UNLABELLED));
 			graph.addNode(upper_righthole, new NodeData(NodeType.UNLABELLED));
