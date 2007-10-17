@@ -103,12 +103,9 @@ public class ModifiableChart extends Chart {
 
 						/*
 						 * checking freeness of the root fragment.
-						 * the root fragment is not free anymore iff
+						 * the (formerly free) root fragment is not free anymore iff
 						 * two nodes of two different subgraphs have been
 						 * connected by the dominance edge.
-						 * (The assumption here is that all fragments are binary.
-						 * TODO: check whether this holds also for fragments with
-						 * higher arity.)
 						 */
 						for (Set<String> children :
 							split.getAllSubgraphs()) {
