@@ -361,6 +361,8 @@ public class Chart implements Cloneable {
         return ret;
     }
 
+   
+    
 	public void clear() {
 		toplevelSubgraphs.clear();
 		chart.clear();
@@ -368,6 +370,8 @@ public class Chart implements Cloneable {
 		refcount.clear();
 		size = 0;
 	}
+	
+	
 }
 
 
