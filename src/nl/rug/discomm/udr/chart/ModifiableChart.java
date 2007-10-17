@@ -94,40 +94,45 @@ public class ModifiableChart extends Chart {
 				 * its root fragment is not free anymore after introducing the edge.
 				 */
 				for(Split split : splits) {
-					boolean amStillFree = true;
-					boolean foundOne = false;
 					
-					/*
-					 * checking freeness of the root fragment.
-					 * the root fragment is not free anymore iff
-					 * two nodes of two different subgraphs have been
-					 * connected by the dominance edge.
-					 * (The assumption here is that all fragments are binary.
-					 * TODO: check whether this holds also for fragments with
-					 * higher arity.)
-					 */
-					for (Set<String> children :
-						split.getAllSubgraphs()) {
-						if(children.contains(src)) {
-							if(foundOne) {
-								amStillFree = false;
-								break;
-							} else {
-								foundOne = true;
-							}
-						} else if (children.contains(tgt)) {
-							if(foundOne) {
-								amStillFree = false;
-								break;
-							} else {
-								foundOne = true;
+					// if the dominance edge is within the subgraph,
+					// a split rooted by the target node is not valid anymore.
+					if(! split.getRootFragment().equals(tgt)) {
+						boolean amStillFree = true;
+						boolean foundOne = false;
+
+						/*
+						 * checking freeness of the root fragment.
+						 * the root fragment is not free anymore iff
+						 * two nodes of two different subgraphs have been
+						 * connected by the dominance edge.
+						 * (The assumption here is that all fragments are binary.
+						 * TODO: check whether this holds also for fragments with
+						 * higher arity.)
+						 */
+						for (Set<String> children :
+							split.getAllSubgraphs()) {
+							if(children.contains(src)) {
+								if(foundOne) {
+									amStillFree = false;
+									break;
+								} else {
+									foundOne = true;
+								}
+							} else if (children.contains(tgt)) {
+								if(foundOne) {
+									amStillFree = false;
+									break;
+								} else {
+									foundOne = true;
+								}
 							}
 						}
-					}
 
-					if( amStillFree && (! split.getRootFragment().equals(tgt)) ) {
-						// 'really' free fragment: no incoming edge
-						modified.add(split);
+						if( amStillFree ) {
+							// 'really' free fragment
+							modified.add(split);
+						}
 					}
 				}
 
