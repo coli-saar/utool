@@ -22,12 +22,6 @@ public class ModifiableChart extends Chart {
 	
 	
 
-
-	
-	/*public void deleteSubgraph(Set<String> subgraph) {
-		super.deleteSubgraph(subgraph);
-		orderedSubgraphs.remove(subgraph);
-	}*/
 	
 	/**
 	 * This introduces a dominance edge from the given source to the given target node
@@ -45,24 +39,29 @@ public class ModifiableChart extends Chart {
 
 		long time = System.currentTimeMillis();
 		
-		// check for all subgraphs whether they are concerned with the
-		// new dominance edge.
+		// recursively iterating through the chart and deleting splits which
+		// are not valid anymore.
 		for( Set<String> subgraph : getToplevelSubgraphs() ) {
-
 			restrictSubgraph(subgraph, src, tgt, new HashSet<Set<String>>());
 		}
 	}
 	
 	
+	/**
+	 * Indicates whether or not a split has to be deleted when introducing the
+	 * dominance edge between the given nodes.
+	 *  A Split has to be deleted iff
+	 * its root fragment is dominated by the new dominance edge 
+	 * (provided that the source node is in the same subgraph) or
+	 * its root fragment is not free anymore after introducing the edge.
+	 * 
+	 * @param split the split to check
+	 * @param src the source of the new dominance edge
+	 * @param tgt the target of the new dominance edge
+	 * @return true if the dominance edge makes this split invalid 
+	 */
 	private boolean delete(Split split, String src, String tgt) {
 		
-		
-		/*
-		 * A Split has to be deleted iff
-		 * its root fragment is dominated by the new dominance edge 
-		 * (provided that the source node is in the same subgraph) or
-		 * its root fragment is not free anymore after introducing the edge.
-		 */
 		
 		// if the dominance edge is within the subgraph,
 		// a split rooted by the target node is not valid anymore.
@@ -102,14 +101,24 @@ public class ModifiableChart extends Chart {
 	}
 	
 
+	/**
+	 * Introduces a dominance edge into a given subgraph and deletes the splits
+	 * which become invalid. This method treats the given subgraph and recursively
+	 * the subgraphs of the (still valid) splits.
+	 * 
+	 * @param subgraph the subgraph to check
+	 * @param src the source of the new dominance edge
+	 * @param tgt the target of the new dominance edge
+	 * @param visited the subgraphs already seen
+	 */
 	private void restrictSubgraph(Set<String> subgraph, String src, String tgt,
 			Set<Set<String>> visited) {
 
-		long time = System.currentTimeMillis();
 		if(! visited.contains(subgraph)) {
 
 			visited.add(subgraph);
 
+			// only subgraphs containting the edge are concerned
 			if( subgraph.contains(src) && subgraph.contains(tgt) ) {
 
 				// for the new list of splits
@@ -117,9 +126,21 @@ public class ModifiableChart extends Chart {
 				boolean changed = false;
 
 				if(containsSplitFor(subgraph)) {
+					
+					// check splits whether they are still valid
 					for(Split split : getSplitsFor(subgraph) ) {
 						if(! delete(split, src, tgt)) {
 							modified.add(split);
+							
+							/*
+							 * If a split is valid, keep it and check its child
+							 * subgraphs.
+							 * 
+							 *  TODO find out whether this can cause split deletion
+							 *  in the wrong order (i.e. deletion of still-referenced
+							 *  subgraphs). Up to now, this didn't happen, but I don't
+							 *  see why it should not happen.
+							 */
 							for(Set<String> child : split.getAllSubgraphs() ) {
 								restrictSubgraph(child, src, tgt,visited);
 							}
@@ -132,6 +153,8 @@ public class ModifiableChart extends Chart {
 						setSplitsForSubgraph(subgraph, modified);
 					}
 
+					// this is the alternative for treating the remaining splits immediately.
+					// it's not much slower, but slower, though.
 				/*	for(Split split : modified ) {
 						for(Set<String> child : split.getAllSubgraphs() ) {
 							restrictSubgraph(child, src, tgt,visited);
