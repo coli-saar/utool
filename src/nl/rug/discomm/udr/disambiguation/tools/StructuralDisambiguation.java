@@ -22,7 +22,10 @@ public class StructuralDisambiguation {
 	
 	public static void addAllDominances(Map<String,String> domedges, DomGraph graph, ModifiableChart chart) {
 		for(Map.Entry<String, String> edge : domedges.entrySet()) {	
+			long time = System.currentTimeMillis();
 			addDominance(edge.getKey(),edge.getValue(),graph,chart);
+			System.err.println("Dominance " + edge.getKey() + " --> " + edge.getValue() + " :" +
+					(System.currentTimeMillis() - time) + "ms");
 		}
 	}
 }
