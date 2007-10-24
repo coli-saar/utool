@@ -175,10 +175,8 @@ class JDomGraphTab extends JGraphTab  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);
-					System.err.println("Solvable?");
 
 				} else {
-					System.err.println("Not solvable.");
 					solvable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
 				}
