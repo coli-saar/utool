@@ -118,7 +118,7 @@ public class ModifiableChart extends Chart {
 
 			visited.add(subgraph);
 
-			// only subgraphs containting the edge are concerned
+			// only subgraphs containing the edge are concerned
 			if( subgraph.contains(src) && subgraph.contains(tgt) ) {
 
 				// for the new list of splits
