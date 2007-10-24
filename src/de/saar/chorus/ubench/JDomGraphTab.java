@@ -175,9 +175,10 @@ class JDomGraphTab extends JGraphTab  {
 					solvedForms = chart.countSolvedForms().longValue();
 					isSolvedYet = true;
 					Ubench.getInstance().setSolvingEnabled(true);
-					
+					System.err.println("Solvable?");
 
 				} else {
+					System.err.println("Not solvable.");
 					solvable = false;
 					Ubench.getInstance().setSolvingEnabled(false);
 				}
@@ -206,6 +207,7 @@ class JDomGraphTab extends JGraphTab  {
 				// silently record the unsolvability of this graph
 				chart = null;
 				isSolvedYet = false;
+				solvable = false;
 			} catch( Exception e ) {
 				 DomGraphUnhandledExceptionHandler.showErrorDialog(e, domGraph, nodeLabels);
 			}
