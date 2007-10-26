@@ -77,7 +77,6 @@ public class Chain extends DomGraph {
 		int s = getHoleIndex(src);
 		int t = getRootIndex(tgt);
 		
-		System.err.println(src + " --> " + tgt + " ; " + s + " --> " + t);
 		if(left && s <= t) {
 			return false;
 		}
@@ -125,7 +124,6 @@ public class Chain extends DomGraph {
 			
 			
 		}
-		System.err.println("cw: " + counterweight + " ; weight: " + weight);
 		
 		if( (counterweight == 1) || (counterweight > (1-weight))) {
 			return true;
