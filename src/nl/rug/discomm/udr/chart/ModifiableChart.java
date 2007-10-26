@@ -36,8 +36,6 @@ public class ModifiableChart extends Chart {
 	 * @throws UnsupportedOperationException if the graph would become unsolvable with the new edge
 	 */
 	public void addDominance(String src, String tgt) throws UnsupportedOperationException {
-
-		long time = System.currentTimeMillis();
 		
 		// recursively iterating through the chart and deleting splits which
 		// are not valid anymore.
@@ -47,6 +45,57 @@ public class ModifiableChart extends Chart {
 	}
 	
 	
+	
+	public void addWeightedDominance(String src, String tgt) {
+		//TODO implement me.
+	}
+	
+	
+
+	void deleteSplit(Set<String> subgraph, ProbabilisticSplit split) {
+		List<Split> old = getSplitsFor(subgraph);
+		List<Split> next = new ArrayList<Split>();
+		double weight = split.getLikelyhood();
+		for(Split s : old) {
+			if(! s.equals(split) ) {
+				ProbabilisticSplit ps = (ProbabilisticSplit) s;
+				ps.setLikelyhood(ps.getLikelyhood() + (weight/((double) old.size() -1)));
+				next.add(ps);
+			}
+		}
+		
+		super.setSplitsForSubgraph(subgraph, next);
+	}
+	
+	
+	@Override
+	public void addSplit(Set<String> subgraph, Split split) {
+		// TODO Auto-generated method stub
+		super.addSplit(subgraph, new ProbabilisticSplit(split));
+	}
+
+
+
+
+	
+	@Override
+	public void setSplitsForSubgraph(Set<String> subgraph, List<Split> splits) {
+		List<Split> modified = new ArrayList<Split>();
+		for(Split s : splits) {
+			ProbabilisticSplit m = new ProbabilisticSplit(s);
+			
+			// TODO how to delete splits out of such a chart?
+			m.setLikelyhood(1.0/(double) splits.size());
+			modified.add(new ProbabilisticSplit(s));
+		}
+		
+		super.setSplitsForSubgraph(subgraph, modified);
+	}
+
+
+
+
+
 	/**
 	 * Indicates whether or not a split has to be deleted when introducing the
 	 * dominance edge between the given nodes.
