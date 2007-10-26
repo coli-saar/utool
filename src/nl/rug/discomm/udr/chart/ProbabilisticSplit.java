@@ -15,12 +15,22 @@ public class ProbabilisticSplit extends Split {
 	
 	public ProbabilisticSplit(Split split) {
 		super(split.getRootFragment());
+		
+		
+		
+		
 		for(String hole : split.getAllDominators()) {
 			for(Set<String> wcc : split.getWccs(hole)) {
 				addWcc(hole, wcc);
 			}
 		}
-		likelyhood = 1.0;
+		
+		if(split instanceof ProbabilisticSplit) {
+			likelyhood = ((ProbabilisticSplit) split).getLikelyhood();
+		} else {
+			likelyhood = 1.0;
+		}
+		
 	}
 	
 	public ProbabilisticSplit(String root, double likelyhood) {

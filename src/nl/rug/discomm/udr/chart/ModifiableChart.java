@@ -46,11 +46,80 @@ public class ModifiableChart extends Chart {
 	
 	
 	
-	public void addWeightedDominance(String src, String tgt) {
-		//TODO implement me.
+	public void addWeightedDominance(String src, String tgt, double weight) {
+		for( Set<String> subgraph : getToplevelSubgraphs() ) {
+			restrictSubgraphSplitWeights(subgraph, src, tgt,weight, new HashSet<Set<String>>());
+		}
 	}
 	
 	
+	/**
+	 * Introduces a dominance edge into a given subgraph and deletes the splits
+	 * which become invalid. This method treats the given subgraph and recursively
+	 * the subgraphs of the (still valid) splits.
+	 * 
+	 * @param subgraph the subgraph to check
+	 * @param src the source of the new dominance edge
+	 * @param tgt the target of the new dominance edge
+	 * @param visited the subgraphs already seen
+	 */
+	private void restrictSubgraphSplitWeights(Set<String> subgraph, String src, String tgt,
+			double weight, Set<Set<String>> visited) {
+
+		if(! visited.contains(subgraph)) {
+
+			visited.add(subgraph);
+
+			// only subgraphs containing the edge are concerned
+			if( subgraph.contains(src) && subgraph.contains(tgt) ) {
+
+				// for the new list of splits
+				Set<ProbabilisticSplit> keep = new HashSet<ProbabilisticSplit>();
+				Set<ProbabilisticSplit> drop = new HashSet<ProbabilisticSplit>();
+
+				if(containsSplitFor(subgraph)) {
+					
+					// check splits whether they are still valid
+					for(Split split : getSplitsFor(subgraph) ) {
+						if(! delete(split, src, tgt)) {
+							keep.add((ProbabilisticSplit) split);
+							
+							/*
+							 * If a split is valid, keep it and check its child
+							 * subgraphs.
+							 */
+							for(Set<String> child : split.getAllSubgraphs() ) {
+								restrictSubgraph(child, src, tgt,visited);
+							}
+						} else {
+							drop.add((ProbabilisticSplit) split);
+						}
+					}
+
+					
+					for(ProbabilisticSplit ps : keep) {
+						ps.setLikelyhood((ps.getLikelyhood() + weight)/2.0);
+					}
+			
+
+					for(ProbabilisticSplit ps : drop) {
+						ps.setLikelyhood((ps.getLikelyhood() + (1 - weight))/2.0);
+					}
+					
+
+					// this is the alternative for treating the remaining splits immediately.
+					// it's not much slower, but slower, though.
+				/*	for(Split split : modified ) {
+						for(Set<String> child : split.getAllSubgraphs() ) {
+							restrictSubgraph(child, src, tgt,visited);
+						}
+					}*/
+				}
+			}
+
+		}
+
+	}
 
 	void deleteSplit(Set<String> subgraph, ProbabilisticSplit split) {
 		List<Split> old = getSplitsFor(subgraph);
@@ -199,7 +268,7 @@ public class ModifiableChart extends Chart {
 					}
 
 					if(changed) {
-						setSplitsForSubgraph(subgraph, modified);
+						super.setSplitsForSubgraph(subgraph, modified);
 					}
 
 					// this is the alternative for treating the remaining splits immediately.
