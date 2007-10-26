@@ -64,7 +64,7 @@ public class Chain extends DomGraph {
 	}
 	
 	private int getHoleIndex(String hole) {
-		return Integer.parseInt(hole.substring(0, hole.length() - 3));
+		return Integer.parseInt(hole.substring(0, hole.length() - 2));
 	}
 	
 	private int getRootIndex(String root) {
@@ -76,10 +76,12 @@ public class Chain extends DomGraph {
 		boolean left = src.endsWith("l");
 		int s = getHoleIndex(src);
 		int t = getRootIndex(tgt);
-		if(left && s >= t) {
+		
+		System.err.println(src + " --> " + tgt + " ; " + s + " --> " + t);
+		if(left && s <= t) {
 			return false;
 		}
-		if((! left) && s < t) {
+		if((! left) && s > t) {
 			return false;
 		}
 		
@@ -110,6 +112,12 @@ public class Chain extends DomGraph {
 						return false;
 					} else {
 						delete.add(e);
+						for(Edge edge : getOutEdges(parent, EdgeType.DOMINANCE)) {
+							EdgeData pdata = ((nl.rug.discomm.udr.graph.EdgeData) getData(edge));
+							if(pdata.getIndex() == data.getIndex()) {
+								delete.add(edge);
+							}
+						}
 						counterweight = counterweight * (1-w);
 					}
 				}
@@ -117,9 +125,9 @@ public class Chain extends DomGraph {
 			
 			
 		}
+		System.err.println("cw: " + counterweight + " ; weight: " + weight);
 		
-		
-		if(counterweight < (1-weight)) {
+		if( (counterweight == 1) || (counterweight > (1-weight))) {
 			return true;
 		}
 		
