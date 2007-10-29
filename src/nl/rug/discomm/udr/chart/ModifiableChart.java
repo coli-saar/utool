@@ -132,13 +132,6 @@ public class ModifiableChart extends Chart {
 					}
 					
 
-					// this is the alternative for treating the remaining splits immediately.
-					// it's not much slower, but slower, though.
-				/*	for(Split split : modified ) {
-						for(Set<String> child : split.getAllSubgraphs() ) {
-							restrictSubgraph(child, src, tgt,visited);
-						}
-					}*/
 				}
 			}
 	
