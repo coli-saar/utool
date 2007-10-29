@@ -5,11 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+
 public class ExtractPatterns {
 
 	
 	private Map<String,int[]> boolFeat;
 	private Map<String, List<Map<String,Integer>>> stringFeat;
+	private Map<String, Integer> overallCount;
 	private int boolcount, stringcount;
 	
 	public ExtractPatterns() {
@@ -17,6 +21,7 @@ public class ExtractPatterns {
 		stringFeat = new HashMap<String, List<Map<String,Integer>>>();
 		boolcount = BooleanFeatures.values().length;
 		stringcount = StringFeatures.values().length;
+		overallCount = new HashMap<String,Integer>();
 	}
 	
 	
@@ -40,11 +45,28 @@ public class ExtractPatterns {
 	}
 	
 	/**
-	 * @param args
+	 * TODO implement me
+	 * 
+	 * @param graph
+	 * @param labels
 	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	public void checkDomGraph(DomGraph graph, NodeLabels labels) {
+		for( String root : graph.getAllRoots() ) {
+			if(! graph.isLeaf(root)) {
+				// here go lots of if-then-else's.
+			}
+		}
+		
+		
+	}
+	
+	/**
+	 * TODO implement me
+	 * 
+	 * @param filename
+	 */
+	public void saveToFile(String filename) {
+		//perhaps a nice toString method would be convenient, too.
 	}
 	
 	
@@ -57,7 +79,10 @@ public class ExtractPatterns {
 		EQUAL_CHILDREN, 
 		
 		// compare nuclearity to parent relation (left or right or coord)
-		RIGHT_CHILD_NUCEQ, LEFT_CHILD_NUCEQ, NUCLEUS_NUCEQ, SATTELITE_NUCEQ;
+		RIGHT_CHILD_NUCEQ, LEFT_CHILD_NUCEQ, NUCLEUS_NUCEQ, SATTELITE_NUCEQ,
+		
+		// general structure
+		IS_ROOT;
 	}
 	
 	enum StringFeatures {
