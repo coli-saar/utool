@@ -20,7 +20,12 @@ import de.saar.chorus.domgraph.chart.Split;
  */
 public class ModifiableChart extends Chart {
 	
+	boolean normalized;
 	
+	public ModifiableChart() {
+		super();
+		normalized = false;
+	}
 
 	
 	/**
@@ -47,10 +52,20 @@ public class ModifiableChart extends Chart {
 	
 	
 	public void addWeightedDominance(String src, String tgt, double weight) {
-		for( Set<String> subgraph : getToplevelSubgraphs() ) {
-			restrictSubgraphSplitWeights(subgraph, src, tgt,weight, new HashSet<Set<String>>());
+		normalize();
+		if(weight == 1.0) {
+			addDominance(src,tgt);
+		} else {
+			for( Set<String> subgraph : getToplevelSubgraphs() ) {
+				restrictSubgraphSplitWeights(subgraph, src, tgt,weight, new HashSet<Set<String>>());
+			}
 		}
+		
+		
 	}
+	
+	
+	
 	
 	
 	/**
@@ -89,7 +104,7 @@ public class ModifiableChart extends Chart {
 							 * subgraphs.
 							 */
 							for(Set<String> child : split.getAllSubgraphs() ) {
-								restrictSubgraph(child, src, tgt,visited);
+								restrictSubgraphSplitWeights(child, src, tgt, weight,visited);
 							}
 						} else {
 							drop.add((ProbabilisticSplit) split);
@@ -98,12 +113,12 @@ public class ModifiableChart extends Chart {
 
 					
 					for(ProbabilisticSplit ps : keep) {
-						ps.setLikelyhood((ps.getLikelyhood() + weight)/2.0);
+						ps.setLikelyhood((ps.getLikelyhood() + (weight/(double)keep.size()))/2.0);
 					}
 			
 
 					for(ProbabilisticSplit ps : drop) {
-						ps.setLikelyhood((ps.getLikelyhood() + (1 - weight))/2.0);
+						ps.setLikelyhood((ps.getLikelyhood() + ((1 - weight)/drop.size()))/2.0);
 					}
 					
 
@@ -116,6 +131,7 @@ public class ModifiableChart extends Chart {
 					}*/
 				}
 			}
+	
 
 		}
 
@@ -155,13 +171,40 @@ public class ModifiableChart extends Chart {
 			
 			// TODO how to delete splits out of such a chart?
 			m.setLikelyhood(1.0/(double) splits.size());
-			modified.add(new ProbabilisticSplit(s));
+			modified.add(m);
 		}
 		
 		super.setSplitsForSubgraph(subgraph, modified);
 	}
 
+	  private void normalize() {
+	    	if(! normalized) {
+	    		
+	    		for(Set<String> sg : getToplevelSubgraphs()) {
+	    			normalizeSubgraph(sg, new HashSet<Set<String>>());
+	    		}
+	    		
+	    		normalized = true;
+	    	}
+	    }
 
+	    private void normalizeSubgraph(Set<String> sg, Set<Set<String>> visited) {
+	    	if(! visited.contains(sg)) {
+	    		
+	    		visited.add(sg);
+	    		if(containsSplitFor(sg)) {
+	    			List<Split> splits = getSplitsFor(sg);
+	    			for(Split s : splits) {
+	    				ProbabilisticSplit ps = (ProbabilisticSplit) s;
+	    			    ps.setLikelyhood(1.0/(double) splits.size());
+	    			    for(Set<String> child : s.getAllSubgraphs()) {
+	    			    	normalizeSubgraph(child, visited);
+	    			    }
+	    			}
+	    		}
+	    		
+	    	}
+	    }
 
 
 

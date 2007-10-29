@@ -2,6 +2,7 @@ package nl.rug.discomm.udr.codec.urml;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,14 +14,17 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import nl.rug.discomm.udr.graph.Chain;
+
 import org._3pq.jgrapht.Edge;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import de.saar.chorus.domgraph.codec.CodecConstructor;
 import de.saar.chorus.domgraph.codec.CodecMetadata;
-import de.saar.chorus.domgraph.codec.CodecTools;
+import de.saar.chorus.domgraph.codec.CodecOption;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.ParserException;
@@ -30,10 +34,21 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
+import de.saar.chorus.ubench.Ubench;
 
 @CodecMetadata(name="urml-input", extension=".urml.xml", experimental=true)
 public class URMLInputCodec extends InputCodec {
 
+	private boolean segments;
+	
+	
+	@CodecConstructor
+	public URMLInputCodec(@CodecOption(name="onlySegments", defaultValue="true") 
+							boolean onlySegments) {
+		super();
+		segments = onlySegments;
+	}
+	
 	@Override
 	public void decode(Reader reader, DomGraph graph, NodeLabels labels)
 			throws IOException, ParserException, MalformedDomgraphException {
@@ -41,8 +56,13 @@ public class URMLInputCodec extends InputCodec {
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 			InputSource in = new InputSource(reader);
-			in.setEncoding("UTF-8");
-			parser.parse(new InputSource(reader), new URMLHandler(graph, labels));		
+			
+			if( segments ) {
+				parser.parse(in, new URMLSegmentHandler(graph,labels));
+			} else {
+				parser.parse(in, new URMLHandler(graph, labels));	
+			}
+				
 		} catch(IOException e) {
 			throw e;
 		} catch(SAXException e) {
@@ -218,5 +238,81 @@ public class URMLInputCodec extends InputCodec {
 		}
 		
 		
+	}
+	
+	private class URMLSegmentHandler extends DefaultHandler {
+		
+		private NodeLabels labels;
+		private DomGraph graph;
+		private String nodeToLabel;
+		private StringBuffer currentLabel;
+		private boolean collectLabel;
+		private List<String> orderedLabels;
+		
+		URMLSegmentHandler(DomGraph g, NodeLabels l) {
+			graph = g;
+			labels = l;
+			orderedLabels = new ArrayList<String>();
+		}
+		
+
+		public void characters(char[] ch, int start, int length)
+												throws SAXException {
+			if( collectLabel ) {
+				currentLabel.append(new String(ch, start,length));
+			}
+		}
+
+		
+		@Override
+		public void startElement(String uri, String localName, String name,
+				Attributes attributes) throws SAXException {
+			
+			if( name.equals("segment") ) {
+				currentLabel = new StringBuffer();
+				collectLabel = true;
+			} else if ( name.equals("sign") ) {
+				collectLabel = true;
+			} 
+			
+		}
+		
+		@Override
+		public void endElement(String uri, String localName, String name)
+				throws SAXException {
+			if( name.equals("segment") ) {
+				String label = currentLabel.toString();
+				if(! label.equals("")) {
+				label = label.trim();
+				label = label.replaceAll("\\s+", " ");
+				label = label.replaceAll("\\.|,|-|\'","_");
+				orderedLabels.add(label);
+				} 
+				collectLabel = false;
+			} else if( name.equals("text") ) {
+				System.err.println(segments);
+				int length = orderedLabels.size() - 1;
+				DomGraph tmpgraph = new Chain(length);
+				for(String node : tmpgraph.getAllNodes()) {
+					graph.addNode(node, tmpgraph.getData(node));
+				}
+				for(Edge edge : tmpgraph.getAllEdges()) {
+					graph.addEdge((String) edge.getSource(),
+									(String) edge.getTarget(),
+									tmpgraph.getData(edge));
+				}
+		
+				labels.addLabel("0y", orderedLabels.get(0));
+				
+				
+				for(int i = 1; i <= length; i++) {
+					labels.addLabel(i+"y", orderedLabels.get(i));
+					labels.addLabel(i+"x", "rel" + i);
+				}
+				 
+			
+				super.endDocument();
+			}
+		}
 	}
 }
