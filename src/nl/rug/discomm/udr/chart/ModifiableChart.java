@@ -112,13 +112,23 @@ public class ModifiableChart extends Chart {
 					}
 
 					
+					double old, newweight;
+					
 					for(ProbabilisticSplit ps : keep) {
-						ps.setLikelyhood((ps.getLikelyhood() + (weight/(double)keep.size()))/2.0);
+						
+						 old = ps.getLikelyhood();
+						 newweight = (old +(weight/(double)keep.size())) / 2.0;
+						
+						ps.setLikelyhood(newweight);
 					}
 			
 
 					for(ProbabilisticSplit ps : drop) {
-						ps.setLikelyhood((ps.getLikelyhood() + ((1 - weight)/drop.size()))/2.0);
+						
+						 old = ps.getLikelyhood();
+						 newweight = (old +  ((1 - weight)/(double) drop.size()))/2.0;
+						ps.setLikelyhood((ps.getLikelyhood() + ((1 - weight)/(double) drop.size()))/2.0);
+						
 					}
 					
 
@@ -165,6 +175,8 @@ public class ModifiableChart extends Chart {
 	
 	@Override
 	public void setSplitsForSubgraph(Set<String> subgraph, List<Split> splits) {
+		
+		System.err.println("SETSPLITS");
 		List<Split> modified = new ArrayList<Split>();
 		for(Split s : splits) {
 			ProbabilisticSplit m = new ProbabilisticSplit(s);
@@ -178,8 +190,9 @@ public class ModifiableChart extends Chart {
 	}
 
 	  private void normalize() {
+		  
 	    	if(! normalized) {
-	    		
+	    		System.err.println("normalizing...");
 	    		for(Set<String> sg : getToplevelSubgraphs()) {
 	    			normalizeSubgraph(sg, new HashSet<Set<String>>());
 	    		}
@@ -194,9 +207,11 @@ public class ModifiableChart extends Chart {
 	    		visited.add(sg);
 	    		if(containsSplitFor(sg)) {
 	    			List<Split> splits = getSplitsFor(sg);
+	    			double l = 1.0 / (double) splits.size();
 	    			for(Split s : splits) {
 	    				ProbabilisticSplit ps = (ProbabilisticSplit) s;
-	    			    ps.setLikelyhood(1.0/(double) splits.size());
+	    			    ps.setLikelyhood(l);
+	    			    System.err.println(ps + " :: init :: " + l);
 	    			    for(Set<String> child : s.getAllSubgraphs()) {
 	    			    	normalizeSubgraph(child, visited);
 	    			    }
