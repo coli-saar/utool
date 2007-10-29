@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class ExtractPatterns {
@@ -45,7 +46,7 @@ public class ExtractPatterns {
 	}
 	
 	/**
-	 * TODO implement me
+	 * Frequency counts for all features for one DomGraph. 
 	 * 
 	 * @param graph
 	 * @param labels
@@ -53,7 +54,112 @@ public class ExtractPatterns {
 	public void checkDomGraph(DomGraph graph, NodeLabels labels) {
 		for( String root : graph.getAllRoots() ) {
 			if(! graph.isLeaf(root)) {
-				// here go lots of if-then-else's.
+				String relation = labels.getLabel(root);
+				
+				// Joint and List are not of interest.
+				if(! relation.startsWith("List") ||
+						relation.startsWith("Joint")) {
+					
+					Utilities.countUp(overallCount, relation);
+					
+					if(graph.indeg(root) == 0) {
+						countUp(relation,BooleanFeatures.IS_ROOT);
+					}
+					
+					// '0' = nucleus left, '1' = nucleus right.
+					int nucleus = Integer.parseInt(relation.
+							substring(relation.length()-2,
+	 						relation.length() -1));
+					boolean rightleaf = false, leftleaf = false;
+					List<String> holes = graph.getHoles(root);
+					String leftRel = null, rightRel = null;
+					
+					String lefthole = holes.get(0);
+					String leftChild = graph.getChildren(lefthole, EdgeType.DOMINANCE).get(0);
+					
+					if(graph.isLeaf(leftChild)) {
+						countUp(relation, BooleanFeatures.LEFT_CHILD_LEAF);
+						leftleaf = true;
+						if(nucleus == 0) {
+							countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
+						} else {
+							countUp(relation,BooleanFeatures.SATTELITE_LEAF);
+						}
+					} else {
+						
+						leftRel = labels.getLabel(leftChild);
+						countUp(relation, leftRel, StringFeatures.LEFT_CHILD);
+						
+						int childnuc = Integer.parseInt(relation.
+								substring(relation.length()-2,
+				 						relation.length() -1));
+						
+						
+						if(nucleus ==0) {
+							countUp(relation, leftRel, StringFeatures.NUCLEUS);
+							if(childnuc == nucleus) {
+								countUp(relation, BooleanFeatures.LEFT_CHILD_NUCEQ);
+								countUp(relation, BooleanFeatures.NUCLEUS_NUCEQ);
+							}
+							
+						} else {
+							countUp(relation, leftRel, StringFeatures.SATTELITE);
+							if(childnuc == nucleus) {
+								countUp(relation, BooleanFeatures.LEFT_CHILD_NUCEQ);
+								countUp(relation, BooleanFeatures.SATTELITE_NUCEQ);
+							}
+						}
+					}
+					
+					
+					String righthole = holes.get(1);
+					String rightChild = graph.getChildren(righthole, EdgeType.DOMINANCE).get(0);
+					
+					if(graph.isLeaf(rightChild)) {
+						countUp(relation, BooleanFeatures.RIGHT_CHILD_LEAF);
+						rightleaf = true;
+						if(leftleaf) {
+							countUp(relation, BooleanFeatures.EQUAL_CHILDREN);
+						}
+						if(nucleus == 1) {
+							countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
+						} else {
+							countUp(relation,BooleanFeatures.SATTELITE_LEAF);
+						}
+					} else {
+						
+						rightRel = labels.getLabel(rightChild);
+						if(! leftleaf) {
+							if( leftRel.equals(rightRel)) {
+								countUp(relation,BooleanFeatures.EQUAL_CHILDREN);
+							}
+						}
+						
+						countUp(relation, rightRel, StringFeatures.RIGHT_CHILD);
+						
+						int childnuc = Integer.parseInt(relation.
+								substring(relation.length()-2,
+				 						relation.length() -1));
+						
+						
+						if(nucleus == 1) {
+							countUp(relation, rightRel, StringFeatures.NUCLEUS);
+							if(childnuc == nucleus) {
+								countUp(relation, BooleanFeatures.RIGHT_CHILD_NUCEQ);
+								countUp(relation, BooleanFeatures.NUCLEUS_NUCEQ);
+							}
+							
+						} else {
+							countUp(relation, rightRel, StringFeatures.SATTELITE);
+							if(childnuc == nucleus) {
+								countUp(relation, BooleanFeatures.RIGHT_CHILD_NUCEQ);
+								countUp(relation, BooleanFeatures.SATTELITE_NUCEQ);
+							}
+						}
+					}
+					
+				}
+				
 			}
 		}
 		
