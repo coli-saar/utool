@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class ExtractPatterns {
 							if(nucleus == 1) {
 								countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
 							} else {
-								countUp(relation,BooleanFeatures.SATTELITE_LEAF);
+								countUp(relation,BooleanFeatures.SATELLITE_LEAF);
 							}
 						}
 					} else {
@@ -119,21 +120,26 @@ public class ExtractPatterns {
 				 						relation.length() -1));
 
 						if(childmulti && multi) {
+							// both coord
 							countUp(relation, BooleanFeatures.LEFT_CHILD_NUCEQ);
 						} else {
 							if(! multi) {
 								if(nucleus == 1) {
+									// current rel. child is the nucleus
 									countUp(relation, leftRel, StringFeatures.NUCLEUS);
-									if(childnuc == nucleus) {
+									if((! childmulti) && (childnuc == nucleus)) {
+										// both left-nuclear
 										countUp(relation, BooleanFeatures.LEFT_CHILD_NUCEQ);
 										countUp(relation, BooleanFeatures.NUCLEUS_NUCEQ);
 									}
 
 								} else {
-									countUp(relation, leftRel, StringFeatures.SATTELITE);
-									if(childnuc == nucleus) {
+									// current rel. child is the satellite
+									countUp(relation, leftRel, StringFeatures.SATELLITE);
+									if((! childmulti) && (childnuc == nucleus)) {
+										// both right-nuclear
 										countUp(relation, BooleanFeatures.LEFT_CHILD_NUCEQ);
-										countUp(relation, BooleanFeatures.SATTELITE_NUCEQ);
+										countUp(relation, BooleanFeatures.SATELLITE_NUCEQ);
 									}
 								}
 							}
@@ -154,7 +160,7 @@ public class ExtractPatterns {
 							if(nucleus == 2) {
 								countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
 							} else {
-								countUp(relation,BooleanFeatures.SATTELITE_LEAF);
+								countUp(relation,BooleanFeatures.SATELLITE_LEAF);
 							}
 						}
 					} else {
@@ -179,16 +185,16 @@ public class ExtractPatterns {
 							if(! multi) {
 								if(nucleus == 2) {
 									countUp(relation, rightRel, StringFeatures.NUCLEUS);
-									if(childnuc == nucleus) {
+									if((! childmulti) && (childnuc == nucleus)) {
 										countUp(relation, BooleanFeatures.RIGHT_CHILD_NUCEQ);
 										countUp(relation, BooleanFeatures.NUCLEUS_NUCEQ);
 									}
 
 								} else {
-									countUp(relation, rightRel, StringFeatures.SATTELITE);
-									if(childnuc == nucleus) {
+									countUp(relation, rightRel, StringFeatures.SATELLITE);
+									if((! childmulti) && (childnuc == nucleus)) {
 										countUp(relation, BooleanFeatures.RIGHT_CHILD_NUCEQ);
-										countUp(relation, BooleanFeatures.SATTELITE_NUCEQ);
+										countUp(relation, BooleanFeatures.SATELLITE_NUCEQ);
 									}
 								}
 							}
@@ -212,8 +218,11 @@ public class ExtractPatterns {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
 		String tabs = "\t\t\t\t", n = System.getProperty("line.separator");
 		DecimalFormat df = new DecimalFormat("0.0000");
-		for(String rel : overallCount.keySet()) {
-			if((! rel.contains("List")) && (! rel.contains("Joint"))) {
+		List<String> rels = new ArrayList<String>(overallCount.keySet());
+		Collections.sort(rels);
+		
+		for(String rel : rels) {
+			if((! rel.startsWith("List")) && (! rel.startsWith("Joint"))) {
 			writer.append(rel + tabs + "Overall counts: " + overallCount.get(rel) + n);
 			
 			int[] counts = boolFeat.get(rel);
@@ -234,8 +243,10 @@ public class ExtractPatterns {
 					writer.append(tabs + strings[i] + n);
 					Map<String,Integer> ct = 
 						stringFeat.get(rel).get(i);
-				
-					for(String val : ct.keySet()) {
+					List<String> ttmp = new ArrayList<String>(ct.keySet());
+					Collections.sort(ttmp);
+					
+					for(String val : ttmp) {
 						if(! (val.startsWith("List") ||
 								val.startsWith("Joint")) ) {
 							String fraction = df.format((double) ct.get(val)/all);
@@ -257,13 +268,13 @@ public class ExtractPatterns {
 	enum BooleanFeatures {
 		
 		// EDUs
-		RIGHT_CHILD_LEAF, LEFT_CHILD_LEAF, NUCLEUS_LEAF, SATTELITE_LEAF,
+		RIGHT_CHILD_LEAF, LEFT_CHILD_LEAF, NUCLEUS_LEAF, SATELLITE_LEAF,
 		
 		// same relations or two leaves
 		EQUAL_CHILDREN, 
 		
 		// compare nuclearity to parent relation (left or right or coord)
-		RIGHT_CHILD_NUCEQ, LEFT_CHILD_NUCEQ, NUCLEUS_NUCEQ, SATTELITE_NUCEQ,
+		RIGHT_CHILD_NUCEQ, LEFT_CHILD_NUCEQ, NUCLEUS_NUCEQ, SATELLITE_NUCEQ,
 		
 		// general structure
 		IS_ROOT;
@@ -272,7 +283,7 @@ public class ExtractPatterns {
 	enum StringFeatures {
 		// relations; only relevant, if the corresponding
 		// LEAF-feature is 'false'
-		RIGHT_CHILD, LEFT_CHILD, NUCLEUS, SATTELITE;
+		RIGHT_CHILD, LEFT_CHILD, NUCLEUS, SATELLITE;
 	}
 
 }
