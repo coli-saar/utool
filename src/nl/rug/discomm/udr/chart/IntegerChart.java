@@ -9,15 +9,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.rug.discomm.udr.structurecheck.Utilities;
-
+/**
+ * This class is a chart for pure chains and possibly some extra dominance edges, whereby
+ * no unsolvable graphs are allowed. The chart's splits may also contain likelihoods.
+ * A Split's likelihood is the likelihood of a split given that its subgraph was selected.
+ * (Put differently: The likelihood of a split is its relative frequency within the solved
+ * forms of its parent subgraph.)
+ * 
+ * This chart assumes
+ *  - canonical naming of its nodes (upper fragments have numbers from 1 to n = the chain's length)
+ *  - the graph to solve to be a pure chain with binary fragments and a
+ *    non-contradictory, possibly empty set of dominance edges  (unsolvable graphs 
+ *    contain contradictory dominance edges)
+ *  
+ * To solve the chart, the graph itself is not considered. The solving process relies on the
+ * canonical naming and the dominance edges given.
+ * The architecture is based on the <code>Chart</code> for unrestricted dominance graphs. With
+ * the assumptions we can make about this pure chains resp. the graphs arising when adding
+ * dominance edges to pure chains, the solving process can be up to 100 times faster.
+ * 
+ * TODO implement Edge / Split deleting
+ * 
+ * @see de.saar.chorus.domgraph.chart.Chart
+ * @author Michaela Regneri
+ *
+ */
 public class IntegerChart {
 
-	Map<List<Integer>, List<IntSplit>> chart;
-	Map<List<Integer>, BigInteger> numSolvedForms;
-	Map<Integer, List<Integer>> domEdges;
-	int chainlength;
-	List<Integer> toplevel;
+	private Map<List<Integer>, List<IntSplit>> chart;
+	private Map<List<Integer>, BigInteger> numSolvedForms;
+	private Map<Integer, List<Integer>> domEdges;
+	private int chainlength;
+	private List<Integer> toplevel;
 	
 	public IntegerChart(int length) {
 		chainlength = length;
@@ -41,7 +64,6 @@ public class IntegerChart {
 	
 	
 	public void solve() {
-		
 		computeSplitsForSubgraph(toplevel);
 	}
 	
@@ -151,8 +173,8 @@ public class IntegerChart {
 			Map<IntSplit, BigInteger> solvedForms = new HashMap<IntSplit, BigInteger>();
 			for(IntSplit split : chart.get(subgraph)) {
 				BigInteger sfs =
-					Utilities.catalanNumber(split.root - split.leftBoundary).multiply(
-							Utilities.catalanNumber(split.rightBoundary - split.root));
+					countNumberOfSolvedForms(split.leftSub).multiply(
+							countNumberOfSolvedForms(split.rightSub));
 				solvedForms.put(split,sfs);
 				all = all.add(new BigDecimal(sfs));
 				
