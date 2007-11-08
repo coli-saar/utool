@@ -15,6 +15,8 @@ import de.saar.chorus.domgraph.chart.Split;
  * existing (and solved) chart by deleting splits. This is needed to allow for
  * the (more efficient) successive disambiguation of a dominance graph.
  * 
+ * TODO clean chart after deleting?
+ * 
  * @author Michaela Regneri
  *
  */
@@ -215,7 +217,44 @@ public class ModifiableChart extends Chart {
 	    }
 
 
+	 
 
+	    private Set<Set<String>> findLive() {
+	    	Set<Set<String>> ret = new HashSet<Set<String>>();
+	    	for(Set<String> sg : getAllSubgraphs()) {
+	    		if(getSplitsFor(sg).size() == 1) {
+	    			ret.add(sg);
+	    		}
+	    	}
+	    	
+	    	return ret;
+	    }
+	    private void retRec(Set<Set<String>> sgs, Set<Set<String>> visited, Set<String> current) {
+	    	if(! visited.contains(current) ){
+	    		
+	    		visited.add(current);
+	    		
+	    		
+	    	}
+	    }
+	    
+	    
+	    
+	    private Set<Set<String>> findReachable() {
+	    	Set<Set<String>> ret = new HashSet<Set<String>>();
+
+	    	return ret;
+
+	    }
+
+
+	 
+	 
+	    private void elimUseless() {
+	    	
+	    }
+	    
+	    
 	/**
 	 * Indicates whether or not a split has to be deleted when introducing the
 	 * dominance edge between the given nodes.
