@@ -1,5 +1,7 @@
 package nl.rug.discomm.udr.chart;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,30 +9,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.rug.discomm.udr.structurecheck.Utilities;
+
 public class IntegerChart {
 
 	Map<List<Integer>, List<IntSplit>> chart;
+	Map<List<Integer>, BigInteger> numSolvedForms;
 	Map<Integer, List<Integer>> domEdges;
 	int chainlength;
+	List<Integer> toplevel;
 	
 	public IntegerChart(int length) {
 		chainlength = length;
 		chart = new HashMap<List<Integer>,List<IntSplit>>();
 		domEdges = new HashMap<Integer, List<Integer>>();
+		toplevel = new ArrayList<Integer>();
+		toplevel.add(1);
+		toplevel.add(chainlength);
+		numSolvedForms = new HashMap<List<Integer>, BigInteger>();
 	}
 	
 	public IntegerChart(int length, Map<Integer, List<Integer>> edges) {
 		domEdges = edges;
 		chainlength = length;
 		chart = new HashMap<List<Integer>,List<IntSplit>>();
+		toplevel = new ArrayList<Integer>();
+		toplevel.add(1);
+		toplevel.add(chainlength);
+		numSolvedForms = new HashMap<List<Integer>, BigInteger>();
 	}
 	
 	
 	public void solve() {
-		List<Integer> top = new ArrayList<Integer>();
-		top.add(1);
-		top.add(chainlength);
-		computeSplitsForSubgraph(top);
+		
+		computeSplitsForSubgraph(toplevel);
 	}
 	
 	
@@ -93,7 +105,8 @@ public class IntegerChart {
 			for( IntSplit split : pair.getValue() ) {
 				ret.append("{ " + "[" + split.leftSub.get(0) + ", " + 
 					split.leftSub.get(1) + "] <--" + split.root + "-->  [" + split.rightSub.get(0) + ", " + 
-						split.rightSub.get(1) + "] }");
+						split.rightSub.get(1) + "] } -- " + 
+						split.likelihood);
 			}
 			ret.append(System.getProperty("line.separator") + System.getProperty("line.separator"));
 		}
@@ -101,8 +114,57 @@ public class IntegerChart {
 		return ret.toString();
 	}
 	
-	public void computeProbabilities() {
+	
+	public BigInteger countNumberOfSolvedForms() {
+		return countNumberOfSolvedForms(toplevel);
+	}
+	
+	
+	private BigInteger countNumberOfSolvedForms(List<Integer> subgraph) {
+		if(numSolvedForms.containsKey(subgraph)) {
+			return numSolvedForms.get(subgraph);
+		}
 		
+		int left = subgraph.get(0), right = subgraph.get(1);
+		BigInteger ret;
+		if(left == right) {
+			
+			ret =  BigInteger.ONE;
+		} else {
+			ret = BigInteger.ZERO;
+			for( IntSplit split : chart.get(subgraph) ) {
+				
+				ret = ret.add(countNumberOfSolvedForms(split.rightSub)
+						.multiply(countNumberOfSolvedForms(split.leftSub)));
+			}
+			
+		}
+		numSolvedForms.put(subgraph, ret);
+		return ret;
+	}
+	
+	
+	public void initialiseProbabilities() {
+		
+		for(List<Integer> subgraph: chart.keySet()) {
+			BigDecimal all = BigDecimal.ZERO;
+			Map<IntSplit, BigInteger> solvedForms = new HashMap<IntSplit, BigInteger>();
+			for(IntSplit split : chart.get(subgraph)) {
+				BigInteger sfs =
+					Utilities.catalanNumber(split.root - split.leftBoundary).multiply(
+							Utilities.catalanNumber(split.rightBoundary - split.root));
+				solvedForms.put(split,sfs);
+				all = all.add(new BigDecimal(sfs));
+				
+					
+			}
+			
+			for(Map.Entry<IntSplit, BigInteger> splitToForms : solvedForms.entrySet()) {
+				splitToForms.getKey().setLikelihood(
+						new BigDecimal(splitToForms.getValue()).divide(all, 4, BigDecimal.ROUND_HALF_EVEN).doubleValue());
+			}
+			
+		}
 	}
 	
 	public class IntSplit {
