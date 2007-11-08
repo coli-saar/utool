@@ -20,7 +20,7 @@ public class ExtractPatterns {
 	private Map<String,int[]> boolFeat;
 	private Map<String, List<Map<String,Integer>>> stringFeat;
 	private Map<String, Integer> overallCount;
-	private int boolcount, stringcount;
+	private int boolcount, stringcount, rootcount;
 	private List<Map<String,Integer>> standardNumbers;
 	
 	public ExtractPatterns() {
@@ -28,6 +28,7 @@ public class ExtractPatterns {
 		stringFeat = new HashMap<String, List<Map<String,Integer>>>();
 		boolcount = BooleanFeatures.values().length;
 		stringcount = StringFeatures.values().length;
+		rootcount = 0;
 		overallCount = new HashMap<String,Integer>();
 		standardNumbers = new ArrayList<Map<String,Integer>>();
 		for(int i = 0; i < stringcount; i++) {
@@ -41,6 +42,7 @@ public class ExtractPatterns {
 			boolFeat.put(key, new int[boolcount]);
 		}
 		boolFeat.get(key)[feat.ordinal()]++;
+		feat.countUp();
 	}
 	
 	
@@ -71,10 +73,9 @@ public class ExtractPatterns {
 		for( String root : graph.getAllRoots() ) {
 			if(! graph.isLeaf(root)) {
 				String relation = labels.getLabel(root);
-				
+				rootcount++;
 				// Joint and List are not of interest.
-				if(! (relation.startsWith("List") ||
-						relation.startsWith("Joint"))) {
+				
 					
 					Utilities.countUp(overallCount, relation);
 					
@@ -203,7 +204,7 @@ public class ExtractPatterns {
 
 				}
 				
-			}
+			
 		}
 		
 		
@@ -222,17 +223,32 @@ public class ExtractPatterns {
 		Collections.sort(rels);
 		
 		for(String rel : rels) {
-			if((! rel.startsWith("List")) && (! rel.startsWith("Joint"))) {
-			writer.append(rel + tabs + "Overall counts: " + overallCount.get(rel) + n);
+		
+				double proot = (double) overallCount.get(rel) / (double) rootcount;
+				String allfrag = df.format(100.0 * proot);
+				
+			writer.append(rel + tabs + "Overall counts: " + overallCount.get(rel) +   "\t(" +
+					 allfrag + "%)" + n);
 			
 			int[] counts = boolFeat.get(rel);
 			BooleanFeatures[] bool = BooleanFeatures.values();
 			double all = (double) overallCount.get(rel);
 			for(int i = 0; i < bool.length; i++) {
 				 
-				 String fraction = df.format((double)counts[i]/all);
+				double perc = (double)counts[i]/all;
+				String fraction = df.format(perc);
+				String mi = "", t= "";
+				if(perc > 0.8) {
+					double pjoint = (double) counts[i] / (double) rootcount;
+					double pfeat = (double) bool[i].getOverallCount() / (double) rootcount;
+					double pmi = Math.log((pjoint/(pfeat * proot)));
+					mi = "\tPMI: " + df.format(pmi);
+					
+					double tscore = (pjoint - (pfeat * proot)) / Math.sqrt(pjoint);
+					t= "\t T: " + df.format(tscore);
+				}
 				writer.append(tabs + bool[i] + "" + tabs + "" + 
-						counts[i] + "" + tabs + fraction+ "" + n);
+						counts[i] + "" + tabs + fraction+ mi + t  + n);
 			}
 			writer.append(n);
 			writer.flush();
@@ -247,12 +263,11 @@ public class ExtractPatterns {
 					Collections.sort(ttmp);
 					
 					for(String val : ttmp) {
-						if(! (val.startsWith("List") ||
-								val.startsWith("Joint")) ) {
+						
 							String fraction = df.format((double) ct.get(val)/all);
 							writer.append(tabs + "\t\t"+ val + tabs + ct.get(val) + tabs +
 									fraction + n);
-						}
+						
 					}
 				}
 			}
@@ -260,7 +275,7 @@ public class ExtractPatterns {
 			writer.flush();
 			}
 			
-		}
+		
 		writer.close();
 	}
 	
@@ -268,16 +283,116 @@ public class ExtractPatterns {
 	enum BooleanFeatures {
 		
 		// EDUs
-		RIGHT_CHILD_LEAF, LEFT_CHILD_LEAF, NUCLEUS_LEAF, SATELLITE_LEAF,
+		RIGHT_CHILD_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		}, 
+		
+		LEFT_CHILD_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		NUCLEUS_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		SATELLITE_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
 		
 		// same relations or two leaves
-		EQUAL_CHILDREN, 
+		EQUAL_CHILDREN {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
 		
 		// compare nuclearity to parent relation (left or right or coord)
-		RIGHT_CHILD_NUCEQ, LEFT_CHILD_NUCEQ, NUCLEUS_NUCEQ, SATELLITE_NUCEQ,
+		RIGHT_CHILD_NUCEQ {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		LEFT_CHILD_NUCEQ {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		NUCLEUS_NUCEQ {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		SATELLITE_NUCEQ {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
 		
 		// general structure
-		IS_ROOT;
+		IS_ROOT {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		};
+		
+		abstract int getOverallCount();
+		abstract void countUp();
 	}
 	
 	enum StringFeatures {

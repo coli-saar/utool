@@ -43,7 +43,7 @@ public class URMLInputCodec extends InputCodec {
 	
 	
 	@CodecConstructor
-	public URMLInputCodec(@CodecOption(name="onlySegments", defaultValue="true") 
+	public URMLInputCodec(@CodecOption(name="onlySegments", defaultValue="false") 
 							boolean onlySegments) {
 		super();
 		segments = onlySegments;
