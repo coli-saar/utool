@@ -28,7 +28,6 @@ import java.util.Set;
  * the assumptions we can make about this pure chains resp. the graphs arising when adding
  * dominance edges to pure chains, the solving process can be up to 100 times faster.
  * 
- * TODO implement Edge / Split deleting
  * 
  * @see de.saar.chorus.domgraph.chart.Chart
  * @author Michaela Regneri
@@ -67,6 +66,142 @@ public class IntegerChart {
 		computeSplitsForSubgraph(toplevel);
 	}
 	
+	public boolean addDominanceEdge(int src, int tgt) {
+		//this assumes that the dominance edge goes out of 
+		// the respective hole, i.e. src < tgt -> right hole,
+		// src > tgt -> left hole
+		
+		if(domEdges.containsKey(tgt)) {
+			
+			if(domEdges.get(tgt).contains(src)) {
+				return false;
+			} 			
+		}
+		List<Integer> tgts = domEdges.get(src);
+		if(tgts == null) {
+			tgts = new ArrayList<Integer>();
+			domEdges.put(src, tgts);
+		}
+		tgts.add(tgt);
+		
+		restrictSubgraph(toplevel, src, tgt, new HashSet<List<Integer>> ());
+		deleteNotReferencedSubgraphs();
+		numSolvedForms.clear();
+		
+		return true;
+	}
+	
+	private void deleteNotReferencedSubgraphs() {
+		Set<List<Integer>> referenced = new HashSet<List<Integer>>();
+		storeReferencedGraphs(referenced, toplevel);
+		Set<List<Integer>> chartkeys = new HashSet<List<Integer>>(chart.keySet());
+		chartkeys.removeAll(referenced);
+	//	System.err.println(chartkeys);
+		for(List<Integer> subgraph : chartkeys) {
+			chart.remove(subgraph);
+			System.err.println("Useless: " + subgraph);
+		}
+	//	System.err.println(chart);
+	}
+	
+	private void storeReferencedGraphs(Set<List<Integer>> ref, List<Integer> current) {
+		if(! ref.contains(current)) {
+			ref.add(current);
+			if(chart.containsKey(current)) {
+			for(IntSplit split : chart.get(current)) {
+				storeReferencedGraphs(ref, split.rightSub);
+				storeReferencedGraphs(ref, split.leftSub);
+			}
+			}
+		}
+	}
+	
+	
+	private void restrictSubgraph(List<Integer> subgraph, int src, int tgt, 
+			Set<List<Integer>> visited) {
+		
+		if(! visited.contains(subgraph)) {
+			System.err.println("Edge: " + src + " --> " + tgt + ", subgraph: " + subgraph);
+			visited.add(subgraph);
+			int left = subgraph.get(0), right = subgraph.get(1);
+			
+			if(left <= src && src <= right) {
+				if(left <= tgt && tgt <= right) {
+					System.err.println("Edge in subgraph! " );
+					List<IntSplit> toDelete = new ArrayList<IntSplit>();
+					
+					for(int i = 0; i < chart.get(subgraph).size(); i++) {
+						IntSplit split = chart.get(subgraph).get(i);
+						int root = split.root;
+						if(root == tgt) {
+							toDelete.add(split);
+							System.err.println("Split with root " + root + " in trashbin. (root == tgt)");
+						} else if((src < root && root < tgt) ||
+								(tgt < root && root < src) ) {
+								toDelete.add(split);
+								System.err.println("Split with root " + root + " in trashbin. (tgt < root < src)");
+								//TODO deleteSplit
+						} else {
+							restrictSubgraph(split.rightSub, src, tgt, visited);
+							restrictSubgraph(split.leftSub, src, tgt, visited);
+						}
+					}
+					for(IntSplit del : toDelete) {
+							deleteSplit(subgraph,del);
+						
+						if(del.root != tgt) {
+							restrictSubgraph(del.rightSub, src, tgt, visited);
+							restrictSubgraph(del.leftSub, src, tgt, visited);
+						}
+					}
+					
+				}
+			}
+		}
+	}
+	
+	private void deleteSplit(List<Integer> subgraph, IntSplit split) {
+		double prob = split.likelihood;
+		List<IntSplit> old =chart.get(subgraph);
+		int del = -1;
+		for(int i = 0; i < old.size(); i++) {
+			IntSplit current = old.get(i);
+			if(current.equals(split)) {
+				del = i;
+			} else {
+				
+				current.setLikelihood(
+						current.likelihood/(1.0-prob));
+			}
+		}
+		if(del == 0 && old.size() == 1) {
+			System.err.println("Can't delete last split!");
+		} else {
+			old.remove(del);
+		}
+		
+	}
+	
+	private IntSplit deleteSplit(List<Integer> subgraph, int index) {
+		IntSplit split = chart.get(subgraph).get(index);
+		double prob = split.likelihood;
+		List<IntSplit> old =chart.get(subgraph);
+		
+		for(int i = 0; i < old.size(); i++) {
+			IntSplit current = old.get(i);
+			if(i != index) {
+				current.setLikelihood(
+						(1.0-prob)/current.likelihood);
+			}
+		}
+		if(index == 0 && old.size() == 1) {
+			System.err.println("Can't delete last split!");
+			return null;
+		} else {
+		
+			return old.remove(index);
+		}
+	}
 	
 	private void computeSplitsForSubgraph(List<Integer> subgraph) {
 
@@ -80,14 +215,16 @@ public class IntegerChart {
 			for( int i = left; i <= right; i++) {
 				if(domEdges.containsKey(i)) {
 					for(Integer tgt : domEdges.get(i)) {
-						forbiddenRoots.add(tgt);
-						if(tgt > i) {
-							for(int f = i+1; f < tgt; f++) {
-								forbiddenRoots.add(f);
-							}
-						} else {
-							for(int f = tgt +1; f < i;f++) {
-								forbiddenRoots.add(f);
+						if(tgt <= right) {
+							forbiddenRoots.add(tgt);
+							if(tgt > i) {
+								for(int f = i+1; f < tgt; f++) {
+									forbiddenRoots.add(f);
+								}
+							} else {
+								for(int f = tgt +1; f < i;f++) {
+									forbiddenRoots.add(f);
+								}
 							}
 						}
 					}
