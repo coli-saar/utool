@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.Split;
+
 /**
  * This class is a chart for pure chains and possibly some extra dominance edges, whereby
  * no unsolvable graphs are allowed. The chart's splits may also contain likelihoods.
@@ -46,8 +49,10 @@ public class IntegerChart {
 		chart = new HashMap<List<Integer>,List<IntSplit>>();
 		domEdges = new HashMap<Integer, List<Integer>>();
 		toplevel = new ArrayList<Integer>();
-		toplevel.add(1);
-		toplevel.add(chainlength);
+		if(length > 0) {
+			toplevel.add(1);
+			toplevel.add(chainlength);
+		}
 		numSolvedForms = new HashMap<List<Integer>, BigInteger>();
 	}
 	
@@ -56,12 +61,16 @@ public class IntegerChart {
 		chainlength = length;
 		chart = new HashMap<List<Integer>,List<IntSplit>>();
 		toplevel = new ArrayList<Integer>();
-		toplevel.add(1);
-		toplevel.add(chainlength);
+		if(length > 0) {
+			toplevel.add(1);
+			toplevel.add(chainlength);
+		}
 		numSolvedForms = new HashMap<List<Integer>, BigInteger>();
 	}
 	
-	
+	public List<Integer> getToplevelSubgraph() {
+		return toplevel;
+	}
 	public void solve() {
 		computeSplitsForSubgraph(toplevel);
 	}
@@ -91,6 +100,9 @@ public class IntegerChart {
 		return true;
 	}
 	
+	/**
+	 * TODO find out how to get the same effect more efficiently
+	 */
 	private void deleteNotReferencedSubgraphs() {
 		Set<List<Integer>> referenced = new HashSet<List<Integer>>();
 		storeReferencedGraphs(referenced, toplevel);
@@ -254,6 +266,42 @@ public class IntegerChart {
 		}
 	}
 	
+	public Set<String> convertToSubgraph(List<Integer> subgraph) {
+		Set<String> ret = new HashSet<String>();
+		int left = subgraph.get(0), right = subgraph.get(1);
+		ret.add( (left-1) + "y");
+		for(int i = left; i <= right; i++) {
+			ret.add(i + "x");
+			ret.add(i + "xl");
+			ret.add(i + "xr");
+			ret.add(i + "y");
+		}
+		
+		return ret;
+	}
+	
+	public Chart toChart() {
+		Chart ret = new Chart();
+		ret.addToplevelSubgraph(convertToSubgraph(toplevel));
+		for(List<Integer> subgraph : chart.keySet()) {
+			Set<String> sg = convertToSubgraph(subgraph);
+			for( IntSplit split : chart.get(subgraph) ) {
+				ret.addSplit(sg, split.toChartSplit());
+			}
+		}
+		
+		return ret;
+	}
+	
+	public List<IntSplit> getSplitsFor(List<Integer> subgraph) {
+		return chart.get(subgraph);
+	}
+	
+	
+	public int getChainlength() {
+		return chainlength;
+	}
+	
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
 		
@@ -366,6 +414,17 @@ public class IntegerChart {
 			likelihood = prob;
 		}
 		
+		public Split toChartSplit() {
+			Split ret = new Split(root + "x");
+			
+		
+			ret.addWcc(root + "xl", convertToSubgraph(leftSub));
+			ret.addWcc(root + "xr", convertToSubgraph(rightSub));
+			
+			
+			return ret;
+		}
+		
 		public List<Integer> getLeftSubgraph() {
 			return leftSub;
 		}
@@ -390,6 +449,12 @@ public class IntegerChart {
 			this.root = root;
 		}
 		
+		public String toString() {
+			
+			return "[" + leftSub.get(0) + "," + leftSub.get(1) + "] <-- " +
+					root + " -->  [" + rightSub.get(0) +
+					"," + rightSub.get(1) + "]";
+		}
 		
 		
 	}
