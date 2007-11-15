@@ -22,7 +22,7 @@ public class FlatSyntaxTree {
 	private Chain graph;
 	private NodeLabels graphlabels;
 	
-	private static final String subClause = "SBAR";
+	private static final String subClause = "SBAR-";
 	
 	Map<String, List<String>> nodeToTerminals;
 	Map<List<String>, String> terminalsToNode;
@@ -139,8 +139,14 @@ public class FlatSyntaxTree {
 				(currentNodeIndex <= graph.getLength())) {
 			terminals = nodeToTerminals.get(currentNodeIndex + "y");
 			System.err.println(currentNodeIndex + " " + terminals);
-			stringIndex = complete.lastIndexOf(terminals.get(terminals.size() -1).replaceAll("\\W|_", ""));
-			if( stringIndex > -1) {
+			
+			String label = graphlabels.getLabel(currentNodeIndex + "y");
+			if(label.endsWith("<P>")) {
+				label = label.substring(0,label.length() - 4);
+			}
+			label = label.replaceAll("\\W|_", "");
+			
+			if(complete.contains(label) ) {
 				nodesForSentence.add(currentNodeIndex);
 				currentNodeIndex++;
 			} else {
@@ -149,7 +155,7 @@ public class FlatSyntaxTree {
 			
 		}
 		System.err.println(nodesForSentence);
-		System.err.println(" == ");
+	
 		
 		Sexp subcl = findsubClause(current, new HashSet<Sexp>());
 		
@@ -161,58 +167,70 @@ public class FlatSyntaxTree {
 		
 		if(start == 0) {
 			sc.add(nodesForSentence.get(0));
-			for(Integer node : nodesForSentence) {
-				if(completeSub.endsWith(nodeToTerminals.get(node.toString() + "y").get(
-						nodeToTerminals.get(node.toString() + "y").size() -1))) {
-					sc.add(node);
-					if(node == nodesForSentence.get(nodesForSentence.size() -1)) {
-						mc.add(node);
-					} else {
-						mc.add(node +1);
-					}
+			int scright = sc.get(0);
+			
+			for(int i = 1; i < nodesForSentence.size(); i++) {
+				int node = nodesForSentence.get(i);
+				String label = graphlabels.getLabel(node + "y");
+				if(label.endsWith("<P>")) {
+					label = label.substring(0,label.length() - 4);
+				}
+				label = label.replaceAll("\\W|_", "");
+				
+				if(completeSub.contains(label) ){
+					scright = node;
 					
+				} else {
+					sc.add(scright);
 					break;
 				}
 			}
+			
+			if(sc.size() == 1) {
+				sc.add(scright);
+				mc.add(scright);
+			} else {
+				mc.add(scright +1);
+			}
+			
+			
 			mc.add(nodesForSentence.get(nodesForSentence.size()-1));
 		} else {
 			mc.add(nodesForSentence.get(0)); 
-			for(Integer node : nodesForSentence) {
-				if(completeSub.startsWith(nodeToTerminals.get(node.toString() + "y").get(
-						0))) {
-					mc.add(node -1);
-					sc.add(node);
-					
+			int mcright = mc.get(0);
+			for(int i = 1; i < nodesForSentence.size(); i++) {
+				
+				int node = nodesForSentence.get(i);
+				
+				String label = graphlabels.getLabel(node + "y");
+				
+				if(label.endsWith("<P>")) {
+					label = label.substring(0,label.length() - 4);
+				}
+				label = label.replaceAll("\\W|_", "");
+				
+				if(! completeSub.contains(label) ) {
+					mcright = node;
+		
+				} else {
+					mc.add(mcright);
 					break;
 				}
 			}
+			
+			if(mc.size() == 1) {
+				mc.add(mcright);
+				sc.add(mcright);
+			} else {
+				sc.add(mcright +1);
+			}
+			
 			sc.add(nodesForSentence.get(nodesForSentence.size()-1));
 		}
 		
 		dominances.put(mc, sc);
 		}
-	/*	while(! nodeToTerminals.get(currentNodeIndex + "y").get(0).replaceAll("\\W|_", "")
-				.equals(first.replaceAll("\\W|_", ""))) {
-			currentNodeIndex++;
-		}
-		
-		currentNodeIndex = 
-			dfs(current,new HashSet<Sexp>(),new ArrayList<Integer>(), currentNodeIndex);
-		
-		
-		System.err.println(subtreesToNodes);
-		if(current.size() == 1) {
-			current = current.get(0).list();
-		}
-		List<Integer> nodesForSentence = subtreesToNodes.get(current);
-		
-		if(! nodesForSentence.isEmpty()) {
-		int lastStart = nodesForSentence.get(0);
-		int lastEnd = nodesForSentence.get(nodesForSentence.size() -1);
-		findSubClauses(current, new HashSet<Sexp>(), lastStart, lastEnd);
-	
-		
-		} */
+		System.err.println(" == ");
 		read = Sexp.read(tok);
 	//	nodesForSentence.clear();
 		}
@@ -274,9 +292,10 @@ public class FlatSyntaxTree {
 					visited.add(list);
 				}
 			//	System.err.println("sub claus saearch: current = " + list);
-
+			
 				if(list.get(0).isSymbol() &&
 						list.get(0).toString().startsWith(subClause)) {
+					System.err.println(list.get(0));
 					return current;
 				} else {
 					Sexp child =  null;

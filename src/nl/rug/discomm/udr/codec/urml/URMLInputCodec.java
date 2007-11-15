@@ -162,7 +162,7 @@ public class URMLInputCodec extends InputCodec {
 				if(! label.equals("")) {
 				label = label.trim();
 				label = label.replaceAll("\\s+", " ");
-				label = label.replaceAll("\\.|,|-|\'","_");
+				label = label.replaceAll("\\.|,|\'","_");
 				labels.addLabel(nodeToLabel, label);
 				} else {
 					graph.remove(nodeToLabel);
