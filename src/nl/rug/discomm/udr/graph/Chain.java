@@ -30,7 +30,9 @@ public class Chain extends DomGraph {
 	}
 	
 	
-	
+	public int getLength() {
+		return lastIndex;
+	}
 	public boolean addWeightedDominanceEdge(String src, String tgt, double weight) {
 		
 		Set<Edge> toDelete = new HashSet<Edge>();
@@ -61,6 +63,17 @@ public class Chain extends DomGraph {
 		}
 		
 		return false;
+	}
+	
+	
+	public boolean addDominanceEdge(String src, String tgt) {
+		Set<Edge> debugEdges = new HashSet<Edge>();
+		if(! isAllowedEdge(src,tgt,1,debugEdges)) {
+			return false;
+		} else {
+			addEdge(src,tgt, new EdgeData(EdgeType.DOMINANCE, ++edgeIndex));
+		}
+		return true;
 	}
 	
 	private int getHoleIndex(String hole) {
@@ -134,6 +147,8 @@ public class Chain extends DomGraph {
 	}
 	
 	public void addFragment() {
+		
+		if(lastIndex > 0) {
 		lastIndex++;
 		
     	
@@ -158,7 +173,10 @@ public class Chain extends DomGraph {
 		
 		// dominance edge to new lower fragment
     	addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE, ++edgeIndex));
-
+		} else {
+			makeChain(1);
+			lastIndex++;
+		}
 	}
 	
 	

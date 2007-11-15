@@ -1,12 +1,25 @@
 package nl.rug.discomm.udr.structurecheck;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class Utilities {
 	
+	
+	public static <E,T> void addToMapList(Map<E, List<T>> map, E key, T value) {
+		List<T> values;
+		if( map.containsKey(key) ) {
+			values = map.get(key);
+		} else {
+			values = new ArrayList<T>();
+			map.put(key, values);
+		}
+		values.add(value);
+	}
 	
 	public static BigInteger catalanNumber(long n) {
 		
