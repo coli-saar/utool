@@ -10,6 +10,7 @@ import nl.rug.discomm.udr.structurecheck.Utilities;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class StructuralDisambiguation {
 	
@@ -34,6 +35,33 @@ public class StructuralDisambiguation {
 			System.err.println("Dominance " + edge.getKey() + " --> " + edge.getValue() + " :" +
 					(System.currentTimeMillis() - time) + "ms");
 		}
+	}
+	
+	public static boolean markClauseRelation(List<Integer> src, List<Integer> tgt, 
+			NodeLabels labels, String relation) {
+		int middlefragment;
+		
+		if(src.get(0) > tgt.get(0)) {
+			// edge from right to left
+			middlefragment = tgt.get(1);
+		
+			if(tgt.get(1) == src.get(1)) {
+				// something went wrong (sentence boundary != segment boundary e.g.)
+				return false;
+			}
+			
+		} else {
+			// edge from left to right
+			middlefragment = tgt.get(0);
+			
+			
+			if(src.get(1) == middlefragment) {
+				return false;
+			}
+		}
+		
+		labels.addLabel(middlefragment + "x", relation);
+		return true;
 	}
 	
 	public static Map<Integer, List<Integer>> addSentenceDominance(List<Integer> src, List<Integer> tgt, Chain graph) {
