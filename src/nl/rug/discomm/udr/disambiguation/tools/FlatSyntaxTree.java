@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nl.rug.discomm.udr.disambiguation.tools.Cues.Relation;
 import nl.rug.discomm.udr.graph.Chain;
 import danbikel.lisp.Sexp;
 import danbikel.lisp.SexpList;
@@ -24,19 +25,23 @@ public class FlatSyntaxTree {
 	
 	private static final String subClause = "SBAR-";
 	
-	Map<String, List<String>> nodeToTerminals;
-	Map<List<String>, String> terminalsToNode;
-	Map<List<Integer>, List<Integer>> dominances;
-	Map<Sexp, List<Integer>> subtreesToNodes;
+	private	Map<String, List<String>> nodeToTerminals;
+	private Map<List<String>, String> terminalsToNode;
+	private Map<List<Integer>, List<Integer>> dominances;
+	private Map<Sexp, List<Integer>> subtreesToNodes;
+	private Map<Map<List<Integer>, List<Integer>>, Relation> fragmentToRelation;
+	
 	
 	public FlatSyntaxTree(Chain dg, NodeLabels labels) {
 		graph = dg;
-		graphlabels = labels;
+		graphlabels= labels;
 		
 		nodeToTerminals =  new HashMap<String, List<String>>();
 		terminalsToNode = new HashMap<List<String>, String>();
 		dominances = new HashMap<List<Integer>, List<Integer>>();
 		subtreesToNodes = new HashMap<Sexp, List<Integer>>();
+		fragmentToRelation = new HashMap<Map<List<Integer>, List<Integer>>, Relation>();
+		
 		
 		for(int i = 0; i <= dg.getLength(); i++) {
 			String node = i + "y";
@@ -61,61 +66,13 @@ public class FlatSyntaxTree {
 	}
 	
 	
-	private int dfs(Sexp current, Set<Sexp> visited, List<Integer> collected, 
-			 int currentNode) {
-		if(! visited.contains(current)) {
-			visited.add(current);
-			if(current.isList()) {
-				SexpList list = current.list();
-				if( list.size() == 1) {
-					return dfs(list.get(0), visited, collected, currentNode);
-				} else {
-					String node = currentNode + "y";
-					String label = graphlabels.getLabel(node);
-					if(label.endsWith("<P>")) {
-						label = label.substring(0,label.length() - 4);
-					}
-				//	System.err.println(label);
-				//	System.err.println(Util.collectLeaves(current).toString());
-					if(label.replaceAll("\\W|_", "").matches(
-							Util.collectLeaves(current).toString().replaceAll("\\W|_", ""))) {
-						List<Integer> base = new ArrayList<Integer>();
-						base.add(currentNode);
-						subtreesToNodes.put(current, base);
-						
-						collected.add(currentNode);
-						return currentNode +1;
-					} else {
-						List<Integer> myChildren = new ArrayList<Integer>();
-						int nextNode = currentNode;
-						Children : for(int i = 0; i< list.length(); i++) {
-							Sexp nextChild = list.get(i);
-							int tmp = currentNode;
-							while(! nodeToTerminals.get(tmp + "y").get(0).replaceAll("\\W|_", "")
-									.equals(nextChild.toString().replaceAll("\\W|_", ""))) {
-								tmp++;
-								if(tmp > graph.getLength()) {
-									continue Children;
-								}
-							}
-							nextNode = dfs(list.get(i), visited, myChildren,
-									tmp);
-						}
-						collected.addAll(myChildren);
-						subtreesToNodes.put(current, new ArrayList<Integer>(myChildren));
-						return nextNode;
-					}
-				}
-			}
-			
-		}
-		return currentNode;
-	}
+	
 	
 	public void parse(InputStream ptbfile) throws IOException {
 		
 		SexpTokenizer tok = new SexpTokenizer(new InputStreamReader(ptbfile));
 		SexpList current = new SexpList();
+		Set<Sexp> visited = new HashSet<Sexp>();
 		Sexp read = Sexp.read(tok);
 		int currentNodeIndex = 0;
 		
@@ -133,19 +90,19 @@ public class FlatSyntaxTree {
 		String first = Util.collectLeaves(read).list().get(0).toString();
 		
 		List<Integer> nodesForSentence = new ArrayList<Integer>();
-		
+	//	System.err.println(complete);
 		int stringIndex = 0;
 		while(stringIndex < complete.length() &&
 				(currentNodeIndex <= graph.getLength())) {
 			terminals = nodeToTerminals.get(currentNodeIndex + "y");
-			System.err.println(currentNodeIndex + " " + terminals);
 			
 			String label = graphlabels.getLabel(currentNodeIndex + "y");
 			if(label.endsWith("<P>")) {
 				label = label.substring(0,label.length() - 4);
 			}
 			label = label.replaceAll("\\W|_", "");
-			
+
+			System.err.println(currentNodeIndex + " " + terminals);
 			if(complete.contains(label) ) {
 				nodesForSentence.add(currentNodeIndex);
 				currentNodeIndex++;
@@ -156,80 +113,8 @@ public class FlatSyntaxTree {
 		}
 		System.err.println(nodesForSentence);
 	
+		extractSubClause(current, nodesForSentence, visited, new HashSet<Sexp>());
 		
-		Sexp subcl = findsubClause(current, new HashSet<Sexp>());
-		
-		if(subcl != null ) {
-		String completeSub = Util.collectLeaves(subcl).toString().replaceAll("\\W|_", "");
-		int start = complete.lastIndexOf(completeSub);
-		List<Integer> sc = new ArrayList<Integer>();
-		List<Integer> mc = new ArrayList<Integer>();
-		
-		if(start == 0) {
-			sc.add(nodesForSentence.get(0));
-			int scright = sc.get(0);
-			
-			for(int i = 1; i < nodesForSentence.size(); i++) {
-				int node = nodesForSentence.get(i);
-				String label = graphlabels.getLabel(node + "y");
-				if(label.endsWith("<P>")) {
-					label = label.substring(0,label.length() - 4);
-				}
-				label = label.replaceAll("\\W|_", "");
-				
-				if(completeSub.contains(label) ){
-					scright = node;
-					
-				} else {
-					sc.add(scright);
-					break;
-				}
-			}
-			
-			if(sc.size() == 1) {
-				sc.add(scright);
-				mc.add(scright);
-			} else {
-				mc.add(scright +1);
-			}
-			
-			
-			mc.add(nodesForSentence.get(nodesForSentence.size()-1));
-		} else {
-			mc.add(nodesForSentence.get(0)); 
-			int mcright = mc.get(0);
-			for(int i = 1; i < nodesForSentence.size(); i++) {
-				
-				int node = nodesForSentence.get(i);
-				
-				String label = graphlabels.getLabel(node + "y");
-				
-				if(label.endsWith("<P>")) {
-					label = label.substring(0,label.length() - 4);
-				}
-				label = label.replaceAll("\\W|_", "");
-				
-				if(! completeSub.contains(label) ) {
-					mcright = node;
-		
-				} else {
-					mc.add(mcright);
-					break;
-				}
-			}
-			
-			if(mc.size() == 1) {
-				mc.add(mcright);
-				sc.add(mcright);
-			} else {
-				sc.add(mcright +1);
-			}
-			
-			sc.add(nodesForSentence.get(nodesForSentence.size()-1));
-		}
-		
-		dominances.put(mc, sc);
-		}
 		System.err.println(" == ");
 		read = Sexp.read(tok);
 	//	nodesForSentence.clear();
@@ -237,45 +122,117 @@ public class FlatSyntaxTree {
 	}
 	
 	
-	private void findSubClauses(Sexp current, Set<Sexp> visited, int currentSentenceStart,
-			int currentSentenceEnd) {
-		if(! visited.contains(current) ) {
-			visited.add(current);
-			if(current.isList()) {
-				SexpList list = current.list();
-				if(list.size() == 1) {
-					findSubClauses(list.get(0), visited, currentSentenceStart, currentSentenceEnd);
-				} else {
-					if(list.get(0).isSymbol() &&
-							list.get(0).toString().startsWith(subClause)) {
-						List<Integer> nodes = subtreesToNodes.get(current);
+	
+	public Map<Map<List<Integer>, List<Integer>>, Relation> getMarkedSpans() {
+		return fragmentToRelation;
+	}
 
-						if(! nodes.isEmpty() ) {
-							int scStart = nodes.get(0);
-							int scEnd = nodes.get(nodes.size() -1);
-							List<Integer> sc = new ArrayList<Integer>();
-							sc.add(scStart);
-							sc.add(scEnd);
+	public void setFragmentToRelation(
+			Map<Map<List<Integer>, List<Integer>>, Relation> fragmentToRelation) {
+		this.fragmentToRelation = fragmentToRelation;
+	}
 
-							List<Integer> mc = new ArrayList<Integer>();
-							if(scStart == currentSentenceStart) {
-								mc.add(scEnd +1);
-								mc.add(currentSentenceEnd);
-							} else {
-								mc.add(currentSentenceStart);
-								mc.add(scStart -1);
-							}
+	private void extractSubClause(Sexp startsexp, List<Integer> nodesForSentence, 
+			Set<Sexp> visited, Set<Sexp> visitedDFS) {
+		
+		Sexp subcl = findsubClause(startsexp, visitedDFS);
+	
+		String complete = Util.collectLeaves(startsexp).toString().replaceAll("\\W|_", "");
+		if(subcl != null && (! visited.contains(subcl)) ) {
+			visited.add(subcl);
+			
+			SexpList leaves = Util.collectLeaves(subcl).list();
+			
+			String completeSub = leaves.toString().replaceAll("\\W|_", "");
+			int start = complete.lastIndexOf(completeSub);
+			List<Integer> sc = new ArrayList<Integer>();
+			List<Integer> mc = new ArrayList<Integer>();
 
-							dominances.put(mc, sc);
-							for(int i = 1; i < list.length(); i++) {
-								if(subtreesToNodes.containsKey(list.get(i))) {
-									findSubClauses(list.get(i), visited, scStart, scEnd);
-								}
-							}
-						}
+			if(start == 0) {
+				sc.add(nodesForSentence.get(0));
+				int scright = sc.get(0);
+
+				for(int i = 1; i < nodesForSentence.size(); i++) {
+					int node = nodesForSentence.get(i);
+					String label = graphlabels.getLabel(node + "y");
+					if(label.endsWith("<P>")) {
+						label = label.substring(0,label.length() - 4);
+					}
+					label = label.replaceAll("\\W|_", "");
+
+					if(completeSub.contains(label) ){
+						scright = node;
+
+					} else {
+						sc.add(scright);
+						break;
 					}
 				}
+
+				if(sc.size() == 1) {
+					sc.add(scright);
+					mc.add(scright);
+				} else {
+					mc.add(scright +1);
+				}
+
+
+				mc.add(nodesForSentence.get(nodesForSentence.size()-1));
+			} else {
+				mc.add(nodesForSentence.get(0)); 
+				int mcright = mc.get(0);
+				for(int i = 1; i < nodesForSentence.size(); i++) {
+
+					int node = nodesForSentence.get(i);
+
+					String label = graphlabels.getLabel(node + "y");
+
+					if(label.endsWith("<P>")) {
+						label = label.substring(0,label.length() - 4);
+					}
+					label = label.replaceAll("\\W|_", "");
+
+					if(! completeSub.contains(label) ) {
+						mcright = node;
+
+					} else {
+						mc.add(mcright);
+						break;
+					}
+				}
+
+				if(mc.size() == 1) {
+					mc.add(mcright);
+					sc.add(mcright);
+				} else {
+					sc.add(mcright +1);
+				}
+
+				sc.add(nodesForSentence.get(nodesForSentence.size()-1));
 			}
+			
+			
+			dominances.put(mc, sc);
+			for(Relation rel : Cues.getRelations() ) {
+				for(String marker : rel.getMarkers()) {
+				if(leaves.toString().contains(marker) ) {
+					HashMap<List<Integer>, List<Integer>> dom = new HashMap<List<Integer>, List<Integer>>();
+					dom.put(mc, sc);
+					fragmentToRelation.put(dom, rel);
+				} else {
+				//	System.err.println(leaves + " doesn't contain " + marker);
+				}
+				}
+			}
+			
+			if(sc.size() == 2) {
+			List<Integer> newNodes = new ArrayList<Integer>();
+			for(int i = sc.get(0); i <= sc.get(1); i++) {
+				newNodes.add(i);
+			}
+			System.err.println("RECURSION");
+			extractSubClause(subcl, newNodes, visited, visitedDFS);
+			}	
 		}
 	}
 	

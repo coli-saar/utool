@@ -105,7 +105,7 @@ public class IntegerChart {
 		restrictSubgraph(toplevel, src, tgt, new HashSet<List<Integer>> ());
 		deleteNotReferencedSubgraphs();
 		numSolvedForms.clear();
-		initialiseProbabilities();
+		//initialiseProbabilities();
 		return true;
 	}
 	
