@@ -57,6 +57,17 @@ class DomconOzOutputCodecTest extends GroovyTestCase {
 		assertReversibility(graph, labels);
 	}
 	
+	// As Michaela pointed out (#280), the output codec doesn't properly escape apostrophes,
+	// and the input codec wouldn't read them properly anyway.
+	public void testReversibilityApostrophe() {
+	    graph.addNode("x", new NodeData(NodeType.LABELLED));
+	    labels.addLabel("x", "foo\'bar");
+	    
+	    assertReversibility(graph, labels);
+	}
+	
+	
+	
 	// ensure that the output codec refuses to encode graphs whose labelling information
 	// is inconsistent with the NodeLabels object (see #169).
 	public void testNonWellLabeled1() {
