@@ -18,9 +18,6 @@ import java.util.*;
 import de.saar.chorus.domgraph.graph.*;
 import de.saar.chorus.domgraph.codec.*;
 
-import org.testng.annotations.ExpectedExceptions;
-import org.testng.annotations.Test;
-
 
 /**
  * An input codec for weakly normal dominance constraints in Oz syntax. The
