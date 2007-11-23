@@ -75,7 +75,7 @@ value="de.saar.chorus.domgraph.utool.Utool" />
     </target>
     
     
-    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked">
+    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,rmrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked">
         <javac srcdir="${source}"
  destdir="${build.classes}"
  debug="true"
@@ -248,6 +248,12 @@ password="${deploy.password}">
         <javacc 
             javacchome="${javacchome}" 
             target="${source}/${chorus}/domgraph/codec/mrs/MrsPrologInputCodec.jj" />
+    </target>
+
+    <target name="rmrs.javacc">
+        <javacc 
+            javacchome="${javacchome}" 
+            target="${source}/${chorus}/domgraph/codec/rmrs/RmrsDomconInputCodec.jj" />
     </target>
     
     <target name="glue.javacc">
