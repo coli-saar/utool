@@ -1,8 +1,8 @@
 /*
  * @(#)OneSplitSource.java created 13.02.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.chart;
@@ -10,7 +10,6 @@ package de.saar.chorus.domgraph.chart;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
@@ -20,8 +19,8 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * of this class will not compute the complete set of solved forms.
  * However, it is still guaranteed to detect whether a graph is
  * unsolvable, and will be considerably faster than a solver that
- * uses a <code>CompleteSplitSource</code>. 
- * 
+ * uses a <code>CompleteSplitSource</code>.
+ *
  * @author Alexander Koller
  *
  */
@@ -31,14 +30,15 @@ public class OneSplitSource extends SplitSource {
         super(graph);
     }
 
-    protected Iterator<Split> computeSplits(Set<String> subgraph) {
+    @Override
+    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
         SplitComputer sc = new SplitComputer(graph);
-        List<Split> ret = new ArrayList<Split>();
+        List<Split<SubgraphNonterminal>> ret = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
         for( String root : potentialFreeRoots ) {
             Split split = sc.computeSplit(root, subgraph);
-            
+
             if( split != null ) {
                 ret.add(split);
                 return ret.iterator();
@@ -50,10 +50,10 @@ public class OneSplitSource extends SplitSource {
 
     public static boolean isGraphSolvable(DomGraph graph) throws SolverNotApplicableException {
         Chart chart = new Chart();
-        
+
         return ChartSolver.solve(graph, chart, new OneSplitSource(graph));
     }
-    
+
     public static boolean canSolveGraph(DomGraph graph) {
     	try {
 			return isGraphSolvable(graph);

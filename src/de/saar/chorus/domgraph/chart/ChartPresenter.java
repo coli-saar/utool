@@ -1,8 +1,8 @@
 /*
  * @(#)ChartPresenter.java created 21.04.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.chart;
@@ -17,34 +17,34 @@ import java.util.Set;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class ChartPresenter {
-    public static String chartOnlyRoots(Chart ch, DomGraph g) {
+    public static <E extends SubgraphNonterminal> String chartOnlyRoots(RegularTreeGrammar<E> ch, DomGraph g) {
         StringBuffer ret = new StringBuffer();
         Set<String> roots = g.getAllRoots();
-        Set<Set<String>> visited = new HashSet<Set<String>>();
+        Set<E> visited = new HashSet<E>();
 
-        for( Set<String> fragset : ch.getToplevelSubgraphs() ) {
+        for( E fragset : ch.getToplevelSubgraphs() ) {
             ret.append(corSubgraph(fragset, ch, roots, visited));
         }
-        
+
         return ret.toString();
     }
-    
 
 
-    private static String corSubgraph(Set<String> subgraph, Chart ch, Set<String> roots, Set<Set<String>> visited) {
+
+    private static <E extends SubgraphNonterminal> String corSubgraph(E subgraph, RegularTreeGrammar<E> ch, Set<String> roots, Set<E> visited) {
         Set<String> s = new HashSet<String>(subgraph);
         StringBuffer ret = new StringBuffer();
         boolean first = true;
         String whitespace = "                                                                                                                                                                                  ";
-        Set<Set<String>> toVisit = new HashSet<Set<String>>();
-        
+        Set<E> toVisit = new HashSet<E>();
+
         if( !visited.contains(subgraph )) {
             visited.add(subgraph);
-            
+
             s.retainAll(roots);
             String sgs = s.toString();
-            
-            
+
+
             if( ch.getSplitsFor(subgraph) != null ) {
                 ret.append("\n" + sgs + " -> ");
                 for( Split split : ch.getSplitsFor(subgraph)) {
@@ -53,16 +53,16 @@ public class ChartPresenter {
                     } else {
                         ret.append(whitespace.substring(0, sgs.length() + 4));
                     }
-                    
+
                     ret.append(corSplit(split, roots) + "\n");
                     toVisit.addAll(split.getAllSubgraphs());
                 }
-                
-                for( Set<String> sub : toVisit ) {
+
+                for( E sub : toVisit ) {
                     ret.append(corSubgraph(sub, ch, roots, visited));
                 }
             }
-                
+
             return ret.toString();
         }
         else {
@@ -72,22 +72,22 @@ public class ChartPresenter {
 
 
 
-    private static String corSplit(Split split, Set<String> roots) {
+    private static <E extends SubgraphNonterminal> String corSplit(Split<E> split, Set<String> roots) {
         StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
-        Map<String,List<Set<String>>> map = new HashMap<String,List<Set<String>>> (); 
-        
+        Map<String,List<Set<String>>> map = new HashMap<String,List<Set<String>>> ();
+
         for( String hole : split.getAllDominators() ) {
             List<Set<String>> x = new ArrayList<Set<String>>();
             map.put(hole, x);
 
-            for( Set<String> wcc : split.getWccs(hole) ) {
+            for( E wcc : split.getWccs(hole) ) {
                 Set<String> copy = new HashSet<String>(wcc);
                 copy.retainAll(roots);
                 x.add(copy);
             }
         }
-        
-        
+
+
         ret.append(" " + map);
         ret.append(">");
         return ret.toString();

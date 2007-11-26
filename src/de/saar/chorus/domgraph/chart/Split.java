@@ -1,8 +1,8 @@
 /*
  * @(#)Split.java created 25.01.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.chart;
@@ -20,47 +20,47 @@ import java.util.Set;
  * weakly connected components into which the subgraph is split
  * by removing the free fragment, and to which hole of the
  * fragment the nodes of each WCC are connected.
- * 
+ *
  * @author Alexander Koller
  *
  */
-public class Split {
-    private String rootFragment;
-    private Map<String,List<Set<String>>> wccs;  // node -> wccs
+public class Split<E> {
+    private final String rootFragment;
+    private final Map<String,List<E>> wccs;  // node -> wccs
     private Map<String,String> substitution; // hole -> root
-    
+
     /**
      * Creates a split with a given root fragment.
-     * 
+     *
      * @param rootFragment the root fragment of this split
      */
     public Split(String rootFragment) {
         this.rootFragment = rootFragment;
-        wccs = new HashMap<String,List<Set<String>>>();
+        wccs = new HashMap<String,List<E>>();
         substitution = new HashMap<String, String>();
     }
-    
+
     /**
      * Adds a weakly connected component to a split representation.
-     * 
+     *
      * @param hole the hole of the free fragment to which the wcc is connected
      * @param wcc a weakly connected component of the subgraph
      */
-    public void addWcc(String hole, Set<String> wcc) {
-        List<Set<String>> wccSet = wccs.get(hole);
-        
+    public void addWcc(String hole, E wcc) {
+        List<E> wccSet = wccs.get(hole);
+
         if( wccSet == null ) {
-            wccSet = new ArrayList<Set<String>>();
+            wccSet = new ArrayList<E>();
             wccs.put(hole, wccSet);
         }
-        
+
         wccSet.add(wcc);
     }
-    
-    
+
+
     /**
      * Returns the root fragment of this split.
-     * 
+     *
      * @return the root fragment
      */
     public String getRootFragment() {
@@ -70,43 +70,44 @@ public class Split {
     /**
      * Returns the set of weakly connected components which
      * are connected to the specified node.
-     * 
+     *
      * @param node a node of the root fragment
      * @return the list of wccs connected to this node, or
      * <code>null</code> if no wccs
      * are connected to it.
      */
-    public List<Set<String>> getWccs(String node) {
+    public List<E> getWccs(String node) {
         return wccs.get(node);
     }
-    
+
     /**
      * Returns the set of holes of the root fragment
      * which are connected to any wcc.
-     * 
+     *
      * @return the set of holes
      */
     public Set<String> getAllDominators() {
         return wccs.keySet();
     }
-    
-    
+
+
     /**
      * Returns the set of WCCs into which the subgraph
      * is split by removing the root fragment.
-     * 
+     *
      * @return the set of wccs
      */
-    public List<Set<String>> getAllSubgraphs() {
-        List<Set<String>> ret = new ArrayList<Set<String>>();
-        
+    public List<E> getAllSubgraphs() {
+        List<E> ret = new ArrayList<E>();
+
         for( String node : wccs.keySet() ) {
             ret.addAll(wccs.get(node));
         }
-        
+
         return ret;
     }
-    
+
+    @Override
     public String toString() {
         return "<" + rootFragment + " " + wccs + ", subst =" + substitution + ">";
     }
@@ -114,7 +115,7 @@ public class Split {
 	public Map<String, String> getSubstitution() {
 		return substitution;
 	}
-	
+
 	public void setSubstitution(Map<String,String> subst) {
 		substitution = subst;
 	}

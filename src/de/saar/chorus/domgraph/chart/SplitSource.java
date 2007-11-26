@@ -1,8 +1,8 @@
 /*
  * @(#)SplitSource.java created 03.02.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.chart;
@@ -10,7 +10,6 @@ package de.saar.chorus.domgraph.chart;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
@@ -20,14 +19,14 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * An abstract superclass for classes that compute splits. A {@link ChartSolver}
  * relies on an object of a subclass of this class to provide the splits
  * for a subgraph. You can provide your own subclass by implementing
- * the <code>computeSplits</code> method of this class. 
- * 
+ * the <code>computeSplits</code> method of this class.
+ *
  * @author Alexander Koller
  *
  */
 public abstract class SplitSource {
     protected DomGraph graph;
-    
+
     public SplitSource(DomGraph graph) {
         this.graph = graph;
     }
@@ -37,22 +36,22 @@ public abstract class SplitSource {
      * subclass of <code>SplitSource</code>. The method gets a subgraph
      * as its argument, and has the task of computing an iterator
      * over the splits of this subgraph.<p>
-     * 
-     * @param subgraph a subgraph 
+     *
+     * @param subgraph a subgraph
      * @return an iterator over some or all splits of this subgraph
      */
-    abstract protected Iterator<Split> computeSplits(Set<String> subgraph);
-    
+    abstract protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph);
+
     /**
      * Computes the list of all nodes in the subgraphs which have no
      * incoming edges. These nodes are candidates for being free roots;
      * however, you still need to check that the holes are in different
-     * biconnected components. 
-     * 
+     * biconnected components.
+     *
      * @param subgraph a subgraph
      * @return the list of nodes without in-edges in the subgraph
      */
-    protected List<String> computePotentialFreeRoots(Set<String> subgraph) {
+    protected List<String> computePotentialFreeRoots(SubgraphNonterminal subgraph) {
         // initialise potentialFreeRoots with all nodes without
         // incoming dom-edges
         List<String> potentialFreeRoots = new ArrayList<String>();
@@ -61,7 +60,7 @@ public abstract class SplitSource {
                 potentialFreeRoots.add(node);
             }
         }
-        
+
         return potentialFreeRoots;
-    }    
+    }
 }
