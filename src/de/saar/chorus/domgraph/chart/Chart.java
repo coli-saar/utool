@@ -209,6 +209,10 @@ public class Chart implements Cloneable {
     }
     
 
+    public Set<Set<String>> getAllSubgraphs() {
+    	return chart.keySet();
+    }
+    
     /**
      * Returns the list of all splits for the given subgraph.
      * 
