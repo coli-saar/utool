@@ -40,4 +40,6 @@ public class SubgraphNonterminal extends HashSet<String> implements Nonterminal 
         return numRoots == 1;
     }
 
+    private static final long serialVersionUID = 1533989291501267385L;
+
 }

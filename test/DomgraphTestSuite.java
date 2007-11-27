@@ -38,6 +38,7 @@ public class DomgraphTestSuite extends TestSuite {
         addDomgraphTest("layout/domgraphlayout/DomGraphLayout");
         addDomgraphTest("equivalence/RedundancyElimination");
         addTest("de/saar/basic/UnionFind");
+        addDomgraphTest("equivalence/rtg/RtgRedundancyElimination");
 
         return suite;
     }
