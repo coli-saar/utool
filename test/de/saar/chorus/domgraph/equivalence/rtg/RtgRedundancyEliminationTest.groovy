@@ -60,9 +60,6 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
 		elim.eliminate(chart, out);
 		
-		System.err.println("Reduced chart:");
-		System.err.println(out);
-		
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
 		

@@ -18,6 +18,8 @@ public class RtgRedundancyElimination extends RedundancyElimination {
     private final Queue<QuantifierMarkedNonterminal> agenda;
     private final Set<String> roots;
 
+    private final int agendacounter = 0;
+
     public RtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
 
@@ -29,6 +31,8 @@ public class RtgRedundancyElimination extends RedundancyElimination {
         out.clear();
         agenda.clear();
 
+        //System.err.println("Elimination starts...");
+
         for( SubgraphNonterminal sub : c.getToplevelSubgraphs() ) {
             QuantifierMarkedNonterminal nt = new QuantifierMarkedNonterminal(sub, null);
             agenda.add(nt);
@@ -38,18 +42,34 @@ public class RtgRedundancyElimination extends RedundancyElimination {
         while( !agenda.isEmpty() ) {
             QuantifierMarkedNonterminal sub = agenda.remove();
 
-            if( !sub.isSingleton(roots) && !out.containsSplitFor(sub) ) {
+            if( !out.containsSplitFor(sub) ) {
                 for( Split<SubgraphNonterminal> split : c.getSplitsFor(sub.getSubgraph()) ) {
                     if( allowedSplit(split, sub.getPreviousQuantifier()) ) {
                         Split<QuantifierMarkedNonterminal> outSplit = makeSplit(split);
                         out.addSplit(sub, outSplit);
-                        agenda.addAll(outSplit.getAllSubgraphs());
+
+                        for( QuantifierMarkedNonterminal candidate : outSplit.getAllSubgraphs() ) {
+                            if( !candidate.isSingleton(roots) && !out.containsSplitFor(candidate)) {
+                                agenda.add(candidate);
+                                /*
+                                agendacounter++;
+                                if( agendacounter % 1000 == 0 ) {
+                                    System.err.print(".");
+                                }
+                                */
+                            }
+                        }
                     }
                 }
             }
         }
 
+        //System.err.println("Elimination done, new chart size is " + out.size());
+
         out.reduce(roots);
+
+        //System.err.println("Reduction done, new chart size is " + out.size());
+
     }
 
 

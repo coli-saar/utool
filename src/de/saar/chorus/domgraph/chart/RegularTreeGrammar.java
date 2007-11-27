@@ -186,6 +186,8 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                 chart.get(splitToLhs.get(split)).remove(split);
             }
         }
+
+        // TODO update size
     }
 
 

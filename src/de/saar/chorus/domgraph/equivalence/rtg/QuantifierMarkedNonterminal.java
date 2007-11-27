@@ -65,4 +65,32 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
     public String toString() {
         return previousQuantifier + "/" + subgraph;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if( obj instanceof QuantifierMarkedNonterminal ) {
+            QuantifierMarkedNonterminal other = (QuantifierMarkedNonterminal) obj;
+
+            if( previousQuantifier == null && other.previousQuantifier != null ) {
+                return false;
+            }
+
+            if( previousQuantifier != null && other.previousQuantifier == null ) {
+                return false;
+            }
+
+            if( previousQuantifier == null && other.previousQuantifier == null ) {
+                return subgraph.equals(other.subgraph);
+            }
+
+            return previousQuantifier.equals(other.previousQuantifier) && subgraph.equals(other.subgraph);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return subgraph.hashCode() + ((previousQuantifier == null)?17:29*previousQuantifier.hashCode());
+    }
 }
