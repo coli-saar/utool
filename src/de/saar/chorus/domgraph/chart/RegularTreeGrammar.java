@@ -4,8 +4,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import org._3pq.jgrapht.util.ModifiableInteger;
@@ -90,6 +92,103 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     public int countSubgraphs() {
         return chart.size();
     }
+
+
+
+    /**
+     * Removes all unproductive nonterminals and splits from this chart.
+     * A nonterminal is called unproductive if it isn't possible to derive a solved
+     * form from it (but it may still be inaccessible from the top-level subgraphs).
+     *
+     * @param roots the roots of the dominance graph on which this chart is based
+     */
+    public void reduce(Set<String> roots) {
+        Set<E> usefulNonterminals = new HashSet<E>();
+        Map<E,List<Split<E>>> nonterminalUses = new HashMap<E,List<Split<E>>>();
+        Map<Split<E>,E> splitToLhs = new HashMap<Split<E>,E>();
+        Queue<E> agenda = new LinkedList<E>();
+        Set<E> singletons = new HashSet<E>();
+
+        // compute mappings of nonterminals to the splits that use them,
+        // and of splits to their LHSs
+        for( E lhs : chart.keySet() ) {
+            for( Split<E> split : chart.get(lhs) ) {
+                splitToLhs.put(split, lhs);
+
+                for( E subgraph : split.getAllSubgraphs() ) {
+                    List<Split<E>> uses = nonterminalUses.get(subgraph);
+
+                    if( uses == null ) {
+                        uses = new  ArrayList<Split<E>>();
+                        nonterminalUses.put(subgraph, uses);
+                    }
+
+                    uses.add(split);
+
+                    if( subgraph.isSingleton(roots) ) {
+                        singletons.add(subgraph);
+                    }
+                }
+            }
+        }
+
+        // bottom-up pass: initialize agenda with singletons
+        agenda.addAll(singletons);
+
+        // then propagate usefulness up from RHSs to LHSs of productions
+        while( !agenda.isEmpty() ) {
+            E nt = agenda.remove();
+
+            if( !usefulNonterminals.contains(nt)) {
+                usefulNonterminals.add(nt);
+
+                if( nonterminalUses.containsKey(nt)) {
+                    for( Split<E> split : nonterminalUses.get(nt)) {
+                        boolean allRhsUseful = true;
+
+                        for( E rhs : split.getAllSubgraphs() ) {
+                            if( !usefulNonterminals.contains(rhs)) {
+                                allRhsUseful = false;
+                            }
+                        }
+
+                        if( allRhsUseful ) {
+                            E lhs = splitToLhs.get(split);
+                            agenda.add(lhs);
+                        }
+                    }
+                }
+            }
+        }
+
+        // at this point, we can delete everything that is not productive
+        Set<E> uselessNonterminals = new HashSet<E>(nonterminalUses.keySet());
+        uselessNonterminals.addAll(getToplevelSubgraphs());
+        uselessNonterminals.removeAll(usefulNonterminals);
+
+        Set<Split<E>> uselessSplits = new HashSet<Split<E>>();
+
+        for( E useless : uselessNonterminals ) {
+            // remove NT's own entry in the chart
+            if( chart.containsKey(useless)) {
+                chart.remove(useless);
+            }
+
+            // mark all splits which use it for deletion
+            if( nonterminalUses.containsKey(useless)) {
+                uselessSplits.addAll(nonterminalUses.get(useless));
+            }
+        }
+
+        // delete all splits that use useless nonterminals
+        for( Split<E> split : uselessSplits ) {
+            if( chart.containsKey(splitToLhs.get(split))) {
+                chart.get(splitToLhs.get(split)).remove(split);
+            }
+        }
+    }
+
+
 
     /**
      * Sets the splits for a given subgraph. If the subgraph already
@@ -215,7 +314,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     public String toString() {
         StringBuilder ret = new StringBuilder();
 
-        ret.append("Top-level subgraphs: " + toplevelSubgraphs);
+        ret.append("Top-level subgraphs: " + toplevelSubgraphs + "\n");
 
         for( E fragset : chart.keySet() ) {
             for( Split<E> split : chart.get(fragset) ) {
