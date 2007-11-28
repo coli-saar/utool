@@ -10,11 +10,13 @@ package de.saar.chorus.domgraph.equivalence;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
+import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 /**
@@ -25,7 +27,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public class RedundancyEliminationSplitSource extends SplitSource {
+public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonterminal> {
     private final RedundancyElimination elim;
 
     public RedundancyEliminationSplitSource(RedundancyElimination elim, DomGraph graph) {
@@ -35,7 +37,7 @@ public class RedundancyEliminationSplitSource extends SplitSource {
 
     @Override
     protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
-        SplitComputer sc = new SplitComputer(graph);
+        SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
         List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
@@ -48,6 +50,11 @@ public class RedundancyEliminationSplitSource extends SplitSource {
         }
 
         return elim.getIrredundantSplits(subgraph, splits).iterator();
+    }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
     }
 
 }

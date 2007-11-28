@@ -150,7 +150,7 @@ class SplitComputerTest extends GroovyTestCase {
 	private void checkSplit(String root, String domcon, Map wccs, Map substitution) {
 		TestingTools.decodeDomcon(domcon, graph, labels);
 		
-		SplitComputer comp = new SplitComputer(graph);
+		SplitComputer comp = new SubgraphSplitComputer(graph);
 		Split split = comp.computeSplit(root, new SubgraphNonterminal(graph.getAllNodes()));
 		
 		assert split != null;
@@ -167,7 +167,7 @@ class SplitComputerTest extends GroovyTestCase {
 	private void checkNoSplit(String root, String domcon) {
 		TestingTools.decodeDomcon(domcon, graph, labels);
 		
-		SplitComputer comp = new SplitComputer(graph);
+		SplitComputer comp = new SubgraphSplitComputer(graph);
 		Split split = comp.computeSplit(root, new SubgraphNonterminal(graph.getAllNodes()));
 		
 		assert split == null;

@@ -10,6 +10,7 @@ package de.saar.chorus.domgraph.chart;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
@@ -24,12 +25,14 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public abstract class SplitSource {
+public abstract class SplitSource<E extends NonterminalA> {
     protected DomGraph graph;
 
     public SplitSource(DomGraph graph) {
         this.graph = graph;
     }
+
+    abstract public E makeToplevelSubgraph(Set<String> graph);
 
     /**
      * Implement this abstract method when you write your own
@@ -40,7 +43,7 @@ public abstract class SplitSource {
      * @param subgraph a subgraph
      * @return an iterator over some or all splits of this subgraph
      */
-    abstract protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph);
+    abstract protected Iterator<Split<E>> computeSplits(E subgraph);
 
     /**
      * Computes the list of all nodes in the subgraphs which have no
@@ -51,12 +54,12 @@ public abstract class SplitSource {
      * @param subgraph a subgraph
      * @return the list of nodes without in-edges in the subgraph
      */
-    protected List<String> computePotentialFreeRoots(SubgraphNonterminal subgraph) {
+    protected List<String> computePotentialFreeRoots(E subgraph) {
         // initialise potentialFreeRoots with all nodes without
         // incoming dom-edges
         List<String> potentialFreeRoots = new ArrayList<String>();
-        for( String node : subgraph ) {
-            if( graph.indegOfSubgraph(node, null, subgraph) == 0 ) {
+        for( String node : subgraph.getNodes() ) {
+            if( graph.indegOfSubgraph(node, null, subgraph.getNodes()) == 0 ) {
                 potentialFreeRoots.add(node);
             }
         }

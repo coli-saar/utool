@@ -34,7 +34,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Michaela Regneri
  *
  */
-public class SolvedFormIterator<E extends Nonterminal> implements Iterator<SolvedFormSpec> {
+public class SolvedFormIterator<E extends NonterminalA> implements Iterator<SolvedFormSpec> {
 	private RegularTreeGrammar<E> chart;
 	private Agenda agenda;
 	private Stack<EnumerationStackEntry> stack;

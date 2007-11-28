@@ -165,7 +165,7 @@ class ServerThread extends Thread {
             DomGraph graph = options.getGraph();
 
             // compute chart
-            long start_solver = System.currentTimeMillis();
+            long start_solver = System.nanoTime();
             Chart chart = new Chart();
             RegularTreeGrammar reducedChart;
             boolean solvable;
@@ -189,8 +189,8 @@ class ServerThread extends Thread {
             	}
 
 
-            	long end_solver = System.currentTimeMillis();
-            	long time_solver = end_solver - start_solver;
+            	long end_solver = System.nanoTime();
+            	long time_solver = (end_solver - start_solver)/1000000L;
 
             	if( options.getOperation() == Operation.solvable ) {
             		// Operation = solvable

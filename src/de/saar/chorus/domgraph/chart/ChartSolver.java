@@ -44,11 +44,11 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  * @author Alexander Koller
  *
  */
-public class ChartSolver {
+public class ChartSolver<E extends NonterminalA> {
     private final DomGraph graph;
-    private final Chart chart;
+    private final RegularTreeGrammar<E> chart;
     private final Set<String> roots;
-    private final SplitSource splitSource;
+    private final SplitSource<E> splitSource;
 
 
 
@@ -71,7 +71,7 @@ public class ChartSolver {
      * @param splitsource a split source
      * @return true if the graph is solvable, false otherwise
      */
-    public static boolean solve(DomGraph graph, Chart chart, SplitSource splitsource) throws SolverNotApplicableException {
+    public static <E extends NonterminalA> boolean solve(DomGraph graph, RegularTreeGrammar<E> chart, SplitSource<E> splitsource) throws SolverNotApplicableException {
     	DomGraph preprocessed = graph;
     	boolean isSolvable;
 
@@ -82,7 +82,7 @@ public class ChartSolver {
     	checkApplicability(graph);
 
     	// Otherwise, solve the preprocessed graph.
-        ChartSolver solver = new ChartSolver(preprocessed, chart, splitsource);
+        ChartSolver<E> solver = new ChartSolver<E>(preprocessed, chart, splitsource);
         isSolvable = solver.solve();
 
         if( ! isSolvable ) {
@@ -137,7 +137,7 @@ public class ChartSolver {
      * @param chart
      * @param splitSource
      */
-    private ChartSolver(DomGraph graph, Chart chart, SplitSource splitSource) {
+    private ChartSolver(DomGraph graph, RegularTreeGrammar<E> chart, SplitSource<E> splitSource) {
         this.splitSource = splitSource;
         this.graph = graph;
         this.chart = chart;
@@ -158,7 +158,7 @@ public class ChartSolver {
         List<Set<String>> wccs = graph.wccs();
 
         for( Set<String> wcc : wccs ) {
-            SubgraphNonterminal sub = new SubgraphNonterminal(wcc);
+            E sub = splitSource.makeToplevelSubgraph(wcc);
             chart.addToplevelSubgraph(sub);
 
             if( !solve(sub) ) {
@@ -169,8 +169,8 @@ public class ChartSolver {
     }
 
 
-    private boolean solve(SubgraphNonterminal subgraph) {
-        Iterator<Split<SubgraphNonterminal>> splits;
+    private boolean solve(E subgraph) {
+        Iterator<Split<E>> splits;
         int numRootsInSubgraph;
 
         //System.err.println("solve: " + subgraph);
@@ -185,7 +185,7 @@ public class ChartSolver {
         // The fs will be entered into the chart as part of the parent's split.
         // NB: Even in a compact graph, there may be fragments with >1 node!
         numRootsInSubgraph = 0;
-        for( String node : subgraph ) {
+        for( String node : subgraph.getNodes() ) {
             if( roots.contains(node) ) {
                 numRootsInSubgraph++;
             }
@@ -207,10 +207,10 @@ public class ChartSolver {
 
         else {
             while( splits.hasNext() ) {
-                Split<SubgraphNonterminal> split = splits.next();
+                Split<E> split = splits.next();
 
                 // iterate over wccs
-                for( SubgraphNonterminal wcc : split.getAllSubgraphs() ) {
+                for( E wcc : split.getAllSubgraphs() ) {
                     if( !solve(wcc) ) {
                         return false;
                     }

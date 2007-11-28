@@ -2,10 +2,10 @@ package de.saar.chorus.domgraph.equivalence.rtg;
 
 import java.util.Set;
 
-import de.saar.chorus.domgraph.chart.Nonterminal;
+import de.saar.chorus.domgraph.chart.NonterminalA;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 
-public class QuantifierMarkedNonterminal implements Nonterminal {
+public class QuantifierMarkedNonterminal implements NonterminalA {
     private final SubgraphNonterminal subgraph;
     private final String previousQuantifier;
 
@@ -92,5 +92,27 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
     @Override
     public int hashCode() {
         return subgraph.hashCode() + ((previousQuantifier == null)?17:29*previousQuantifier.hashCode());
+    }
+
+
+
+    @Override
+    public Set<String> getNodes() {
+        return subgraph.getNodes();
+    }
+
+
+
+    @Override
+    public String toString(Set<String> roots) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+
+    @Override
+    public void addNode(String node) {
+        subgraph.add(node);
     }
 }

@@ -17,7 +17,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  * @author Alexander Koller
  *
  */
-public class SplitComputer {
+abstract public class SplitComputer<E extends NonterminalA> {
 	/*
 	 * - WCCs are identified by one dominance edge out of the root fragment that
 	 *   points into them (namely, the first one that is visited by the DFS). It is
@@ -27,13 +27,13 @@ public class SplitComputer {
 
     private final DomGraph graph;
 
-    //private String theRoot;
+    protected String theRoot;
     private Set<String> rootFragment;
 
     // node in rootfrag -> edge in this node -> wcc
     //private Map<String,Map<Edge,Set<String>>> splitmap;
     // (wcc identity, i.e. dom edge into this wcc) -> (nodes in that wcc)
-    private final Map<Edge,SubgraphNonterminal> wccs;
+    private final Map<Edge,E> wccs;
 
     // set of nodes already visited by DFS
     // this set is implemented as a field of the class in order
@@ -49,7 +49,7 @@ public class SplitComputer {
     public SplitComputer(DomGraph graph) {
         this.graph = graph;
         rootFragment = new HashSet<String>();
-        wccs = new HashMap<Edge, SubgraphNonterminal>();
+        wccs = new HashMap<Edge, E>();
         substitution = new HashMap<String, String>();
 
         visited = new HashSet<String>();
@@ -71,9 +71,10 @@ public class SplitComputer {
      * @return the split induced by this root, or null if the root
      * is not the root of a free fragment
      */
-    public Split<SubgraphNonterminal> computeSplit(String root, SubgraphNonterminal subgraph)
+    public Split<E> computeSplit(String root, E subgraph)
     {
-        // initialise root fragment
+        // initialize root fragment
+        theRoot = root;
     	substitution = new HashMap<String, String>();
         rootFragment = computeRootFragment(root, graph, subgraph);
 
@@ -94,7 +95,7 @@ public class SplitComputer {
         }
 
         // build Split object
-        Split<SubgraphNonterminal> ret = new Split<SubgraphNonterminal>(root);
+        Split<E> ret = new Split<E>(root);
 
         ret.setSubstitution(substitution);
         for( Edge wccId : wccs.keySet() ) {
@@ -123,8 +124,8 @@ public class SplitComputer {
      * @param subgraph
      * @return
      */
-    private Set<String> computeRootFragment(String root, DomGraph graph, SubgraphNonterminal subgraph) {
-    	SubgraphNonterminal nodes = new SubgraphNonterminal();
+    private Set<String> computeRootFragment(String root, DomGraph graph, E subgraph) {
+    	Set<String> nodes = new HashSet<String>();
     	Set<String> ancestors = new HashSet<String>();
 
     	if( computeRootFragmentDfs(root, nodes, ancestors, subgraph) ) {
@@ -134,14 +135,14 @@ public class SplitComputer {
     	}
 	}
 
-    private boolean computeRootFragmentDfs(String node, SubgraphNonterminal nodes, Set<String> ancestors, SubgraphNonterminal subgraph)  {
+    private boolean computeRootFragmentDfs(String node, Set<String> nodes, Set<String> ancestors, E subgraph)  {
     	nodes.add(node);
 
     	List<Edge> outgoingTreeEdges = graph.getOutEdges(node, EdgeType.TREE);
 
     	// determine the set of dominance parents within this subgraph
     	Set<String> dominanceParents = new HashSet<String>(graph.getParents(node, EdgeType.DOMINANCE));
-    	dominanceParents.retainAll(subgraph);
+    	dominanceParents.retainAll(subgraph.getNodes());
     	dominanceParents.removeAll(ancestors); // ancestors are satisfied transitively and can be ignored
 
     	if( !dominanceParents.isEmpty() ) {
@@ -169,7 +170,7 @@ public class SplitComputer {
     	for( Edge edge : outgoingTreeEdges ) {
     		String neighbour = (String) edge.getTarget();
 
-    		if( subgraph.contains(neighbour)) {
+    		if( subgraph.getNodes().contains(neighbour)) {
     			if( nodes.contains(neighbour) ) {
     				// already visited the neighbour => this neighbour is reachable
     				// by two different paths, i.e. the superfragment is not a tree
@@ -224,12 +225,12 @@ public class SplitComputer {
      * this DFS
      * @return true iff the root was indeed free
      */
-    private boolean dfs(String node, Edge wccId, Set<String> pathInRootFragment, Set<String> subgraph, Set<String> visited) {
+    private boolean dfs(String node, Edge wccId, Set<String> pathInRootFragment, E subgraph, Set<String> visited) {
         // INVARIANT: this method is only called on unvisited nodes
         assert !visited.contains(node) : "DFS visited node twice";
 
         // INVARIANT: this method is only called on nodes in the subgraph
-        assert subgraph.contains(node) : "DFS left subgraph";
+        assert subgraph.getNodes().contains(node) : "DFS left subgraph";
 
         visited.add(node);
 
@@ -249,7 +250,7 @@ public class SplitComputer {
         for( Edge edge : edgeList ) {
             String neighbour = (String) edge.oppositeVertex(node);
 
-            if( subgraph.contains(neighbour) ) {
+            if( subgraph.getNodes().contains(neighbour) ) {
             	if( rootFragment.contains(neighbour) && !rootFragment.contains(node) ) {
             		// The (undirected) DFS steps from a node outside the root fragment
             		// into the root fragment.  Because the root fragment has no incoming
@@ -311,15 +312,17 @@ public class SplitComputer {
     private void assignNodeToWcc(String node, Edge wccId) {
     	assert wccId != null;
 
-    	SubgraphNonterminal thisWcc = wccs.get(wccId);
+    	E thisWcc = wccs.get(wccId);
 
     	if( thisWcc == null ) {
-    		thisWcc = new SubgraphNonterminal();
+    		thisWcc = createEmptyNonterminal();
     		wccs.put(wccId, thisWcc);
     	}
 
-    	thisWcc.add(node);
+    	thisWcc.addNode(node);
     }
+
+    abstract protected E createEmptyNonterminal();
 }
 
 
