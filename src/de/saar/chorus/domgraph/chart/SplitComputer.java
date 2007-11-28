@@ -17,7 +17,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  * @author Alexander Koller
  *
  */
-abstract public class SplitComputer<E extends NonterminalA> {
+abstract public class SplitComputer<E extends Nonterminal> {
 	/*
 	 * - WCCs are identified by one dominance edge out of the root fragment that
 	 *   points into them (namely, the first one that is visited by the DFS). It is

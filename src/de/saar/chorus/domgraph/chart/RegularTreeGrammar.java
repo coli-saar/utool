@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org._3pq.jgrapht.util.ModifiableInteger;
 
-public class RegularTreeGrammar<E extends NonterminalA> implements Cloneable {
+public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     private final Map<E, List<Split<E>>> chart;
     private final Map<E, ModifiableInteger> refcount;
     private final Map<E, BigInteger> numSolvedForms;

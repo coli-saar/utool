@@ -2,10 +2,10 @@ package de.saar.chorus.domgraph.equivalence.rtg;
 
 import java.util.Set;
 
-import de.saar.chorus.domgraph.chart.NonterminalA;
+import de.saar.chorus.domgraph.chart.Nonterminal;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 
-public class QuantifierMarkedNonterminal implements NonterminalA {
+public class QuantifierMarkedNonterminal implements Nonterminal {
     private final SubgraphNonterminal subgraph;
     private final String previousQuantifier;
 

@@ -44,7 +44,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
  * @author Alexander Koller
  *
  */
-public class ChartSolver<E extends NonterminalA> {
+public class ChartSolver<E extends Nonterminal> {
     private final DomGraph graph;
     private final RegularTreeGrammar<E> chart;
     private final Set<String> roots;
@@ -71,7 +71,7 @@ public class ChartSolver<E extends NonterminalA> {
      * @param splitsource a split source
      * @return true if the graph is solvable, false otherwise
      */
-    public static <E extends NonterminalA> boolean solve(DomGraph graph, RegularTreeGrammar<E> chart, SplitSource<E> splitsource) throws SolverNotApplicableException {
+    public static <E extends Nonterminal> boolean solve(DomGraph graph, RegularTreeGrammar<E> chart, SplitSource<E> splitsource) throws SolverNotApplicableException {
     	DomGraph preprocessed = graph;
     	boolean isSolvable;
 
