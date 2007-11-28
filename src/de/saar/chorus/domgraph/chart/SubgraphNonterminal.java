@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubgraphNonterminal extends HashSet<String> implements NonterminalA {
+public class SubgraphNonterminal extends HashSet<String> implements Nonterminal {
     private String rootForThisFragset;
 
     public SubgraphNonterminal(Collection<String> init) {

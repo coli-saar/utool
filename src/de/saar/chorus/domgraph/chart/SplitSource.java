@@ -25,7 +25,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public abstract class SplitSource<E extends NonterminalA> {
+public abstract class SplitSource<E extends Nonterminal> {
     protected DomGraph graph;
 
     public SplitSource(DomGraph graph) {
