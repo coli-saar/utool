@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
@@ -28,9 +29,9 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  *
  */
 public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonterminal> {
-    private final RedundancyElimination elim;
+    private final RedundancyElimination<SubgraphNonterminal> elim;
 
-    public RedundancyEliminationSplitSource(RedundancyElimination elim, DomGraph graph) {
+    public RedundancyEliminationSplitSource(RedundancyElimination<SubgraphNonterminal> elim, DomGraph graph) {
         super(graph);
         this.elim = elim;
     }
@@ -55,6 +56,10 @@ public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonter
     @Override
     public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
         return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public void reduceIfNecessary(RegularTreeGrammar<SubgraphNonterminal> chart) {
     }
 
 }

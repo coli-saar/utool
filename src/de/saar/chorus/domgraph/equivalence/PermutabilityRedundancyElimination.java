@@ -29,7 +29,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * @author Alexander Koller
  *
  */
-public class PermutabilityRedundancyElimination extends RedundancyElimination {
+public class PermutabilityRedundancyElimination extends RedundancyElimination<SubgraphNonterminal> {
 
     public PermutabilityRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);

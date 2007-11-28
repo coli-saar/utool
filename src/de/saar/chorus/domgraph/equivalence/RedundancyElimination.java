@@ -16,8 +16,9 @@ import java.util.Set;
 import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.Nonterminal;
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
-import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -55,7 +56,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public abstract class RedundancyElimination {
+public abstract class RedundancyElimination<E extends Nonterminal> {
     protected DomGraph graph; // original graph
     protected DomGraph compact; // compact version of the graph
     protected NodeLabels labels;
@@ -135,23 +136,23 @@ public abstract class RedundancyElimination {
      *
      * @param c a chart
      */
-    public void eliminate(Chart c) {
-        Set<Set<String>> visited = new HashSet<Set<String>>();
+    public void eliminate(RegularTreeGrammar<E> c) {
+        Set<E> visited = new HashSet<E>();
 
-        for( SubgraphNonterminal subgraph : c.getToplevelSubgraphs() ) {
+        for( E subgraph : c.getToplevelSubgraphs() ) {
             eliminate(subgraph, c, visited);
         }
     }
 
-    private void eliminate(SubgraphNonterminal subgraph, Chart c, Set<Set<String>> visited) {
-        List<Split<SubgraphNonterminal>> splits = c.getSplitsFor(subgraph);
+    private void eliminate(E subgraph, RegularTreeGrammar<E> c, Set<E> visited) {
+        List<Split<E>> splits = c.getSplitsFor(subgraph);
 
         if( !visited.contains(subgraph)) {
             visited.add(subgraph);
 
             if( splits != null ) { // i.e. not a singleton fragset
                 if( splits.size() > 1 ) { // i.e. there are splits that could be eliminated
-                    List<Split<SubgraphNonterminal>> remainingSplits = getIrredundantSplits(subgraph, splits);
+                    List<Split<E>> remainingSplits = getIrredundantSplits(subgraph, splits);
 
                     if( remainingSplits.size() < splits.size() ) {
                         c.setSplitsForSubgraph(subgraph, remainingSplits);
@@ -162,8 +163,8 @@ public abstract class RedundancyElimination {
                 // Whether we eliminated something from the complete subcompactGraph or not,
                 // do recursive calls on _its_ subgraphs.
                 splits = c.getSplitsFor(subgraph);
-                for( Split<SubgraphNonterminal> split : splits ) {
-                    for( SubgraphNonterminal subsubgraph : split.getAllSubgraphs() ) {
+                for( Split<E> split : splits ) {
+                    for( E subsubgraph : split.getAllSubgraphs() ) {
                         eliminate(subsubgraph, c, visited);
                     }
                 }
@@ -179,7 +180,7 @@ public abstract class RedundancyElimination {
      * @param allSplits the complete list of all splits for this subgraph
      * @return a list of irredundant splits
      */
-    abstract public List<Split<SubgraphNonterminal>> getIrredundantSplits(SubgraphNonterminal subgraph, List<Split<SubgraphNonterminal>> allSplits);
+    abstract public List<Split<E>> getIrredundantSplits(E subgraph, List<Split<E>> allSplits);
 
 
     /*

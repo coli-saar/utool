@@ -29,7 +29,7 @@ public class CompleteSplitSource extends SplitSource<SubgraphNonterminal> {
     }
 
     @Override
-    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
+    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph)  throws UnsolvableSubgraphException {
         SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
         List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
@@ -43,12 +43,20 @@ public class CompleteSplitSource extends SplitSource<SubgraphNonterminal> {
             }
         }
 
+        if( splits.isEmpty() ) {
+            throw new UnsolvableSubgraphException();
+        }
+
         return splits.iterator();
     }
 
     @Override
     public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
         return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public void reduceIfNecessary(RegularTreeGrammar<SubgraphNonterminal> chart) {
     }
 
 }

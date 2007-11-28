@@ -43,7 +43,9 @@ public abstract class SplitSource<E extends Nonterminal> {
      * @param subgraph a subgraph
      * @return an iterator over some or all splits of this subgraph
      */
-    abstract protected Iterator<Split<E>> computeSplits(E subgraph);
+    abstract protected Iterator<Split<E>> computeSplits(E subgraph) throws UnsolvableSubgraphException;
+
+    abstract public void reduceIfNecessary(RegularTreeGrammar<E> chart);
 
     /**
      * Computes the list of all nodes in the subgraphs which have no
