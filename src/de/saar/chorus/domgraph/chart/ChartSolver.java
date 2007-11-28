@@ -85,7 +85,9 @@ public class ChartSolver<E extends Nonterminal> {
         ChartSolver<E> solver = new ChartSolver<E>(preprocessed, chart, splitsource);
         isSolvable = solver.solve();
 
-        if( ! isSolvable ) {
+        if( isSolvable ) {
+            splitsource.reduceIfNecessary(chart);
+        } else {
         	chart.clear();
         }
 
@@ -196,32 +198,29 @@ public class ChartSolver<E extends Nonterminal> {
         }
 
         // get splits for this subgraph
-        splits = splitSource.computeSplits(subgraph);
-
-        // if there are none (i.e. there are no free roots),
-        // then the original graph is unsolvable
-        if( !splits.hasNext() ) {
-            //System.err.println(" - unsolvable (no splits)");
+        try {
+            splits = splitSource.computeSplits(subgraph);
+        } catch( UnsolvableSubgraphException e ) {
+            // if the subgraph is unsolvable (because there are no free roots),
+            // then the original graph is unsolvable
             return false;
         }
 
-        else {
-            while( splits.hasNext() ) {
-                Split<E> split = splits.next();
+        while( splits.hasNext() ) {
+            Split<E> split = splits.next();
 
-                // iterate over wccs
-                for( E wcc : split.getAllSubgraphs() ) {
-                    if( !solve(wcc) ) {
-                        return false;
-                    }
+            // iterate over wccs
+            for( E wcc : split.getAllSubgraphs() ) {
+                if( !solve(wcc) ) {
+                    return false;
                 }
-
-                // add split to chart
-                chart.addSplit(subgraph, split);
             }
 
-            return true;
+            // add split to chart
+            chart.addSplit(subgraph, split);
         }
+
+        return true;
     }
 
 

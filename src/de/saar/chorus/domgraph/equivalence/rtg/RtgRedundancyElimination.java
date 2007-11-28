@@ -1,5 +1,6 @@
 package de.saar.chorus.domgraph.equivalence.rtg;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -14,11 +15,9 @@ import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
-public class RtgRedundancyElimination extends RedundancyElimination {
+public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMarkedNonterminal> {
     private final Queue<QuantifierMarkedNonterminal> agenda;
     private final Set<String> roots;
-
-    private final int agendacounter = 0;
 
     public RtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
@@ -51,12 +50,6 @@ public class RtgRedundancyElimination extends RedundancyElimination {
                         for( QuantifierMarkedNonterminal candidate : outSplit.getAllSubgraphs() ) {
                             if( !candidate.isSingleton(roots) && !out.containsSplitFor(candidate)) {
                                 agenda.add(candidate);
-                                /*
-                                agendacounter++;
-                                if( agendacounter % 1000 == 0 ) {
-                                    System.err.print(".");
-                                }
-                                */
                             }
                         }
                     }
@@ -89,7 +82,8 @@ public class RtgRedundancyElimination extends RedundancyElimination {
         return ret;
     }
 
-    private boolean allowedSplit(Split<SubgraphNonterminal> split, String previousQuantifier) {
+    @SuppressWarnings("unchecked")
+    private boolean allowedSplit(Split split, String previousQuantifier) {
         // if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
             return true;
@@ -105,9 +99,16 @@ public class RtgRedundancyElimination extends RedundancyElimination {
     }
 
     @Override
-    public List<Split<SubgraphNonterminal>> getIrredundantSplits(SubgraphNonterminal subgraph, List<Split<SubgraphNonterminal>> allSplits) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Split<QuantifierMarkedNonterminal>> getIrredundantSplits(QuantifierMarkedNonterminal subgraph, List<Split<QuantifierMarkedNonterminal>> allSplits) {
+        List<Split<QuantifierMarkedNonterminal>> ret = new ArrayList<Split<QuantifierMarkedNonterminal>>();
+
+        for( Split<QuantifierMarkedNonterminal> candidate : allSplits ) {
+            if( allowedSplit(candidate, subgraph.getPreviousQuantifier()) ) {
+                ret.add(candidate);
+            }
+        }
+
+        return ret;
     }
 
 }
