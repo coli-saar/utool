@@ -10,6 +10,7 @@ package de.saar.chorus.domgraph.chart;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
 
@@ -22,14 +23,14 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public class CompleteSplitSource extends SplitSource {
+public class CompleteSplitSource extends SplitSource<SubgraphNonterminal> {
     public CompleteSplitSource(DomGraph graph) {
         super(graph);
     }
 
     @Override
     protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
-        SplitComputer sc = new SplitComputer(graph);
+        SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
         List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
@@ -43,6 +44,11 @@ public class CompleteSplitSource extends SplitSource {
         }
 
         return splits.iterator();
+    }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubgraphNonterminal extends HashSet<String> implements Nonterminal {
+public class SubgraphNonterminal extends HashSet<String> implements NonterminalA {
     private String rootForThisFragset;
 
     public SubgraphNonterminal(Collection<String> init) {
@@ -41,5 +41,21 @@ public class SubgraphNonterminal extends HashSet<String> implements Nonterminal 
     }
 
     private static final long serialVersionUID = 1533989291501267385L;
+
+    @Override
+    public Set<String> getNodes() {
+        return this;
+    }
+
+    @Override
+    public String toString(Set<String> roots) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void addNode(String node) {
+        add(node);
+    }
 
 }
