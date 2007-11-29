@@ -15,12 +15,12 @@ public class SubgraphNonterminal extends HashSet<String> implements Nonterminal 
         super();
     }
 
-    @Override
+    
     public String getRootIfSingleton() {
         return rootForThisFragset;
     }
 
-    @Override
+   
     public boolean isSingleton(Set<String> roots) {
         int numRoots = 0;
 
@@ -42,18 +42,18 @@ public class SubgraphNonterminal extends HashSet<String> implements Nonterminal 
 
     private static final long serialVersionUID = 1533989291501267385L;
 
-    @Override
+    
     public Set<String> getNodes() {
         return this;
     }
 
-    @Override
+   
     public String toString(Set<String> roots) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
+ 
     public void addNode(String node) {
         add(node);
     }

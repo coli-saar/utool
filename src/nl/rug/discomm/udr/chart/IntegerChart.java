@@ -290,18 +290,7 @@ public class IntegerChart {
 		return ret;
 	}
 	
-	public Chart toChart() {
-		Chart ret = new Chart();
-		ret.addToplevelSubgraph(convertToSubgraph(toplevel));
-		for(List<Integer> subgraph : chart.keySet()) {
-			Set<String> sg = convertToSubgraph(subgraph);
-			for( IntSplit split : chart.get(subgraph) ) {
-				ret.addSplit(sg, split.toChartSplit());
-			}
-		}
-		
-		return ret;
-	}
+	
 	
 	public List<IntSplit> getSplitsFor(List<Integer> subgraph) {
 		return chart.get(subgraph);
