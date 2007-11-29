@@ -31,17 +31,17 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
 
 
 
-    @Override
+   
     public boolean isEmpty() {
         return subgraph.isEmpty();
     }
 
-    @Override
+    
     public String getRootIfSingleton() {
         return rootForThisFragset;
     }
 
-    @Override
+  
     public boolean isSingleton(Set<String> roots) {
         int numRoots = 0;
 
@@ -96,14 +96,14 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
 
 
 
-    @Override
+    
     public Set<String> getNodes() {
         return subgraph.getNodes();
     }
 
 
 
-    @Override
+   
     public String toString(Set<String> roots) {
         // TODO Auto-generated method stub
         return null;
@@ -111,7 +111,7 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
 
 
 
-    @Override
+ 
     public void addNode(String node) {
         subgraph.add(node);
     }

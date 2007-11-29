@@ -1,11 +1,15 @@
 package nl.rug.discomm.udr.graph;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org._3pq.jgrapht.Edge;
 
+import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
@@ -13,12 +17,15 @@ import de.saar.chorus.domgraph.graph.NodeType;
 
 public class Chain extends DomGraph {
 	
-	int lastIndex, edgeIndex;
+	private int lastIndex, edgeIndex;
+	private Map<Integer, List<Integer>> additionalDomedges;
+	private boolean domEdgesComputed;
 	
 	public Chain() {
 		super();
 		lastIndex = 0;
 		edgeIndex = 0;
+		domEdgesComputed = false;
 	}
 	
 	public Chain(int n) {
@@ -26,6 +33,7 @@ public class Chain extends DomGraph {
 		edgeIndex= 0;
 		makeChain(n);
 		lastIndex = n;
+		domEdgesComputed = false;
 		
 	}
 	
@@ -33,6 +41,31 @@ public class Chain extends DomGraph {
 	public int getLength() {
 		return lastIndex;
 	}
+	
+	public Map<Integer, List<Integer>> getAdditionalEdges() {
+		if(! domEdgesComputed) {
+		additionalDomedges = new HashMap<Integer, List<Integer>>();
+		
+		for(DomEdge edge: getAllDomEdges()) {
+			String src= edge.getSrc();
+			String tgt = edge.getTgt();
+			if(tgt.endsWith("x")) {
+				int isrc = Integer.parseInt(src.replaceAll("\\D", ""));
+				int itgt = Integer.parseInt(tgt.replaceAll("\\D", ""));
+				if(! additionalDomedges.containsKey(isrc)) {
+					additionalDomedges.put(isrc, new ArrayList<Integer>());
+				}
+				additionalDomedges.get(isrc).add(itgt);
+				
+			}
+		}
+		
+		domEdgesComputed = true;
+		}
+		
+		return additionalDomedges;
+	}
+	
 	public boolean addWeightedDominanceEdge(String src, String tgt, double weight) {
 		
 		Set<Edge> toDelete = new HashSet<Edge>();
@@ -72,6 +105,16 @@ public class Chain extends DomGraph {
 			return false;
 		} else {
 			addEdge(src,tgt, new EdgeData(EdgeType.DOMINANCE, ++edgeIndex));
+		}
+		if(domEdgesComputed) {
+			if(tgt.endsWith("x")) {
+				int isrc = Integer.parseInt(src.replaceAll("\\D", ""));
+				int itgt = Integer.parseInt(tgt.replaceAll("\\D", ""));
+				if(! additionalDomedges.containsKey(isrc)) {
+					additionalDomedges.put(isrc, new ArrayList<Integer>());
+				}
+				additionalDomedges.get(isrc).add(itgt);
+			}
 		}
 		return true;
 	}

@@ -353,9 +353,7 @@ public class IntSolvedFormIterator extends SolvedFormIterator {
         throw new UnsupportedOperationException();
     }
     
-    public Chart getChart() {
-    	return chart.toChart();
-    }
+   
     
     
     /**** classes for the agenda and the enumeration stack ****/
