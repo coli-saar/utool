@@ -10,11 +10,21 @@ import de.saar.chorus.domgraph.chart.Nonterminal;
 
 public class IntegerNonterminal extends ArrayList<Integer> implements Nonterminal {
 
+	private int leafIndex;
+	
 	public IntegerNonterminal(int left, int right) {
 		super();
 		add(left);
 		add(right);
+		leafIndex = -1;
 	}
+	
+	public IntegerNonterminal( int leafIndex) {
+		super();
+		add(0);
+		add(0);
+		this.leafIndex = leafIndex;
+		}
 	
 	public void addNode(String node) {
 		
@@ -56,13 +66,13 @@ public class IntegerNonterminal extends ArrayList<Integer> implements Nontermina
 
 	public String getRootIfSingleton() {
 		// TODO Auto-generated method stub
-		return null;
+		return leafIndex + "y";
 	}
 
 	public boolean isSingleton(Set<String> roots) {
 		//TODO should this only return true for leaves?
 		// there are no leaves in my chain charts...
-		return get(0) == get(1);
+		return leafIndex > -1;
 	}
 
 	public String toString(Set<String> roots) {

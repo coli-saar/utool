@@ -10,7 +10,6 @@ import java.util.Set;
 import nl.rug.discomm.udr.graph.Chain;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
-import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.chart.UnsolvableSubgraphException;
 
@@ -27,9 +26,9 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 			throws UnsolvableSubgraphException {
 		
 		List<Split<IntegerNonterminal>> splits = new ArrayList<Split<IntegerNonterminal>>();
-		SplitComputer<IntegerNonterminal> sc = new IntSplitComputer(chain);
+		IntSplitComputer sc = new IntSplitComputer(chain);
 		
-		for(String root : computePotentialFreeRoots(subgraph)) {
+		for(int root : computePotentialFreeRootsInt(subgraph)) {
 			splits.add(sc.computeSplit(root, subgraph));
 		}
 		
@@ -42,7 +41,7 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 
 	
 	public IntegerNonterminal makeToplevelSubgraph(Chain graph) {
-		return new IntegerNonterminal(0, graph.getLength());
+		return new IntegerNonterminal(1, graph.getLength());
 	}
 	
 	/**
@@ -67,6 +66,45 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 	public void reduceIfNecessary(RegularTreeGrammar<IntegerNonterminal> chart) {
 		// TODO ?
 
+	}
+	
+	private List<Integer> computePotentialFreeRootsInt(IntegerNonterminal subgraph) {
+		List<Integer> ret = new ArrayList<Integer>();
+		int left = subgraph.getLeftBorder();
+		int right = subgraph.getRightBorder();
+		Map<Integer, List<Integer>> domEdges = chain.getAdditionalEdges();
+	
+		Set<Integer> forbiddenRoots = new HashSet<Integer>();
+		for( int i = left; i <= right; i++) {
+			if(domEdges.containsKey(i)) {
+				for(Integer tgt : domEdges.get(i)) {
+					if(tgt <= right &&
+							tgt >= left) {
+						forbiddenRoots.add(tgt);
+						if(tgt > i) {
+							// edge pointing "to the right"
+							for(int f = i+1; f < tgt; f++) {
+								forbiddenRoots.add(f);
+							}
+						} else {
+							// edge pointing "to the left"
+							for(int f = tgt +1; f < i;f++) {
+								forbiddenRoots.add(f);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		for(int i = left; i <= right; i++) {
+			if(! forbiddenRoots.contains(i)) {
+				ret.add(i);
+			}
+		}
+		
+		
+		return ret;
 	}
 
 	@Override
