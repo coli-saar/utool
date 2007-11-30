@@ -30,6 +30,8 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         out.clear();
         agenda.clear();
 
+        possibleDominators = c.computePossibleDominators();
+
         //System.err.println("Elimination starts...");
 
         for( SubgraphNonterminal sub : c.getToplevelSubgraphs() ) {
@@ -108,8 +110,8 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
         // if the two quantifiers are permutable, then the split is not allowed
         //System.err.print("[" + previousQuantifier + "," + split.getRootFragment() +
-          //      (isPermutable(previousQuantifier, split.getRootFragment()) ? "" : " not") +
-            //    " permutable]");
+           //     (isPermutable(previousQuantifier, split.getRootFragment()) ? "" : " not") +
+              //  " permutable]");
         return !isPermutable(previousQuantifier, split.getRootFragment());
     }
 

@@ -92,6 +92,8 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
 
     private final Map<String,Map<String,ModifiableInteger>> numHolesToOtherRoot;
 
+    protected Map<String,Set<String>> possibleDominators;
+
     private int currentHoleIdx;
     private int currentLeafIdx;
 
@@ -138,11 +140,15 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
      */
     public void eliminate(RegularTreeGrammar<E> c) {
         Set<E> visited = new HashSet<E>();
+        possibleDominators = c.computePossibleDominators();
 
         for( E subgraph : c.getToplevelSubgraphs() ) {
             eliminate(subgraph, c, visited);
         }
     }
+
+
+
 
     private void eliminate(E subgraph, RegularTreeGrammar<E> c, Set<E> visited) {
         List<Split<E>> splits = c.getSplitsFor(subgraph);
@@ -197,7 +203,6 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
                 indexTableDfs(root, child);
             }
         }
-        //System.err.println("table = " + indicesCompactToOriginal);
     }
 
     private void indexTableDfs(String root, String node) {
@@ -319,7 +324,12 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
     // root1 is p.d. of root2 iff it has exactly one hole that is connected
     // to root2 by a hn path that doesn't use root1.
     protected boolean isPossibleDominator(String root1, String root2) {
-        return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
+        if( !possibleDominators.containsKey(root1)) {
+            return false;
+        } else {
+            return possibleDominators.get(root1).contains(root2);
+        }
+        //return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
     }
 
 
@@ -328,15 +338,16 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
      */
 
     protected boolean isPermutable(String root1, String root2) {
-        int n1n2 = hypernormalReachability.get(root1).get(root2),
-            n2n1 = hypernormalReachability.get(root2).get(root1);
+        // System.err.print("[pd " + root1 + "/" + root2 + ": " + isPossibleDominator(root1, root2) + "/" + isPossibleDominator(root2, root1) + "] ");
 
-        if( (n1n2 < 0) || (n2n1 < 0) ) {
-            // Assuming that the graph is solvable and hnc, this case means that one of the
-            // fragments is not a possible dominator of the other. In this case, the fragments
-            // are not permutable.
+        if( !isPossibleDominator(root1, root2) || !isPossibleDominator(root2, root1)) {
             return false;
         } else {
+            int n1n2 = hypernormalReachability.get(root1).get(root2),
+            n2n1 = hypernormalReachability.get(root2).get(root1);
+
+            assert (n1n2 >= 0) && (n2n1 >= 0);
+
             FragmentWithHole f1 =
                 new FragmentWithHole(labels.getLabel(root1), indicesCompactToOriginal.get(root1).get(n1n2));
             FragmentWithHole f2 =

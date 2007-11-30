@@ -1599,6 +1599,7 @@ public class DomGraph implements Cloneable {
      *         doesn't visit avoidThese.
      */
     public boolean isHypernormallyReachable(String source, String target, Set<String> avoidThese) {
+        //System.err.println("call: ishnr " + source + " to " + target + ", avoiding " + avoidThese);
         return isHnReachable(source, target, avoidThese, false);
     }
 

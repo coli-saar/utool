@@ -93,6 +93,10 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         return chart.size();
     }
 
+    public Set<E> getAllNonterminals() {
+        return chart.keySet();
+    }
+
 
 
     /**
@@ -366,6 +370,8 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     public BigInteger countSolvedForms() {
         BigInteger ret = BigInteger.ONE;
 
+        numSolvedForms.clear();
+
         for( E subgraph : getToplevelSubgraphs() ) {
             ret = ret.multiply(countSolvedFormsFor(subgraph, numSolvedForms));
         }
@@ -399,6 +405,37 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
             numSolvedForms.put(subgraph, ret);
             return ret;
         }
+    }
+
+    public Map<String,Set<String>> computePossibleDominators() {
+        Map<String,Set<String>> ret = new HashMap<String,Set<String>>();
+
+        for( E key : getAllNonterminals() ) {
+            for( Split<E> split : getSplitsFor(key)) {
+                for( String hole : split.getAllDominators() ) {
+                    for( E subgraph : split.getWccs(hole)) {
+                        for( String node : subgraph.getNodes() ) {
+                            addDominee(ret, split.getRootFragment(), node);
+                            addDominee(ret, hole, node);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return ret;
+    }
+
+    private void addDominee(Map<String,Set<String>> possibleDominators, String dominator, String dominee) {
+        Set<String> dominees = possibleDominators.get(dominator);
+
+        if( dominees == null ) {
+            dominees = new HashSet<String>();
+            possibleDominators.put(dominator, dominees);
+        }
+
+        dominees.add(dominee);
     }
 
 
