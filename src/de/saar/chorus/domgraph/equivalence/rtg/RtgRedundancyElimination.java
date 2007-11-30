@@ -43,23 +43,33 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
             if( !out.containsSplitFor(sub) ) {
                 for( Split<SubgraphNonterminal> split : c.getSplitsFor(sub.getSubgraph()) ) {
+                    //System.err.println("Consider split " + split + " (coming from " + sub.getPreviousQuantifier() + ")");
+
                     if( allowedSplit(split, sub.getPreviousQuantifier()) ) {
                         Split<QuantifierMarkedNonterminal> outSplit = makeSplit(split);
                         out.addSplit(sub, outSplit);
+                        //System.err.println("  -> allowed");
 
                         for( QuantifierMarkedNonterminal candidate : outSplit.getAllSubgraphs() ) {
                             if( !candidate.isSingleton(roots) && !out.containsSplitFor(candidate)) {
                                 agenda.add(candidate);
                             }
                         }
+                    } else {
+                        //System.err.println("  -> not allowed");
                     }
                 }
             }
         }
 
+        //System.err.println("#sfs after phase 1: " + out.countSolvedForms());
+        //System.err.println("chart after phase 1: ");
+        //System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
+
         //System.err.println("Elimination done, new chart size is " + out.size());
 
         out.reduce(roots);
+        //System.err.println("#sfs after phase 2: " + out.countSolvedForms());
 
         //System.err.println("Reduction done, new chart size is " + out.size());
 
@@ -83,18 +93,23 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
     @SuppressWarnings("unchecked")
-    private boolean allowedSplit(Split split, String previousQuantifier) {
+    public boolean allowedSplit(Split split, String previousQuantifier) {
         // if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
+            //System.err.print("[pq=null]");
             return true;
         }
 
         // if the two quantifiers are in the right order (previous < here), then the split is allowed
         if( previousQuantifier.compareTo(split.getRootFragment()) < 0 ) {
+            //System.err.print("[pq smaller]");
             return true;
         }
 
         // if the two quantifiers are permutable, then the split is not allowed
+        //System.err.print("[" + previousQuantifier + "," + split.getRootFragment() +
+          //      (isPermutable(previousQuantifier, split.getRootFragment()) ? "" : " not") +
+            //    " permutable]");
         return !isPermutable(previousQuantifier, split.getRootFragment());
     }
 

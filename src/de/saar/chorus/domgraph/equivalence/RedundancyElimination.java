@@ -332,11 +332,10 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
             n2n1 = hypernormalReachability.get(root2).get(root1);
 
         if( (n1n2 < 0) || (n2n1 < 0) ) {
-            // This should not happen, because isPermutable should only be
-            // called for distinct nodes that are mutual possible dominators,
-            // and those are always connected via unique holes.
-            assert false;
-            return true;
+            // Assuming that the graph is solvable and hnc, this case means that one of the
+            // fragments is not a possible dominator of the other. In this case, the fragments
+            // are not permutable.
+            return false;
         } else {
             FragmentWithHole f1 =
                 new FragmentWithHole(labels.getLabel(root1), indicesCompactToOriginal.get(root1).get(n1n2));

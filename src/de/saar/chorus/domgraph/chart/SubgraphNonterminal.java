@@ -49,8 +49,9 @@ public class SubgraphNonterminal extends HashSet<String> implements Nonterminal 
 
    
     public String toString(Set<String> roots) {
-        // TODO Auto-generated method stub
-        return null;
+        Set<String> s = new HashSet<String>(this);
+        s.retainAll(roots);
+        return s.toString();
     }
 
  
