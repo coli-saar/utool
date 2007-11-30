@@ -105,8 +105,7 @@ public class QuantifierMarkedNonterminal implements Nonterminal {
 
    
     public String toString(Set<String> roots) {
-        // TODO Auto-generated method stub
-        return null;
+        return previousQuantifier + "/" + subgraph.toString(roots);
     }
 
 

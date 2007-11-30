@@ -51,6 +51,25 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	            ]);
 	}
 	
+	public void testNoDominator1() {
+	    checkEliminatedSolvedForms("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+
+	public void testNoDominator2() {
+	    checkEliminatedSolvedForms("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(y2 x) dom(x2 z3)]",
+	            [ [[["y2","x"], ["x2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+	
+	public void testNoDominator3() {
+	    checkEliminatedSolvedForms("[label(x a(x1 x2)) label(y every(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+
+
 	public void testAA_SS() {
 	    checkEliminatedSolvedFormsSS("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
 	            [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]);
@@ -74,7 +93,37 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	              [[ ["z3","x1"], ["x3", "y1"], ["y3", "w4"],          ["x2","w1"], ["y2", "w2"], ["z2", "w3"]  ],[:]]
 	            ]);
 	}
+	
+	public void testNoDominator1_SS() {
+	    checkEliminatedSolvedFormsSS("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
 
+	public void testNoDominator2_SS() {
+	    checkEliminatedSolvedFormsSS("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(y2 x) dom(x2 z3)]",
+	            [ [[["y2","x"], ["x2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+	
+	public void testNoDominator3_SS() {
+	    checkEliminatedSolvedFormsSS("[label(x a(x1 x2)) label(y every(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+
+	
+	public void testUnsolvable_SS() {
+	    checkUnsolvableSS("[label(x f(x1 x2)) label(y a) dom(x1 y) dom(x2 y)]");
+	}
+
+	private void checkUnsolvableSS(String domcon) {
+	    ozcodec.decode(new StringReader(domcon), graph, labels);
+		graph = graph.preprocess();
+		
+		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
+		assert ! ChartSolver.solve(graph, out, new RtgRedundancyEliminationSplitSource(elim, graph));
+	}
 	
 	private void checkEliminatedSolvedFormsSS(String domcon, List goldSfs) {
 	    ozcodec.decode(new StringReader(domcon), graph, labels);

@@ -179,9 +179,22 @@ class ServerThread extends Thread {
             						new IndividualRedundancyElimination(graph,
             								options.getLabels(), options.getEquations()), graph));
             								*/
+
+
             	    solvable = ChartSolver.solve(graph, chart);
             	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
             	    new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations()).eliminate(chart, reducedChart);
+
+
+
+/*
+            	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
+            	    solvable = ChartSolver.solve(graph, reducedChart,
+                            new RtgRedundancyEliminationSplitSource(
+                                    new RtgRedundancyElimination(graph,
+                                            options.getLabels(), options.getEquations()), graph));
+                                            */
+
 
             	} else {
             		solvable = ChartSolver.solve(graph, chart);
