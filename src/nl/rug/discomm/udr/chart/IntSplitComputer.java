@@ -15,6 +15,35 @@ public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 		super(graph);
 	}
 	
+	
+	public Split<IntegerNonterminal> computeSplit(int root, IntegerNonterminal subgraph) {
+		
+		IntegerSplit split = new IntegerSplit(root);
+		
+		int l = subgraph.getLeftBorder();
+		int r = subgraph.getRightBorder();
+		
+		IntegerNonterminal left, right;
+		
+		if(l == root) {
+			left = new IntegerNonterminal(root-1);
+		}  else {
+			left = new IntegerNonterminal(l,root-1);
+		}
+		
+		if(r == root) {
+			right = new IntegerNonterminal(root);
+		} else {
+			right = new IntegerNonterminal(root +1, r);
+		}
+		
+		split.setLeftWcc(left);
+		split.setRightWcc(right);
+		return split;
+	
+	}
+	
+	
 	/**
 	 * This assumes the root to be free !
 	 */
@@ -31,13 +60,13 @@ public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 			IntegerNonterminal left, right;
 			
 			if(l == iRoot) {
-				left = new IntegerNonterminal(0,0);
+				left = new IntegerNonterminal(iRoot-1);
 			}  else {
 				left = new IntegerNonterminal(l,iRoot-1);
 			}
 			
 			if(r == iRoot) {
-				right = new IntegerNonterminal(0,0);
+				right = new IntegerNonterminal(iRoot);
 			} else {
 				right = new IntegerNonterminal(iRoot +1, r);
 			}
