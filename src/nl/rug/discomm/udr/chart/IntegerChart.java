@@ -237,7 +237,8 @@ public class IntegerChart {
 			for( int i = left; i <= right; i++) {
 				if(domEdges.containsKey(i)) {
 					for(Integer tgt : domEdges.get(i)) {
-						if(tgt <= right) {
+						if(tgt <= right &&
+								tgt >= left) {
 							forbiddenRoots.add(tgt);
 							if(tgt > i) {
 								for(int f = i+1; f < tgt; f++) {

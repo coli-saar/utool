@@ -9,18 +9,20 @@ import de.saar.chorus.domgraph.chart.SplitComputer;
 
 public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 
-	private Map<Integer, List<Integer>> domEdges;
+
 	
 	public IntSplitComputer(Chain graph) {
 		super(graph);
-		domEdges = graph.getAdditionalEdges();
 	}
 	
+	/**
+	 * This assumes the root to be free !
+	 */
 	@Override
 	public Split<IntegerNonterminal> computeSplit(String root, IntegerNonterminal subgraph) {
 		
 		int iRoot = Integer.parseInt(root.replaceAll("\\D",""));
-		if(isFree(iRoot, subgraph)) {
+		
 			Split<IntegerNonterminal> split = new Split<IntegerNonterminal>(root);
 			
 			int l = subgraph.getLeftBorder();
@@ -43,42 +45,10 @@ public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 			split.addWcc(root + "l", left);
 			split.addWcc(root + "r", right);
 			return split;
-		} else {
-			return null;
-		}
+		
 	}
 	
-	private boolean isFree(int root, IntegerNonterminal subgraph) {
-		
-		int left = subgraph.getLeftBorder();
-		int right = subgraph.getRightBorder();
-		
-		for( int i = left; i <= right; i++) {
-			if(domEdges.containsKey(i)) {
-				for(Integer tgt : domEdges.get(i)) {
-					if( tgt <= right) {
-						if( root == tgt) {
-							return false;
-						}
-						if(tgt > i) {
-							if(root > i && root < tgt) {
-								return false;
-							}
-							
-						} else {
-							
-							if(root > tgt && root < i) {
-								return false;
-							}
-							
-						}
-					}
-				}
-			}
-		}
-		
-		return true;
-	}
+
 	
 	@Override
 	protected IntegerNonterminal createEmptyNonterminal() {
