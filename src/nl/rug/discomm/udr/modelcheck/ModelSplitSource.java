@@ -36,7 +36,7 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 
 	@Override
 	public void reduceIfNecessary(RegularTreeGrammar chart) {
-		// TODO Auto-generated method stub
+		// do nothing? this should not be applicable for model checking.
 		
 	}
 
