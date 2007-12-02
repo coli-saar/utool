@@ -36,19 +36,9 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
         if( precomputedSplits.containsKey(subgraph.getSubgraph())) {
             List<Split<QuantifierMarkedNonterminal>> ret = new ArrayList<Split<QuantifierMarkedNonterminal>>();
 
-            /*
-            System.err.println("\nSubsequent visit to " + subgraph.getSubgraph() + " (from " + subgraph.getPreviousQuantifier() + ")");
-            System.err.println("Stored splits: " + precomputedSplits.get(subgraph.getSubgraph()));
-            */
-
-            // TODO: Further optimization: While all allowed splits must be added to the chart,
-            // only allowed splits that are allowed for the first time must be further pursued by the solver.
             for( Split<QuantifierMarkedNonterminal> split : precomputedSplits.get(subgraph.getSubgraph())) {
                 if( elim.allowedSplit(split, subgraph.getPreviousQuantifier())) {
-                    //System.err.println("   -> " + split.toString() + " is allowed");
                     ret.add(split);
-                } else {
-                    //System.err.println("   -> " + split.toString() + " is not allowed");
                 }
             }
 
@@ -62,8 +52,6 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
             List<Split<QuantifierMarkedNonterminal>> allSplits = new ArrayList<Split<QuantifierMarkedNonterminal>>();
             precomputedSplits.put(subgraph.getSubgraph(), allSplits);
 
-            //System.err.println("\nFirst visit to " + subgraph.getSubgraph() + " (from " + subgraph.getPreviousQuantifier() + ")");
-
             for( String root : potentialFreeRoots ) {
                 Split<QuantifierMarkedNonterminal> split = sc.computeSplit(root, subgraph);
 
@@ -73,10 +61,7 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
                     allSplits.add(split);
 
                     if( elim.allowedSplit(split, subgraph.getPreviousQuantifier()) ) {
-                        //System.err.println("   -> " + split.toString() + " is allowed");
                         splits.add(split);
-                    } else {
-                        //System.err.println("   -> " + split.toString() + " is not allowed");
                     }
                 }
             }
@@ -91,9 +76,6 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
 
     @Override
     public void reduceIfNecessary(RegularTreeGrammar<QuantifierMarkedNonterminal> chart) {
-        //System.err.println("Chart before reduction:");
-        //System.err.println(ChartPresenter.chartOnlyRoots(chart, graph));
-
         chart.reduce(graph.getAllRoots());
     }
 

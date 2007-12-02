@@ -150,20 +150,12 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         while( !agenda.isEmpty() ) {
             E nt = agenda.remove();
 
-            //System.err.println("consider nt " + nt);
-
             if( !usefulNonterminals.contains(nt)) {
                 usefulNonterminals.add(nt);
 
-                //System.err.println("newly useful, useful nts are now: " + usefulNonterminals);
-
                 if( nonterminalUses.containsKey(nt)) {
-                    //System.err.println("uses: " + nonterminalUses.get(nt));
-
                     for( Split<E> split : nonterminalUses.get(nt)) {
                         boolean allRhsUseful = true;
-
-                        //System.err.println("    consider " + split);
 
                         for( E rhs : split.getAllSubgraphs() ) {
                             if( !usefulNonterminals.contains(rhs)) {
@@ -173,7 +165,6 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
 
                         if( allRhsUseful ) {
                             for( E lhs : splitToLhs.get(split)) {
-                                //System.err.println("     useful! add " + lhs);
                                 agenda.add(lhs);
                             }
                         }
