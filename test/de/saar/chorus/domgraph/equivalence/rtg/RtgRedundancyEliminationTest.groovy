@@ -26,7 +26,7 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
     }
     
     
-    
+    /*
 	public void testAA() {
 	    checkEliminatedSolvedForms("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
 	            [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]);
@@ -80,7 +80,7 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	            [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]);
 	}
 	
-	
+	*/
 	public void testIcosIncompleteness_SS() {
 	    checkEliminatedSolvedFormsSS("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 every(z2 z3)) label(w1 foo) label(w2 foo) label(w3 foo) label(w4 foo) dom(x2 w1) dom(x3 w2) dom(y2 w2) dom(y3 w3) dom(z3 w3) dom(z2 w4)]",
 	            [ [[ ["x3","y1"], ["y2", "w2"], ["y3", "z1"], ["z3", "w3"],          ["x2","w1"], ["z2", "w4"]  ],[:]],
@@ -138,8 +138,17 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
 		ChartSolver.solve(graph, out, new RtgRedundancyEliminationSplitSource(elim, graph));
 		
+		/*
+		System.err.println("Chart:");
+		System.err.println(ChartPresenter.chartOnlyRoots(out,graph));
+		System.err.println("--------------------------------------------\n\n");
+		*/
+		
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		
+		
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "sfs = " + sfs;
 	}
