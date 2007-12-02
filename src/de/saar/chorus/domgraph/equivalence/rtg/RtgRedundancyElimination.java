@@ -30,7 +30,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         out.clear();
         agenda.clear();
 
-        possibleDominators = c.computePossibleDominators();
+        //possibleDominators = c.computePossibleDominators();
 
         //System.err.println("Elimination starts...");
 
@@ -64,9 +64,11 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
             }
         }
 
-        //System.err.println("#sfs after phase 1: " + out.countSolvedForms());
-        //System.err.println("chart after phase 1: ");
-        //System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
+        /*
+        System.err.println("#sfs after phase 1: " + out.countSolvedForms());
+        System.err.println("chart after phase 1: ");
+        System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
+        */
 
         //System.err.println("Elimination done, new chart size is " + out.size());
 

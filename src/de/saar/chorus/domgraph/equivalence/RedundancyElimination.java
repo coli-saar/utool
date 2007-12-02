@@ -92,7 +92,8 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
 
     private final Map<String,Map<String,ModifiableInteger>> numHolesToOtherRoot;
 
-    protected Map<String,Set<String>> possibleDominators;
+    // protected Map<String,Set<String>> possibleDominators;
+    protected Map<String,Set<String>> oneWayDominator; //  a -> [...b...]: hnc path from a to root of b
 
     private int currentHoleIdx;
     private int currentLeafIdx;
@@ -126,6 +127,9 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
         System.err.println("\nHypernormal reachability table:");
         System.err.println(hypernormalReachability + "\n");
         */
+
+        oneWayDominator = new HashMap<String,Set<String>>();
+        computePossibleDominators();
     }
 
 
@@ -140,7 +144,7 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
      */
     public void eliminate(RegularTreeGrammar<E> c) {
         Set<E> visited = new HashSet<E>();
-        possibleDominators = c.computePossibleDominators();
+        //possibleDominators = c.computePossibleDominators();
 
         for( E subgraph : c.getToplevelSubgraphs() ) {
             eliminate(subgraph, c, visited);
@@ -324,11 +328,19 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
     // root1 is p.d. of root2 iff it has exactly one hole that is connected
     // to root2 by a hn path that doesn't use root1.
     protected boolean isPossibleDominator(String root1, String root2) {
+        if( oneWayDominator.get(root2).contains(root1)) {
+            return false;
+        }
+
+        return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
+
+        /*
         if( !possibleDominators.containsKey(root1)) {
             return false;
         } else {
             return possibleDominators.get(root1).contains(root2);
         }
+        */
         //return numHolesToOtherRoot.get(root1).get(root2).getValue() == 1;
     }
 
@@ -359,6 +371,25 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
             Equation eq = new Equation(f1,f2);
 
             return eqs.contains(eq);
+        }
+    }
+
+    private void computePossibleDominators() {
+        Set<String> avoid = new HashSet<String>();
+        oneWayDominator.clear();
+
+        for( String dominator : compact.getAllRoots() ) {
+            Set<String> oneWayDominees = new HashSet<String>();
+            oneWayDominator.put(dominator, oneWayDominees);
+
+            for( String dominee : compact.getAllRoots()) {
+                avoid.clear();
+                avoid.addAll(compact.getChildren(dominee, EdgeType.TREE));
+
+                if( compact.isHypernormallyReachable(dominator, dominee, avoid) ) {
+                    oneWayDominees.add(dominee);
+                }
+            }
         }
     }
 }

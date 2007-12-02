@@ -66,7 +66,12 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	public void testNoDominator3() {
 	    checkEliminatedSolvedForms("[label(x a(x1 x2)) label(y every(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
 	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
-	            
+	}
+	
+	public void testIntransitive() {
+	    // this models the incompleteness of RTG elimination on Rondane 1279
+	    checkEliminatedSolvedForms("[label(y permute(y1)) label(z f(z1)) label(x g(x1)) label(w a) dom(y1 w) dom(z1 x) dom(x1 w)]",
+	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ]);
 	}
 
 
@@ -109,8 +114,9 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	public void testNoDominator3_SS() {
 	    checkEliminatedSolvedFormsSS("[label(x a(x1 x2)) label(y every(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
 	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
-	            
 	}
+	
+	
 
 	
 	public void testUnsolvable_SS() {
@@ -178,5 +184,6 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	"   <equivalencegroup>" +
 	"       <quantifier label='every' hole='1' />" +
 	"   </equivalencegroup>" +
+	"   <permutesWithEverything label='permute' hole='0' />" +
 	"</equivalences>";
 }
