@@ -109,7 +109,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     public void reduce(Set<String> roots) {
         Set<E> usefulNonterminals = new HashSet<E>();
         Map<E,List<Split<E>>> nonterminalUses = new HashMap<E,List<Split<E>>>();
-        Map<Split<E>,E> splitToLhs = new HashMap<Split<E>,E>();
+        Map<Split<E>,List<E>> splitToLhs = new HashMap<Split<E>,List<E>>();
         Queue<E> agenda = new LinkedList<E>();
         Set<E> singletons = new HashSet<E>();
 
@@ -117,7 +117,14 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         // and of splits to their LHSs
         for( E lhs : chart.keySet() ) {
             for( Split<E> split : chart.get(lhs) ) {
-                splitToLhs.put(split, lhs);
+                List<E> LHSs = splitToLhs.get(split);
+
+                if( LHSs == null ) {
+                    LHSs = new ArrayList<E>();
+                    splitToLhs.put(split,LHSs);
+                }
+
+                LHSs.add(lhs);
 
                 for( E subgraph : split.getAllSubgraphs() ) {
                     List<Split<E>> uses = nonterminalUses.get(subgraph);
@@ -143,12 +150,20 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         while( !agenda.isEmpty() ) {
             E nt = agenda.remove();
 
+            //System.err.println("consider nt " + nt);
+
             if( !usefulNonterminals.contains(nt)) {
                 usefulNonterminals.add(nt);
 
+                //System.err.println("newly useful, useful nts are now: " + usefulNonterminals);
+
                 if( nonterminalUses.containsKey(nt)) {
+                    //System.err.println("uses: " + nonterminalUses.get(nt));
+
                     for( Split<E> split : nonterminalUses.get(nt)) {
                         boolean allRhsUseful = true;
+
+                        //System.err.println("    consider " + split);
 
                         for( E rhs : split.getAllSubgraphs() ) {
                             if( !usefulNonterminals.contains(rhs)) {
@@ -157,8 +172,10 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                         }
 
                         if( allRhsUseful ) {
-                            E lhs = splitToLhs.get(split);
-                            agenda.add(lhs);
+                            for( E lhs : splitToLhs.get(split)) {
+                                //System.err.println("     useful! add " + lhs);
+                                agenda.add(lhs);
+                            }
                         }
                     }
                 }
@@ -186,8 +203,10 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
 
         // delete all splits that use useless nonterminals
         for( Split<E> split : uselessSplits ) {
-            if( chart.containsKey(splitToLhs.get(split))) {
-                chart.get(splitToLhs.get(split)).remove(split);
+            for( E lhs : splitToLhs.get(split)) {
+                if( chart.containsKey(lhs) ) {
+                    chart.get(lhs).remove(split);
+                }
             }
         }
 
