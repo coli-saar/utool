@@ -43,5 +43,15 @@ class MrsCodecTest extends GroovyTestCase {
 		TestingTools.checkSolvedForms(graph,
 				[ [[["h5","h9"],["h10","h11"],["h6","h12"]],[:]] ]);
 	}
+	
+	// Dan Flickinger's problem MRS of 3/12/2007 (couldn't be parsed in Utool 3.0)
+	public void testDF1() {
+		mrscodec.decode(new StringReader("psoa(h1,e2,[rel('_rain_v_1',h3,[attrval('ARG0',e2)])],hcons([]))"),
+				graph, labels);
+		
+		ozcodec.decode(new StringReader("[label(h3 '_rain_v_1')]"), goldGraph, goldLabels);
+		
+		assert DomGraph.isEqual(graph, labels, goldGraph, goldLabels);
+	}
 
 }
