@@ -1221,7 +1221,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 				new HashMap<String,Integer>();
 			
 			for(String root : possibleRoots) {
-				//	System.out.println("New DFS with Root: " + root);
+					//System.out.println("New DFS with Root: " + root);
 				
 				Set<String> visited = new HashSet<String>();
 				Cost thisCost = 
@@ -1262,7 +1262,8 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 					}
 				}
 				// update best root
-				if(thisCost.compareTo(costBestRoot) < 0) {
+				if( (thisCost.compareTo(costBestRoot) < 0) ||
+						(bestRoot == null)) {
 					bestRoot = root;
 					costBestRoot = thisCost;
 				}
@@ -1279,7 +1280,11 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 			//	System.err.println("Crossings: " + costBestRoot.getCrossings());
 			Set<String> visited = new HashSet<String>();
 			
-	
+			if(bestRoot == null) {
+				//  might happen if there are only cyclic fragments in the graph
+				bestRoot = domgraph.getAllNodes().iterator().next();
+			}
+			
 			Cost lastCost = fragmentBoxDFS(bestRoot,visited, new Rectangle(), 
 					xStart,0, new HashSet<String>(), new Cost(), false,
 					fragXpos, fragYpos);

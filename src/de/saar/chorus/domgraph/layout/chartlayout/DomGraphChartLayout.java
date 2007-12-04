@@ -433,10 +433,10 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 				free.addAll(toplevel);
 			}
 			
-		
+			
 			// toplevel fragment box
 			FragmentBox box = makeFragmentBox(toplevel, free);
-
+			
 			// retrieving the relative x-positions in the fragment box
 			// and placing the fragments
 			Set<String> seen = new HashSet<String>();
@@ -799,6 +799,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 						
 					} else {
 						// not the first loop.
+						
 						int nextCrossCount = fragBoxDFS(current, 0,
 								new HashSet<String>(), frag, 0, null);
 						
@@ -1014,7 +1015,9 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 			if (getFragHoles(currentRoot).size() == 1) {
 				// a one-hole-fragment places its parent
 				// _always_ flush with itself
-				rightX = box.getBoxXPos(current);
+			
+				rightX = box.getBoxXPos(currentRoot);
+			
 			} else {
 				// every other fragment places its parent
 				// to its right.
@@ -1464,6 +1467,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 		 * @return
 		 */
 		int getBoxXPos(String frag) {
+			
 			return fragToXPos.get(frag);
 		}
 
