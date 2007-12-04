@@ -87,7 +87,10 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 		 if(fragmentToHoles.containsKey(frag)) {
 			 return fragmentToHoles.get(frag);
 		 } else {
+			
 			 List<String> holes = domgraph.getHoles(frag);
+		
+			
 			 fragmentToHoles.put(frag, holes);
 			 return holes;
 		 }
