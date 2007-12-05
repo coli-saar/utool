@@ -345,6 +345,15 @@ class MrsCodec {
 			}
 		}
 	}
+
+	private void addAritiesToLabels() {
+		for( String node : graph.getAllNodes() ) {
+			NodeData data = graph.getData(node);
+			if (data.getType() == NodeType.LABELLED) {
+				labels.addLabel(node, labels.getLabel(node) + "-" + graph.outdeg(node, EdgeType.TREE));
+			}
+		}
+	}
 	
 	public void setTopHandleAndFinish(String handle) throws MalformedDomgraphException
 	{
@@ -352,6 +361,7 @@ class MrsCodec {
 
 		addBindingEdges();
 		setTopHandle(handle);
+		addAritiesToLabels();
 
 		CodecTools.removeTopEmptyFragment(graph, ErrorCodes.NO_UNIQUE_TOP_FRAGMENT);
 
