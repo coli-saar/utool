@@ -193,6 +193,11 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
             if( chart.containsKey(useless)) {
                 chart.remove(useless);
             }
+            
+            // if NT is toplevel subgraph, remove that
+            if( toplevelSubgraphs.contains(useless)) {
+            	toplevelSubgraphs.remove(useless);
+            }
 
             // mark all splits which use it for deletion
             if( nonterminalUses.containsKey(useless)) {
@@ -507,10 +512,17 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         }
         */
 
-        DecoratedNonterminal<E,F> newToplevelSubgraph = new DecoratedNonterminal<E,F>(getToplevelSubgraphs().get(0), other.getToplevelSubgraphs().get(0));
-        ret.addToplevelSubgraph(newToplevelSubgraph);
+        // TODO - this is a hack, because top-level subgraphs were _not_ meant
+        // as alternative start states, but for disconnected dominance graphs.
+        // For now it'll do.
+        for( E top1 : getToplevelSubgraphs() ) {
+        	for( F top2 : other.getToplevelSubgraphs() ) {
+                DecoratedNonterminal<E,F> newToplevelSubgraph = new DecoratedNonterminal<E,F>(top1, top2);
+                ret.addToplevelSubgraph(newToplevelSubgraph);
 
-        intersectPopulate(newToplevelSubgraph, ret, this, other, labels, graph.getAllRoots());
+                intersectPopulate(newToplevelSubgraph, ret, this, other, labels, graph.getAllRoots());
+        	}
+        }
 
         System.err.println("before: " + ChartPresenter.chartOnlyRoots(ret, graph));
 
@@ -530,7 +542,13 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                         Split<DecoratedNonterminal<E,F>> newSplit = new Split<DecoratedNonterminal<E,F>>(split1.getRootFragment());
                         List<DecoratedNonterminal<E,F>> newNts = new ArrayList<DecoratedNonterminal<E,F>>();
                         boolean goodSplit = true;
-
+                        
+                        /*
+                        System.err.println("Intersect splits for " + nt1 + "," + nt2);
+                        System.err.println("Split1: " + split1 + " (dominators: " + split1.getAllDominators() + ")");
+                        System.err.println("Split2: " + split2 + " (dominators: " + split2.getAllDominators() + ")");
+                        */
+                        
                         for( int i = 0; i < split1.getAllDominators().size(); i++ ) {
                             String hole1 = split1.getAllDominators().get(i);
                             String hole2 = split2.getAllDominators().get(i);
@@ -542,7 +560,12 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                             E sub1 = split1.getWccs(hole1).get(0);
                             F sub2 = split2.getWccs(hole2).get(0);
 
-                            if( sub1.isSingleton(roots) != sub2.isSingleton(roots) ) {
+                            // HACK: Here I treat the two isSingleton methods differently,
+                            // because sub1.isSingleton is true if the split1 NT is
+                            // terminal (0-ary constructor), but sub2.isSingleton is true
+                            // if it's a final state in the RTG. This totally needs
+                            // to be fixed!!
+                            if( sub1.isSingleton(roots) && ! sub2.isSingleton(roots) ) {
                                 goodSplit = false;
                                 break;
                             }
@@ -581,8 +604,9 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         RegularTreeGrammar<StringNonterminal> g2 = parser.read(new FileReader(new File(args[1])));
         RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,StringNonterminal>> inter = chart.intersect(g2, graph, labels);
 
-        System.out.println(inter.countSolvedForms());
+        System.err.println(inter.countSolvedForms());
 
-        System.out.println(ChartPresenter.chartOnlyRoots(inter, graph));
+        System.err.println("after:");
+        System.err.println(ChartPresenter.chartOnlyRoots(inter, graph));
     }
 }

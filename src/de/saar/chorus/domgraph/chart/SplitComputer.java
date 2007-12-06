@@ -1,5 +1,6 @@
 package de.saar.chorus.domgraph.chart;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +35,10 @@ abstract public class SplitComputer<E extends Nonterminal> {
     //private Map<String,Map<Edge,Set<String>>> splitmap;
     // (wcc identity, i.e. dom edge into this wcc) -> (nodes in that wcc)
     private final Map<Edge,E> wccs;
+    
+    // outgoing dom edges in order of discovery. outDomEdges = wccs.keySet(),
+    // but is ordered according to the first time of discovery.
+    private List<Edge> outDomEdges;
 
     // set of nodes already visited by DFS
     // this set is implemented as a field of the class in order
@@ -50,6 +55,7 @@ abstract public class SplitComputer<E extends Nonterminal> {
         this.graph = graph;
         rootFragment = new HashSet<String>();
         wccs = new HashMap<Edge, E>();
+        outDomEdges = new ArrayList<Edge>();
         substitution = new HashMap<String, String>();
 
         visited = new HashSet<String>();
@@ -85,6 +91,7 @@ abstract public class SplitComputer<E extends Nonterminal> {
         // perform DFS
         wccs.clear();
         visited.clear();
+        outDomEdges.clear();
 
 
         Set<String> path = new HashSet<String>();
@@ -98,7 +105,7 @@ abstract public class SplitComputer<E extends Nonterminal> {
         Split<E> ret = new Split<E>(root);
 
         ret.setSubstitution(substitution);
-        for( Edge wccId : wccs.keySet() ) {
+        for( Edge wccId : outDomEdges ) {
         	ret.addWcc((String) wccId.getSource(), wccs.get(wccId));
         }
 
@@ -249,7 +256,7 @@ abstract public class SplitComputer<E extends Nonterminal> {
 
         for( Edge edge : edgeList ) {
             String neighbour = (String) edge.oppositeVertex(node);
-
+            
             if( subgraph.getNodes().contains(neighbour) ) {
             	if( rootFragment.contains(neighbour) && !rootFragment.contains(node) ) {
             		// The (undirected) DFS steps from a node outside the root fragment
@@ -317,6 +324,7 @@ abstract public class SplitComputer<E extends Nonterminal> {
     	if( thisWcc == null ) {
     		thisWcc = createEmptyNonterminal();
     		wccs.put(wccId, thisWcc);
+    		outDomEdges.add(wccId);
     	}
 
     	thisWcc.addNode(node);
