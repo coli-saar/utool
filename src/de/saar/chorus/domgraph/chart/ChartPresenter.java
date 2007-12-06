@@ -17,7 +17,7 @@ import java.util.Set;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class ChartPresenter {
-    public static <E extends Nonterminal> String chartOnlyRoots(RegularTreeGrammar<E> ch, DomGraph g) {
+    public static <E extends GraphBasedNonterminal> String chartOnlyRoots(RegularTreeGrammar<E> ch, DomGraph g) {
         StringBuffer ret = new StringBuffer();
         Set<String> roots = g.getAllRoots();
         Set<E> visited = new HashSet<E>();
@@ -31,7 +31,7 @@ public class ChartPresenter {
 
 
 
-    private static <E extends Nonterminal> String corSubgraph(E subgraph, RegularTreeGrammar<E> ch, Set<String> roots, Set<E> visited) {
+    private static <E extends GraphBasedNonterminal> String corSubgraph(E subgraph, RegularTreeGrammar<E> ch, Set<String> roots, Set<E> visited) {
         String sgs = subgraph.toString(roots);
         StringBuffer ret = new StringBuffer();
         boolean first = true;
@@ -68,7 +68,7 @@ public class ChartPresenter {
 
 
 
-    private static <E extends Nonterminal> String corSplit(Split<E> split, Set<String> roots) {
+    private static <E extends GraphBasedNonterminal> String corSplit(Split<E> split, Set<String> roots) {
         StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
         Map<String,List<String>> map = new HashMap<String,List<String>>();
 
