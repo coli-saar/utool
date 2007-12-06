@@ -438,6 +438,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         }
     }
 
+    /*
     public Map<String,Set<String>> computePossibleDominators() {
         Map<String,Set<String>> ret = new HashMap<String,Set<String>>();
 
@@ -457,6 +458,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
 
         return ret;
     }
+    
 
     private void addDominee(Map<String,Set<String>> possibleDominators, String dominator, String dominee) {
         Set<String> dominees = possibleDominators.get(dominator);
@@ -469,7 +471,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         dominees.add(dominee);
     }
 
-
+*/
     
 
 
@@ -510,7 +512,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
 
         return ret;
     }
-
+    
     private static <E extends Nonterminal, F extends Nonterminal> void intersectPopulate(DecoratedNonterminal<E,F> nt, RegularTreeGrammar<DecoratedNonterminal<E,F>> out, RegularTreeGrammar<E> in1, RegularTreeGrammar<F> in2, NodeLabels labels, Set<String> roots) {
         E nt1 = nt.nonterminal;
         F nt2 = nt.decoration;
@@ -591,6 +593,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         System.err.println(inter.countSolvedForms());
 
         System.err.println("after:");
-        System.err.println(ChartPresenter.chartOnlyRoots(inter, graph));
+        //System.err.println(ChartPresenter.chartOnlyRoots(inter, graph));
+        System.err.println(inter);
     }
 }

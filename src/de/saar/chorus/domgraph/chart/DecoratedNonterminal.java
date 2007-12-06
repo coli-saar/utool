@@ -12,35 +12,6 @@ public class DecoratedNonterminal<E extends Nonterminal, F> implements Nontermin
         this.decoration = decoration;
     }
 
-    @Override
-    public void addNode(String node) {
-        nonterminal.addNode(node);
-    }
-
-    @Override
-    public Set<String> getNodes() {
-        return nonterminal.getNodes();
-    }
-
-    @Override
-    public String getRootIfSingleton() {
-        return nonterminal.getRootIfSingleton();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return nonterminal.isEmpty();
-    }
-
-    @Override
-    public boolean isSingleton(Set<String> roots) {
-        return nonterminal.isSingleton(roots);
-    }
-
-    @Override
-    public String toString(Set<String> roots) {
-        return nonterminal.toString(roots) + "/" + decoration.toString() ;
-    }
 
     @Override
     public String toString() {
