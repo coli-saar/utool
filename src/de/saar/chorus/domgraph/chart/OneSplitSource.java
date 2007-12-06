@@ -54,7 +54,7 @@ public class OneSplitSource extends SplitSource<SubgraphNonterminal> {
     }
 
     public static boolean isGraphSolvable(DomGraph graph) throws SolverNotApplicableException {
-        Chart chart = new Chart();
+        Chart chart = new Chart(null);
 
         return ChartSolver.solve(graph, chart, new OneSplitSource(graph));
     }

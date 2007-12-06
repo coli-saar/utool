@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
@@ -45,20 +46,13 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
             if( !out.containsSplitFor(sub) ) {
                 for( Split<SubgraphNonterminal> split : c.getSplitsFor(sub.getSubgraph()) ) {
-                    //System.err.println("Consider split " + split + " (coming from " + sub.getPreviousQuantifier() + ")");
-
                     if( allowedSplit(split, sub.getPreviousQuantifier()) ) {
                         Split<QuantifierMarkedNonterminal> outSplit = makeSplit(split);
                         out.addSplit(sub, outSplit);
-                        //System.err.println("  -> allowed");
 
                         for( QuantifierMarkedNonterminal candidate : outSplit.getAllSubgraphs() ) {
-                            if( !candidate.isSingleton(roots) && !out.containsSplitFor(candidate)) {
-                                agenda.add(candidate);
-                            }
+                        	agenda.add(candidate);
                         }
-                    } else {
-                        //System.err.println("  -> not allowed");
                     }
                 }
             }
@@ -68,12 +62,18 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         System.err.println("#sfs after phase 1: " + out.countSolvedForms());
         System.err.println("chart after phase 1: ");
         System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
-        */
+        
 
         //System.err.println("Elimination done, new chart size is " + out.size());
 
+         */
         out.reduce(roots);
-        //System.err.println("#sfs after phase 2: " + out.countSolvedForms());
+        
+        /*
+        System.err.println("#sfs after phase 2: " + out.countSolvedForms());
+        System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
+        System.err.println("--------------------------------------------------------------------------------\n\n");
+        */
 
         //System.err.println("Reduction done, new chart size is " + out.size());
 

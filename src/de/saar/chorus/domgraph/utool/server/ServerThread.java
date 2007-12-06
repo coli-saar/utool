@@ -166,7 +166,7 @@ class ServerThread extends Thread {
 
             // compute chart
             long start_solver = System.nanoTime();
-            Chart chart = new Chart();
+            Chart chart = new Chart(options.getLabels());
             RegularTreeGrammar reducedChart;
             boolean solvable;
 
