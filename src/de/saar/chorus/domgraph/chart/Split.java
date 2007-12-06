@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A split in a dominance chart. A split of a subgraph is
@@ -28,6 +27,7 @@ public class Split<E> {
     private final String rootFragment;
     private final Map<String,List<E>> wccs;  // node -> wccs
     private Map<String,String> substitution; // hole -> root
+    private final List<String> dominators;
 
     /**
      * Creates a split with a given root fragment.
@@ -38,6 +38,7 @@ public class Split<E> {
         this.rootFragment = rootFragment;
         wccs = new HashMap<String,List<E>>();
         substitution = new HashMap<String, String>();
+        dominators = new ArrayList<String>();
     }
 
     /**
@@ -52,6 +53,7 @@ public class Split<E> {
         if( wccSet == null ) {
             wccSet = new ArrayList<E>();
             wccs.put(hole, wccSet);
+            dominators.add(hole);
         }
 
         wccSet.add(wcc);
@@ -86,8 +88,8 @@ public class Split<E> {
      *
      * @return the set of holes
      */
-    public Set<String> getAllDominators() {
-        return wccs.keySet();
+    public List<String> getAllDominators() {
+        return dominators;
     }
 
 

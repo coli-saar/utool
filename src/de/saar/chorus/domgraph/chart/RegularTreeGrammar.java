@@ -1,5 +1,7 @@
 package de.saar.chorus.domgraph.chart;
 
+import java.io.File;
+import java.io.FileReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +13,12 @@ import java.util.Queue;
 import java.util.Set;
 
 import org._3pq.jgrapht.util.ModifiableInteger;
+
+import de.saar.chorus.domgraph.chart.rtgparser.RtgParser;
+import de.saar.chorus.domgraph.chart.rtgparser.StringNonterminal;
+import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     private final Map<E, List<Split<E>>> chart;
@@ -490,4 +498,91 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     }
 
 
+    public <F extends Nonterminal> RegularTreeGrammar<DecoratedNonterminal<E,F>> intersect(RegularTreeGrammar<F> other, DomGraph graph, NodeLabels labels) {
+        RegularTreeGrammar<DecoratedNonterminal<E,F>> ret = new RegularTreeGrammar<DecoratedNonterminal<E,F>>();
+
+        /*
+        if( getToplevelSubgraphs().size() != 1 || other.getToplevelSubgraphs().size() != 1 ) {
+            throw new UnsupportedOperationException("Can't intersect RTGs with multiple top-level subgraphs.");
+        }
+        */
+
+        DecoratedNonterminal<E,F> newToplevelSubgraph = new DecoratedNonterminal<E,F>(getToplevelSubgraphs().get(0), other.getToplevelSubgraphs().get(0));
+        ret.addToplevelSubgraph(newToplevelSubgraph);
+
+        intersectPopulate(newToplevelSubgraph, ret, this, other, labels, graph.getAllRoots());
+
+        System.err.println("before: " + ChartPresenter.chartOnlyRoots(ret, graph));
+
+        ret.reduce(graph.getAllRoots());
+
+        return ret;
+    }
+
+    private static <E extends Nonterminal, F extends Nonterminal> void intersectPopulate(DecoratedNonterminal<E,F> nt, RegularTreeGrammar<DecoratedNonterminal<E,F>> out, RegularTreeGrammar<E> in1, RegularTreeGrammar<F> in2, NodeLabels labels, Set<String> roots) {
+        E nt1 = nt.nonterminal;
+        F nt2 = nt.decoration;
+
+        for( Split<E> split1 : in1.getSplitsFor(nt1)) {
+            for( Split<F> split2 : in2.getSplitsFor(nt2)) {
+                if( split1.getAllDominators().size() == split2.getAllDominators().size() ) {
+                    if( split2.getRootFragment().equals(labels.getLabel(split1.getRootFragment()))) {
+                        Split<DecoratedNonterminal<E,F>> newSplit = new Split<DecoratedNonterminal<E,F>>(split1.getRootFragment());
+                        List<DecoratedNonterminal<E,F>> newNts = new ArrayList<DecoratedNonterminal<E,F>>();
+                        boolean goodSplit = true;
+
+                        for( int i = 0; i < split1.getAllDominators().size(); i++ ) {
+                            String hole1 = split1.getAllDominators().get(i);
+                            String hole2 = split2.getAllDominators().get(i);
+
+                            if( split1.getWccs(hole1).size() != 1 || split2.getWccs(hole2).size() != 1 ) {
+                                throw new UnsupportedOperationException("Can't intersect RTGs with multiple wccs per dominator.");
+                            }
+
+                            E sub1 = split1.getWccs(hole1).get(0);
+                            F sub2 = split2.getWccs(hole2).get(0);
+
+                            if( sub1.isSingleton(roots) != sub2.isSingleton(roots) ) {
+                                goodSplit = false;
+                                break;
+                            }
+
+                            DecoratedNonterminal<E,F> newNt = new DecoratedNonterminal<E,F>(split1.getWccs(hole1).get(0), split2.getWccs(hole2).get(0));
+                            if( ! out.containsSplitFor(newNt) && ! newNt.isSingleton(roots) ) {
+                                newNts.add(newNt);
+                            }
+
+                            newSplit.addWcc(hole1, newNt);
+                        }
+
+                        if( goodSplit ) {
+                            out.addSplit(nt, newSplit);
+                        }
+
+                        for( DecoratedNonterminal<E,F> newNt : newNts ) {
+                            intersectPopulate(newNt, out, in1, in2, labels, roots);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        RtgParser parser = new RtgParser();
+        DomconOzInputCodec codec = new DomconOzInputCodec();
+        DomGraph graph = new DomGraph();
+        NodeLabels labels = new NodeLabels();
+        Chart chart = new Chart();
+
+        codec.decode(new FileReader(new File(args[0])), graph, labels);
+        ChartSolver.solve(graph, chart);
+
+        RegularTreeGrammar<StringNonterminal> g2 = parser.read(new FileReader(new File(args[1])));
+        RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,StringNonterminal>> inter = chart.intersect(g2, graph, labels);
+
+        System.out.println(inter.countSolvedForms());
+
+        System.out.println(ChartPresenter.chartOnlyRoots(inter, graph));
+    }
 }
