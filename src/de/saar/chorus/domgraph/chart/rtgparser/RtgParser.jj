@@ -137,7 +137,7 @@ void Transitions() : {
 		grammar.addSplit(getNT(rhs.image), split);
 		
 		if( lhss.isEmpty() ) {
-			getNT(rhs.image).setFinal(true);
+			grammar.setFinal(getNT(rhs.image));
 		}
 		
 		lhss.clear();

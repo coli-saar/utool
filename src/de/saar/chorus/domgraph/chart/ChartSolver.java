@@ -180,6 +180,7 @@ public class ChartSolver<E extends Nonterminal> {
             return true;
         }
 
+        /*
         // If fs is singleton and its root is free, it is in solved form.
         // The fs will be entered into the chart as part of the parent's split.
         // NB: Even in a compact graph, there may be fragments with >1 node!
@@ -189,10 +190,13 @@ public class ChartSolver<E extends Nonterminal> {
                 numRootsInSubgraph++;
             }
         }
+        */
 
+        /*
         if( numRootsInSubgraph == 1 ) {
             return true;
         }
+        */
 
         // get splits for this subgraph
         try {
@@ -205,7 +209,11 @@ public class ChartSolver<E extends Nonterminal> {
 
         while( splits.hasNext() ) {
             Split<E> split = splits.next();
-
+            
+            if( split.getAllDominators().isEmpty() ) {
+            	chart.setFinal(subgraph);
+            }
+            
             // iterate over wccs
             for( E wcc : split.getAllSubgraphs() ) {
                 if( !solve(wcc) ) {

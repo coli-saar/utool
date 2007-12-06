@@ -659,7 +659,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 		super.initialise(graph, labels, canv);
 
 
-		chart = new Chart();
+		chart = new Chart(labels);
 		toExtent = new HashMap<Integer,Integer>();
 
 		try {

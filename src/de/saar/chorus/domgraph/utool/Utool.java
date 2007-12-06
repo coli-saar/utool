@@ -191,7 +191,7 @@ public class Utool {
 
             // compute chart
             long start_solver = System.currentTimeMillis();
-            Chart chart = new Chart();
+            Chart chart = new Chart(options.getLabels());
             boolean solvable;
 
             try {

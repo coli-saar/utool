@@ -21,11 +21,12 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
-    private final Map<E, List<Split<E>>> chart;
-    private final Map<E, ModifiableInteger> refcount;
-    private final Map<E, BigInteger> numSolvedForms;
-    private int size;
-    private List<E> toplevelSubgraphs;
+    protected final Map<E, List<Split<E>>> chart;
+    protected final Map<E, ModifiableInteger> refcount;
+    protected final Map<E, BigInteger> numSolvedForms;
+    protected int size;
+    protected List<E> toplevelSubgraphs;
+    protected Set<E> finalStates;
 
 
     /**
@@ -37,6 +38,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         numSolvedForms = new HashMap<E, BigInteger>();
         toplevelSubgraphs = new ArrayList<E>();
         size = 0;
+        finalStates = new HashSet<E>();
     }
 
     /**
@@ -66,6 +68,10 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
 
         size++;
     }
+    
+    public String getLabelForSplit(Split<E> split) {
+		return split.getRootFragment();
+	}
 
     /**
      * Increments the reference count for the given subgraph.
@@ -124,7 +130,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         // compute mappings of nonterminals to the splits that use them,
         // and of splits to their LHSs
         for( E lhs : chart.keySet() ) {
-            for( Split<E> split : chart.get(lhs) ) {
+        	for( Split<E> split : chart.get(lhs) ) {
                 List<E> LHSs = splitToLhs.get(split);
 
                 if( LHSs == null ) {
@@ -143,11 +149,13 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                     }
 
                     uses.add(split);
-
-                    if( subgraph.isSingleton(roots) ) {
-                        singletons.add(subgraph);
-                    }
                 }
+                
+                
+                if( split.getAllDominators().isEmpty() ) {
+                    singletons.add(lhs);
+                }
+
             }
         }
 
@@ -462,35 +470,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     }
 
 
-    /**
-     * Computes a clone of the chart. Splits and subgraphs can be added and deleted,
-     * and toplevel subgraphs changed, on the clone without affecting
-     * the original chart object. However, the clone contains referneces to the same
-     * individual subgraphs and splits as the original chart, so be sure
-     * not to modify the subgraphs and splits themselves. (This would be
-     * a bad idea anyway.)
-     *
-     * @return a <code>Chart</code> object which is a clone of the current
-     * chart
-     */
-    @Override
-    public Object clone() {
-        RegularTreeGrammar<E> ret = new RegularTreeGrammar<E>();
-
-        for( Map.Entry<E, List<Split<E>>> entry : chart.entrySet() ) {
-            ret.chart.put(entry.getKey(), new ArrayList<Split<E>>(entry.getValue()));
-        }
-
-        for( Map.Entry<E, ModifiableInteger> entry : refcount.entrySet() ) {
-            ret.refcount.put(entry.getKey(), new ModifiableInteger(entry.getValue().getValue()));
-        }
-
-        ret.size = size;
-
-        ret.toplevelSubgraphs = new ArrayList<E>(toplevelSubgraphs);
-
-        return ret;
-    }
+    
 
 
 
@@ -524,7 +504,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         	}
         }
 
-        System.err.println("before: " + ChartPresenter.chartOnlyRoots(ret, graph));
+        //System.err.println("before: " + ChartPresenter.chartOnlyRoots(ret, graph));
 
         ret.reduce(graph.getAllRoots());
 
@@ -538,7 +518,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         for( Split<E> split1 : in1.getSplitsFor(nt1)) {
             for( Split<F> split2 : in2.getSplitsFor(nt2)) {
                 if( split1.getAllDominators().size() == split2.getAllDominators().size() ) {
-                    if( split2.getRootFragment().equals(labels.getLabel(split1.getRootFragment()))) {
+                    if( in2.getLabelForSplit(split2).equals(in1.getLabelForSplit(split1)) ) {
                         Split<DecoratedNonterminal<E,F>> newSplit = new Split<DecoratedNonterminal<E,F>>(split1.getRootFragment());
                         List<DecoratedNonterminal<E,F>> newNts = new ArrayList<DecoratedNonterminal<E,F>>();
                         boolean goodSplit = true;
@@ -560,27 +540,22 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
                             E sub1 = split1.getWccs(hole1).get(0);
                             F sub2 = split2.getWccs(hole2).get(0);
 
-                            // HACK: Here I treat the two isSingleton methods differently,
-                            // because sub1.isSingleton is true if the split1 NT is
-                            // terminal (0-ary constructor), but sub2.isSingleton is true
-                            // if it's a final state in the RTG. This totally needs
-                            // to be fixed!!
-                            if( sub1.isSingleton(roots) && ! sub2.isSingleton(roots) ) {
-                                goodSplit = false;
-                                break;
-                            }
-
                             DecoratedNonterminal<E,F> newNt = new DecoratedNonterminal<E,F>(split1.getWccs(hole1).get(0), split2.getWccs(hole2).get(0));
-                            if( ! out.containsSplitFor(newNt) && ! newNt.isSingleton(roots) ) {
+                            if( ! out.containsSplitFor(newNt)  ) {
                                 newNts.add(newNt);
                             }
 
                             newSplit.addWcc(hole1, newNt);
                         }
-
-                        if( goodSplit ) {
+                        
+                        if( split1.getAllDominators().isEmpty() ) {
+                        	if( in1.isFinal(nt1) && in2.isFinal(nt2) ) {
+                        		out.addSplit(nt, newSplit);
+                        		out.setFinal(nt);
+                        	}
+                        } else {
                             out.addSplit(nt, newSplit);
-                        }
+                        } 
 
                         for( DecoratedNonterminal<E,F> newNt : newNts ) {
                             intersectPopulate(newNt, out, in1, in2, labels, roots);
@@ -590,13 +565,21 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
             }
         }
     }
+    
+    public boolean isFinal(E nt) {
+    	return finalStates.contains(nt);
+    }
+    
+    public void setFinal(E nt) {
+    	finalStates.add(nt);
+    }
 
     public static void main(String[] args) throws Exception {
         RtgParser parser = new RtgParser();
         DomconOzInputCodec codec = new DomconOzInputCodec();
         DomGraph graph = new DomGraph();
         NodeLabels labels = new NodeLabels();
-        Chart chart = new Chart();
+        Chart chart = new Chart(labels);
 
         codec.decode(new FileReader(new File(args[0])), graph, labels);
         ChartSolver.solve(graph, chart);
@@ -604,6 +587,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         RegularTreeGrammar<StringNonterminal> g2 = parser.read(new FileReader(new File(args[1])));
         RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,StringNonterminal>> inter = chart.intersect(g2, graph, labels);
 
+       
         System.err.println(inter.countSolvedForms());
 
         System.err.println("after:");
