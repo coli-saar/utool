@@ -155,7 +155,7 @@ class SplitComputerTest extends GroovyTestCase {
 		
 		assert split != null;
 		
-		assert split.getAllDominators().equals(wccs.keySet());
+		assert new HashSet(split.getAllDominators()).equals(wccs.keySet());
 		
 		for( dominator in wccs.keySet() ) {
 			assert isWccListEqual(wccs.get(dominator), split.getWccs(dominator));
