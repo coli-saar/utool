@@ -74,6 +74,58 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ]);
 	}
 
+	
+	
+	/*
+	public void testAA_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
+	            [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]);
+	}
+	
+	
+	public void testIcosIncompleteness_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 every(z2 z3)) label(w1 foo) label(w2 foo) label(w3 foo) label(w4 foo) dom(x2 w1) dom(x3 w2) dom(y2 w2) dom(y3 w3) dom(z3 w3) dom(z2 w4)]",
+	            [ [[ ["x3","y1"], ["y2", "w2"], ["y3", "z1"], ["z3", "w3"],          ["x2","w1"], ["z2", "w4"]  ],[:]],
+	              [[ ["x3","z1"], ["z3", "y1"], ["y2", "w2"], ["y3", "w3"],          ["x2","w1"], ["z2", "w4"]  ],[:]],
+	              [[ ["z3","x1"], ["x3", "y1"], ["y2", "w2"], ["y3", "w3"],          ["x2","w1"], ["z2", "w4"]  ],[:]]
+	            ]);
+	}
+	
+
+	public void testAcl06Incompleteness_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 every(z2 z3)) label(w1 foo) label(w2 foo) label(w3 foo) label(w4 foo) dom(x2 w1) dom(y2 w2) dom(z2 w3) dom(x3 w4) dom(y3 w4) dom(z3 w4)]",
+	            [ [[ ["x3","y1"], ["y3", "z1"], ["z3", "w4"],          ["x2","w1"], ["y2", "w2"], ["z2", "w3"]  ],[:]],
+	              [[ ["x3","z1"], ["z3", "y1"], ["y3", "w4"],          ["x2","w1"], ["y2", "w2"], ["z2", "w3"]  ],[:]],
+	              [[ ["y3","z1"], ["z3", "x1"], ["x3", "w4"],          ["x2","w1"], ["y2", "w2"], ["z2", "w3"]  ],[:]],
+	              [[ ["z3","x1"], ["x3", "y1"], ["y3", "w4"],          ["x2","w1"], ["y2", "w2"], ["z2", "w3"]  ],[:]]
+	            ]);
+	}
+	
+	public void testNoDominator1_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+
+	public void testNoDominator2_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x a(x1 x2)) label(y a(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(y2 x) dom(x2 z3)]",
+	            [ [[["y2","x"], ["x2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	            
+	}
+	
+	public void testNoDominator3_S() {
+	    checkEliminatedSolvedFormsStrong("[label(x a(x1 x2)) label(y every(y1 y2)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x1 z1) dom(y1 z2) dom(x2 y) dom(y2 z3)]",
+	            [ [[["x2","y"], ["y2", "z3"], ["x1","z1"], ["y1", "z2"]],[:]] ]);
+	}
+	
+	public void testIntransitive_S() {
+	    // this models the incompleteness of RTG elimination on Rondane 1279
+	    checkEliminatedSolvedFormsStrong("[label(y permute(y1)) label(z f(z1)) label(x g(x1)) label(w a) dom(y1 w) dom(z1 x) dom(x1 w)]",
+	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ]);
+	}
+	*/
+	
+	
 
 	public void testAA_SS() {
 	    checkEliminatedSolvedFormsSS("[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
@@ -161,13 +213,29 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
 		elim.eliminate(chart, out);
 		
+		System.err.println("Chart:");
+		System.err.println(ChartPresenter.chartOnlyRoots(out,graph));
+		System.err.println("--------------------------------------------\n\n");
+		
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "sfs = " + sfs;
 	}
 	
-	
+	private void checkEliminatedSolvedFormsStrong(String domcon, List goldSfs) {
+	    ozcodec.decode(new StringReader(domcon), graph, labels);
+		graph = graph.preprocess();
+		ChartSolver.solve(graph,chart);
+	    
+		StrongerRtgRedundancyElimination elim = new StrongerRtgRedundancyElimination(graph, labels, eqsys);
+		RegularTreeGrammar out = elim.eliminateStrong(chart);
+		
+		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "sfs = " + sfs;
+	}
 	
 	
 	
