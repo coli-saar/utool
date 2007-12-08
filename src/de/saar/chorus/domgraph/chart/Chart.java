@@ -41,15 +41,15 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  *
  */
 public class Chart extends RegularTreeGrammar<SubgraphNonterminal> {
-	private NodeLabels labels;
-	
+	private final NodeLabels labels;
+
 	public Chart(NodeLabels labels) {
 		super();
-		
+
 		this.labels = labels;
 	}
-	
-	
+
+
 	/**
      * Computes a clone of the chart. Splits and subgraphs can be added and deleted,
      * and toplevel subgraphs changed, on the clone without affecting
@@ -83,6 +83,17 @@ public class Chart extends RegularTreeGrammar<SubgraphNonterminal> {
 	@Override
 	public String getLabelForSplit(Split<SubgraphNonterminal> split) {
 		return labels.getLabel(split.getRootFragment());
+	}
+
+	public Chart relabel(NodeLabels newLabels) {
+	    Chart ret = new Chart(newLabels);
+
+	    ret.chart = chart;
+	    ret.refcount = refcount;
+	    ret.size = size;
+	    ret.toplevelSubgraphs = toplevelSubgraphs;
+
+	    return ret;
 	}
 }
 

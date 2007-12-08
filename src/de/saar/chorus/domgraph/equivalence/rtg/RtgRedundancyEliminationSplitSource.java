@@ -76,7 +76,7 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
 
     @Override
     public void reduceIfNecessary(RegularTreeGrammar<QuantifierMarkedNonterminal> chart) {
-        chart.reduce(graph.getAllRoots());
+        chart.reduce();
     }
 
 }
