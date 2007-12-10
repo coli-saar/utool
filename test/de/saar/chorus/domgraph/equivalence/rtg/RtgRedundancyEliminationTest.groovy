@@ -13,7 +13,7 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
     private NodeLabels labels;
     private InputCodec ozcodec;
     private Chart chart;
-    private EquationSystem eqsys;
+    private EquationSystem eqsys, erg_eqsys;
     private RegularTreeGrammar<QuantifierMarkedNonterminal> out;
     
     public void setUp() {
@@ -23,6 +23,7 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
         chart = new Chart();
         out = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
         eqsys = makeEqSystem(eqSystemFOL);
+        erg_eqsys = makeEqSystem(eqSystemERG);
     }
     
     
@@ -72,6 +73,14 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	    // this models the incompleteness of RTG elimination on Rondane 1279
 	    checkEliminatedSolvedForms("[label(y permute(y1)) label(z f(z1)) label(x g(x1)) label(w a) dom(y1 w) dom(z1 x) dom(x1 w)]",
 	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ]);
+	}
+	
+	public void testRondane90() {
+	    // this is Rondane 90, in which a wildcard is connected to other quantifiers through its non-permuting hole
+	    checkEliminatedSolvedFormsERG("[label(h1 prpstn_m(h3)) label(h6 '_the_q'(h9 h7)) label(h10 '_name_n_of') label(h12 '_come_v_1&_from_p') label(h15 '_the_q'(h17 h16)) label(h18 '_saga_n_of') label(h20 proper_q(h21 h22)) label(h23 '_king_n_of') label(h25 udef_q(h26 h27)) label(h28 'title_id&named') dom(h26 h23) dom(h21 h28) dom(h17 h18) dom(h9 h10) dom(h3 h12) dom(h3 h25) dom(h3 h15) dom(h3 h6) dom(h3 h20) dom(h27 h28) dom(h16 h12) dom(h7 h12) dom(h22 h18)]",
+	            [ [[["h3", "h25"], ["h26", "h23"], ["h27", "h15"], ["h16", "h6"], ["h9", "h10"], ["h7", "h12"], ["h17", "h20"], ["h21", "h28"], ["h22", "h18"]],[:]],
+	              [[["h3", "h15"], ["h16", "h6"], ["h9", "h10"], ["h7", "h12"], ["h17", "h25"], ["h26", "h23"], ["h27", "h20"], ["h21", "h28"], ["h22", "h18"]],[:]],
+	              [[["h3", "h15"], ["h16", "h6"], ["h9", "h10"], ["h7", "h12"], ["h17", "h20"], ["h22", "h18"], ["h21", "h25"], ["h26", "h23"], ["h27", "h28"]],[:]]]);
 	}
 
 	
@@ -223,19 +232,24 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "sfs = " + sfs;
 	}
 	
-	private void checkEliminatedSolvedFormsStrong(String domcon, List goldSfs) {
+	private void checkEliminatedSolvedFormsERG(String domcon, List goldSfs) {
 	    ozcodec.decode(new StringReader(domcon), graph, labels);
 		graph = graph.preprocess();
 		ChartSolver.solve(graph,chart);
 	    
-		StrongerRtgRedundancyElimination elim = new StrongerRtgRedundancyElimination(graph, labels, eqsys);
-		RegularTreeGrammar out = elim.eliminateStrong(chart);
+		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, erg_eqsys);
+		elim.eliminate(chart, out);
+		
+		System.err.println("Chart:");
+		System.err.println(ChartPresenter.chartOnlyRoots(out,graph));
+		System.err.println("--------------------------------------------\n\n");
 		
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "sfs = " + sfs;
 	}
+	
 	
 	
 	
@@ -262,5 +276,54 @@ class RtgRedundancyEliminationTest extends GroovyTestCase {
 	"       <quantifier label='every' hole='1' />" +
 	"   </equivalencegroup>" +
 	"   <permutesWithEverything label='permute' hole='0' />" +
+	"</equivalences>";
+	
+	private static String eqSystemERG = "<?xml version='1.0' ?> " +
+	"<equivalences style='ERG'>" +   
+	"<!-- Version 2005-06-05 (Apr-05) -->" +
+	"<equivalencegroup>" +
+		"<quantifier label='implicit_q' hole='1'/>" +
+		"<quantifier label='def_q' hole='1'/>" +
+		"<quantifier label='udef_q' hole='1'/>" +
+
+		"<quantifier label='def_explicit_q' hole='1'/>" +
+		"<quantifier label='_both_q' hole='1'/>" +
+		"<quantifier label='def_both_rel' hole='1'/>" +
+		"<quantifier label='_the_q' hole='1'/>" +
+
+		"<quantifier label='_that_q_dem' hole='1'/>" +
+		"<quantifier label='_these_q_dem' hole='1'/>" +
+		"<quantifier label='_this_q_dem' hole='1'/>" +
+		"<quantifier label='_those_q_dem' hole='1'/>" +
+		"<quantifier label='demon_far_q' hole='1'/>" +
+		"<quantifier label='demon_near_q' hole='1'/>" +
+		"<quantifier label='demonstrative_q' hole='1'/>" +
+
+		"<quantifier label='_a_q' hole='0'/>" +
+		"<quantifier label='_a_q' hole='1'/>" +
+		"<quantifier label='_another_q' hole='0'/>" +
+		"<quantifier label='_another_q' hole='1'/>" +
+		"<quantifier label='_less+than+a_q' hole='0'/>" +
+		"<quantifier label='_less+than+a_q' hole='1'/>" +
+		"<quantifier label='_some_q' hole='0'/>" +
+		"<quantifier label='_some_q' hole='1'/>" +
+		"<quantifier label='_such+a_q' hole='0'/>" +
+		"<quantifier label='_such+a_q' hole='1'/>" +
+		"<quantifier label='_what+a_q' hole='0'/>" +
+		"<quantifier label='_what+a_q' hole='1'/>" +
+		"<quantifier label='some_q' hole='0'/>" +
+		"<quantifier label='some_q' hole='1'/>" +
+		"<quantifier label='some_q_indiv' hole='0'/>" +
+		"<quantifier label='some_q_indiv' hole='1'/>" +
+	"</equivalencegroup>" +
+
+	"<equivalencegroup>" +
+	    "<quantifier label='every_q' hole='1' />" +
+		"<quantifier label='each_q' hole='1' />" +
+	"</equivalencegroup>" +
+
+	
+	"<permutesWithEverything label='proper_q' hole='1' />" +
+	"<permutesWithEverything label='pronoun_q' hole='1' />" +
 	"</equivalences>";
 }

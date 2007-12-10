@@ -82,7 +82,7 @@ public abstract class RedundancyElimination<E extends Nonterminal> {
     // identical to the index of the _hole_ of u (in the compact graph!) that the hn.
     // path uses. It is important that we talk about children and not holes because
     // the permutability rules are phrased that way.
-    private final Map<String,Map<String,Integer>> hypernormalReachability;
+    protected final Map<String,Map<String,Integer>> hypernormalReachability;
 
     // The compactification deletes labelled leaves, so there may be a discrepancy
     // between the index of a hole in the compact graph and the (left-to-right dfs)
