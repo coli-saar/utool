@@ -1,9 +1,10 @@
 package de.saar.chorus.domgraph.equivalence.rtg;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -15,12 +16,13 @@ import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMarkedNonterminal> {
     private final Queue<QuantifierMarkedNonterminal> agenda;
     private final Set<String> roots;
-    private final Set<String> wildcardLabeledNodes;
+    private final Map<String,List<Integer>> wildcardLabeledNodes;
 
     public RtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
@@ -28,10 +30,17 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         agenda = new LinkedList<QuantifierMarkedNonterminal>();
         roots = graph.getAllRoots();
 
-        wildcardLabeledNodes = new HashSet<String>();
+        wildcardLabeledNodes = new HashMap<String,List<Integer>>();
         for( String node : roots ) {
             if( eqs.isWildcardLabel(labels.getLabel(node)) ) {
-                wildcardLabeledNodes.add(node);
+                List<Integer> holeIndices = new ArrayList<Integer>();
+                wildcardLabeledNodes.put(node, holeIndices);
+
+                for( int i = 0; i < compact.outdeg(node,EdgeType.TREE); i++ ) {
+                    if( eqs.isWildcard(labels.getLabel(node), i) ) {
+                        holeIndices.add(i);
+                    }
+                }
             }
         }
     }
@@ -109,6 +118,23 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     public boolean allowedSplit(Split split, String previousQuantifier) {
         //System.err.println("Consider " + split + " below " + previousQuantifier + ": ");
 
+        String root = split.getRootFragment();
+
+        // if the remaining split contains a wildcard that is larger than pQ, then the split is not allowed
+        for( Object o : split.getAllSubgraphs() ) {
+            GraphBasedNonterminal subgraph = (GraphBasedNonterminal) o;
+
+            for( String node : subgraph.getNodes() ) {
+                if( wildcardLabeledNodes.containsKey(node) && node.compareTo(root) < 0 ) {
+                    int connectingHole = hypernormalReachability.get(node).get(root);
+
+                    if( wildcardLabeledNodes.get(node).contains(connectingHole)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
 
         // if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
@@ -116,17 +142,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
             return true;
         }
 
-        // if the remaining split contains a wildcard that is larger than pQ, then the split is not allowed
-        for( Object o : split.getAllSubgraphs() ) {
-            GraphBasedNonterminal subgraph = (GraphBasedNonterminal) o;
 
-            for( String node : subgraph.getNodes() ) {
-                if( wildcardLabeledNodes.contains(node) && node.compareTo(previousQuantifier) < 0 ) {
-                    //System.err.println("Not allowed (larger wildcard)");
-                    return false;
-                }
-            }
-        }
 
         // if the two quantifiers are in the right order (previous < here), then the split is allowed
         if( previousQuantifier.compareTo(split.getRootFragment()) < 0 ) {
