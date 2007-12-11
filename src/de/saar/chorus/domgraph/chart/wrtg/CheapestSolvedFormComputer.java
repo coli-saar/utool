@@ -146,7 +146,11 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 			grammar.addWeightedDomEdge("3xl", "2x", 6);
 			grammar.addWeightedDomEdge("1xr", "2x", 2);
 			
-		
+			for(SubgraphNonterminal s : grammar.getToplevelSubgraphs()) {
+				for(Split<SubgraphNonterminal> split : grammar.getSplitsFor(s)) {
+				System.err.println(grammar.getWeightForSplit(split) + "   " + split);
+				}
+			}
 		
 		CheapestSolvedFormComputer<SubgraphNonterminal, Integer> comp = 
 			new CheapestSolvedFormComputer<SubgraphNonterminal, Integer>(grammar,chain);
