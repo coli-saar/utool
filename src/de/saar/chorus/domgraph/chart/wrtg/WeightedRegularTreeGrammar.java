@@ -28,6 +28,11 @@ public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T> exten
 			if(! semiring.isInDomain(weight)) {
 				return false;
 			}
+			if(weights.containsKey(s)) {
+				T newWeight = semiring.semiringProduct(weight, weights.get(s));
+				weights.put(s, newWeight);
+				return true;
+			}
 			weights.put(s, weight);
 			return true;
 		}
