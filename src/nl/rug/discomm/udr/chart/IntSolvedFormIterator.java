@@ -15,6 +15,7 @@ import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 
 /**
  * An iterator over the different solved forms represented by
@@ -76,7 +77,7 @@ public class IntSolvedFormIterator extends SolvedFormIterator {
 	}
     
     private IntSolvedFormIterator(IntegerChart ch, boolean makeIteratorForGet) {
-    	super(new Chart(), new DomGraph());
+    	super(new Chart(new NodeLabels()), new DomGraph());
         chart = ch;
         agenda = new Agenda();
         stack = new Stack<EnumerationStackEntry>();
