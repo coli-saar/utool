@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import nl.rug.discomm.udr.chart.IntegerNonterminal;
 import nl.rug.discomm.udr.graph.Chain;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.CompleteSplitSource;
@@ -16,6 +16,7 @@ import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.ubench.Ubench;
 
 public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 	
@@ -27,7 +28,9 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 	private Map<Split<E>,T> splitToDerivationCost;
 	private Semiring<T> semiring;
 	private Map<E, String> root;
+	private Map<E, List<DomEdge> > nonterminalToDomEdges;
 	private List<DomEdge> domedges;
+	
 	
 	public CheapestSolvedFormComputer(WeightedRegularTreeGrammar<E,T> grammar, DomGraph graph) {
 		this.grammar = grammar;
@@ -37,6 +40,7 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 		semiring = grammar.getSemiring();
 		root = new HashMap<E, String>();
 		domedges = new ArrayList<DomEdge>();
+		nonterminalToDomEdges = new HashMap<E, List<DomEdge>>();
 	}
 	
 	
@@ -56,11 +60,13 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 	
 	private void computeCheapestForm() {
 		cost = semiring.getProductIdentityElement();
+		form = new SolvedFormSpec();
 		for(E top : grammar.getToplevelSubgraphs()) {
 			cost = semiring.semiringProduct(cost, computeCostForSubgraph(top));
+			form.addAllDomEdges(nonterminalToDomEdges.get(top));
 		}
-		form = new SolvedFormSpec();
-		form.addAllDomEdges(domedges);
+	
+		
 	}
 	
 	private T computeCostforSplit(Split<E> split) {
@@ -85,6 +91,8 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 	private T computeCostForSubgraph(E subgraph) {
 
 		if(! subgraphToCost.containsKey(subgraph)) {
+			
+			List<DomEdge> des = new ArrayList<DomEdge>();
 			T ret = semiring.getSumIdentityElement();
 			Split<E> recall = null;
 			if(grammar.containsSplitFor(subgraph)) {
@@ -99,11 +107,18 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 
 
 				root.put(subgraph, recall.getRootFragment());
+				
 				for(String dom : recall.getAllDominators()) {
 					for(E sg : recall.getWccs(dom)) {
-						domedges.add(new DomEdge(dom, root.get(sg)));
+						System.err.println(dom + " --> " + root.get(sg));
+						des.add(new DomEdge(dom, root.get(sg)));
+						if(nonterminalToDomEdges.containsKey(sg)) {
+							des.addAll(nonterminalToDomEdges.get(sg));
+						}
 					}
 				}
+				
+				nonterminalToDomEdges.put(subgraph, des);
 			} else {
 				// TODO what does it mean if there is no split in the RTG?
 				ret = semiring.getBestCost();
@@ -128,14 +143,19 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T> {
 		ChartSolver.solve(chain, grammar, new CompleteSplitSource(chain));
 		System.err.println(grammar.toString());
 			grammar.addWeightedDomEdge("2xr", "3x", 8);
-			grammar.addWeightedDomEdge("1xr", "3x", 6);
+			grammar.addWeightedDomEdge("3xl", "2x", 6);
+			grammar.addWeightedDomEdge("1xr", "2x", 2);
 			
 		
 		
 		CheapestSolvedFormComputer<SubgraphNonterminal, Integer> comp = 
 			new CheapestSolvedFormComputer<SubgraphNonterminal, Integer>(grammar,chain);
 		
-		System.err.println(comp.getCheapestSolvedForm());
+		//System.err.println(comp.getCheapestSolvedForm());
+		Ubench u = Ubench.getInstance();
+		u.addJDomGraphTab("cheapest form?", chain.makeSolvedForm(comp.getCheapestSolvedForm()), labels);
+		
+		
 		System.err.println(comp.getCost());
 		} catch(Exception e) {
 			e.printStackTrace();

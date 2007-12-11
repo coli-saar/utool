@@ -59,14 +59,13 @@ public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T> exten
 		}
 		
 		private void recRestrictSubgraph(E subgraph, String src, String tgt, T weight, Set<E> visited) {
-			System.err.println(src + " --> " + tgt + "(" + subgraph + ")");
+	
 			if(! visited.contains(subgraph)) {
 				visited.add(subgraph);
 				if(subgraph.getNodes().contains(src) &&
 						subgraph.getNodes().contains(tgt)) {
 					for(Split<E> split : chart.get(subgraph)) {
 						if(split.getRootFragment().equals(tgt)) {
-							System.err.println(split + " " + weight);
 							setWeightForSplit(split, weight);
 						} else {
 							for(E wcc : split.getAllSubgraphs()) {
