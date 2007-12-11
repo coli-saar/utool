@@ -62,7 +62,7 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 				new SubgraphNonterminal(graph.wccs().get(0)),
 				new SubgraphNonterminal(solvedForm.wccs().get(0))); // TA
 		}
-		sfchart = new Chart();
+		sfchart = new Chart(sfLabels);
 		try {
 		ChartSolver.solve(solvedForm, sfchart);
 		} catch( SolverNotApplicableException e ) {

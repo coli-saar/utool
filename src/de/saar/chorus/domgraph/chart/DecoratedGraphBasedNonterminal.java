@@ -10,32 +10,32 @@ public class DecoratedGraphBasedNonterminal<E extends GraphBasedNonterminal, F> 
         super(nonterminal,decoration);
     }
 
-    @Override
+    
     public void addNode(String node) {
         nonterminal.addNode(node);
     }
 
-    @Override
+    
     public Set<String> getNodes() {
         return nonterminal.getNodes();
     }
 
-    @Override
+    
     public String getRootIfSingleton() {
         return nonterminal.getRootIfSingleton();
     }
 
-    @Override
+   
     public boolean isEmpty() {
         return nonterminal.isEmpty();
     }
 
-    @Override
+    
     public boolean isSingleton(Set<String> roots) {
         return nonterminal.isSingleton(roots);
     }
 
-    @Override
+    
     public String toString(Set<String> roots) {
         return nonterminal.toString(roots) + "/" + decoration.toString() ;
     }

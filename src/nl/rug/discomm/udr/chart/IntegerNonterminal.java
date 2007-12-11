@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.tools.javac.util.List;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 
-import de.saar.chorus.domgraph.chart.Nonterminal;
-
-public class IntegerNonterminal extends ArrayList<Integer> implements Nonterminal {
+public class IntegerNonterminal extends ArrayList<Integer> implements GraphBasedNonterminal {
 
 	private int leafIndex;
 	
