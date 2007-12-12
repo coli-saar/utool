@@ -22,12 +22,6 @@ public class LikelihoodSemiring implements Semiring<Double> {
 		return 0.0;
 	}
 	
-	public Double getMinimum(Double first, Double second) {
-		return Math.min(first, second);
-	}
 	
-	public Double getBestCost() {
-		return 1.0;
-	}
 
 }

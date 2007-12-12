@@ -41,7 +41,7 @@ public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extend
 			if(weights.containsKey(split)) {
 				return weights.get(split);
 			} else {
-				return semiring.getBestCost();
+				return semiring.one();
 			}
 			
 		}
