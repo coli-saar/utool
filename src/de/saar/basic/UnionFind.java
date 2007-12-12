@@ -64,10 +64,10 @@ public class UnionFind<E> {
      * @return
      */
     public E find(E x) {
-        if( tree.get(x).equals(x) ) {
-            return x;
-        } else {
-            return find(tree.get(x));
+        while( ! tree.get(x).equals(x) ) {
+            x = tree.get(x);
         }
+
+        return x;
     }
 }
