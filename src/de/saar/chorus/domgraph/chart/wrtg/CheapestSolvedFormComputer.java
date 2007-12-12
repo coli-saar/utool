@@ -120,7 +120,7 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 				nonterminalToDomEdges.put(subgraph, des);
 			} else {
 				// TODO what does it mean if there is no split in the RTG?
-				ret = semiring.getBestCost();
+				ret = semiring.one();
 				
 				
 			}
@@ -140,8 +140,8 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 			for(String node : chain.getAllNodes()) {
 				labels.addLabel(node, node.replaceAll("\\D", "f"));
 			}
-			WeightedRegularTreeGrammar<IntegerNonterminal, Integer> grammar =
-				new WeightedRegularTreeGrammar<IntegerNonterminal, Integer> (new TropicalSemiring());
+			WeightedRegularTreeGrammar<IntegerNonterminal, Double> grammar =
+				new WeightedRegularTreeGrammar<IntegerNonterminal, Double> (new TropicalSemiring());
 
 			try {
 				long time = System.currentTimeMillis();
@@ -152,17 +152,17 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 			//	time = System.currentTimeMillis();
 
 
-				grammar.addWeightedDomEdge("2xr", "3x", 8);
-				grammar.addWeightedDomEdge("29xl", "4x", 6);
-				grammar.addWeightedDomEdge("22xr", "25x", 7);
-				grammar.addWeightedDomEdge("4xr", "" + (i-5) + "x", 3);
+				grammar.addWeightedDomEdge("2xr", "3x", 8.0);
+				grammar.addWeightedDomEdge("29xl", "4x", 6.0);
+				grammar.addWeightedDomEdge("22xr", "25x", 7.0);
+				grammar.addWeightedDomEdge("4xr", "" + (i-5) + "x", 3.0);
 				//grammar.addWeightedDomEdge("1xr", "3x", 6);
 
 				
 
 
-				CheapestSolvedFormComputer<IntegerNonterminal, Integer> comp = 
-					new CheapestSolvedFormComputer<IntegerNonterminal, Integer>(grammar,chain);
+				CheapestSolvedFormComputer<IntegerNonterminal, Double> comp = 
+					new CheapestSolvedFormComputer<IntegerNonterminal, Double>(grammar,chain);
 
 				//System.err.println(comp.getCheapestSolvedForm());
 				
