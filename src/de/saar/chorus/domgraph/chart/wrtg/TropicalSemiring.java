@@ -7,19 +7,19 @@ public class TropicalSemiring implements Semiring<Integer> {
 		return true;
 	}
 
-	public Integer semiringProduct(Integer first, Integer second) {
+	public Integer mult(Integer first, Integer second) {
 		return first + second;
 	}
 
-	public Integer semiringSum(Integer first, Integer second) {
+	public Integer add(Integer first, Integer second) {
 		return Math.min(first, second);
 	}
 
-	public Integer getProductIdentityElement() {
+	public Integer one() {
 		return 0;
 	}
 
-	public Integer getSumIdentityElement() {
+	public Integer zero() {
 		return Integer.MAX_VALUE;
 	}
 	
@@ -27,9 +27,7 @@ public class TropicalSemiring implements Semiring<Integer> {
 		return Math.min(first, second);
 	}
 	
-	public int compare(Integer first, Integer second) {
-		return first.compareTo(second);
-	}
+	
 	public Integer getBestCost() {
 		return 0;
 	}

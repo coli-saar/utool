@@ -6,19 +6,19 @@ public class LikelihoodSemiring implements Semiring<Double> {
 		return (0 <= element) && (element <= 1.0);
 	}
 
-	public Double semiringProduct(Double first, Double second) {
+	public Double mult(Double first, Double second) {
 		return first*second;
 	}
 
-	public Double semiringSum(Double first, Double second) {
+	public Double add(Double first, Double second) {
 		return first + second;
 	}
 
-	public Double getProductIdentityElement() {
+	public Double one() {
 		return 1.0;
 	}
 
-	public Double getSumIdentityElement() {
+	public Double zero() {
 		return 0.0;
 	}
 	
@@ -26,9 +26,6 @@ public class LikelihoodSemiring implements Semiring<Double> {
 		return Math.min(first, second);
 	}
 	
-	public int compare(Double first, Double second) {
-		return first.compareTo(second);
-	}
 	public Double getBestCost() {
 		return 1.0;
 	}

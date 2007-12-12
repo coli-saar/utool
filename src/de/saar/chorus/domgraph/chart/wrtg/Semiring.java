@@ -1,12 +1,12 @@
 package de.saar.chorus.domgraph.chart.wrtg;
 
-public interface Semiring<E> {
-		public E semiringSum(E first, E second);
-		public E semiringProduct(E first, E second);
-		public E getSumIdentityElement();
-		public E getProductIdentityElement();
+public interface Semiring<E extends Comparable<E>> {
+		public E add(E first, E second);
+		public E mult(E first, E second);
+		public E zero();
+		public E one();
 		public E getMinimum(E first, E second);
-		public int compare(E first, E second);
+		
 		public boolean isInDomain(E element);
 		public E getBestCost();
 }

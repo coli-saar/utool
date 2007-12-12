@@ -19,8 +19,8 @@ public class IntegerNonterminal extends ArrayList<Integer> implements GraphBased
 	
 	public IntegerNonterminal( int leafIndex) {
 		super();
-		add(0);
-		add(0);
+		add(-1 * leafIndex);
+		add(-1 * leafIndex);
 		this.leafIndex = leafIndex;
 		}
 	
@@ -46,6 +46,11 @@ public class IntegerNonterminal extends ArrayList<Integer> implements GraphBased
 	}
 	private Set<String> convertToSubgraph() {
 		Set<String> ret = new HashSet<String>();
+		if(leafIndex > -1) {
+			ret.add(leafIndex + "y");
+			return ret;
+		}
+		
 		int left = get(0), right = get(1);
 		ret.add( (left-1) + "y");
 		for(int i = left; i <= right; i++) {
@@ -53,6 +58,9 @@ public class IntegerNonterminal extends ArrayList<Integer> implements GraphBased
 			ret.add(i + "xl");
 			ret.add(i + "xr");
 			ret.add(i + "y");
+		}
+		if(leafIndex > -1) {
+			
 		}
 		
 		return ret;
