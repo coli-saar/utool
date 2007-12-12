@@ -28,7 +28,7 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 		List<Split<IntegerNonterminal>> splits = new ArrayList<Split<IntegerNonterminal>>();
 		IntSplitComputer sc = new IntSplitComputer(chain);
 		
-		for(int root : computePotentialFreeRootsInt(subgraph)) {
+		for(String root : computePotentialFreeRoots(subgraph)) {
 			splits.add(sc.computeSplit(root, subgraph));
 		}
 		
@@ -68,52 +68,21 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 
 	}
 	
-	private List<Integer> computePotentialFreeRootsInt(IntegerNonterminal subgraph) {
-		List<Integer> ret = new ArrayList<Integer>();
-		int left = subgraph.getLeftBorder();
-		int right = subgraph.getRightBorder();
-		Map<Integer, List<Integer>> domEdges = chain.getAdditionalEdges();
 	
-		Set<Integer> forbiddenRoots = new HashSet<Integer>();
-		for( int i = left; i <= right; i++) {
-			if(domEdges.containsKey(i)) {
-				for(Integer tgt : domEdges.get(i)) {
-					if(tgt <= right &&
-							tgt >= left) {
-						forbiddenRoots.add(tgt);
-						if(tgt > i) {
-							// edge pointing "to the right"
-							for(int f = i+1; f < tgt; f++) {
-								forbiddenRoots.add(f);
-							}
-						} else {
-							// edge pointing "to the left"
-							for(int f = tgt +1; f < i;f++) {
-								forbiddenRoots.add(f);
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		for(int i = left; i <= right; i++) {
-			if(! forbiddenRoots.contains(i)) {
-				ret.add(i);
-			}
-		}
-		
-		
-		return ret;
-	}
 
 	@Override
 	protected List<String> computePotentialFreeRoots(IntegerNonterminal subgraph) {
 		
 		List<String> ret = new ArrayList<String>();
+		if(subgraph.isSingleton(null)) {
+			ret.add(subgraph.getRootIfSingleton());
+			return ret;
+		}
+		
 		int left = subgraph.getLeftBorder();
 		int right = subgraph.getRightBorder();
 		Map<Integer, List<Integer>> domEdges = chain.getAdditionalEdges();
+		
 		
 		Set<Integer> forbiddenRoots = new HashSet<Integer>();
 		for( int i = left; i <= right; i++) {

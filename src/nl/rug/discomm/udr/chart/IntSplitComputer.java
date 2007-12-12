@@ -20,6 +20,11 @@ public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 		
 		IntegerSplit split = new IntegerSplit(root);
 		
+		if(subgraph.isSingleton(null)) {
+			System.err.println("SINGLETON " + split);
+			return split;
+		}
+		
 		int l = subgraph.getLeftBorder();
 		int r = subgraph.getRightBorder();
 		
@@ -50,10 +55,16 @@ public class IntSplitComputer extends SplitComputer<IntegerNonterminal> {
 	@Override
 	public Split<IntegerNonterminal> computeSplit(String root, IntegerNonterminal subgraph) {
 		
+		
+		
 		int iRoot = Integer.parseInt(root.replaceAll("\\D",""));
 		
 			Split<IntegerNonterminal> split = new Split<IntegerNonterminal>(root);
 			
+			if(root.endsWith("y")) {
+				return split;
+			}
+		
 			int l = subgraph.getLeftBorder();
 			int r = subgraph.getRightBorder();
 			

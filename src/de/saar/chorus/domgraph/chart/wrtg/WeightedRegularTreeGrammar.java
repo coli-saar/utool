@@ -9,7 +9,7 @@ import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 
-public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T> extends RegularTreeGrammar<E> {
+public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extends Comparable<T>> extends RegularTreeGrammar<E> {
 		private Semiring<T> semiring;
 		private Map<Split<E>, T> weights;
 		
@@ -29,7 +29,7 @@ public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T> exten
 				return false;
 			}
 			if(weights.containsKey(s)) {
-				T newWeight = semiring.semiringProduct(weight, weights.get(s));
+				T newWeight = semiring.mult(weight, weights.get(s));
 				weights.put(s, newWeight);
 				return true;
 			}
