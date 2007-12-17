@@ -7,6 +7,9 @@
 
 package de.saar.chorus.domgraph.codec;
 
+
+import java.util.regex.Pattern;
+
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -34,7 +37,7 @@ public class CodecTools {
     public static String atomify(String label) {
     	// check first character    	
     	if (label.charAt(0) < 'a' || label.charAt(0) > 'z')
-    		return ("'" + label + "'");
+    		return ("'" + label.replaceAll(Pattern.quote("'"), "\\\\'") + "'");
 
     	// check rest
     	for (int i = 1; i < label.length(); ++i) {
@@ -44,14 +47,14 @@ public class CodecTools {
     			(label.charAt(i) < 'A' || label.charAt(i) > 'Z') &&
     			(label.charAt(i) < '0' || label.charAt(i) > '9') &&
     			(label.charAt(i) != '_'))
-    			return ("'" + label + "'");    		
+    			return ("\'" + label.replaceAll(Pattern.quote("'"), "\\\\'") + "\'");    		
     	}
      	return label;	
     }
 
     /**
      * Computes a string that is a valid Prolog variable from
-     * the argument. If the argument starts with an uppercase
+     * the argument. If the argument starts with an uppecase
      * letter or an underscore, it is returned directly; otherwise,
      * it is prefixed with an underscore.<p>
      * 
