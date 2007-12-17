@@ -132,7 +132,7 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 	
 	public static void main(String[] args) {
 		
-		for(int i = 60; i <= 90; i++) {
+		for(int i = 120; i <= 150; i++) {
 			
 			long so = 0, ext = 0;
 			Chain chain = new Chain(i);
