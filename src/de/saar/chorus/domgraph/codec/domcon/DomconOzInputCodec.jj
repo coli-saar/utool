@@ -73,12 +73,14 @@ public class DomconOzInputCodec extends InputCodec {
 
 
     private String stripquotes(String label) {
-	if( label.startsWith("\'") ) {
-	    // strip off first and last character
-	    return label.substring(1, label.length()-1);
-	} else {
-	    return label;
-	}
+ 
+		if( label.startsWith("\'") ) {
+		
+		    // strip off first and last character
+	    	return label.substring(1, label.length()-1).replaceAll("\\\\'","\'");
+		} else {
+		    return label;
+		}
     }
     
     
@@ -104,7 +106,7 @@ TOKEN :
 {
     <LABEL : "label">
  |  <DOM   : "dom">
- |  <OZATOM  : "\'" (~["\'"])* "\'"
+ |  <OZATOM  : "\'" (~["\'"])* ("\\\'"(~["\'"])+)* "\'"
   	   | ["a"-"z"] (["a"-"z", "A"-"Z", "0"-"9", "_"])*>
 
 }
