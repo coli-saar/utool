@@ -71,6 +71,8 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
                         for( QuantifierMarkedNonterminal candidate : outSplit.getAllSubgraphs() ) {
                         	agenda.add(candidate);
                         }
+                    } else {
+                        // System.err.println("Disallowed split: " + split + " (from " + sub.getPreviousQuantifier() + ")");
                     }
                 }
             }
@@ -116,7 +118,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
     @SuppressWarnings("unchecked")
     public boolean allowedSplit(Split split, String previousQuantifier) {
-        //System.err.println("Consider " + split + " below " + previousQuantifier + ": ");
+        //System.err.print("Consider " + split + " below " + previousQuantifier + ": ");
 
         String root = split.getRootFragment();
 
@@ -125,11 +127,26 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
             GraphBasedNonterminal subgraph = (GraphBasedNonterminal) o;
 
             for( String node : subgraph.getNodes() ) {
-                if( wildcardLabeledNodes.containsKey(node) && node.compareTo(root) < 0 ) {
+                if( wildcardLabeledNodes.containsKey(node) &&
+                        isPossibleDominator(node, root) &&
+                        (!wildcardLabeledNodes.containsKey(root) || node.compareTo(root) < 0) ) {
                     int connectingHole = hypernormalReachability.get(node).get(root);
 
                     if( wildcardLabeledNodes.get(node).contains(connectingHole)) {
-                        return false;
+                        boolean permutesWithAllPossibleDominators = true;
+
+                        for( String other : subgraph.getNodes() ) {
+                            if( compact.getAllNodes().contains(other) ) {
+                                if( compact.isRoot(other) && isPossibleDominator(other, node) ) {
+                                    permutesWithAllPossibleDominators = permutesWithAllPossibleDominators && wildcardLabeledNodes.get(node).contains(hypernormalReachability.get(node).get(other));
+                                }
+                            }
+                        }
+
+                        if( permutesWithAllPossibleDominators ) {
+          //                  System.err.println("[wildcard -> not] ");
+                            return false;
+                        }
                     }
                 }
             }
@@ -138,7 +155,13 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
         // if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
-            //System.err.print("[pq=null]");
+            // System.err.println("[pq=null -> allowed] ");
+            return true;
+        }
+
+        // if the previous quantifier was a wildcard, then it doesn't restrict the allowed splits
+        if( wildcardLabeledNodes.containsKey(previousQuantifier)) {
+            // System.err.println("[pq=wildcard -> allowed]");
             return true;
         }
 
@@ -146,7 +169,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
         // if the two quantifiers are in the right order (previous < here), then the split is allowed
         if( previousQuantifier.compareTo(split.getRootFragment()) < 0 ) {
-            //System.err.print("[pq smaller]");
+            // System.err.println("[pq smaller -> allowed]");
             return true;
         }
 
@@ -154,6 +177,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         //System.err.print("[" + previousQuantifier + "," + split.getRootFragment() +
            //     (isPermutable(previousQuantifier, split.getRootFragment()) ? "" : " not") +
               //  " permutable]");
+        // System.err.println("[perm: allowed=" + !isPermutable(previousQuantifier, split.getRootFragment()) + "] ");
         return !isPermutable(previousQuantifier, split.getRootFragment());
     }
 
