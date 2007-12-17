@@ -54,7 +54,7 @@ public class CodecTools {
 
     /**
      * Computes a string that is a valid Prolog variable from
-     * the argument. If the argument starts with an uppecase
+     * the argument. If the argument starts with an uppercase
      * letter or an underscore, it is returned directly; otherwise,
      * it is prefixed with an underscore.<p>
      * 
@@ -62,7 +62,7 @@ public class CodecTools {
      * Prolog variable name if it contains symbols that are not
      * valid in Prolog variable names.
      * 
-     * @param label a straing
+     * @param label a String
      * @return the string, possibly prefixed with an underscore
      */
     public static String varify(String label) {
