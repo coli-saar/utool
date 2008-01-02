@@ -139,9 +139,11 @@ public class EquationSystem extends DefaultHandler {
      * @return true iff this equation is contained in this equation system.
      */
     public boolean contains(Equation eq) {
-        return wildcards.contains(eq.getQ1())
-        || wildcards.contains(eq.getQ2())
-        || equations.contains(eq);
+        return
+        // Wildcards -- no longer necessary for RTGE
+        // wildcards.contains(eq.getQ1()) || wildcards.contains(eq.getQ2())
+        // ||
+        equations.contains(eq);
     }
 
     /**

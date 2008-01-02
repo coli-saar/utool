@@ -121,4 +121,61 @@ public class Split<E> {
 	public void setSubstitution(Map<String,String> subst) {
 		substitution = subst;
 	}
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( (dominators == null) ? 0 : dominators.hashCode());
+        result = prime * result + ( (rootFragment == null) ? 0 : rootFragment.hashCode());
+        result = prime * result + ( (substitution == null) ? 0 : substitution.hashCode());
+        result = prime * result + ( (wccs == null) ? 0 : wccs.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if( this == obj ) {
+            return true;
+        }
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final Split other = (Split) obj;
+        if( dominators == null ) {
+            if( other.dominators != null ) {
+                return false;
+            }
+        } else if( !dominators.equals(other.dominators) ) {
+            return false;
+        }
+        if( rootFragment == null ) {
+            if( other.rootFragment != null ) {
+                return false;
+            }
+        } else if( !rootFragment.equals(other.rootFragment) ) {
+            return false;
+        }
+        if( substitution == null ) {
+            if( other.substitution != null ) {
+                return false;
+            }
+        } else if( !substitution.equals(other.substitution) ) {
+            return false;
+        }
+        if( wccs == null ) {
+            if( other.wccs != null ) {
+                return false;
+            }
+        } else if( !wccs.equals(other.wccs) ) {
+            return false;
+        }
+        return true;
+    }
+
+
+
 }
