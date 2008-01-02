@@ -189,6 +189,8 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
             }
         }
 
+        //System.err.println("useful: " + usefulNonterminals);
+
         // at this point, we can delete everything that is not productive
         Set<E> uselessNonterminals = new HashSet<E>(nonterminalUses.keySet());
         uselessNonterminals.addAll(getToplevelSubgraphs());
@@ -197,18 +199,23 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         Set<Split<E>> uselessSplits = new HashSet<Split<E>>();
 
         for( E useless : uselessNonterminals ) {
+            //System.err.println("Consider useless NT: " + useless);
+
             // remove NT's own entry in the chart
             if( chart.containsKey(useless)) {
+                //System.err.println("Remove useless NT: " + useless);
                 chart.remove(useless);
             }
 
             // if NT is toplevel subgraph, remove that
             if( toplevelSubgraphs.contains(useless)) {
+                //System.err.println("Remove useless tl NT: " + useless);
             	toplevelSubgraphs.remove(useless);
             }
 
             // mark all splits which use it for deletion
-            if( nonterminalUses.containsKey(useless)) {
+            if( nonterminalUses.containsKey(useless) ) {
+                //System.err.println("Schedule splits for deletion: " + nonterminalUses.get(useless));
                 uselessSplits.addAll(nonterminalUses.get(useless));
             }
         }
@@ -217,6 +224,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         for( Split<E> split : uselessSplits ) {
             for( E lhs : splitToLhs.get(split)) {
                 if( chart.containsKey(lhs) ) {
+                    //System.err.println("Remove split " + split + " (for " + lhs  + ")");
                     chart.get(lhs).remove(split);
                 }
             }

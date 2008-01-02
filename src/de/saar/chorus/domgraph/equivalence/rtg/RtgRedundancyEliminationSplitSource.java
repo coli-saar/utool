@@ -2,6 +2,7 @@ package de.saar.chorus.domgraph.equivalence.rtg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,8 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
             List<Split<QuantifierMarkedNonterminal>> ret = new ArrayList<Split<QuantifierMarkedNonterminal>>();
 
             for( Split<QuantifierMarkedNonterminal> split : precomputedSplits.get(subgraph.getSubgraph())) {
-                if( elim.allowedSplit(split, subgraph.getPreviousQuantifier())) {
+                // TODO - fix me
+                if( elim.allowedSplit(split, subgraph.getPreviousQuantifier(), new HashSet<String>())) {
                     ret.add(split);
                 }
             }
@@ -60,7 +62,8 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
 
                     allSplits.add(split);
 
-                    if( elim.allowedSplit(split, subgraph.getPreviousQuantifier()) ) {
+                    // TODO - fix me
+                    if( elim.allowedSplit(split, subgraph.getPreviousQuantifier(), new HashSet<String>()) ) {
                         splits.add(split);
                     }
                 }
