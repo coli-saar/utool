@@ -747,7 +747,11 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 					+ myDominanceParents.size());
 			
 			// 3. Place myself (X).
+			if(! fragWidth.containsKey(fragment)) {
+				System.err.println("No width assigned!" + fragment + domgraph.getRoot(fragment));
+			}
 			nextX = xStart + Math.max(fragWidth.get(fragment), towersMaxX);
+			
 			xStorage.put(fragment, 
 					xStart + Math.max(fragWidth.get(fragment), towersMaxX)/2
 					- fragWidth.get(fragment)/2);
@@ -759,7 +763,8 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 			nextY = yStart;
 			
 			// 5. Place the towers' dominance parents
-			for( String tdp : myTowerDominanceParents ) {
+			for( String tp : myTowerDominanceParents ) {
+				String tdp = domgraph.getRoot(tp);
 				Rectangle tdpBox = new Rectangle();
 				Cost tdpCost = 
 					fragmentBoxDFS(tdp, visited, tdpBox,  
@@ -774,9 +779,9 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 			towersMinY = nextY; // towers start at this y-position
 			
 			// 6. Place my own dominance parents
-			for( String dp : myDominanceParents ) {
+			for( String dop : myDominanceParents ) {
 				Rectangle dpBox = new Rectangle();
-				
+				String dp = domgraph.getRoot(dop);
 				Cost dpCost = 
 					fragmentBoxDFS(dp, visited, dpBox,  
 							rightHandPartX, nextY, dfsDescendants, cost, false,
@@ -832,6 +837,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 				yStorage.put(fragment, myY);
 				
 				if( topChild != null ) {
+					topChild = domgraph.getRoot(topChild);
 					/*
 					 * My topmost dominance child has to be placed under myself,
 					 * so possibly its box has to be moved down (and not start directly
@@ -882,6 +888,8 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 					updateBox(topChild, box, topChildBox);
 				}
 			} else if( topChild != null ) {
+				
+				topChild = domgraph.getRoot(topChild);
 				// have no towers or dominance parents, but I do have
 				// children -> arrange myself and the topmost child
 				//  Fragment topChild = myDominanceChildren.remove(0);
@@ -939,7 +947,8 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 			
 			
 			// 9. Place the rest of the dominance children
-			for( String dc : myDominanceChildren ) {
+			for( String doc : myDominanceChildren ) {
+				String dc = domgraph.getRoot(doc);
 				Rectangle dcBox = new Rectangle();
 				
 				
@@ -1225,7 +1234,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 				
 				Set<String> visited = new HashSet<String>();
 				Cost thisCost = 
-					fragmentBoxDFS(root, visited, new Rectangle(),
+					fragmentBoxDFS(domgraph.getRoot(root), visited, new Rectangle(),
 							xStart,0, new HashSet<String>(), new Cost(), false,
 							tempXpos, tempYpos);
 				
@@ -1246,7 +1255,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 						// place it (the correct possition is not yet relevant
 						// (here, we are just computing costs)
 						Set<String> deactivatedPlacements = new HashSet<String>();
-						Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
+						Cost add = fragmentBoxDFS(domgraph.getRoot(frag), visited, new Rectangle(),
 								xStart + thisCost.getMaxBoxWidth() + fragmentXDistance,
 								0, deactivatedPlacements, new Cost(), false, 
 								fragXpos, fragYpos);
@@ -1285,7 +1294,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 				bestRoot = domgraph.getAllNodes().iterator().next();
 			}
 			
-			Cost lastCost = fragmentBoxDFS(bestRoot,visited, new Rectangle(), 
+			Cost lastCost = fragmentBoxDFS(domgraph.getRoot(bestRoot),visited, new Rectangle(), 
 					xStart,0, new HashSet<String>(), new Cost(), false,
 					fragXpos, fragYpos);
 			
@@ -1323,7 +1332,7 @@ public class DomGraphLayout extends FragmentLayoutAlgorithm {
 						}
 					}
 			
-					Cost add = fragmentBoxDFS(frag, visited, new Rectangle(),
+					Cost add = fragmentBoxDFS(domgraph.getRoot(frag), visited, new Rectangle(),
 							xStart,
 							yStart, new HashSet<String>(), new Cost(), false, 
 							fragXpos, fragYpos);
