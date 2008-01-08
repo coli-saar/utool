@@ -29,6 +29,9 @@ public class Split<E> {
     private Map<String,String> substitution; // hole -> root
     private final List<String> dominators;
 
+    private boolean changed;
+    private int previousHashcode;
+
     /**
      * Creates a split with a given root fragment.
      *
@@ -39,6 +42,7 @@ public class Split<E> {
         wccs = new HashMap<String,List<E>>();
         substitution = new HashMap<String, String>();
         dominators = new ArrayList<String>();
+        changed = true;
     }
 
     /**
@@ -57,6 +61,7 @@ public class Split<E> {
         }
 
         wccSet.add(wcc);
+        changed = true;
     }
 
 
@@ -120,17 +125,25 @@ public class Split<E> {
 
 	public void setSubstitution(Map<String,String> subst) {
 		substitution = subst;
+		changed = true;
 	}
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ( (dominators == null) ? 0 : dominators.hashCode());
-        result = prime * result + ( (rootFragment == null) ? 0 : rootFragment.hashCode());
-        result = prime * result + ( (substitution == null) ? 0 : substitution.hashCode());
-        result = prime * result + ( (wccs == null) ? 0 : wccs.hashCode());
-        return result;
+        if( !changed ) {
+            return previousHashcode;
+        } else {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ( (dominators == null) ? 0 : dominators.hashCode());
+            result = prime * result + ( (rootFragment == null) ? 0 : rootFragment.hashCode());
+            result = prime * result + ( (substitution == null) ? 0 : substitution.hashCode());
+            result = prime * result + ( (wccs == null) ? 0 : wccs.hashCode());
+            previousHashcode = result;
+            changed = false;
+            return previousHashcode;
+
+        }
     }
 
     @Override
