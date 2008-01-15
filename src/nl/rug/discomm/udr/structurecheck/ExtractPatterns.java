@@ -106,6 +106,9 @@ public class ExtractPatterns {
 								countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
 							} else {
 								countUp(relation,BooleanFeatures.SATELLITE_LEAF);
+								if(relation.contains("ondition")) {
+									System.err.println("sat- leaf (" + relation + ") here!");
+								}
 							}
 						}
 					} else {
@@ -113,6 +116,23 @@ public class ExtractPatterns {
 						leftRel = labels.getLabel(leftChild);
 						countUp(relation, leftRel, StringFeatures.LEFT_CHILD);
 						
+						boolean onlyLeafs = true;
+						for(String hole : graph.getHoles(leftChild)) {
+							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
+								if(! graph.isLeaf(grandchild)) {
+									onlyLeafs = false;
+									break;
+								}
+							}
+							
+						}
+						
+						if(onlyLeafs) {
+							countUp(relation, BooleanFeatures.TWO_EDUS_LEFT);
+							if(relation.contains("ondition")) {
+								System.err.println("2 edus left (" + relation + ") here!");
+							}
+						}
 						
 						boolean childmulti = 
 							leftRel.contains("(1)(2)");
@@ -162,6 +182,9 @@ public class ExtractPatterns {
 								countUp(relation,BooleanFeatures.NUCLEUS_LEAF);
 							} else {
 								countUp(relation,BooleanFeatures.SATELLITE_LEAF);
+								if(relation.contains("ondition")) {
+									System.err.println("sat- leaf (" + relation + ") here!");
+								}
 							}
 						}
 					} else {
@@ -170,6 +193,24 @@ public class ExtractPatterns {
 						if(! leftleaf) {
 							if( leftRel.equals(rightRel)) {
 								countUp(relation,BooleanFeatures.EQUAL_CHILDREN);
+							}
+						}
+						
+						boolean onlyLeafs = true;
+						for(String hole : graph.getHoles(rightChild)) {
+							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
+								if(! graph.isLeaf(grandchild)) {
+									onlyLeafs = false;
+									break;
+								}
+							}
+							
+						}
+						
+						if(onlyLeafs) {
+							countUp(relation, BooleanFeatures.TWO_EDUS_RIGHT);
+							if(relation.contains("ondition")) {
+								System.err.println("two edus right (" + relation + ") here!");
 							}
 						}
 						
@@ -223,7 +264,9 @@ public class ExtractPatterns {
 		Collections.sort(rels);
 		
 		for(String rel : rels) {
-		
+		if(rel.toLowerCase().contains("condition") ||
+				rel.toLowerCase().contains("purpose") ||
+				rel.toLowerCase().contains("after")) {
 				double proot = (double) overallCount.get(rel) / (double) rootcount;
 				String allfrag = df.format(100.0 * proot);
 				
@@ -250,6 +293,7 @@ public class ExtractPatterns {
 				writer.append(tabs + bool[i] + "" + tabs + "" + 
 						counts[i] + "" + tabs + fraction+ mi + t  + n);
 			}
+		
 			writer.append(n);
 			writer.flush();
 			StringFeatures[] strings = StringFeatures.values();
@@ -271,8 +315,9 @@ public class ExtractPatterns {
 					}
 				}
 			}
-
+			
 			writer.flush();
+		}
 			}
 			
 		
@@ -295,6 +340,28 @@ public class ExtractPatterns {
 		}, 
 		
 		LEFT_CHILD_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		
+		TWO_EDUS_LEFT {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		
+		TWO_EDUS_RIGHT {
 			int c;
 			int getOverallCount() {
 				return c;

@@ -203,6 +203,23 @@ public class IntegerChart {
 		
 	}
 	
+	public boolean containsSplitFor(List<Integer> subgraph) {
+		return chart.containsKey(subgraph);
+	}
+	
+	public boolean containsSplitWithRoot(List<Integer> subgraph, int root) {
+		if(! chart.containsKey(subgraph)) {
+			 return false;
+		} else {
+			for(IntSplit split : chart.get(subgraph)) {
+				if(split.root == root) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	private IntSplit deleteSplit(List<Integer> subgraph, int index) {
 		IntSplit split = chart.get(subgraph).get(index);
 		double prob = split.likelihood;
