@@ -2,6 +2,8 @@ package nl.rug.discomm.udr.modelcheck;
 
 
 
+import nl.rug.discomm.udr.graph.Chain;
+
 import org._3pq.jgrapht.Edge;
 
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -19,11 +21,12 @@ public class ModelCheckTest {
 	 */
 	public static void main(String[] args) {
 		
-		Ubench u = Ubench.getInstance();
-	/*	DomGraph graph = new DomGraph();
-		NodeLabels labels = new NodeLabels();
-		makeChain4(graph,labels);
+	/*	Ubench u = Ubench.getInstance();
+		Chain graph = new Chain(4);
+		NodeLabels labels = graph.getStandardLabels();
+		//makeChain4(graph,labels);
 		u.addJDomGraphTab("chain4", graph, labels);
+		System.err.println(labels);
 		
 		DomGraph solvedForm = new DomGraph();
 		NodeLabels sflabels = new NodeLabels();
@@ -35,25 +38,42 @@ public class ModelCheckTest {
 		makeBadSolvedForm(sf2,sf2l);
 		u.addJDomGraphTab("bad solved form", sf2, sf2l);*/
 		
-		DomGraph biggraph =  new DomGraph();
+		Chain biggraph =  new Chain(100);
 		NodeLabels biglabels = new NodeLabels();
-		makeChain100(biggraph, biglabels);
+		for(String node : biggraph.getAllNodes()) {
+			if(! biggraph.isHole(node)) {
+				if(! biggraph.isLeaf(node)) {
+					biglabels.addLabel(node,"f50");
+				} else {
+					biglabels.addLabel(node, "a" + node.substring(0, node.length() - 1));
+					
+				}
+			}
+		}
+		System.err.println(biglabels);
+	//	makeChain100(biggraph, biglabels);
 		System.err.println("Generated Graph");
 		
 		DomGraph bigsf = new DomGraph();
 		NodeLabels bigsflabels = new NodeLabels();
 		makeSolvedForm100(bigsf, bigsflabels);
 		System.err.println("Generated Solved Form");
-		//u.addJDomGraphTab("sf", bigsf, bigsflabels);
+	//	Ubench u = Ubench.getInstance();
+	//	 u.addJDomGraphTab("sf", bigsf, bigsflabels);
 		
 		long before = System.currentTimeMillis();
 		
-		System.err.println(ModelCheck.solves(bigsf, bigsflabels, biggraph, biglabels));
+		System.err.println(IntModelCheck.solves(bigsf, bigsflabels, biggraph, biglabels));
 		
 		System.err.println("Needed " + (System.currentTimeMillis() - before) + "ms");
 		
-		/*System.out.println(ModelCheck.solves(solvedForm, sflabels, graph, labels));
-		System.out.println(ModelCheck.solves(sf2, sf2l, graph, labels));*/
+	/*	System.out.println(IntModelCheck.solves(solvedForm, sflabels, graph, labels));
+	
+		System.err.println();
+		System.err.println("====");
+		System.err.println();
+		
+		System.out.println(IntModelCheck.solves(sf2, sf2l, graph, labels));*/
 		
 		
 	}
