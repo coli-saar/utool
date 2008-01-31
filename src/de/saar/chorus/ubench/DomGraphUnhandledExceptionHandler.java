@@ -53,7 +53,9 @@ class DomGraphUnhandledExceptionHandler implements Thread.UncaughtExceptionHandl
 	
 	
 	public static void showErrorDialog(Throwable arg1) {
-		showErrorDialog(arg1, getGraph(), getLabels());
+		
+		arg1.printStackTrace();
+		//showErrorDialog(arg1, getGraph(), getLabels());
 	}
 	
 	public static void showErrorDialog(Throwable arg1, DomGraph graph, NodeLabels labels) {
