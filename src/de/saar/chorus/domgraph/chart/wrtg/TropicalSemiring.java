@@ -22,5 +22,8 @@ public class TropicalSemiring implements Semiring<Double> {
 		return Double.MAX_VALUE;
 	}
 	
+	public Double maxElement() {
+		return 0.0;
+	}
 	
 }

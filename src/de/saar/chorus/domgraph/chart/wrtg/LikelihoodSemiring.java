@@ -17,6 +17,10 @@ public class LikelihoodSemiring implements Semiring<Double> {
 	public Double one() {
 		return 1.0;
 	}
+	
+	public Double maxElement() {
+		return 1.0;
+	}
 
 	public Double zero() {
 		return 0.0;

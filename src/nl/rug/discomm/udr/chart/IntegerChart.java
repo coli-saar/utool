@@ -125,6 +125,15 @@ public class IntegerChart {
 	//	System.err.println(chart);
 	}
 	
+	public List<IntSplit> getAllSplits() {
+		
+		List<IntSplit> ret = new ArrayList<IntSplit>();
+		for(List<IntSplit> list : chart.values()) {
+			ret.addAll(list);
+		}
+		return ret;
+	}
+	
 	private void storeReferencedGraphs(Set<List<Integer>> ref, List<Integer> current) {
 		if(! ref.contains(current)) {
 			ref.add(current);
@@ -137,6 +146,49 @@ public class IntegerChart {
 		}
 	}
 	
+	
+	public boolean addWeightedDomEdge(int src, int tgt, double weight) {
+			restrictSubgraph(toplevel, src, tgt, weight, new HashSet<List<Integer>>());
+		return true;
+	}
+	
+	private void restrictSubgraph(List<Integer> subgraph, int src, int tgt,
+			double weight, Set<List<Integer>> visited) {
+		if(! visited.contains(subgraph)) {
+
+			visited.add(subgraph);
+			int left = subgraph.get(0), right = subgraph.get(1);
+
+			if(left <= src && src <= right) {
+				if(left <= tgt && tgt <= right) {
+
+					//List<IntSplit> toDelete = new ArrayList<IntSplit>();
+
+					for(int i = 0; i < chart.get(subgraph).size(); i++) {
+						IntSplit split = chart.get(subgraph).get(i);
+						int root = split.root;
+						if(root == tgt) {
+							split.setLikelihood(weight);
+						} else if((src < root && root < tgt) ||
+								(tgt < root && root < src) ) {
+							split.setLikelihood(weight);
+
+						} else {
+							if(chart.containsKey(split.rightSub)) {
+								restrictSubgraph(split.rightSub, src, tgt, weight, visited);
+							}
+							if(chart.containsKey(split.leftSub)) {
+								restrictSubgraph(split.leftSub, src, tgt, weight, visited);
+							}
+						}
+					}
+
+
+				}
+
+			}
+		}
+	}
 	
 	private void restrictSubgraph(List<Integer> subgraph, int src, int tgt, 
 			Set<List<Integer>> visited) {
@@ -297,6 +349,9 @@ public class IntegerChart {
 		return chart.get(subgraph);
 	}
 	
+	public boolean containsSplitFor(List<Integer> subgraph) {
+		return chart.containsKey(subgraph);
+	}
 	
 	public int getChainlength() {
 		return chainlength;
