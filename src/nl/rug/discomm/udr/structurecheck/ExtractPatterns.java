@@ -113,6 +113,20 @@ public class ExtractPatterns {
 						leftRel = labels.getLabel(leftChild);
 						countUp(relation, leftRel, StringFeatures.LEFT_CHILD);
 						
+						boolean onlyLeafs = true;
+						for(String hole : graph.getHoles(leftChild)) {
+							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
+								if(! graph.isLeaf(grandchild)) {
+									onlyLeafs = false;
+									break;
+								}
+							}
+							
+						}
+						
+						if(onlyLeafs) {
+							countUp(relation, BooleanFeatures.TWO_EDUS_LEFT);
+						}
 						
 						boolean childmulti = 
 							leftRel.contains("(1)(2)");
@@ -171,6 +185,21 @@ public class ExtractPatterns {
 							if( leftRel.equals(rightRel)) {
 								countUp(relation,BooleanFeatures.EQUAL_CHILDREN);
 							}
+						}
+						
+						boolean onlyLeafs = true;
+						for(String hole : graph.getHoles(rightChild)) {
+							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
+								if(! graph.isLeaf(grandchild)) {
+									onlyLeafs = false;
+									break;
+								}
+							}
+							
+						}
+						
+						if(onlyLeafs) {
+							countUp(relation, BooleanFeatures.TWO_EDUS_RIGHT);
 						}
 						
 						countUp(relation, rightRel, StringFeatures.RIGHT_CHILD);
@@ -295,6 +324,28 @@ public class ExtractPatterns {
 		}, 
 		
 		LEFT_CHILD_LEAF {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		
+		TWO_EDUS_LEFT {
+			int c;
+			int getOverallCount() {
+				return c;
+			}
+			
+			void countUp() {
+				c++;
+			}
+		},
+		
+		TWO_EDUS_RIGHT {
 			int c;
 			int getOverallCount() {
 				return c;

@@ -1,5 +1,6 @@
 package de.saar.chorus.domgraph.chart.wrtg;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,6 +54,14 @@ public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extend
 		public void addSplit(E subgraph, Split<E> split, T weight) {
 			 super.addSplit(subgraph, split);
 			 weights.put(split, weight);
+		}
+		
+		public Set<Split<E>> getAllSplits() {
+			Set<Split<E>> ret = new HashSet<Split<E>>();
+			for(Collection<Split<E>> slist : super.chart.values()) {
+				ret.addAll(slist);
+			}
+			return ret;
 		}
 		
 		public boolean addWeightedDomEdge(String src, String tgt, T weight) {

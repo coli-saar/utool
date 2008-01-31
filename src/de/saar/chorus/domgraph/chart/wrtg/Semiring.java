@@ -5,7 +5,7 @@ public interface Semiring<E extends Comparable<E>> {
 		public E mult(E first, E second);
 		public E zero();
 		public E one();
-		
+		public E maxElement();
 		
 		public boolean isInDomain(E element);
 		

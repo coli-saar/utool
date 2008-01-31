@@ -21,6 +21,12 @@ public class Utilities {
 		values.add(value);
 	}
 	
+	
+	/**
+	 * TODO comment me...
+	 * @param n
+	 * @return
+	 */
 	public static BigInteger catalanNumber(long n) {
 		
 		if(n == 0) {
@@ -54,6 +60,11 @@ public class Utilities {
 		return ret;
 	}
 	
+	
+	
+	/*
+	 * TODO do we need Array helper methods? No?
+	 */
 	public static int[][] merge(int[][] first, int[][] second, int boundary) {
 		
 		int[][] ret = new int[first.length][];
