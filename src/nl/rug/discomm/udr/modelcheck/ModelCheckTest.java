@@ -2,6 +2,7 @@ package nl.rug.discomm.udr.modelcheck;
 
 
 
+import nl.rug.discomm.udr.chart.IntegerChart;
 import nl.rug.discomm.udr.graph.Chain;
 
 import org._3pq.jgrapht.Edge;
@@ -28,15 +29,35 @@ public class ModelCheckTest {
 		u.addJDomGraphTab("chain4", graph, labels);
 		System.err.println(labels);
 		
-		DomGraph solvedForm = new DomGraph();
-		NodeLabels sflabels = new NodeLabels();
-		makeGoodSolvedForm(solvedForm,sflabels);
-		u.addJDomGraphTab("6th solved form", solvedForm, sflabels);
+		graph.addDominanceEdge("2xl", "1x");
+		graph.addDominanceEdge("4xl", "2x");
+		IntegerChart chart1 = new IntegerChart(4);
+		chart1.solve();
+		chart1.addDominanceEdges(graph.getAdditionalEdges());
 		
-		DomGraph sf2 = new DomGraph();
+		Chain subsumed = new Chain(4);
+		NodeLabels sflabels = subsumed.getStandardLabels();
+		subsumed.addDominanceEdge("2xl", "1x");
+		subsumed.addDominanceEdge("3xr", "4x");
+		IntegerChart chart2 = new IntegerChart(4);
+		chart2.solve();
+		chart2.addDominanceEdges(subsumed.getAdditionalEdges());
+		
+		//DomGraph solvedForm = new DomGraph();
+		//NodeLabels sflabels = new NodeLabels();
+		//makeGoodSolvedForm(solvedForm,sflabels);
+		u.addJDomGraphTab("subsumed graph", subsumed, sflabels);
+		
+	/*	DomGraph sf2 = new DomGraph();
 		NodeLabels sf2l = new NodeLabels();
 		makeBadSolvedForm(sf2,sf2l);
 		u.addJDomGraphTab("bad solved form", sf2, sf2l);*/
+		
+	
+		
+		
+		
+		
 		
 		Chain biggraph =  new Chain(100);
 		NodeLabels biglabels = new NodeLabels();
@@ -50,10 +71,42 @@ public class ModelCheckTest {
 				}
 			}
 		}
-		System.err.println(biglabels);
-	//	makeChain100(biggraph, biglabels);
-		System.err.println("Generated Graph");
 		
+/*		Chain anothergraph = new Chain(100);
+		NodeLabels secLabels = new NodeLabels();
+		for(String node : anothergraph.getAllNodes()) {
+			if(! anothergraph.isHole(node)) {
+				if(! anothergraph.isLeaf(node)) {
+					secLabels.addLabel(node,"f50");
+				} else {
+					secLabels.addLabel(node, "a" + node.substring(0, node.length() - 1));
+					
+				}
+			}
+		}
+		
+		System.err.println("Generated Graphs...");
+		
+		
+		IntegerChart chart1 = new IntegerChart(100);
+		chart1.solve();
+		System.err.println("Solved chart 1...");
+		
+		IntegerChart chart2 = new IntegerChart(100);
+		chart2.solve();
+		System.err.println("Solved chart2...");
+		
+		chart2.addDominanceEdge(2, 65);
+		chart2.addDominanceEdge(99, 70);
+		
+		System.err.println("Added dominance edges...");
+		
+		long time = System.currentTimeMillis();
+		System.err.println(IntModelCheck.subsumes(chart1, biglabels, chart2, secLabels));
+		System.err.println("Took " + (System.currentTimeMillis() - time) + " ms.");*/
+		
+	//	makeChain100(biggraph, biglabels);
+
 		DomGraph bigsf = new DomGraph();
 		NodeLabels bigsflabels = new NodeLabels();
 		makeSolvedForm100(bigsf, bigsflabels);
