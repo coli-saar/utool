@@ -10,6 +10,17 @@ import java.util.Set;
 public class Utilities {
 	
 	
+	public static int getChartSize(int chainlength) {
+		if(chainlength == 0) {
+			return 0;
+			
+		} else if(chainlength == 1) {
+			return 1;
+		} else {
+			return (chainlength*chainlength) + getChartSize(chainlength-2);
+		}
+	}
+	
 	public static <E,T> void addToMapList(Map<E, List<T>> map, E key, T value) {
 		List<T> values;
 		if( map.containsKey(key) ) {

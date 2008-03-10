@@ -13,6 +13,7 @@ import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
+import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 
 public class Chain extends DomGraph {
@@ -21,8 +22,11 @@ public class Chain extends DomGraph {
 	private Map<Integer, List<Integer>> additionalDomedges;
 	private boolean domEdgesComputed;
 	
+	private NodeLabels standardLabels, modifiedLabels;
+	
 	public Chain() {
 		super();
+		standardLabels = new NodeLabels();
 		lastIndex = 0;
 		edgeIndex = 0;
 		domEdgesComputed = false;
@@ -30,6 +34,7 @@ public class Chain extends DomGraph {
 	
 	public Chain(int n) {
 		super();
+		standardLabels = new NodeLabels();
 		edgeIndex= 0;
 		makeChain(n);
 		lastIndex = n;
@@ -98,6 +103,19 @@ public class Chain extends DomGraph {
 		return false;
 	}
 	
+	
+	
+	public NodeLabels getStandardLabels() {
+		if(modifiedLabels == null) {
+			return standardLabels;
+		}
+		return modifiedLabels;
+		
+	}
+	
+	public void setStandardLabels(NodeLabels l) {
+		modifiedLabels = l;
+	}
 	
 	public boolean addDominanceEdge(String src, String tgt) {
 		Set<Edge> debugEdges = new HashSet<Edge>();
@@ -200,7 +218,7 @@ public class Chain extends DomGraph {
 		String upper_righthole = lastIndex + "xr";
 		
 		addNode(upper_root, new NodeData(NodeType.LABELLED));
-		
+		standardLabels.addLabel(upper_root, "f" + lastIndex);
 		addNode(upper_lefthole, new NodeData(NodeType.UNLABELLED));
 		addNode(upper_righthole, new NodeData(NodeType.UNLABELLED));
 		
@@ -213,7 +231,7 @@ public class Chain extends DomGraph {
 		// lower fragment
 		String lower =  lastIndex + "y";
 		addNode(lower, new NodeData(NodeType.LABELLED));
-		
+		standardLabels.addLabel(lower, "a" + lastIndex);
 		// dominance edge to new lower fragment
     	addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE, ++edgeIndex));
 		} else {
@@ -234,7 +252,7 @@ public class Chain extends DomGraph {
     	
     	lower = "0y";
     	addNode("0y", new NodeData(NodeType.LABELLED));
-    	
+    	standardLabels.addLabel("0y", "a0");
     	
     	for( int i = 1; i <= length; i++ ) {
     		// upper fragment
@@ -243,6 +261,7 @@ public class Chain extends DomGraph {
     		upper_righthole =  i + "xr";
     		
     		addNode(upper_root, new NodeData(NodeType.LABELLED));
+    		standardLabels.addLabel(upper_root, "f" + i);
     		
     		addNode(upper_lefthole, new NodeData(NodeType.UNLABELLED));
     		addNode(upper_righthole, new NodeData(NodeType.UNLABELLED));
@@ -256,7 +275,7 @@ public class Chain extends DomGraph {
     		// lower fragment
     		lower =  i + "y";
     		addNode(lower, new NodeData(NodeType.LABELLED));
-    		
+    		standardLabels.addLabel(lower, "a" + i);
     		// dominance edge to new lower fragment
         	addEdge(upper_righthole, lower, new EdgeData(EdgeType.DOMINANCE, ++edgeIndex));
     	}
