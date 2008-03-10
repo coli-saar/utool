@@ -2,20 +2,17 @@ package de.saar.chorus.domgraph.chart.wrtg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 
-import nl.rug.discomm.udr.chart.IntegerNonterminal;
-import nl.rug.discomm.udr.chart.IntegerSplitSource;
-import nl.rug.discomm.udr.graph.Chain;
-import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomEdge;
 import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.ubench.Ubench;
 
 public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T extends Comparable<T>> {
 	
@@ -29,7 +26,11 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 	private Map<E, String> root;
 	private Map<E, List<DomEdge> > nonterminalToDomEdges;
 	private List<DomEdge> domedges;
+	private PriorityQueue<SubgraphHeapMember<E,T>> queue;
+	private SubgraphHeapMember<E,T> sink;
+	private Map<E, SubgraphHeapMember<E,T>> ntToSHM;
 	
+	private Map<Split<E>,Integer> splitToCounter;
 	
 	public CheapestSolvedFormComputer(WeightedRegularTreeGrammar<E,T> grammar, DomGraph graph) {
 		this.grammar = grammar;
@@ -40,10 +41,21 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 		root = new HashMap<E, String>();
 		domedges = new ArrayList<DomEdge>();
 		nonterminalToDomEdges = new HashMap<E, List<DomEdge>>();
+		queue = new PriorityQueue<SubgraphHeapMember<E,T>>();
+		sink = new SubgraphHeapMember<E, T>(null, semiring.one());
+		ntToSHM = new HashMap<E,SubgraphHeapMember<E,T>>();
+		splitToCounter = new HashMap<Split<E>, Integer>();
+		queue.add(sink);
 	}
 	
 	
+	
+	
+	
 	public SolvedFormSpec getCheapestSolvedForm() {
+		
+		
+		
 		if(form == null) {
 			computeCheapestForm();
 		}
@@ -58,24 +70,174 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 	}
 	
 	private void computeCheapestForm() {
+		
+		long time = System.currentTimeMillis();
+		
+		for(E nt : grammar.getAllNonterminals()) {
+			
+			SubgraphHeapMember<E,T> shm = 
+				new SubgraphHeapMember<E,T>(nt,semiring.maxElement());
+			ntToSHM.put(nt, shm);
+		}
+		
+		//System.err.println(ntToSHM.size());
+		//System.err.println(System.currentTimeMillis() - time);
+		time = System.currentTimeMillis();
+		for(E nt: grammar.getAllNonterminals()) {
+			SubgraphHeapMember<E,T> shm = ntToSHM.get(nt);
+			
+			
+			if(grammar.isFinal(nt)) {
+				
+				Split<E> singleton = grammar.getSplitsFor(nt).get(0);
+				splitToCounter.put(singleton, 0);
+				sink.rules.put(ntToSHM.get(nt), singleton);
+				splitToDerivationCost.put(singleton, grammar.getWeightForSplit(singleton));
+			} else {
+				for(Split<E> split : grammar.getSplitsFor(nt)) {
+					splitToDerivationCost.put(split, grammar.getWeightForSplit(split));
+					List<E> children = split.getAllSubgraphs();
+					
+					splitToCounter.put(split, children.size());
+					for(E sg : children) {
+						ntToSHM.get(sg).rules.put(shm, split);
+						
+					}
+				}
+			}
+		}
+		//System.err.println(System.currentTimeMillis() - time);
+		time = System.currentTimeMillis();
+		long count = 0;
+		
+		
+		
+		while(! queue.isEmpty() ) {
+			count++;
+			SubgraphHeapMember<E, T> shm = 
+				queue.remove();
+			
+			
+			for(Map.Entry<SubgraphHeapMember<E,T>, Split<E>> rule : shm.rules.entrySet()) {
+				Split<E> parent = rule.getValue();
+				T scost = splitToDerivationCost.get(parent);
+				T ntcost = rule.getKey().key;
+			
+				if(scost.compareTo(ntcost) < 0) {
+					splitToDerivationCost.remove(parent);
+					T ncost = semiring.mult(scost, shm.key);
+					splitToDerivationCost.put(parent, ncost);
+					int old = splitToCounter.get(parent);
+					old--;
+					splitToCounter.remove(parent);
+					splitToCounter.put(parent, old);
+					if(old <= 0) {
+				
+						if(ncost.compareTo(ntcost) < 0) {
+							
+							if(ntcost.compareTo(semiring.maxElement()) == 0) {
+								
+								rule.getKey().key = ncost;
+								queue.add(rule.getKey());
+								rule.getKey().root = parent.getRootFragment();
+								List<DomEdge> edgestore = rule.getKey().domedges;
+								for(String hole: parent.getAllDominators()) {
+									for(E wcc : parent.getWccs(hole)) {
+										edgestore.addAll(ntToSHM.get(wcc).domedges);
+										edgestore.add(new DomEdge(hole,ntToSHM.get(wcc).root ));
+									}
+								}
+							} else {
+								queue.remove(rule.getKey());
+								rule.getKey().key = ncost;
+								queue.add(rule.getKey());
+								rule.getKey().root = parent.getRootFragment();
+								//TODO store domedges
+								List<DomEdge> edgestore = rule.getKey().domedges;
+								for(String hole: parent.getAllDominators()) {
+									for(E wcc : parent.getWccs(hole)) {
+										edgestore.addAll(ntToSHM.get(wcc).domedges);
+										edgestore.add(new DomEdge(hole,ntToSHM.get(wcc).root ));
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		int useless = 0;
+		
+		for( SubgraphHeapMember<E,T> shm : ntToSHM.values()) {
+			if(shm.key.compareTo(semiring.maxElement()) == 0) {
+				useless++;
+			}
+		}
+		
+	//	System.err.println(useless);
+	//	System.err.println((System.currentTimeMillis() - time) + "ms\t\t" + count);
+		
 		cost = semiring.one();
 		form = new SolvedFormSpec();
+		List<DomEdge> domedges = new ArrayList<DomEdge>();
 		for(E top : grammar.getToplevelSubgraphs()) {
+			SubgraphHeapMember<E,T> shm = ntToSHM.get(top);
+			cost = semiring.mult(shm.key,cost);
+			
+			//extractDomEdges(shm, domedges);
+			form.addAllDomEdges(shm.domedges);
+			
+		}
+		
+	//	System.err.println(form); 
+		
+		/*cost = semiring.one();
+		form = new SolvedFormSpec();
+		for(E top : grammar.getToplevelSubgraphs()) {
+			
 			cost = semiring.mult(cost, computeCostForSubgraph(top));
+			
 			form.addAllDomEdges(nonterminalToDomEdges.get(top));
 		}
-	
-		
+		System.err.println(form);*/
 	}
 	
-	private T computeCostforSplit(Split<E> split) {
+	private void extractDomEdges(SubgraphHeapMember<E,T> shm, List<DomEdge> edges) {
+		String root = shm.root;
+		
+		for(Split<E> split : grammar.getSplitsFor(shm.nonterminal)) {
+			if(split.getRootFragment().equals(root)) {
+				for(String dom : split.getAllDominators()) {
+					for(E sg : split.getWccs(dom)) {
+						SubgraphHeapMember<E,T> child = ntToSHM.get(sg);
+						edges.add(new DomEdge(dom, child.root));
+						extractDomEdges(child, edges);
+					}
+				}
+				break;
+			}
+		}
+	}
+	
+	private T computeCostforSplit(Split<E> split, T limit) {
 		
 		if(! splitToDerivationCost.containsKey(split)) {
+			
+			
 		T subgraphProduct = semiring.one();
 		
 		for(E subgraph : split.getAllSubgraphs()) {
+			
+			T sgcost = computeCostForSubgraph(subgraph);
+			if(sgcost.compareTo(limit) > 0) {
+				return null;
+			}
+			
 			subgraphProduct = semiring.mult(subgraphProduct, 
-					computeCostForSubgraph(subgraph));
+					sgcost);
+			if(subgraphProduct.compareTo(limit) > 0) {
+				return null;
+			}
 		}
 		
 		T result = semiring.mult(grammar.getWeightForSplit(split), 
@@ -96,12 +258,23 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 			Split<E> recall = null;
 			if(grammar.containsSplitFor(subgraph)) {
 				for(Split<E> split : grammar.getSplitsFor(subgraph)) {
-					T sw = computeCostforSplit(split);
+					
+					T sw = computeCostforSplit(split,ret);
+					
+					if(sw == null) {
+						if(recall == null) {
+							recall = split;
+						}
+						continue;
+					}
+					
 					if( (recall == null) || 
 							(sw.compareTo(ret)  < 0)) {
 						ret = sw;
 						recall = split;
 					}
+					
+					
 				}
 
 
@@ -130,52 +303,75 @@ public class CheapestSolvedFormComputer<E extends GraphBasedNonterminal, T exten
 		return subgraphToCost.get(subgraph);
 	}
 	
-	public static void main(String[] args) {
+	
+	
+	
+	private class SubgraphHeapMember<E extends GraphBasedNonterminal, T extends Comparable<T>> 
+			implements Comparable<SubgraphHeapMember<E,T>> {
+		private E nonterminal;
+		private T key;
+		private Map<SubgraphHeapMember<E,T>, Split<E>> rules;
+		private Split<E> preferred;
 		
-		for(int i = 120; i <= 150; i++) {
-			
-			long so = 0, ext = 0;
-			Chain chain = new Chain(i);
-			NodeLabels labels = new NodeLabels();
-			for(String node : chain.getAllNodes()) {
-				labels.addLabel(node, node.replaceAll("\\D", "f"));
-			}
-			WeightedRegularTreeGrammar<IntegerNonterminal, Double> grammar =
-				new WeightedRegularTreeGrammar<IntegerNonterminal, Double> (new TropicalSemiring());
-
-			try {
-				long time = System.currentTimeMillis();
-				ChartSolver.solve(chain, grammar, new IntegerSplitSource(chain));
-			
-				so =  System.currentTimeMillis() - time;
-
-			//	time = System.currentTimeMillis();
-
-
-				grammar.addWeightedDomEdge("2xr", "3x", 8.0);
-				grammar.addWeightedDomEdge("29xl", "4x", 6.0);
-				grammar.addWeightedDomEdge("22xr", "25x", 7.0);
-				grammar.addWeightedDomEdge("4xr", "" + (i-5) + "x", 3.0);
-				//grammar.addWeightedDomEdge("1xr", "3x", 6);
-
-				
-
-
-				CheapestSolvedFormComputer<IntegerNonterminal, Double> comp = 
-					new CheapestSolvedFormComputer<IntegerNonterminal, Double>(grammar,chain);
-
-				//System.err.println(comp.getCheapestSolvedForm());
-				
-				time = System.currentTimeMillis();
-				SolvedFormSpec spec = comp.getCheapestSolvedForm();
-				ext = System.currentTimeMillis() - time;
-				
-				
-				
-				System.err.println(i+ "\t\t\t\t" + so + "\t\t\t\t" + ext );
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
+		private List<DomEdge> domedges;
+		private String root;
+		
+		
+		SubgraphHeapMember(E nt, T k) {
+			super();
+			nonterminal = nt;
+			key =k;
+			rules = new HashMap<SubgraphHeapMember<E,T>, Split<E>>();
+			preferred = null;
+			domedges = new ArrayList<DomEdge>();
+			root = "";
 		}
+		
+		
+		
+		public Split<E> getBestSplit() {
+			return preferred;
+		}
+		
+		public void setBestSplit(Split<E> split) {
+			preferred = split;
+		}
+		
+		public void setKey(T nk) {
+			key = nk;
+		}
+		
+		public E getNonterminal() {
+			return nonterminal;
+		}
+
+
+		public int compareTo(SubgraphHeapMember<E, T> o) {
+			
+			return this.key.compareTo(o.key);
+		}
+
+
+		@Override
+		public boolean equals(Object obj) {
+			if(! (obj instanceof SubgraphHeapMember) ) {
+				return false;
+			}
+			
+			SubgraphHeapMember<E,T> co = (SubgraphHeapMember<E,T>)obj;
+			
+			
+			return co.compareTo(this) == 0 && co.nonterminal.equals(this.nonterminal);
+		}
+
+
+		public int hashCode() {
+			
+			return nonterminal.hashCode() * key.hashCode();
+		}
+		
+		
+		
 	}
+
 }

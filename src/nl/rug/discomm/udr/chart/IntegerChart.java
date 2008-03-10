@@ -459,7 +459,7 @@ public class IntegerChart {
 				leftSub.add(root-1);
 			}
 			
-			likelihood = 1;
+			likelihood = 0.0;
 		}
 		
 		public IntSplit(int root, List<Integer> subgraph, double prob) {
