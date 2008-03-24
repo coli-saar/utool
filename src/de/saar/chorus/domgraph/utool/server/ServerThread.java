@@ -28,6 +28,8 @@ import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
+import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.equivalence.rtg.QuantifierMarkedNonterminal;
 import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -173,24 +175,12 @@ class ServerThread extends Thread {
             try {
 
             	if( options.hasOptionEliminateEquivalence() ) {
-
-/*
- * this is the ACL version:
- */
-            	    solvable = ChartSolver.solve(graph, chart);
-            	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
-            	    new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations()).eliminate(chart, reducedChart);
-/*
-
-** TODO: Die einzelnen Methoden stimmen zwar alle, aber aus irgendeinem Grund
-* bleibt die Chart hier trotzdem leer.
             	    RedundancyElimination<QuantifierMarkedNonterminal> elim = new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations());
 
             	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
                     solvable = ChartSolver.solve(graph, reducedChart,
                             new RedundancyEliminationSplitSource<QuantifierMarkedNonterminal>(elim, graph));
-                    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
-*/
+
 
 
             	} else {
