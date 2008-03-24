@@ -105,7 +105,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
                     roots.add(split.getRootFragment());
                 }
 
-                List<String> permutingWildcards = getPermutingWildcards(sub, splits, roots);
+                List<String> permutingWildcards = getPermutingWildcards(sub, roots);
 
                 // if the subgraph contains permuting wildcards, allow only the split
                 // with the smallest p.w. at the root
@@ -137,7 +137,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         out.reduce();
     }
 
-    private List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, List<Split<SubgraphNonterminal>> splits, Set<String> roots) {
+    List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, Set<String> roots) {
         List<String> ret = new ArrayList<String>();
 
 
@@ -182,12 +182,12 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
 
 
-    private Split<QuantifierMarkedNonterminal> makeSplit(Split<SubgraphNonterminal> split) {
+    private <T extends SubgraphNonterminal> Split<QuantifierMarkedNonterminal> makeSplit(Split<T> split) {
         String root = split.getRootFragment();
         Split<QuantifierMarkedNonterminal> ret = new Split<QuantifierMarkedNonterminal>(root);
 
         for( String dominator : split.getAllDominators() ) {
-            for( SubgraphNonterminal wcc : split.getWccs(dominator)) {
+            for( T wcc : split.getWccs(dominator)) {
                 ret.addWcc(dominator, new QuantifierMarkedNonterminal(wcc, root));
             }
         }
@@ -196,7 +196,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
     @SuppressWarnings("unchecked")
-    public boolean allowedSplit(Split split, String previousQuantifier, Set<String> freeRoots) {
+    boolean allowedSplit(Split split, String previousQuantifier, Set<String> freeRoots) {
         //System.err.print("Consider " + split + " below " + previousQuantifier + ": ");
 
         String root = split.getRootFragment();
@@ -237,11 +237,31 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     @Override
     public List<Split<QuantifierMarkedNonterminal>> getIrredundantSplits(QuantifierMarkedNonterminal subgraph, List<Split<QuantifierMarkedNonterminal>> allSplits) {
         List<Split<QuantifierMarkedNonterminal>> ret = new ArrayList<Split<QuantifierMarkedNonterminal>>();
+        Set<String> freeRoots = new HashSet<String>();
 
-        for( Split<QuantifierMarkedNonterminal> candidate : allSplits ) {
-            // TODO - fix me
-            if( allowedSplit(candidate, subgraph.getPreviousQuantifier(), new HashSet<String>()) ) {
-                ret.add(candidate);
+        // collect the free roots
+        for( Split<QuantifierMarkedNonterminal> split : allSplits ) {
+            freeRoots.add(split.getRootFragment());
+        }
+
+        // collect the wildcards that permute with everything in this subgraph
+        List<String> permutingWildcards = getPermutingWildcards(subgraph, freeRoots);
+
+        // collect the irredundant splits
+        if( !permutingWildcards.isEmpty() ) {
+            // if the subgraph contains permuting wildcards, allow only the split
+            // with the smallest p.w. at the root
+            for( Split<QuantifierMarkedNonterminal> split : allSplits ) {
+                if( split.getRootFragment().equals(permutingWildcards.get(0))) {
+                    ret.add(split);
+                }
+            }
+        } else {
+            // otherwise, take all allowed splits
+            for( Split<QuantifierMarkedNonterminal> split : allSplits ) {
+                if( allowedSplit(split, subgraph.getPreviousQuantifier(), freeRoots) ) {
+                    ret.add(split);
+                }
             }
         }
 
