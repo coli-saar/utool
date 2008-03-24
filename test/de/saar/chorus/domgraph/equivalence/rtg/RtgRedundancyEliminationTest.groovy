@@ -72,7 +72,14 @@ class RtgRedundancyEliminationTest {
         	         
         	    // this models the incompleteness of RTG elimination on Rondane 1279
         	    prepareFOL("Intransitive", "[label(y permute(y1)) label(z f(z1)) label(x g(x1)) label(w a) dom(y1 w) dom(z1 x) dom(x1 w)]",
-        	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ])
+        	            [ [[["y1","z"], ["z1", "x"], ["x1","w"]],[:]] ]),
+        	            
+        	    prepareERG("Rondane-1", "[label(h1 prpstn_m(h3)) label(h6 '_the_q'(h9 h7)) label(h10 '_well+known_a_1') label(h12 '_and_c&compound&_valley_n_of'(h10 h14)) label(h14 '_historic_a_1') label(h18 proper_q(h19 h20)) label(h21 named) label(h23 '_be_v_id&_once_a_1') label(h26 'part_of&card') label(h28 udef_q(h29 h30)) label(h32 '_the_q'(h34 h33)) label(h35 '_main_a_1&_route_n_1&_between_p') label(h39 '_the_q'(h41 h40)) label(h42 '_eastern_a_1') label(h44 '_and_c&_part_n_1&_of_p'(h42 h46)) label(h46 '_western_a_1') label(h50 proper_q(h51 h52)) label(h53 named) dom(h51 h53) dom(h41 h44) dom(h34 h35) dom(h29 h26) dom(h19 h21) dom(h9 h12) dom(h3 h23) dom(h3 h39) dom(h3 h28) dom(h3 h18) dom(h3 h32) dom(h3 h50) dom(h3 h6) dom(h40 h35) dom(h30 h23) dom(h20 h12) dom(h33 h26) dom(h52 h44) dom(h7 h23)]",
+        	            [[[["h3", "h18"], ["h19", "h21"], ["h20", "h50"], ["h51", "h53"], ["h52", "h39"], ["h41", "h44"], ["h40", "h28"], ["h30", "h6"], ["h9", "h12"], ["h7", "h23"], ["h29", "h32"], ["h34", "h35"], ["h33", "h26"]],[:]],
+        	             [[["h3", "h18"], ["h19", "h21"], ["h20", "h50"], ["h51", "h53"], ["h52", "h39"], ["h41", "h44"], ["h40", "h32"], ["h34", "h35"], ["h33", "h28"], ["h29", "h26"], ["h30", "h6"], ["h9", "h12"], ["h7", "h23"]],[:]],
+        	             [[["h3", "h18"], ["h19", "h21"], ["h20", "h50"], ["h51", "h53"], ["h52", "h28"], ["h30", "h6"], ["h9", "h12"], ["h7", "h23"], ["h29", "h39"], ["h41", "h44"], ["h40", "h32"], ["h34", "h35"], ["h33", "h26"]],[:]],
+        	             [[["h3", "h18"], ["h19", "h21"], ["h20", "h50"], ["h51", "h53"], ["h52", "h28"], ["h30", "h6"], ["h9", "h12"], ["h7", "h23"], ["h29", "h32"], ["h33", "h26"], ["h34", "h39"], ["h41", "h44"], ["h40", "h35"]],[:]],
+        	             [[["h3", "h18"], ["h19", "h21"], ["h20", "h50"], ["h51", "h53"], ["h52", "h32"], ["h33", "h28"], ["h29", "h26"], ["h30", "h6"], ["h9", "h12"], ["h7", "h23"], ["h34", "h39"], ["h41", "h44"], ["h40", "h35"]],[:]]])
         	           
                 
                 
@@ -85,6 +92,9 @@ class RtgRedundancyEliminationTest {
         return (Object[]) [id, graphstr, intendedSolvedForms, makeEqSystem(eqSystemFOL)];
     }
     
+    static Object[] prepareERG(id, graphstr, intendedSolvedForms) {
+        return (Object[]) [id, graphstr, intendedSolvedForms, makeEqSystem(eqSystemERG)];
+    }
     
     
     @Test

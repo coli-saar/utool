@@ -173,27 +173,24 @@ class ServerThread extends Thread {
             try {
 
             	if( options.hasOptionEliminateEquivalence() ) {
-            	    /*
-            		solvable = ChartSolver.solve(graph, chart,
-            				new RedundancyEliminationSplitSource(
-            						new IndividualRedundancyElimination(graph,
-            								options.getLabels(), options.getEquations()), graph));
-            								*/
 
-
+/*
+ * this is the ACL version:
+ */
             	    solvable = ChartSolver.solve(graph, chart);
             	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
             	    new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations()).eliminate(chart, reducedChart);
-
-
-
 /*
+
+** TODO: Die einzelnen Methoden stimmen zwar alle, aber aus irgendeinem Grund
+* bleibt die Chart hier trotzdem leer.
+            	    RedundancyElimination<QuantifierMarkedNonterminal> elim = new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations());
+
             	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
-            	    solvable = ChartSolver.solve(graph, reducedChart,
-                            new RtgRedundancyEliminationSplitSource(
-                                    new RtgRedundancyElimination(graph,
-                                            options.getLabels(), options.getEquations()), graph));
-                                            */
+                    solvable = ChartSolver.solve(graph, reducedChart,
+                            new RedundancyEliminationSplitSource<QuantifierMarkedNonterminal>(elim, graph));
+                    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
+*/
 
 
             	} else {
