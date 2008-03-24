@@ -12,12 +12,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
-import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
-import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 /**
@@ -28,24 +27,23 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  * @author Alexander Koller
  *
  */
-public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonterminal> {
-    private final RedundancyElimination<SubgraphNonterminal> elim;
-    protected SplitComputer<SubgraphNonterminal> sc;
+public class RedundancyEliminationSplitSource<E extends GraphBasedNonterminal> extends SplitSource<E> {
+    private final RedundancyElimination<E> elim;
+    protected SplitComputer<E> sc;
 
-    public RedundancyEliminationSplitSource(RedundancyElimination<SubgraphNonterminal> elim, DomGraph graph) {
+    public RedundancyEliminationSplitSource(RedundancyElimination<E> elim, DomGraph graph) {
         super(graph);
         this.elim = elim;
-        sc = new SubgraphSplitComputer(graph);
+        sc = elim.provideSplitComputer(graph);
     }
 
     @Override
-    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
-
-        List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>();
+    protected Iterator<Split<E>> computeSplits(E subgraph) {
+        List<Split<E>> splits = new ArrayList<Split<E>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
         for( String root : potentialFreeRoots ) {
-            Split<SubgraphNonterminal> split = sc.computeSplit(root, subgraph);
+            Split<E> split = sc.computeSplit(root, subgraph);
 
             if( split != null ) {
                 splits.add(split);
@@ -56,12 +54,15 @@ public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonter
     }
 
     @Override
-    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
-        return new SubgraphNonterminal(graph);
+    public E makeToplevelSubgraph(Set<String> graph) {
+        return elim.makeToplevelSubgraph(graph);
     }
 
     @Override
-    public void reduceIfNecessary(RegularTreeGrammar<SubgraphNonterminal> chart) {
+    public void reduceIfNecessary(RegularTreeGrammar<E> chart) {
+        if( elim.requiresReduce() ) {
+            chart.reduce();
+        }
     }
 
 }

@@ -184,18 +184,6 @@ public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
     }
 
 
-    /**
-     * Computes the irredundant splits for a given subgraph.
-     *
-     * @param subgraph a subgraph
-     * @param allSplits the complete list of all splits for this subgraph
-     * @return a list of irredundant splits
-     */
-    abstract public List<Split<E>> getIrredundantSplits(E subgraph, List<Split<E>> allSplits);
-
-    abstract public SplitComputer<E> provideSplitComputer(DomGraph graph);
-
-
     /*
      * computation of the mapping from holes (in the compact graph)
      * to the children of the root (in the original graph).
@@ -395,4 +383,31 @@ public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
             }
         }
     }
+
+
+
+    // methods for supporting the RE split sources
+
+    /**
+     * Computes the irredundant splits for a given subgraph.
+     *
+     * @param subgraph a subgraph
+     * @param allSplits the complete list of all splits for this subgraph
+     * @return a list of irredundant splits
+     */
+    abstract public List<Split<E>> getIrredundantSplits(E subgraph, List<Split<E>> allSplits);
+
+
+    /**
+     * Provides a split computer of the right type for the RE split source
+     * of this RE.
+     *
+     * @param graph
+     * @return
+     */
+    abstract public SplitComputer<E> provideSplitComputer(DomGraph graph);
+
+
+    abstract public boolean requiresReduce();
+    abstract public E makeToplevelSubgraph(Set<String> graph);
 }

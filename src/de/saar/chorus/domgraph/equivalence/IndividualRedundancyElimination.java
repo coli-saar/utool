@@ -113,4 +113,14 @@ public class IndividualRedundancyElimination extends RedundancyElimination<Subgr
     public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
         return new SubgraphSplitComputer(graph);
     }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public boolean requiresReduce() {
+        return false;
+    }
 }
