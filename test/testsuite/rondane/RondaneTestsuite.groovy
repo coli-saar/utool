@@ -8,17 +8,44 @@ import de.saar.chorus.domgraph.graph.*;
 import de.saar.chorus.domgraph.utool.*;
 import de.saar.chorus.domgraph.chart.*;
 
-class RondaneTestsuite extends GroovyTestCase {
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Ignore;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+@RunWith(value=Parameterized.class)
+class RondaneTestsuite {
 	private CodecManager manager;
 	
 	private DomGraph graph, goldGraph;
 	private NodeLabels labels, goldLabels;
 	
 	private InputCodec domconInputCodec;
-    
-    // @Configuration(beforeSuite = true)
-    public void setUp() throws Exception {
-        manager = new CodecManager();
+	
+	
+	def id, codecname, usr, code, solvableExpected, numSfs, domgraphUsr, expectedError, chartsize;
+	
+	public RondaneTestsuite(id, codecname, usr, domgraphUsr, code, solvable, numSfs, expectedError, chartsize) {
+	    this.id = id;
+	    this.codecname = codecname;
+	    this.usr = usr;
+	    this.code = code;
+	    this.solvableExpected = solvable;
+	    this.numSfs = numSfs;
+	    this.domgraphUsr = domgraphUsr;
+	    this.expectedError = expectedError;
+	    this.chartsize = chartsize;
+	}
+	
+	
+	@Test
+	public void testTestsuite() {
+	    manager = new CodecManager();
         manager.registerAllDeclaredCodecs();
         
         domconInputCodec = manager.getInputCodecForName("domcon-oz", [:]);
@@ -28,78 +55,84 @@ class RondaneTestsuite extends GroovyTestCase {
         
         labels = new NodeLabels();
         goldLabels = new NodeLabels();
-    }
-    
-	void testRondaneTestsuite() {
-		String filename = "projects/Domgraph/testsuites/rondane-mrs-jul06.xml.gz";
+        
+        
+        
+        boolean exception = false, solvable = true;
+        def codec = manager.getInputCodecForName(codecname, [:]);
 		
-		def testsuite = new XmlSlurper().parse(new GZIPInputStream(new FileInputStream(filename)));
-		testsuite.usr.each {
-			def id = it.@id.text();
-			def codecname = it.@codec.text();
-			def usr = it.@string.text();
-			boolean exception = false, solvable = true;
-			
-			println "Checking testcase ${id} ..."
-			
-			def codec = manager.getInputCodecForName(codecname, [:]);
-			
-			graph.clear();
-			labels.clear();
-			
-			try {
-				codec.decode(new StringReader(usr), graph, labels);
-				exception = false;
-			} catch(ParserException e) {
-				assert getError(it) == ExitCodes.PARSING_ERROR_INPUT_GRAPH : ("Unexpected parsing error for testcase ${id}: " + e.toString());
-				exception = true;
-			} catch(MalformedDomgraphException e) {
-				assert getError(it) == ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode() : ("Unexpected semantic error for testcase ${id}: " + e.toString());
-				exception = true;
-			} catch(IOException e) {
-				// shouldn't happen
-			}
-			
-			if( !exception ) {
-				domconInputCodec.decode(new StringReader(it.domgraph.@string.text()), goldGraph, goldLabels);
-				assert DomGraph.isEqual(graph, labels, goldGraph, goldLabels) : "Testcase ${id} doesn't match gold graph";
-				
-				assertClassifyCorrect(it, id);
-				assertSolveCorrect(it, graph, id);
-			}
+		graph.clear();
+		labels.clear();
+		
+		try {
+			codec.decode(new StringReader(usr), graph, labels);
+			exception = false;
+		} catch(ParserException e) {
+			assert expectedError == ExitCodes.PARSING_ERROR_INPUT_GRAPH : ("Unexpected parsing error for testcase ${id}: " + e.toString());
+			exception = true;
+		} catch(MalformedDomgraphException e) {
+			assert expectedError == ExitCodes.MALFORMED_DOMGRAPH_BASE_INPUT + e.getExitcode() : ("Unexpected semantic error for testcase ${id}: " + e.toString());
+			exception = true;
+		} catch(IOException e) {
+			// shouldn't happen
 		}
 		
-		assert true;
+		if( !exception ) {
+			domconInputCodec.decode(new StringReader(domgraphUsr), goldGraph, goldLabels);
+			
+			assert DomGraph.isEqual(graph, labels, goldGraph, goldLabels) : "Testcase ${id} doesn't match gold graph";
+			
+			assertClassifyCorrect();
+			assertSolveCorrect();
+		}
 	}
 	
-	private int getError(def it) {
-	    def err = it.domgraph.@error.text();
-	    
-	    if( err == "" ) {
+    
+    
+	@Parameters
+    public static List<Object[]>  data() {
+	    String filename = "projects/Domgraph/testsuites/rondane-jul06-2008-03-24.xml.gz";
+		
+		def testsuite = new XmlSlurper().parse(new GZIPInputStream(new FileInputStream(filename)));
+		List ret = [];
+		
+		testsuite.usr.each {
+		    ret.add(
+		    (Object[])
+		    [it.@id.text(), it.@codec.text(), it.@string.text(), it.domgraph.@string.text(),
+		     it.classify.@code.text(), it.solve.@solvable.text(), it.solve.@count.text(),
+		     myParseInt(it.domgraph.@error.text()), myParseInt(it.solve.@chartsize.text())]);
+		};
+		
+		return ret;
+	}
+
+	
+	private static int myParseInt(String it) {
+	    if( it == "" ) {
 	        return 0;
 	    } else {
-	        return Integer.parseInt(err);
+	        return Integer.parseInt(it);
 	    }
 	}
 	
-	
-	private void assertSolveCorrect(def it, DomGraph graph, def id) {
+	private void assertSolveCorrect() {
 		Chart chart = new Chart();
 		boolean solvable = ChartSolver.solve(graph,chart);
 		
-		if( it.solve.@solvable.text() == 'false' ) {
+		if( solvableExpected == 'false' ) {
 			assert !solvable : "Expected testcase ${id} to be unsolvable";
 		} else {
 			assert solvable : "Expected testcase ${id} to be solvable";
-//			assert chart.size() == Integer.parseInt(it.solve.@chartsize.text()) :  ("Testcase ${id} doesn't match expected chart size (found: " + chart.size() + ", expected: " + it.solve.@chartsize.text() + ")");
-			assert chart.countSolvedForms() == new BigInteger(it.solve.@count.text()) : "Testcase ${id} doesn't match expected number of solved forms";
+			assert chart.size() == chartsize :  ("Testcase ${id} doesn't match expected chart size (found: " + chart.size() + ", expected: " + it.solve.@chartsize.text() + ")");
+			assert chart.countSolvedForms() == new BigInteger(numSfs) : "Testcase ${id} doesn't match expected number of solved forms";
 		}
 	}
 
 	
-	private void assertClassifyCorrect(def it, def id) {
+	private void assertClassifyCorrect() {
 		int classification = 0;
-		int goldClassification = Integer.parseInt(it.classify.@code.text());
+		int goldClassification = Integer.parseInt(code);
 		
 		if( graph.isWeaklyNormal() ) {
         	classification |= ExitCodes.CLASSIFY_WEAKLY_NORMAL;
