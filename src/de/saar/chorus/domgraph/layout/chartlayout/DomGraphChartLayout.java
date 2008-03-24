@@ -119,7 +119,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 			} else {
 				// if the chart is empty, all fragments are
 				// considered as root fragments
-				Set<String> leaves = new HashSet<String>(tls);
+				Set<String> leaves = new HashSet<String>(tls.getNodes());
 				addToLayer(leaves, 0);
 			}
 		}
@@ -194,7 +194,7 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 		// iterate over the subgraphs and assign layers
 		// to their nodes
 		for (SubgraphNonterminal subgraph : remainingSubgraphs) {
-			Set<String> sgc = new HashSet<String>(subgraph);
+			Set<String> sgc = new HashSet<String>(subgraph.getNodes());
 			sgc.removeAll(recent);
 			for (Set<String> wccs : domgraph.wccs(sgc)) {
 				List<Split<SubgraphNonterminal>> newSplits = chart.getSplitsFor(new SubgraphNonterminal(wccs));
@@ -429,12 +429,12 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 
 				// if there are no splits in the chart,
 				// we consider all fragments as free fragments.
-				free.addAll(toplevel);
+				free.addAll(toplevel.getNodes());
 			}
 
 
 			// toplevel fragment box
-			FragmentBox box = makeFragmentBox(toplevel, free);
+			FragmentBox box = makeFragmentBox(toplevel.getNodes(), free);
 
 			// retrieving the relative x-positions in the fragment box
 			// and placing the fragments

@@ -55,6 +55,7 @@ import de.saar.chorus.ubench.jdomgraph.JDomGraph;
  *
  * @see de.saar.chorus.domgraph.chart.Chart
  * @see de.saar.chorus.ubench.jdomgraph.JDomGraph
+ *
  * @author Michaela Regneri
  * @author Alexander Koller
  *
@@ -208,7 +209,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 				// Tooltips for subgraphs
 				if(realColumnIndex == 0) {
-					Set<String> subgraph = subgraphs.get(rowIndex);
+					Set<String> subgraph = subgraphs.get(rowIndex).getNodes();
 					if( subgraph != null && (! subgraph.isEmpty())) {
 						int num = chart.countSolvedFormsFor(
 								rootsToSubgraphs.get(subgraph)).intValue();
@@ -294,7 +295,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		}
 
 		if(!subgraphs.isEmpty()) {
-			biggestSubgraph = subgraphs.get(0);
+			biggestSubgraph = subgraphs.get(0).getNodes();
 		} else {
 			biggestSubgraph = new HashSet<String>();
 		}
@@ -311,17 +312,17 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * @param visited the set of visited subgraphs
 	 */
 	private void corSubgraph(SubgraphNonterminal subgraph, Set<String> roots, Set<Set<String>> visited) {
-		SubgraphNonterminal s = new SubgraphNonterminal(subgraph);
+		SubgraphNonterminal s = new SubgraphNonterminal(subgraph.getNodes()); // TODO - is this really necessary? - ak
 
 		Set<SubgraphNonterminal> toVisit = new HashSet<SubgraphNonterminal>();
 
 		if (!visited.contains(subgraph)) {
 
 			// a new subgraph
-			visited.add(subgraph);
+			visited.add(subgraph.getNodes());
 
-			s.retainAll(roots);
-			rootsToSubgraphs.put(s, subgraph);
+			s.getNodes().retainAll(roots);
+			rootsToSubgraphs.put(s.getNodes(), subgraph);
 
 			if (chart.getSplitsFor(subgraph) != null) {
 
@@ -406,8 +407,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			List<Set<String>> x = new ArrayList<Set<String>>();
 			map.put(hole, x);
 
-			for (Set<String> wcc : split.getWccs(hole)) {
-				Set<String> copy = new HashSet<String>(wcc);
+			for (SubgraphNonterminal wcc : split.getWccs(hole)) {
+				Set<String> copy = new HashSet<String>(wcc.getNodes());
 				copy.retainAll(roots);
 				x.add(copy);
 			}
@@ -528,7 +529,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					@Override
                     public void run() {
 						Set<String> subgraph = subgraphs.get(
-								prettyprint.getSelectedRow());
+								prettyprint.getSelectedRow()).getNodes();
 
 						if( ! subgraph.isEmpty() ) {
 							// marking the subgraph in the main window
@@ -689,7 +690,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 			if(columnIndex == 0) {
 				// a subgraph
-				Set<String> toShow = subgraphs.get(rowIndex);
+				Set<String> toShow = subgraphs.get(rowIndex).getNodes();
 				if(splitNumbers.get(rowIndex) == 1) {
 					// subgraphs are only shown
 					// for the first of its splits
@@ -714,7 +715,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					if( rowIndex == currentrow &&
 							currentcolumn >= 1 ) {
 						// a marked split
-						return FormatManager.getHTMLforMarkedSplit(next, subgraphs.get(rowIndex));
+						return FormatManager.getHTMLforMarkedSplit(next, subgraphs.get(rowIndex).getNodes());
 					}
 					// a split not marked
 					return  nameToSplit.get(next);

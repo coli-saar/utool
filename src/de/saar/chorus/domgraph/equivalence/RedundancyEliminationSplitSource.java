@@ -30,15 +30,17 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  */
 public class RedundancyEliminationSplitSource extends SplitSource<SubgraphNonterminal> {
     private final RedundancyElimination<SubgraphNonterminal> elim;
+    protected SplitComputer<SubgraphNonterminal> sc;
 
     public RedundancyEliminationSplitSource(RedundancyElimination<SubgraphNonterminal> elim, DomGraph graph) {
         super(graph);
         this.elim = elim;
+        sc = new SubgraphSplitComputer(graph);
     }
 
     @Override
     protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
-        SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
+
         List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 

@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
+import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -69,7 +71,7 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination<Su
 
         //System.err.println("\nCheck split " + s + " for permutability.");
 
-        for( String root : subgraph ) {
+        for( String root : subgraph.getNodes() ) {
             if( graph.isRoot(root) &&  !root.equals(splitRoot) ) {
                 if( isPossibleDominator(root, splitRoot)) {
                     if( !isPermutable(root, splitRoot) ) {
@@ -86,5 +88,11 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination<Su
 
         //System.err.println("  -- split is permutable!");
         return true;
+    }
+
+
+    @Override
+    public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
+        return new SubgraphSplitComputer(graph);
     }
 }
