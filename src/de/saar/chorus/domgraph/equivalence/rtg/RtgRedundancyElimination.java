@@ -275,4 +275,16 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         return new QuantifierMarkedNonterminalSplitComputer(graph);
     }
 
+
+    @Override
+    public QuantifierMarkedNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new QuantifierMarkedNonterminal(new SubgraphNonterminal(graph), null);
+    }
+
+
+    @Override
+    public boolean requiresReduce() {
+        return true;
+    }
+
 }

@@ -110,7 +110,8 @@ class RtgRedundancyEliminationTest {
 		ChartSolver.solve(graph,chart);
 		
 		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
-		ChartSolver.solve(graph, out, new RtgRedundancyEliminationSplitSource(elim, graph));
+		//ChartSolver.solve(graph, out, new RtgRedundancyEliminationSplitSource(elim, graph));
+		ChartSolver.solve(graph, out, new RedundancyEliminationSplitSource<QuantifierMarkedNonterminal>(elim, graph));
 
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);

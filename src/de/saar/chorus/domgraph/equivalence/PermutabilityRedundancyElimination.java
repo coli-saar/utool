@@ -9,6 +9,7 @@ package de.saar.chorus.domgraph.equivalence;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
@@ -94,5 +95,15 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination<Su
     @Override
     public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
         return new SubgraphSplitComputer(graph);
+    }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public boolean requiresReduce() {
+        return false;
     }
 }
