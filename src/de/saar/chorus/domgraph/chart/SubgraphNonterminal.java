@@ -2,21 +2,23 @@ package de.saar.chorus.domgraph.chart;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
-public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNonterminal {
+public class SubgraphNonterminal implements GraphBasedNonterminal {
     private String rootForThisFragset;
     private boolean changed;
     private int previousHashcode;
 
+    private final Set<String> nodes;
 
     public SubgraphNonterminal(Collection<String> init) {
-        super(init);
+        nodes = new HashSet<String>(init);
         changed = true;
     }
 
     public SubgraphNonterminal() {
-        super();
+        nodes = new HashSet<String>();
         changed = true;
     }
 
@@ -38,28 +40,26 @@ public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNo
         }
     }
 
-    @Override
-    public boolean add(String e) {
+    private boolean add(String e) {
         // TODO Auto-generated method stub
         changed = true;
-        return super.add(e);
+        return nodes.add(e);
     }
 
-    @Override
-    public boolean remove(Object o) {
+    private boolean remove(Object o) {
         // TODO Auto-generated method stub
         changed = true;
-        return super.remove(o);
+        return nodes.remove(o);
     }
 
 
-    @Override
-    public boolean removeAll(Collection<?> arg0) {
+    private boolean removeAll(Collection<?> arg0) {
         changed = true;
         // TODO Auto-generated method stub
-        return super.removeAll(arg0);
+        return nodes.removeAll(arg0);
     }
 
+    /*
     public String getRootIfSingleton() {
         return rootForThisFragset;
     }
@@ -83,17 +83,18 @@ public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNo
 
         return numRoots == 1;
     }
+    */
 
     private static final long serialVersionUID = 1533989291501267385L;
 
-
+    // override
     public Set<String> getNodes() {
-        return this;
+        return nodes;
     }
 
 
     public String toString(Set<String> roots) {
-        Set<String> s = new HashSet<String>(this);
+        Set<String> s = new HashSet<String>(nodes);
         s.retainAll(roots);
         return s.toString();
     }
@@ -102,5 +103,17 @@ public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNo
     public void addNode(String node) {
         add(node);
     }
+
+    @Deprecated
+    public Iterator<String> iterator() {
+        return nodes.iterator();
+    }
+
+    @Deprecated
+    public int size() {
+        return nodes.size();
+    }
+
+
 
 }

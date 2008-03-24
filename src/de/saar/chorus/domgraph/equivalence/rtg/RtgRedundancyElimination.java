@@ -13,6 +13,7 @@ import java.util.Set;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
@@ -266,6 +267,12 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         }
 
         return ret;
+    }
+
+
+    @Override
+    public SplitComputer<QuantifierMarkedNonterminal> provideSplitComputer(DomGraph graph) {
+        return new QuantifierMarkedNonterminalSplitComputer(graph);
     }
 
 }

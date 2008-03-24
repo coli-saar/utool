@@ -275,13 +275,13 @@ public class FormatManager {
 				List<Set<String>> x = new ArrayList<Set<String>>();
 
 				boolean firstsubgraph = true;
-				for (Set<String> wcc : split.getWccs(hole)) {
+				for (SubgraphNonterminal wcc : split.getWccs(hole)) {
 					if(firstsubgraph) {
 						firstsubgraph = false;
 					} else {
 						htmlsplit.append(", ");
 					}
-					Set<String> copy = new HashSet<String>(wcc);
+					Set<String> copy = new HashSet<String>(wcc.getNodes());
 					copy.retainAll(roots);
 					htmlsplit.append("<font color=\"#" +
 							Integer.toHexString(subgraphcolors[subgraphcolorindex].getRGB()).substring(2)

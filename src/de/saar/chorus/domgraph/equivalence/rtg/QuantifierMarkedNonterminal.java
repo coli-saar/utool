@@ -83,6 +83,6 @@ public class QuantifierMarkedNonterminal implements GraphBasedNonterminal {
 
 
     public void addNode(String node) {
-        subgraph.add(node);
+        subgraph.addNode(node);
     }
 }

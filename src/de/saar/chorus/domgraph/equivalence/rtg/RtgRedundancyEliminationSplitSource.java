@@ -15,11 +15,13 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 
 public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierMarkedNonterminal> {
     private final RtgRedundancyElimination elim;
+    SplitComputer<QuantifierMarkedNonterminal> sc ;
 
     public RtgRedundancyEliminationSplitSource(RtgRedundancyElimination elim, DomGraph graph) {
         super(graph);
 
         this.elim = elim;
+        sc = new QuantifierMarkedNonterminalSplitComputer(graph);
     }
 
     @Override
@@ -29,7 +31,6 @@ public class RtgRedundancyEliminationSplitSource extends SplitSource<QuantifierM
 
     @Override
     protected Iterator<Split<QuantifierMarkedNonterminal>> computeSplits(QuantifierMarkedNonterminal subgraph) throws UnsolvableSubgraphException {
-        SplitComputer<QuantifierMarkedNonterminal> sc = new QuantifierMarkedNonterminalSplitComputer(graph);
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
         List<Split<QuantifierMarkedNonterminal>> allSplits = new ArrayList<Split<QuantifierMarkedNonterminal>>();
 

@@ -182,7 +182,7 @@ class SplitComputerTest  {
 		assert new HashSet(split.getAllDominators()).equals(wccs.keySet());
 		
 		for( dominator in wccs.keySet() ) {
-			assert isWccListEqual(wccs.get(dominator), split.getWccs(dominator));
+			assert isWccListEqual(wccs.get(dominator), split.getWccs(dominator)) :  ("wccs = " + wccs.get(dominator) + ", split = " + split.getWccs(dominator));
 		}
 		
 		assert split.getSubstitution().equals(substitution);
@@ -198,6 +198,7 @@ class SplitComputerTest  {
 	}
 
 	private boolean isWccListEqual(Collection gold, List result) {
-		return new HashSet(gold.collect { new HashSet(it) }).equals(new HashSet(result));
+		return new HashSet(gold.collect { new HashSet(it) }).
+		    equals(new HashSet(result.collect { it.getNodes() }));
 	}
 }

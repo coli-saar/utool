@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
+import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -72,7 +74,7 @@ public class IndividualRedundancyElimination extends RedundancyElimination<Subgr
 
         // compute rootsToWccs
         for( SubgraphNonterminal wcc : split.getAllSubgraphs() ) {
-            for( String root : wcc ) {
+            for( String root : wcc.getNodes() ) {
                 rootsToWccs.put(root, wcc);
             }
         }
@@ -89,7 +91,7 @@ public class IndividualRedundancyElimination extends RedundancyElimination<Subgr
                     continue;
                 }
 
-                for( String node : wcc ) {
+                for( String node : wcc.getNodes() ) {
                     if( allRoots.contains(node) && !root.equals(node) ) {
                         if( isPossibleDominator(node, root)) {
                             if( !isPermutable(root, node)) {
@@ -105,5 +107,10 @@ public class IndividualRedundancyElimination extends RedundancyElimination<Subgr
         }
 
         return false;
+    }
+
+    @Override
+    public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
+        return new SubgraphSplitComputer(graph);
     }
 }

@@ -16,8 +16,10 @@ import java.util.Set;
 import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -55,7 +57,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public abstract class RedundancyElimination<E> {
+public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
     protected DomGraph graph; // original graph
     protected DomGraph compact; // compact version of the graph
     protected NodeLabels labels;
@@ -190,6 +192,8 @@ public abstract class RedundancyElimination<E> {
      * @return a list of irredundant splits
      */
     abstract public List<Split<E>> getIrredundantSplits(E subgraph, List<Split<E>> allSplits);
+
+    abstract public SplitComputer<E> provideSplitComputer(DomGraph graph);
 
 
     /*
