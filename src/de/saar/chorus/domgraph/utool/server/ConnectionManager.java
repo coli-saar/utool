@@ -257,7 +257,7 @@ public class ConnectionManager {
     		System.err.println("Warming up the server (" + PASSES + " passes) ... ");
 
     		for( int i = 0; i < PASSES; i++ ) {
-    			Chart chart = new Chart();
+    			Chart chart = new Chart(labels);
     			System.err.println("  - pass " + (i+1));
 
     			ChartSolver.solve(graph, chart);

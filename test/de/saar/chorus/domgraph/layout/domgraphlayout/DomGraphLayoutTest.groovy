@@ -12,8 +12,11 @@ import java.util.*;
 
 import de.saar.testingtools.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-class DomGraphLayoutTest extends GroovyTestCase {
+class DomGraphLayoutTest  {
 	private DomGraph graph;
     private NodeLabels labels;
     
@@ -21,6 +24,7 @@ class DomGraphLayoutTest extends GroovyTestCase {
     private DomGraphLayout layout;
     private LayoutOptions options;
     
+    @Before
     public void setUp() {
     	graph = new DomGraph();
     	labels = new NodeLabels();
@@ -29,6 +33,7 @@ class DomGraphLayoutTest extends GroovyTestCase {
     	options = new LayoutOptions(LayoutOptions.LabelType.BOTH, true);
     }
     
+    @Test
     public void testDummy() {
     	assert true;
     }

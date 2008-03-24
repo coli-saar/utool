@@ -5,12 +5,16 @@ import de.saar.chorus.domgraph.graph.*;
 
 import de.saar.testingtools.*;
 
-class ChainTest extends GroovyTestCase {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+class ChainTest {
 	 private InputCodec codec;
      private DomGraph graph;
      private NodeLabels labels;
      
-     // @Configuration(beforeTestMethod = true)
+     @Before
      public void setUp() {
          codec = new Chain();
          graph = new DomGraph();
@@ -18,10 +22,12 @@ class ChainTest extends GroovyTestCase {
      }
      
      // reader construction
+     @Test
      public void testOverridenReaderConstruction() throws Exception {
          assert codec.getReaderForSpecification("3").getClass() == StringReader.class;
      }
      
+     @Test
      public void testReaderCorrectContents() throws Exception {
          Reader r = codec.getReaderForSpecification("-32aa7");
          StringBuffer buf = new StringBuffer();
@@ -36,21 +42,25 @@ class ChainTest extends GroovyTestCase {
      
      
      // argument parsing
+     @Test
      public void testNonNumericArgument() throws Exception {
     	 TestingTools.expectException(ParserException,
     			 { codec.decode(codec.getReaderForSpecification("xyzzy"), graph, labels) })
      }
      
+     @Test
      public void testEmptyArgument() throws Exception {
     	 TestingTools.expectException(ParserException,
     			 { codec.decode(codec.getReaderForSpecification(""), graph, labels) })
      }
      
+     @Test
      public void testNegativeArgument() throws Exception {
     	 TestingTools.expectException(MalformedDomgraphException,
 				{ codec.decode(codec.getReaderForSpecification("-1"), graph, labels) })
      }
 
+     @Test
      public void testZeroArgument() throws Exception {
     	 TestingTools.expectException(MalformedDomgraphException, 
 				{ codec.decode(codec.getReaderForSpecification("0"), graph, labels) })
@@ -58,7 +68,7 @@ class ChainTest extends GroovyTestCase {
 
      
      // generates correct graph and labels
-     
+     @Test
      public void testChain3correctness() throws Exception {
          DomGraph goldGraph = new DomGraph();
          NodeLabels goldLabels = new NodeLabels();

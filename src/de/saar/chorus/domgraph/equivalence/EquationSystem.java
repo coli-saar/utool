@@ -1,8 +1,8 @@
 /*
  * @(#)Equations.java created 06.02.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.equivalence;
@@ -27,43 +27,93 @@ import org.xml.sax.helpers.DefaultHandler;
  * A representation for a term equation system. Such an equation
  * system can be used as input for the redundancy elimination
  * algorithm.
- * 
+ *
  * @author Alexander Koller
  *
  */
 public class EquationSystem extends DefaultHandler {
-    private Collection<Equation> equations;
-    private Collection<FragmentWithHole> wildcards;
-    
+    private final Collection<Equation> equations;
+    private final Collection<FragmentWithHole> wildcards;
+
     // for XML parsing
     private List<FragmentWithHole> currentEquivalenceGroup;
     private FragmentWithHole currentEquivalencePartner;
-    
+
     public EquationSystem() {
         super();
-        
+
         equations = new HashSet<Equation>();
         wildcards = new HashSet<FragmentWithHole>();
-        
+
         currentEquivalenceGroup = null;
         currentEquivalencePartner = null;
-        
+
     }
-    
+
+    public Collection<Integer> getIndicesForLabel(String label) {
+        Collection<Integer> ret = new HashSet<Integer>();
+
+        for( Equation eq : equations ) {
+            if( eq.getQ1().getRootLabel().equals(label)) {
+                ret.add(eq.getQ1().getHoleIndex());
+            }
+        }
+
+        for( FragmentWithHole fwh : wildcards ) {
+            if( fwh.getRootLabel().equals(label)) {
+                ret.add(fwh.getHoleIndex());
+            }
+        }
+
+        return ret;
+    }
+
+    public boolean isWildcard(String label, int holeindex) {
+        return wildcards.contains(new FragmentWithHole(label, holeindex));
+    }
+
+    public boolean isWildcardLabel(String label) {
+        //System.err.print("[wc " + label + ": ");
+        for( FragmentWithHole w : wildcards ) {
+            if( w.getRootLabel().equals(label)) {
+                //System.err.print("yes]");
+                return true;
+            }
+        }
+
+        //System.err.print("no]");
+        return false;
+    }
+
+    public Collection<String> getPermutingLabels(String label, int holeindex) {
+        Collection<String> ret = new ArrayList<String>();
+        FragmentWithHole it = new FragmentWithHole(label,holeindex);
+
+        for( Equation eq : equations ) {
+            if( eq.getQ1().equals(it) ) {
+                ret.add(eq.getQ2().getRootLabel());
+            }
+        }
+
+
+        return ret;
+    }
+
+
     /**
      * Add an equation between two label-hole pairs.
-     * 
+     *
      * @param fh1 a label-hole pair
      * @param fh2 another label-hole pair
      */
     public void add(FragmentWithHole fh1, FragmentWithHole fh2) {
         equations.add(new Equation(fh1,fh2));
     }
-    
+
     /**
      * Add equations between any two members of a collection
      * of label-hole pairs.
-     * 
+     *
      * @param fhs a collection of label-hole pairs
      */
     public void addEquivalenceClass(Collection<FragmentWithHole> fhs) {
@@ -73,41 +123,43 @@ public class EquationSystem extends DefaultHandler {
             }
         }
     }
-    
+
     /**
      * Remove all equations from this equation system.
      */
     public void clear() {
         equations.clear();
     }
-    
+
     /**
      * Checks whether a given equation is contained in the
-     * equation system. 
-     * 
+     * equation system.
+     *
      * @param eq an equation
      * @return true iff this equation is contained in this equation system.
      */
     public boolean contains(Equation eq) {
-        return wildcards.contains(eq.getQ1())
-        || wildcards.contains(eq.getQ2())
-        || equations.contains(eq);
+        return
+        // Wildcards -- no longer necessary for RTGE
+        // wildcards.contains(eq.getQ1()) || wildcards.contains(eq.getQ2())
+        // ||
+        equations.contains(eq);
     }
-    
+
     /**
-     * Returns the number of equations. 
-     * 
+     * Returns the number of equations.
+     *
      * @return the number of equations
      */
     public int size() {
         return equations.size();
     }
-    
+
     /**
      * Reads an equation system from an XML specification. The specification
      * can use the following constructions:
      * <ul>
-     * <li> Define a group of label-hole pairs that are equivalent with 
+     * <li> Define a group of label-hole pairs that are equivalent with
      *      each other:<br/>
      *      {@code <equivalencegroup>}<br/>
      *       &nbsp; {@code <quantifier label="a" hole="0" />} <br/>
@@ -117,8 +169,8 @@ public class EquationSystem extends DefaultHandler {
      * <i>everything</i> (useful for e.g. proper names):<br/>
      *      {@code <permutesWithEverything label="proper_q" hole="1" />}
      * </ul>
-     * 
-     * 
+     *
+     *
      * @param reader a reader from which the specification is read
      * @throws ParserConfigurationException if an error occurred while
      * configuring the XML parser
@@ -126,12 +178,13 @@ public class EquationSystem extends DefaultHandler {
      * @throws IOException if an I/O error occurred while reading
      * from the reader.
      */
-    public void read(Reader reader) 
+    public void read(Reader reader)
     throws ParserConfigurationException, SAXException, IOException {
         SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
         saxParser.parse( new InputSource(reader), this );
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if( qName.equals("equivalencegroup")) {
             currentEquivalenceGroup = new ArrayList<FragmentWithHole>();
@@ -143,14 +196,14 @@ public class EquationSystem extends DefaultHandler {
             int hole = Integer.parseInt(attributes.getValue("hole"));
             FragmentWithHole fh =
                 new FragmentWithHole(attributes.getValue("label"), hole);
-            
+
             if( currentEquivalencePartner != null ) {
                 add(currentEquivalencePartner, fh);
             } else if( currentEquivalenceGroup != null ) {
                 currentEquivalenceGroup.add(fh);
             }
         } else if( qName.equals("permutesWithEverything")) {
-            FragmentWithHole frag = 
+            FragmentWithHole frag =
                 new FragmentWithHole(
                         attributes.getValue("label"),
                         Integer.parseInt(attributes.getValue("hole")));
@@ -158,6 +211,7 @@ public class EquationSystem extends DefaultHandler {
         }
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if( qName.equals("equivalencegroup")) {
             addEquivalenceClass(currentEquivalenceGroup);
@@ -169,9 +223,10 @@ public class EquationSystem extends DefaultHandler {
 
     /**
      * Returns a string representation of this equation system.
-     * 
+     *
      * @return a string representation
      */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
         for( Equation eq : equations ) {
@@ -179,5 +234,5 @@ public class EquationSystem extends DefaultHandler {
         }
         return buf.toString();
     }
-    
+
 }

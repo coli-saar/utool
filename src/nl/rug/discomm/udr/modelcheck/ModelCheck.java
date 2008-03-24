@@ -16,7 +16,7 @@ public class ModelCheck {
 			return false;
 		} else {
 			try {
-			return ChartSolver.solve(dg, new Chart(), new ModelSplitSource(dg,dgl,sf,sfl));
+			return ChartSolver.solve(dg, new Chart(dgl), new ModelSplitSource(dg,dgl,sf,sfl));
 			} catch(SolverNotApplicableException e) {
 				e.printStackTrace();
 				return false;

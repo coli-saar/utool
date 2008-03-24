@@ -61,7 +61,7 @@ public class TestingTools {
 		assert ChartSolver.solve(preprocessed, chart) == true;
 		
 		BigInteger predictedSolvedForms = chart.countSolvedForms();
-		assert predictedSolvedForms.equals(new BigInteger(goldSolvedForms.size())) : "predicated " + predictedSolvedForms + " solved forms";
+		assert predictedSolvedForms == goldSolvedForms.size() : "predicated " + predictedSolvedForms + " solved forms";
 		
 		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
 		List sfs = collectIteratorValues(sfi);
@@ -87,7 +87,7 @@ public class TestingTools {
 	//    sf       -> [List(domedge), substitution)
 	//    domedge  -> [source,target]
 	//    substitution -> map(string->string)
-	private static boolean solvedFormsEqual(List result, List gold) {
+	public static boolean solvedFormsEqual(List result, List gold) {
 		List goldSolvedFormSpecs = gold.collect { sf ->
 			List domEdges = sf.get(0).collect { new DomEdge(it.get(0), it.get(1)) };
 			Map substitution = sf.get(1);

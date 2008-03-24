@@ -8,15 +8,19 @@ import java.util.*;
 
 import de.saar.testingtools.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-class DomGraphTest extends GroovyTestCase {
+
+class DomGraphTest  {
 	 
 	        private DomGraph graph;
 	        private NodeLabels labels;
 	        private InputCodec ozcodec;
 	        private Chart chart;
 	        
-	        // @Configuration(beforeTestMethod = true)
+	        @Before
 	        public void setUp() {
 	            ozcodec = new DomconOzInputCodec();
 	            graph = new DomGraph();
@@ -25,6 +29,7 @@ class DomGraphTest extends GroovyTestCase {
 	        }
 
 	        // unrestricted wccs, 1 wcc
+	        @Test
 	        public void testWccsTest1() throws Exception {
 	             ozcodec.decode(
 	                     new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
@@ -36,6 +41,7 @@ class DomGraphTest extends GroovyTestCase {
 	        }
 
 	        // unrestricted wccs, 2 wccs
+	        @Test
 	        public void testWccsTest2() throws Exception {
 	            ozcodec.decode(
 	                    new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
@@ -47,6 +53,7 @@ class DomGraphTest extends GroovyTestCase {
 	       }
 	        
 	        // restricted wccs, 2 wccs
+	        @Test
 	        public void testRestrictedWccs2() throws Exception {
 	           ozcodec.decode(
 	                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
@@ -58,6 +65,7 @@ class DomGraphTest extends GroovyTestCase {
 	       }
 	       
 	        // restricted wccs (deletes second wcc -> 1 wcc left)
+	        @Test
 	        public void testRestrictedWccs1() throws Exception {
 	           ozcodec.decode(
 	                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
@@ -69,6 +77,7 @@ class DomGraphTest extends GroovyTestCase {
 	       }
 
 	        // wccs restricted to empty node set -> empty wcc set
+	        @Test
 	        public void testRestrictedWccs0() throws Exception {
 	           ozcodec.decode(
 	                   new StringReader("[label(a f(b c)) dom(b d) dom(e a) label(c g(f)) " 
@@ -79,6 +88,7 @@ class DomGraphTest extends GroovyTestCase {
 	       }
 
 	        // In an earlier version, trivial edges like these were not removed correctly.
+	        @Test
 	        public void testPreprocessTrivialEdge() {
 	        	decode("[label(x f(y)) label(y g(z)) dom(x z)]");
 	        	DomGraph graph2 = graph.preprocess();
@@ -87,17 +97,20 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        
 	        /*********** test cases for makeSolvedForm ***************/
+	        @Test
 	        public void testNormalMakeSolvedForms() {
 	        	compareSolvedForms("[label(x f(x1)) dom(x1 y) label(y a)]",
 	        			["[label(x f(x1)) dom(x1 y) label(y a)]"]);
 	        }
 	        
+	        @Test
 	        public void testCrossEdgeMakeSolvedForms() {
 	        	compareSolvedForms("[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]",
 	        			["[label(x f(x1)) label(y g(y1)) label(z a) dom(y1 x) dom(x1 z)]",
 	        			 "[label(x f(y)) label(y g(y1)) label(z a) dom(y1 z)]"]);
 	        }
 	        
+	        @Test
 	        public void testThreeUpperFragments() {
 	        	compareSolvedForms("[label(x f(x1)) label(y g(y1)) label(z h(z1)) label(w a) dom(x y1) dom(y x1) dom(z y1) dom(y z1) dom(x1 w) dom(y1 w) dom(z1 w)]",
 	        			["[label(x f(y)) label(y g(z)) label(z h(z1)) label(w a) dom(z1 w)]",
@@ -106,18 +119,21 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        
 	        /*********** test cases for make(Weakly)NormalBackbone ***********/
+	        @Test
 	        public void testBackboneOfNormalGraph() {
 	        	backboneTest("[label(x f(y)) dom(y z) label(z a)]", 
 	        			"[label(x f(y)) dom(y z) label(z a)]", 
 	        			"[label(x f(y)) dom(y z) label(z a)]");
 	        }
 
+	        @Test
 	        public void testBackboneOfWeaklyNormalGraph() {
 	        	backboneTest("[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b)]",
 	        			"[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b)]",
 	        			"[label(x f(y)) dom(y z) label(z a) label(w b)]");
 	        }
 
+	        @Test
 	        public void testBackboneOfCrossEdgeGraph() {
 	        	backboneTest("[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b) label(x1 g(x2)) dom(x1 y)]",
 	        			"[label(x f(y)) dom(y z) label(z a) dom(x w) label(w b) label(x1 g(x2)) ]",
@@ -126,35 +142,68 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        
 	        /*********** test cases for graph classification ***********/
+	        @Test
 	        public void testWeaklyNormalEmptyTopFragment() {
 	        	decode("[dom(x y) dom(x z) label(y a) label(z a)]");
 	        	assert !graph.isWeaklyNormal();
 	        }
 	        
+	        @Test
 	        public void testWeaklyNormalEmptyFragment() {
 	        	decode("[label(u f(v)) dom(v x) dom(x y) label(y a)]");
 	        	assert !graph.isWeaklyNormal();
 	        }
 	        
+	        @Test
 	        public void testWeaklyNormalHoleHoleEdge() {
 	        	decode("[label(x f(x1)) label(y g(y1)) dom(x1 y1)]");
 	        	assert graph.isWeaklyNormal();
 	        }
 	        
+	        @Test
 	        public void testWeaklyNormalHoleRootEdge() {
 	        	decode("[label(x f(x1)) label(y g(y1)) dom(x1 y)]");
 	        	assert graph.isWeaklyNormal();
 	        }
 	        
+	        @Test
 	        public void testWeaklyNormalCrossEdge() {
 	        	decode("[label(x f(x1)) label(y g(y1)) dom(x y1)]");
 	        	assert !graph.isWeaklyNormal();
+	        }
+	        
+	        @Test
+	        public void testWeaklyNormalTwoIncoming() {
+	            decode("[label(x f(y y))]");
+	            assert !graph.isWeaklyNormal();
+	        }
+	        
+	        @Test
+	        public void testWeaklyNormalCycle1() {
+	            decode("[label(x f(y)) label(y g(z)) dom(z x)]");
+	            assert graph.isWeaklyNormal();
+	        }
+	        
+	        @Test
+	        public void testWeaklyNormalCycle2() {
+	            decode("[label(x f(y)) label(y g(z)) label(z h(x))]");
+	            assert !graph.isWeaklyNormal();
+	        }
+	        
+	        @Test
+	        public void testOneFragment() {
+	            decode("[label(x f(y z))]");
+	            assert graph.isNormal();
+	            assert graph.isWeaklyNormal();
+	            assert graph.isHypernormallyConnected();
+	            assert !graph.isLeafLabelled();
 	        }
 	        
 	        
 
 	        // In the old hnc test for unsolvable graphs (isHncSlow), the order in which dom edges
 	        // were visited could prevent correct recognition of hnc (#222).
+	        @Test
 	        public void testUnsolvableHnc1() {
 	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]");
 	        	assert graph.isHypernormallyConnected();
@@ -162,6 +211,7 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        // In the old hnc test for unsolvable graphs (isHncSlow), the order in which dom edges
 	        // were visited could prevent correct recognition of hnc (#222).
+	        @Test
 	        public void testUnsolvableHnc2() {
 	        	decode("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n2 n3)]");
 	        	assert graph.isHypernormallyConnected();
@@ -169,11 +219,13 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        // This graph used to crash the hnc test because it runs into an endless loop trying to
 	        // compute a normal backbone which is normal (ticket #270).
+	        @Test
 	        public void testNonNormalizableHnc() {
 	        	decode("[label(x f(y)) label(y g(x))]");
 	        	assert !graph.isHypernormallyConnected();
 	        }
 	        
+	        @Test
 	        public void testNotHnc1() {
 	        	decode("[label(n0 f(n1 n2 n2b)) label(n3 a) label(n4 b) label(n5 c) dom(n1 n3) dom(n1 n4) dom(n2 n5) dom(n2b n5)]");
 	        	assert !graph.isHypernormallyConnected();
@@ -181,6 +233,7 @@ class DomGraphTest extends GroovyTestCase {
 	        
 	        // This graph is a counterexample for a dfs-based hnc test which marks a (node,edge) pair as
 	        // black and never uses it again if the DFS returned from that node via that adjacent edge.
+	        @Test
 	        public void testUnsolvableHnc3() {
 	        	decode("[label(x f(x2 x3)) label(y g(y1)) label(z f(z1)) label(v a) label(w b) dom(x2 y) dom(x2 z) dom(x3 z) dom(y1 v) dom(z1 v) dom(z1 w)]");
 	        	assert graph.isHypernormallyConnected();
@@ -188,23 +241,27 @@ class DomGraphTest extends GroovyTestCase {
 	        
 			// This graph is a counterexample for a dfs-based hnc test which marks a (node,edge) pair as
 	        // black and never uses it again if the DFS returned from that node via that adjacent edge.
+	        @Test
 	        public void testUnsolvableHnc4() {
 	        	decode("[label(x f(x2 x3)) label(y g(y1)) label(z f(z1)) label(v a) label(w b) dom(x2 y) dom(x2 z) dom(x3 z) dom(z1 v) dom(y1 v) dom(z1 w)]");
 	        	assert graph.isHypernormallyConnected();
 	        }
 	        
+			@Test
 	        public void testEmptyFragment() {
 	    		// a graph with an empty fragment
 	    		decode("[label(x f(x1)) dom(x1 x2) dom(x2 y) label(y a)]");
 	    		assert graph.hasEmptyFragments();
 	    	}
 	    	
+			@Test
 	    	public void testWellFormed() {
 	    		// a non-well-formed graph in the sense of Bodirsky et al. 04
 	    		decode("[label(x a) label(y b) dom(x y)]");
 	    		assert !graph.isWellFormed();
 	    	}
 	    	
+			@Test
 	    	public void testWellFormed2() {
 	    		// a non-well-formed graph in the sense of Bodirsky et al. 04
 	    		decode("[label(x f(x1 x2)) label(x1 a1) label(x2 a2) label(y b) dom(x y)]");
@@ -213,6 +270,7 @@ class DomGraphTest extends GroovyTestCase {
 	    	
 			// ensure that the output codec refuses to encode graphs whose labelling information
 	    	// is inconsistent with the NodeLabels object (see #169).
+	    	@Test
 	    	public void testNonWellLabeled1() {
 	    		graph.addNode("x", new NodeData(NodeType.LABELLED));
 	    		graph.addNode("y", new NodeData(NodeType.LABELLED));
@@ -228,6 +286,7 @@ class DomGraphTest extends GroovyTestCase {
 	    		
 	    	}
 	    	
+			@Test
 	    	public void testNonWellLabeled2() {
 	    		graph.addNode("x", new NodeData(NodeType.UNLABELLED));
 	    		graph.addNode("y", new NodeData(NodeType.UNLABELLED));
@@ -242,6 +301,7 @@ class DomGraphTest extends GroovyTestCase {
 	    		assert !graph.isLabellingConsistent(labels);
 	    	}
 	    	
+			@Test
 	    	public void testNonWellLabeled3() {
 	    		graph.addNode("x", new NodeData(NodeType.LABELLED));
 	    		graph.addNode("y", new NodeData(NodeType.UNLABELLED));

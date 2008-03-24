@@ -23,6 +23,7 @@ import org._3pq.jgrapht.graph.DirectedMultigraph;
 
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 
 /**
  * A dominance graph. Dominance graphs are directed graphs. Nodes are either
@@ -1051,12 +1052,14 @@ public class DomGraph implements Cloneable {
                 // System.err.println(node + " has two in-tree-edges!");
                 return cacheResult("isWeaklyNormal", false);
             }
-
-            // no cycles via tree edges
-            if( hasCycle(null, EdgeType.TREE) ) {
-                return cacheResult("isWeaklyNormal", false);
-            }
         }
+
+
+        // no cycles via tree edges
+        if( hasCycle(null, EdgeType.TREE) ) {
+            return cacheResult("isWeaklyNormal", false);
+        }
+
 
         for( Edge edge : getAllEdges() ) {
             if( getData(edge).getType() == EdgeType.DOMINANCE ) {
@@ -1205,10 +1208,20 @@ public class DomGraph implements Cloneable {
             } else {
                 return cacheResult("isHypernormallyConnected", false);
             }
-        } else if( OneSplitSource.canSolveGraph(this) ) {
-            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
         } else {
-            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
+            boolean isSolvable = false;
+
+            try {
+                isSolvable = OneSplitSource.isGraphSolvable(this);
+            } catch( SolverNotApplicableException e ) {
+                isSolvable = false;
+            }
+
+            if( isSolvable ) {
+                return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
+            } else {
+                return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
+            }
         }
     }
 
@@ -1599,6 +1612,7 @@ public class DomGraph implements Cloneable {
      *         doesn't visit avoidThese.
      */
     public boolean isHypernormallyReachable(String source, String target, Set<String> avoidThese) {
+        //System.err.println("call: ishnr " + source + " to " + target + ", avoiding " + avoidThese);
         return isHnReachable(source, target, avoidThese, false);
     }
 

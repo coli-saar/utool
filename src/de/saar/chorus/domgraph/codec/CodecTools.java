@@ -7,6 +7,9 @@
 
 package de.saar.chorus.domgraph.codec;
 
+
+import java.util.regex.Pattern;
+
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -32,10 +35,9 @@ public class CodecTools {
      * @return the string possibly surrounded with quotes
      */
     public static String atomify(String label) {
-    	// check first character
-    	if (label.charAt(0) < 'a' || label.charAt(0) > 'z') {
-            return ("'" + label + "'");
-        }
+    	// check first character    	
+    	if (label.charAt(0) < 'a' || label.charAt(0) > 'z')
+    		return ("'" + label.replaceAll(Pattern.quote("'"), "\\\\'") + "'");
 
     	// check rest
     	for (int i = 1; i < label.length(); ++i) {
@@ -44,9 +46,8 @@ public class CodecTools {
     		if ((label.charAt(i) < 'a' || label.charAt(i) > 'z') &&
     			(label.charAt(i) < 'A' || label.charAt(i) > 'Z') &&
     			(label.charAt(i) < '0' || label.charAt(i) > '9') &&
-    			(label.charAt(i) != '_')) {
-                return ("'" + label + "'");
-            }
+    			(label.charAt(i) != '_'))
+    			return ("\'" + label.replaceAll(Pattern.quote("'"), "\\\\'") + "\'");    		
     	}
      	return label;
     }
@@ -61,7 +62,7 @@ public class CodecTools {
      * Prolog variable name if it contains symbols that are not
      * valid in Prolog variable names.
      *
-     * @param label a straing
+     * @param label a String
      * @return the string, possibly prefixed with an underscore
      */
     public static String varify(String label) {

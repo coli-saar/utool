@@ -1,8 +1,8 @@
 /*
  * @(#)PermutabilityRedundancyElimination.java created 10.02.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.equivalence;
@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
+import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
+import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -21,15 +24,15 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * which checks whether a subgraph has a single permutable split.
  * This is the bases of the Koller & Thater ICoS 06 submission.
  * If a subgraph has a permutable split, then all other splits
- * are redundant in the sense of the 
+ * are redundant in the sense of the
  * {@link de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination}
  * class, i.e. the redundancy elimination performed by this class
  * is a bit weaker than that of <code>IndividualRedundancyElimination</code>.
- * 
+ *
  * @author Alexander Koller
  *
  */
-public class PermutabilityRedundancyElimination extends RedundancyElimination {
+public class PermutabilityRedundancyElimination extends RedundancyElimination<SubgraphNonterminal> {
 
     public PermutabilityRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
@@ -43,32 +46,33 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination {
      * with all other fragments), then this method returns a singleton
      * list containing this split. Otherwise, it returns the complete
      * list of splits for this subgraph.
-     * 
+     *
      * @param subgraph a subgraph
      * @param splits the complete list of splits for this subgraph
      * @return a list of irredundant splits
      */
-    public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> splits) {
-        List<Split> ret = new ArrayList<Split>(1);
-        
-        for( Split split : splits ) {
+    @Override
+    public List<Split<SubgraphNonterminal>> getIrredundantSplits(SubgraphNonterminal subgraph, List<Split<SubgraphNonterminal>> splits) {
+        List<Split<SubgraphNonterminal>> ret = new ArrayList<Split<SubgraphNonterminal>>(1);
+
+        for( Split<SubgraphNonterminal> split : splits ) {
             if( isPermutableSplit(split, subgraph)) {
                 // i.e. the split with this index is permutable => eliminate all others
                 ret.add(split);
                 return ret;
             }
         }
-        
+
         return splits;
     }
 
 
-    private boolean isPermutableSplit(Split s, Set<String> subgraph) {
+    private boolean isPermutableSplit(Split<SubgraphNonterminal> s, SubgraphNonterminal subgraph) {
         String splitRoot = s.getRootFragment();
-        
+
         //System.err.println("\nCheck split " + s + " for permutability.");
-        
-        for( String root : subgraph ) {
+
+        for( String root : subgraph.getNodes() ) {
             if( graph.isRoot(root) &&  !root.equals(splitRoot) ) {
                 if( isPossibleDominator(root, splitRoot)) {
                     if( !isPermutable(root, splitRoot) ) {
@@ -82,8 +86,24 @@ public class PermutabilityRedundancyElimination extends RedundancyElimination {
                 }
             }
         }
-        
+
         //System.err.println("  -- split is permutable!");
         return true;
+    }
+
+
+    @Override
+    public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
+        return new SubgraphSplitComputer(graph);
+    }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public boolean requiresReduce() {
+        return false;
     }
 }

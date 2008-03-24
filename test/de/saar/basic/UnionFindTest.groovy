@@ -1,7 +1,11 @@
 package de.saar.basic;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-class UnionFindTest extends GroovyTestCase {
+class UnionFindTest  {
+    @Test
 	public void test1() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
@@ -12,6 +16,7 @@ class UnionFindTest extends GroovyTestCase {
 	    assert uf.find("a") == uf.find("c");
 	}
     
+    @Test
 	public void test2() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
@@ -22,6 +27,7 @@ class UnionFindTest extends GroovyTestCase {
 	    assert uf.find("a") == uf.find("c");
 	}
 
+    @Test
 	public void test3() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
@@ -32,6 +38,7 @@ class UnionFindTest extends GroovyTestCase {
 	    assert uf.find("a") == uf.find("c");
 	}
 
+    @Test
 	public void test4() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
@@ -42,6 +49,7 @@ class UnionFindTest extends GroovyTestCase {
 	    assert uf.find("a") == uf.find("c");
 	}
 	
+    @Test
 	public void testNotNull() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
@@ -54,6 +62,7 @@ class UnionFindTest extends GroovyTestCase {
 	    assert uf.find("d") != null;
 	}
 	
+    @Test
 	public void testInitialState() {
 	    UnionFind uf = new UnionFind(["a", "b", "c", "d"]);
 	    
