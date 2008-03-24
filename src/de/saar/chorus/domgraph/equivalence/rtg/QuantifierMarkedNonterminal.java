@@ -32,31 +32,6 @@ public class QuantifierMarkedNonterminal implements GraphBasedNonterminal {
 
 
 
-
-    public String getRootIfSingleton() {
-        return rootForThisFragset;
-    }
-
-
-    public boolean isSingleton(Set<String> roots) {
-        int numRoots = 0;
-
-
-        for( String node : subgraph ) {
-            if( roots.contains(node) ) {
-                numRoots++;
-
-                if( numRoots > 1 ) {
-                    return false;
-                }
-
-                rootForThisFragset = node;
-            }
-        }
-
-        return numRoots == 1;
-    }
-
     @Override
     public String toString() {
         return previousQuantifier + "/" + subgraph;

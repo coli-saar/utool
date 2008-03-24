@@ -20,6 +20,26 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
+/**
+ * The redundancy elimination algorithm that we used in the ACL-08 paper.  For
+ * normal permutation rules (as described in the paper), this class does exactly
+ * what we said in the paper, except that it computes the intersection with the
+ * filter grammar "on the fly", without computing the filter grammar itself explicitly.<p>
+ *
+ * In addition, the implementation tries to handle wildcard quantifiers (declared
+ * as permutesWithEverything) intelligently: If some subgraph contains a permuting
+ * wildcard (that is, a free fragment that is labelled with a wildcard quantifier and
+ * connected to all its possible dominators by a wildcard hole), then the algorithm
+ * picks the smallest such permuting wildcard and discards all other splits.  This
+ * forces permuting wildcards to always have highest possible scope in subgraphs in
+ * which they are free.<p>
+ *
+ * This algorithm is not complete; some counterexamples are Rondane-Jul06 40, 90, 119.
+ * But it does well enough for now, and much better than the old algorithm.
+ *
+ * @author Alexander Koller
+ *
+ */
 public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMarkedNonterminal> {
     private final static boolean DEBUG = false;
 
@@ -113,29 +133,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         }
 
 
-        /*
-        System.err.println("#sfs after phase 1: " + out.countSolvedForms());
-
-
-        System.err.println("chart after phase 1: ");
-        System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
-*/
-
-        //System.err.println("Elimination done, new chart size is " + out.size());
-
-
         out.reduce();
-
-
-        /*
-        System.err.println("#sfs after phase 2: " + out.countSolvedForms());
-
-        System.err.println(ChartPresenter.chartOnlyRoots(out, graph));
-        System.err.println("--------------------------------------------------------------------------------\n\n");
-*/
-
-        //System.err.println("Reduction done, new chart size is " + out.size());
-
     }
 
     private List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, List<Split<SubgraphNonterminal>> splits, Set<String> roots) {
@@ -202,28 +200,6 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
         String root = split.getRootFragment();
 
-        /*
-        // wildcard-labeled nodes are forbidden if the wcc of the permuting hole
-        // contains another free fragment
-        if( wildcardLabeledNodes.containsKey(root)) {
-            for( int wildcardHoleIndex : wildcardLabeledNodes.get(root) ) {
-                String hole = compact.getChildren(root, EdgeType.TREE).get(wildcardHoleIndex);
-
-                for( Object wcc : split.getWccs(hole)) {
-                    for( String other : ((GraphBasedNonterminal) wcc).getNodes() ) {
-                        if( freeRoots.contains(other) ) {
-                            if(DEBUG) {
-                                System.err.print(" [wildcard] ");
-                            }
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-*/
-
-
         // if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
             if(DEBUG) {
@@ -251,9 +227,6 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         }
 
         // if the two quantifiers are permutable, then the split is not allowed
-        //System.err.print("[" + previousQuantifier + "," + split.getRootFragment() +
-           //     (isPermutable(previousQuantifier, split.getRootFragment()) ? "" : " not") +
-              //  " permutable]");
         if(DEBUG) {
             System.err.println("[perm: allowed=" + !isPermutable(previousQuantifier, split.getRootFragment()) + "] ");
         }
