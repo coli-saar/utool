@@ -138,7 +138,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         out.reduce();
     }
 
-    List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, Set<String> roots) {
+    private List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, Set<String> roots) {
         List<String> ret = new ArrayList<String>();
 
 
@@ -197,7 +197,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
     @SuppressWarnings("unchecked")
-    boolean allowedSplit(Split split, String previousQuantifier, Set<String> freeRoots) {
+    private boolean allowedSplit(Split split, String previousQuantifier, Set<String> freeRoots) {
         //System.err.print("Consider " + split + " below " + previousQuantifier + ": ");
 
         String root = split.getRootFragment();

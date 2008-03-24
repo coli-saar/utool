@@ -34,9 +34,19 @@ public class SubgraphNonterminal implements GraphBasedNonterminal {
         if( !changed ) {
             return previousHashcode;
         } else {
-            previousHashcode = super.hashCode();
+            previousHashcode = nodes.hashCode();
             changed = false;
             return previousHashcode;
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if( obj instanceof SubgraphNonterminal ) {
+            SubgraphNonterminal new_name = (SubgraphNonterminal) obj;
+            return nodes.equals(new_name.nodes);
+        } else {
+            return false;
         }
     }
 
@@ -59,31 +69,6 @@ public class SubgraphNonterminal implements GraphBasedNonterminal {
         return nodes.removeAll(arg0);
     }
 
-    /*
-    public String getRootIfSingleton() {
-        return rootForThisFragset;
-    }
-
-
-    public boolean isSingleton(Set<String> roots) {
-        int numRoots = 0;
-
-
-        for( String node : this ) {
-            if( roots.contains(node) ) {
-                numRoots++;
-
-                if( numRoots > 1 ) {
-                    return false;
-                }
-
-                rootForThisFragset = node;
-            }
-        }
-
-        return numRoots == 1;
-    }
-    */
 
     private static final long serialVersionUID = 1533989291501267385L;
 
