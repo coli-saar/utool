@@ -167,6 +167,8 @@ public class ChartSolver<E extends GraphBasedNonterminal> {
                 return false;
             }
         }
+
+        chart.recomputeSingletons();
         return true;
     }
 
@@ -209,11 +211,11 @@ public class ChartSolver<E extends GraphBasedNonterminal> {
 
         while( splits.hasNext() ) {
             Split<E> split = splits.next();
-            
+
             if( split.getAllDominators().isEmpty() ) {
             	chart.setFinal(subgraph);
             }
-            
+
             // iterate over wccs
             for( E wcc : split.getAllSubgraphs() ) {
                 if( !solve(wcc) ) {

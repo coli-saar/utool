@@ -50,7 +50,7 @@ public class ChartPresenter {
                         ret.append(whitespace.substring(0, sgs.length() + 4));
                     }
 
-                    ret.append(corSplit(split, roots) + "\n");
+                    ret.append(corSplit(split, roots, ch) + "\n");
                     toVisit.addAll(split.getAllSubgraphs());
                 }
 
@@ -68,9 +68,11 @@ public class ChartPresenter {
 
 
 
-    private static <E extends GraphBasedNonterminal> String corSplit(Split<E> split, Set<String> roots) {
+    private static <E extends GraphBasedNonterminal> String corSplit(Split<E> split, Set<String> roots, RegularTreeGrammar<E> ch) {
         StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
         Map<String,List<String>> map = new HashMap<String,List<String>>();
+
+        ret.append(" " + ch.getLabelForSplit(split));
 
         for( String hole : split.getAllDominators() ) {
             List<String> x = new ArrayList<String>();

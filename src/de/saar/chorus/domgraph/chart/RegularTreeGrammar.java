@@ -28,6 +28,8 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     protected List<E> toplevelSubgraphs;
     protected Set<E> finalStates;
 
+    protected Map<E,String> singletons;
+
 
     /**
      * The constructor.
@@ -39,6 +41,8 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         toplevelSubgraphs = new ArrayList<E>();
         size = 0;
         finalStates = new HashSet<E>();
+
+        singletons = new HashMap<E,String>();
     }
 
     /**
@@ -111,6 +115,30 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         return chart.keySet();
     }
 
+    /**
+     * Recomputes the singleton subgraphs (in RTG language: the preterminal
+     * nonterminals) for the RTG.  It is expected that this method is called
+     * whenever the RTG changes, and _before_ reduce() is called.
+     */
+    public void recomputeSingletons() {
+        singletons.clear();
+
+        for( E lhs : chart.keySet() ) {
+            for( Split<E> split : chart.get(lhs) ) {
+                if( split.getAllDominators().isEmpty() ) {
+                    singletons.put(lhs, split.getRootFragment());
+                }
+            }
+        }
+    }
+
+    public boolean isSingleton(E nt) {
+        return singletons.containsKey(nt);
+    }
+
+    public String getRootForSingleton(E nt) {
+        return singletons.get(nt);
+    }
 
 
     /**

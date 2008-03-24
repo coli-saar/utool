@@ -24,6 +24,20 @@ public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNo
 
 
 
+
+
+
+    @Override
+    public int hashCode() {
+        if( !changed ) {
+            return previousHashcode;
+        } else {
+            previousHashcode = super.hashCode();
+            changed = false;
+            return previousHashcode;
+        }
+    }
+
     @Override
     public boolean add(String e) {
         // TODO Auto-generated method stub
@@ -38,24 +52,6 @@ public class SubgraphNonterminal extends HashSet<String> implements GraphBasedNo
         return super.remove(o);
     }
 
-
-
-    @Override
-    public boolean equals(Object arg0) {
-        // TODO Auto-generated method stub
-        return super.equals(arg0);
-    }
-
-    @Override
-    public int hashCode() {
-        if( !changed ) {
-            return previousHashcode;
-        } else {
-            previousHashcode = super.hashCode();
-            changed = false;
-            return previousHashcode;
-        }
-    }
 
     @Override
     public boolean removeAll(Collection<?> arg0) {

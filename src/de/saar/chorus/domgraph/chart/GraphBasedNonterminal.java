@@ -6,8 +6,10 @@ public interface GraphBasedNonterminal extends Nonterminal {
 
     public boolean isEmpty();
 
+    /*
     public boolean isSingleton(Set<String> roots);
     public String getRootIfSingleton();
+    */
 
     public void addNode(String node);
     public Set<String> getNodes();

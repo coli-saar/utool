@@ -165,9 +165,11 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
 	}
 
 	private void addFragsetToAgendaAndAccu(E fragSet, String dominator, EnumerationStackEntry ese) {
-        if( fragSet.isSingleton(roots) ) {
+        //if( fragSet.isSingleton(roots) ) {
+	    if( chart.isSingleton(fragSet)) {
             // singleton fragsets: add directly to ese's domedge list
-            DomEdge newEdge = new DomEdge(dominator, fragSet.getRootIfSingleton());
+            //DomEdge newEdge = new DomEdge(dominator, fragSet.getRootIfSingleton());
+	        DomEdge newEdge = new DomEdge(dominator, chart.getRootForSingleton(fragSet));
             ese.addDomEdge(newEdge);
         } else {
             // larger fragsets: add to agenda
@@ -221,7 +223,8 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
 			topNode = agTop.getDominator();
 			topFragset = agTop.getFragmentSet();
 
-			if( !topFragset.isSingleton(roots) ) {
+			//if( !topFragset.isSingleton(roots) ) {
+			if( ! chart.isSingleton(topFragset) ) {
 				// if topFragset is a singleton, then it was a wcc of the entire graph
 				// that only contained a single fragment; hence we don't need to do anything here
 				List<Split<E>> sv = chart.getSplitsFor(topFragset);
