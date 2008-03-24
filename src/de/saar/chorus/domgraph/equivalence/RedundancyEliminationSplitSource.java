@@ -17,6 +17,7 @@ import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
+import de.saar.chorus.domgraph.chart.UnsolvableSubgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 
 /**
@@ -38,7 +39,7 @@ public class RedundancyEliminationSplitSource<E extends GraphBasedNonterminal> e
     }
 
     @Override
-    protected Iterator<Split<E>> computeSplits(E subgraph) {
+    protected Iterator<Split<E>> computeSplits(E subgraph) throws UnsolvableSubgraphException {
         List<Split<E>> splits = new ArrayList<Split<E>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 
@@ -48,6 +49,10 @@ public class RedundancyEliminationSplitSource<E extends GraphBasedNonterminal> e
             if( split != null ) {
                 splits.add(split);
             }
+        }
+
+        if( splits.isEmpty() ) {
+            throw new UnsolvableSubgraphException();
         }
 
         return elim.getIrredundantSplits(subgraph, splits).iterator();
