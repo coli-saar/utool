@@ -274,6 +274,19 @@ public class IntegerChart {
 		}
 		return false;
 	}
+	
+	public IntSplit getSplitWithRoot(List<Integer> subgraph, int root) {
+		if(! chart.containsKey(subgraph)) {
+			return null;
+		} else {
+			for(IntSplit split : chart.get(subgraph)) {
+				if(split.root == root) {
+					return split;
+				}
+			}
+		}
+		return null;
+	}
 
 	private IntSplit deleteSplit(List<Integer> subgraph, int index) {
 		IntSplit split = chart.get(subgraph).get(index);
