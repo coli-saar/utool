@@ -151,6 +151,29 @@ class DomGraphTest extends GroovyTestCase {
 	        	assert !graph.isWeaklyNormal();
 	        }
 	        
+	        public void testWeaklyNormalTwoIncoming() {
+	            decode("[label(x f(y y))]");
+	            assert !graph.isWeaklyNormal();
+	        }
+	        
+	        public void testWeaklyNormalCycle1() {
+	            decode("[label(x f(y)) label(y g(z)) dom(z x)]");
+	            assert graph.isWeaklyNormal();
+	        }
+	        
+	        public void testWeaklyNormalCycle2() {
+	            decode("[label(x f(y)) label(y g(z)) label(z h(x))]");
+	            assert !graph.isWeaklyNormal();
+	        }
+	        
+	        public void testOneFragment() {
+	            decode("[label(x f(y z))]");
+	            assert graph.isNormal();
+	            assert graph.isWeaklyNormal();
+	            assert graph.isHypernormallyConnected();
+	            assert !graph.isLeafLabelled();
+	        }
+	        
 	        
 
 	        // In the old hnc test for unsolvable graphs (isHncSlow), the order in which dom edges

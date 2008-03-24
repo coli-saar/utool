@@ -1051,12 +1051,14 @@ public class DomGraph implements Cloneable {
                 // System.err.println(node + " has two in-tree-edges!");
                 return cacheResult("isWeaklyNormal", false);
             }
-
-            // no cycles via tree edges
-            if( hasCycle(null, EdgeType.TREE) ) {
-                return cacheResult("isWeaklyNormal", false);
-            }
         }
+
+
+        // no cycles via tree edges
+        if( hasCycle(null, EdgeType.TREE) ) {
+            return cacheResult("isWeaklyNormal", false);
+        }
+
 
         for( Edge edge : getAllEdges() ) {
             if( getData(edge).getType() == EdgeType.DOMINANCE ) {

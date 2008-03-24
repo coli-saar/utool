@@ -61,7 +61,7 @@ public class TestingTools {
 		assert ChartSolver.solve(preprocessed, chart) == true;
 		
 		BigInteger predictedSolvedForms = chart.countSolvedForms();
-		assert predictedSolvedForms.equals(new BigInteger(goldSolvedForms.size())) : "predicated " + predictedSolvedForms + " solved forms";
+		assert predictedSolvedForms == goldSolvedForms.size() : "predicated " + predictedSolvedForms + " solved forms";
 		
 		SolvedFormIterator sfi = new SolvedFormIterator(chart, graph);
 		List sfs = collectIteratorValues(sfi);

@@ -52,8 +52,8 @@ public class Chart extends RegularTreeGrammar<SubgraphNonterminal> {
 
 	/**
      * Computes a clone of the chart. Splits and subgraphs can be added and deleted,
-     * and toplevel subgraphs changed, on the clone without affecting
-     * the original chart object. However, the clone contains referneces to the same
+     * and top-level subgraphs changed, on the clone without affecting
+     * the original chart object. However, the clone contains references to the same
      * individual subgraphs and splits as the original chart, so be sure
      * not to modify the subgraphs and splits themselves. (This would be
      * a bad idea anyway.)
@@ -96,13 +96,3 @@ public class Chart extends RegularTreeGrammar<SubgraphNonterminal> {
 	    return ret;
 	}
 }
-
-
-
-/*
- * UNIT TESTS:
- *  - clone is different object than original chart
- *  - maps in clone are equal
- *  - changing stuff in clone doesn't make a difference
- *
- */
