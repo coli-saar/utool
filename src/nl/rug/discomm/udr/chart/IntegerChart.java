@@ -3,13 +3,13 @@ package nl.rug.discomm.udr.chart;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.Split;
 
 /**
@@ -41,6 +41,7 @@ public class IntegerChart {
 	private Map<List<Integer>, List<IntSplit>> chart;
 	private Map<List<Integer>, BigInteger> numSolvedForms;
 	private Map<Integer, List<Integer>> domEdges;
+
 	private int chainlength;
 	private List<Integer> toplevel;
 	
@@ -53,11 +54,13 @@ public class IntegerChart {
 			toplevel.add(1);
 			toplevel.add(chainlength);
 		}
+
 		numSolvedForms = new HashMap<List<Integer>, BigInteger>();
 	}
 	
 	public IntegerChart(int length, Map<Integer, List<Integer>> edges) {
 		domEdges = edges;
+		
 		chainlength = length;
 		chart = new HashMap<List<Integer>,List<IntSplit>>();
 		toplevel = new ArrayList<Integer>();
@@ -72,6 +75,9 @@ public class IntegerChart {
 		return toplevel;
 	}
 	public void solve() {
+		for(List<Integer> de : domEdges.values()) {
+			Collections.sort(de);
+		}
 		computeSplitsForSubgraph(toplevel);
 	}
 	
@@ -101,7 +107,7 @@ public class IntegerChart {
 			domEdges.put(src, tgts);
 		}
 		tgts.add(tgt);
-		
+	
 		restrictSubgraph(toplevel, src, tgt, new HashSet<List<Integer>> ());
 		deleteNotReferencedSubgraphs();
 		numSolvedForms.clear();
@@ -301,6 +307,8 @@ public class IntegerChart {
 									forbiddenRoots.add(f);
 								}
 							}
+						} else if(tgt > right) {
+							break;
 						}
 					}
 				}

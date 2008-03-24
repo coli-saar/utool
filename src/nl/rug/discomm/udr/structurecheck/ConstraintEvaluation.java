@@ -1,5 +1,6 @@
 package nl.rug.discomm.udr.structurecheck;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -47,7 +48,7 @@ public class ConstraintEvaluation {
 	private String testDirectory;
 	
 	private  File folder;
-	private StringBuffer out;
+	private BufferedWriter out;
 	private static List<String> orderedRoots;
 	private static List<String> orderedLeaves;
 	private double averageProportion, baselineRandom, baselineRightbranch;
@@ -62,7 +63,7 @@ public class ConstraintEvaluation {
 		folder = new File(dir);
 		orderedRoots = new ArrayList<String>();
 		orderedLeaves = new ArrayList<String>();
-		out = new StringBuffer();
+		
 	}
 	
 	private static boolean cachedReachable(String upper, String lower, DomGraph graph,
@@ -243,7 +244,7 @@ public class ConstraintEvaluation {
 		 for(Split<SubgraphNonterminal> split : chart.getAllSplits()) {
 			 for(InterdependencyConstraint constraint : InterdependencyConstraint.values()) {
 				 if(constraint.addToSplit(split, chart, chainlabels)) {
-					 continue;
+					 break;
 				 }
 				
 			 }
@@ -287,6 +288,8 @@ public class ConstraintEvaluation {
 				}});
 		 
 		 Arrays.sort(files, new FileComparator());
+		 out = new BufferedWriter(new FileWriter(new File(folder.getAbsolutePath() + 
+				 File.separator + "iChartSolving.stats")));
 		 for( int i = 0; i< files.length; i++ ) {
 			 
 			 String fn = files[i].getName();
@@ -296,24 +299,25 @@ public class ConstraintEvaluation {
 	//		if(files[i].length() < 40000) {
 			
 			 clear();
-			 try {
+		/*	 try {
 			 if(! evaluateUtoolFile(files[i])) {
 				 System.err.println("Last file: " + files[i].getName());
 				 break;
-			 }
+			 } 
+			 out.flush();
 			 } catch(Exception e) {
 				 continue;
-			 }
+			 }*/
 			 
-			 /*try {
+			 try {
 				 evaluateFile(files[i]);
-				 
+				 out.flush();
 			 } catch(OutOfMemoryError e) {
 				 System.err.println("Last file: " + files[i].getName());
 				 break;
 			 } catch(Exception e) {
 				 continue;
-			 }*/
+			 }
 			 
 	/*		} else {
 				System.err.println("too big!");
@@ -329,9 +333,10 @@ public class ConstraintEvaluation {
 		 System.err.println("Baseline random: " + baselineRandom );
 		 System.err.println("Baseline right-branching: " + baselineRightbranch);*/
 		 
-		 FileWriter write = new FileWriter(new File(folder.getAbsolutePath() + File.separator + "UtoolChartRuntimeComplete.stats"));
-		 write.write(out.toString());
-		 write.close();
+		// FileWriter write = new FileWriter(new File(folder.getAbsolutePath() + File.separator + "UtoolChartRuntimeComplete.stats"));
+		// write.write(out.toString());
+		 out.flush();
+		 out.close();
 				
 	}
 	
@@ -449,36 +454,45 @@ public class ConstraintEvaluation {
 		
 		time = System.currentTimeMillis();
 		iChart.solve();
-	//	System.err.println("solved Chart: " + (System.currentTimeMillis() - time) );
+		//System.err.println("solved Chart: " + (System.currentTimeMillis() - time) );
 		
 		long solve = System.currentTimeMillis() - time;
 		time = System.currentTimeMillis();
 
-		
+	/*	String[] intlabels = new String[chain.getLength()];
 		for(IntSplit split : iChart.getAllSplits()) {
+			int root = split.getRoot();
+			String rlabel = intlabels[root-1];
+			if(rlabel == null) {
+				rlabel = chainlabels.getLabel(root + "x");
+				intlabels[root-1] = rlabel;
+			}
 			
 			for(InterdependencyConstraint constraint : InterdependencyConstraint.values()) {
-				if(chainlabels.getLabel(split.getRoot() + "x").equals(constraint.getRelationName())) {
-					constraint.add(split, chainlabels);
-				}
+					if(constraint.add(split, rlabel)) {
+						break;
+					}
 			}
 		}
 		long constraintAddition = System.currentTimeMillis() - time;
 		
-		line.append(file.getName().substring(
-				0, file.getName().length() - 17) + "\t\t" + chain.getLength() + "\t" );
-	
+		line.append(file.getName().replaceFirst("dis.urml.xml", "") + "\t" + chain.getLength() + "\t" );
+	*/
 		
-	//	System.err.println("Added all constraints: " + (System.currentTimeMillis() - time) );
+		//System.err.println("Added all constraints: " + (System.currentTimeMillis() - time) );
 		
 
-		time = System.currentTimeMillis();
+	/*	time = System.currentTimeMillis();
 		IntegerCheapestSolvedFormComputer iComp = new IntegerCheapestSolvedFormComputer(iChart,
 				 new TropicalSemiring());
 		
 		DomGraph sf = chain.makeSolvedForm(iComp.getCheapestSolvedForm());
-		long extract = System.currentTimeMillis() - time;
-	//	System.err.println("Extracted best solved form: " + (System.currentTimeMillis() - time) );
+		long extract = System.currentTimeMillis() - time;*/
+	
+		
+		
+		
+		//	System.err.println("Extracted best solved form: " + (System.currentTimeMillis() - time) );
 		
 		
 	/*	int roots = graph.getAllRoots().size();
@@ -546,7 +560,8 @@ public class ConstraintEvaluation {
 		 */
 	//	line.append(max + "\t" + cNodes + "\t" +stLeaves.size() + "\t" + b1 + "\t" + b2);*/
 		
-		line.append(solve + "\t" + extract + "\t" + constraintAddition);
+		//line.append( solve + "\t" + extract + "\t" + constraintAddition);
+		line.append(solve);
 		out.append(line);
 		out.append(System.getProperty("line.separator"));
 		
@@ -559,17 +574,17 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "attribution(1)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels.equals(getRelationName())) {
 					
 				if(split.getRightSubgraph().get(0) == 0 &&
 						split.getRightSubgraph().get(1) == 0) {
 					split.setLikelihood(  - 0.8966 );
 				//	System.err.println("Found: " + split);
-					return true;
+					
 				}
-				
+				return true;
 				}
 				return false;
 			}
@@ -585,15 +600,15 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "attribution(2)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 				if(split.getLeftSubgraph().get(0) == 0 &&
 						split.getLeftSubgraph().get(1) == 0) {
 					split.setLikelihood( - 0.9369 );
-					return true;
+					
 				}
-				
+				return true;
 				}
 				return false;
 			}
@@ -605,16 +620,14 @@ public class ConstraintEvaluation {
 		},
 
 		CONDITION1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 					
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood(- 0.7765);
-						
-						
 					} 
 					
 					if(split.getRightSubgraph().get(0) == 0 &&
@@ -647,14 +660,15 @@ public class ConstraintEvaluation {
 			}
 		},
 		CONDITION2 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood( - 0.7097);
-						return true;
+						
 					} 
+					return true;
 				}
 				return false;
 			}
@@ -669,9 +683,9 @@ public class ConstraintEvaluation {
 			}
 		},
 		PURPOSE1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood(  - 0.9289);
@@ -696,14 +710,15 @@ public class ConstraintEvaluation {
 			}
 		},
 		PURPOSE2 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood( - 0.76);
-						return true;
+						
 					} 
+					return true;
 				}
 				return false;
 			}
@@ -720,7 +735,7 @@ public class ConstraintEvaluation {
 	/*	CONSEQUENCEN1 {
 			boolean add(IntSplit split, NodeLabels chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 				}
 			}
@@ -729,9 +744,9 @@ public class ConstraintEvaluation {
 			}
 		}, */
 		ELABOA1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood( - 0.9821);
@@ -760,9 +775,9 @@ public class ConstraintEvaluation {
 		}, 
 		
 		INTERPRETATIONS1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1 - 0.1519);
 					addRightLeafWeight(split, 1 - 0.1772);
 					return true;
@@ -783,9 +798,9 @@ public class ConstraintEvaluation {
 		
 		
 		EVALUATIONS1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1 - 0.1203);
 					addRightLeafWeight(split, 1 - 0.1805);
 					return true;
@@ -805,9 +820,9 @@ public class ConstraintEvaluation {
 		},
 		
 		EVIDENCE1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 					addRightLeafWeight(split, 1 - 0.0927);
 					return true;
@@ -826,9 +841,9 @@ public class ConstraintEvaluation {
 			}
 		},
 		EXAMPLE1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 					addRightLeafWeight(split, 1 - 0.067);
 					return true;
@@ -850,14 +865,15 @@ public class ConstraintEvaluation {
 		
 		
 		MANNER1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood(- 0.7838  );
-						return true;
+						
 					} 
+					return true;
 				}
 				return false;
 			}
@@ -873,9 +889,9 @@ public class ConstraintEvaluation {
 			}
 		}, 
 		EXPLARG {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 					addRightLeafWeight(split, 1 - 0.1134);
 					return true;
@@ -895,14 +911,15 @@ public class ConstraintEvaluation {
 		},
 		
 		MEANS1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood( - 0.7872 );
-						return true;
+						
 					} 
+					return true;
 				}
 				return false;
 			}
@@ -919,7 +936,7 @@ public class ConstraintEvaluation {
 	/*	RESTATEMENT {
 			void add(IntSplit split, NodeLabels chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 				}
 			}
@@ -929,16 +946,17 @@ public class ConstraintEvaluation {
 		}, */
 
 		AFTER {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 				
 					
 					if(split.getLeftSubgraph().get(0) == 0 &&
 							split.getLeftSubgraph().get(1) == 0) {
 						split.setLikelihood( (split.getLikelihood() - 0.8475 ) / 2.0);
-						return true;
-					}
+					
+					
+						return true;}
 				}
 				return false;
 			}
@@ -953,9 +971,9 @@ public class ConstraintEvaluation {
 			}
 		},
 		ELABADD1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1 - 0.1707);
 					addRightLeafWeight(split, 1 -0.2035 );
 					return true;
@@ -975,9 +993,9 @@ public class ConstraintEvaluation {
 		},
 		
 		ELABASETMEM1 {
-			boolean add(IntSplit split, NodeLabels chainLabels) {
+			boolean add(IntSplit split, String chainLabels) {
 				int root = split.getRoot();
-				if(chainLabels.getLabel(root + "x").equals(getRelationName())) {
+				if(chainLabels .equals(getRelationName())) {
 					
 					addRightLeafWeight(split, 1 -0.125 );
 					return true;
@@ -1000,8 +1018,8 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "Same-Unit(1)(2)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
-				if(chainLabels.getLabel(split.getRoot() + "x").equals(getRelationName())) {
+			boolean add(IntSplit split, String chainLabels) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1-0.1029);
 					return true;
 				}
@@ -1019,8 +1037,8 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "TextualOrganization(1)(2)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
-				if(chainLabels.getLabel(split.getRoot() + "x").equals(getRelationName())) {
+			boolean add(IntSplit split, String chainLabels) {
+				if(chainLabels .equals(getRelationName())) {
 					addRightLeafWeight(split,1- 0.1639);
 					return true;
 				}
@@ -1038,8 +1056,8 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "background(1)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
-				if(chainLabels.getLabel(split.getRoot() + "x").equals(getRelationName())) {
+			boolean add(IntSplit split, String chainLabels) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1- 0.1217);
 					addRightLeafWeight(split, 1 - 0.2348);
 					return true;
@@ -1059,8 +1077,8 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "background(2)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
-				if(chainLabels.getLabel(split.getRoot() + "x").equals(getRelationName())) {
+			boolean add(IntSplit split, String chainLabels) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1- 0.2025);
 					addRightLeafWeight(split, 1 - 0.1013);
 					return true;
@@ -1079,8 +1097,8 @@ public class ConstraintEvaluation {
 			String getRelationName() {
 				return "comment(1)";
 			}
-			boolean add(IntSplit split, NodeLabels chainLabels) {
-				if(chainLabels.getLabel(split.getRoot() + "x").equals(getRelationName())) {
+			boolean add(IntSplit split, String chainLabels) {
+				if(chainLabels .equals(getRelationName())) {
 					addLeftLeafWeight(split, 1- 0.1048);
 					addRightLeafWeight(split, 1- 0.2016);
 					return true;
@@ -1097,7 +1115,7 @@ public class ConstraintEvaluation {
 		
 		
 		;
-		abstract boolean add(IntSplit split, NodeLabels chainLabels);
+		abstract boolean add(IntSplit split, String chainLabels);
 		abstract String getRelationName();
 		abstract void add(Split<SubgraphNonterminal> split, WeightedRegularTreeGrammar<SubgraphNonterminal, Double>
 		wrtg);
@@ -1156,7 +1174,7 @@ public class ConstraintEvaluation {
 		
 		try {
 			ConstraintEvaluation ev = new ConstraintEvaluation(testfile);
-		//	ev.evaluateFile(new File(testfile + "/wsj_1346.out.dis.urml.xml"));
+		//	ev.evaluateFile(new File(testfile + "/wsj_1120.out.dis.urml.xml"));
 			ev.evaluate();
 		} catch(Exception e) {
 			e.printStackTrace();
