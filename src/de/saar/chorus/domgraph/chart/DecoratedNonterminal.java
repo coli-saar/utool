@@ -1,8 +1,7 @@
 package de.saar.chorus.domgraph.chart;
 
-import java.util.Set;
 
-public class DecoratedNonterminal<E extends Nonterminal, F> implements Nonterminal {
+public class DecoratedNonterminal<E, F> {
     public E nonterminal;
     public F decoration;
 

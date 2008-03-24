@@ -16,7 +16,6 @@ import java.util.Set;
 import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.Nonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -56,7 +55,7 @@ import de.saar.chorus.domgraph.graph.NodeType;
  * @author Alexander Koller
  *
  */
-public abstract class RedundancyElimination<E extends Nonterminal> {
+public abstract class RedundancyElimination<E> {
     protected DomGraph graph; // original graph
     protected DomGraph compact; // compact version of the graph
     protected NodeLabels labels;

@@ -3,7 +3,6 @@ package de.saar.chorus.domgraph.equivalence.rtg;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
-import de.saar.chorus.domgraph.chart.Nonterminal;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 
 public class QuantifierMarkedNonterminal implements GraphBasedNonterminal {
@@ -32,17 +31,13 @@ public class QuantifierMarkedNonterminal implements GraphBasedNonterminal {
 
 
 
-   
-    public boolean isEmpty() {
-        return subgraph.isEmpty();
-    }
 
-    
+
     public String getRootIfSingleton() {
         return rootForThisFragset;
     }
 
-  
+
     public boolean isSingleton(Set<String> roots) {
         int numRoots = 0;
 
@@ -97,21 +92,21 @@ public class QuantifierMarkedNonterminal implements GraphBasedNonterminal {
 
 
 
-    
+
     public Set<String> getNodes() {
         return subgraph.getNodes();
     }
 
 
 
-   
+
     public String toString(Set<String> roots) {
         return previousQuantifier + "/" + subgraph.toString(roots);
     }
 
 
 
- 
+
     public void addNode(String node) {
         subgraph.add(node);
     }
