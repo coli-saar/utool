@@ -169,7 +169,7 @@ class JDomGraphTab extends JGraphTab  {
 		if( ! isSolvedYet ) {
 			try {
 
-				chart = new Chart();
+				chart = new Chart(nodeLabels);
 
 				if(ChartSolver.solve(domGraph.preprocess(), chart))  {
 					solvedForms = chart.countSolvedForms().longValue();
@@ -256,7 +256,7 @@ class JDomGraphTab extends JGraphTab  {
 			if(cv == null ) {
 				if(!isSolvedYet) {
 					isSolvedYet = true;
-					chart = new Chart();
+					chart = new Chart(nodeLabels);
 					ChartSolver.solve(domGraph.preprocess(), chart);
 				}
 

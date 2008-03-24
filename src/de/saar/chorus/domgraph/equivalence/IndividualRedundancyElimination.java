@@ -1,8 +1,8 @@
 /*
  * @(#)IndividualRedundancyElimination.java created 10.02.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.equivalence;
@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.chart.SplitComputer;
+import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
+import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
@@ -22,13 +25,13 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * which checks for each individual split whether it can be
  * removed. This is the basis of the Koller & Thater ACL 06
  * submission. It is generally stronger than the "permutable
- * splits" algorithm implemented in 
+ * splits" algorithm implemented in
  * {@link de.saar.chorus.domgraph.equivalence.PermutabilityRedundancyElimination}.
- * 
+ *
  * @author Alexander Koller
  *
  */
-public class IndividualRedundancyElimination extends RedundancyElimination {
+public class IndividualRedundancyElimination extends RedundancyElimination<SubgraphNonterminal> {
     public IndividualRedundancyElimination(DomGraph graph, NodeLabels labels,
             EquationSystem eqs) {
         super(graph, labels, eqs);
@@ -41,53 +44,54 @@ public class IndividualRedundancyElimination extends RedundancyElimination {
      * This method starts with the complete list of splits of the
      * subgraph, and then successively removes redundant splits.
      * It returns the remaining (irredundant) splits.
-     * 
+     *
      * @param subgraph a subgraph
      * @param allSplits the complete list of splits for this subgraph
      * @return a list of irredundant splits
      */
-    public List<Split> getIrredundantSplits(Set<String> subgraph, List<Split> allSplits) {
-        List<Split> splits = new ArrayList<Split>(allSplits);
+    @Override
+    public List<Split<SubgraphNonterminal>> getIrredundantSplits(SubgraphNonterminal subgraph, List<Split<SubgraphNonterminal>> allSplits) {
+        List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>(allSplits);
         int i = 0;
-        
+
         while( i < splits.size() ) {
-            Split split = splits.get(i);
-            
+            Split<SubgraphNonterminal> split = splits.get(i);
+
             if( isEliminableSplit(split, splits)) {
                 splits.remove(split);
             } else {
                 i++;
             }
         }
-        
+
         return splits;
     }
 
-    private boolean isEliminableSplit(Split split, List<Split> splitsForSubgraph) {
-        Map<String,Set<String>> rootsToWccs = new HashMap<String,Set<String>>();
+    private boolean isEliminableSplit(Split<SubgraphNonterminal> split, List<Split<SubgraphNonterminal>> splitsForSubgraph) {
+        Map<String,SubgraphNonterminal> rootsToWccs = new HashMap<String,SubgraphNonterminal>();
         String splitRoot = split.getRootFragment();
         Set<String> allRoots = graph.getAllRoots();
-        
+
         // compute rootsToWccs
-        for( Set<String> wcc : split.getAllSubgraphs() ) {
-            for( String root : wcc ) {
+        for( SubgraphNonterminal wcc : split.getAllSubgraphs() ) {
+            for( String root : wcc.getNodes() ) {
                 rootsToWccs.put(root, wcc);
             }
         }
-        
+
         splitloop:
-        for( Split otherSplit : splitsForSubgraph ) {
+        for( Split<SubgraphNonterminal> otherSplit : splitsForSubgraph ) {
             if( !split.equals(otherSplit)) {
                 String root = otherSplit.getRootFragment();
-                Set<String> wcc = rootsToWccs.get(root);
-                
+                SubgraphNonterminal wcc = rootsToWccs.get(root);
+
                 // check: is every other root in the same wcc, including splitRoot,
                 // permutable with root?
                 if( !isPermutable(root, splitRoot) ) {
                     continue;
                 }
-                
-                for( String node : wcc ) {
+
+                for( String node : wcc.getNodes() ) {
                     if( allRoots.contains(node) && !root.equals(node) ) {
                         if( isPossibleDominator(node, root)) {
                             if( !isPermutable(root, node)) {
@@ -97,11 +101,26 @@ public class IndividualRedundancyElimination extends RedundancyElimination {
                         }
                     }
                 }
-                
+
                 return true;
             }
         }
-        
+
+        return false;
+    }
+
+    @Override
+    public SplitComputer<SubgraphNonterminal> provideSplitComputer(DomGraph graph) {
+        return new SubgraphSplitComputer(graph);
+    }
+
+    @Override
+    public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
+        return new SubgraphNonterminal(graph);
+    }
+
+    @Override
+    public boolean requiresReduce() {
         return false;
     }
 }

@@ -19,8 +19,10 @@
 	<classpathentry exported="true" kind="lib" path="packages/jsch-0.1.28.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/swing-worker.jar"/>
 	<classpathentry exported="true" kind="lib" path="packages/itext-2.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="packages/groovy-all-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="bin"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="packages/dbparser.jar"/>
+	<classpathentry kind="lib" path="packages/groovy-all-1.5.4.jar"/>
+	<classpathentry kind="lib" path="packages/junit-4.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

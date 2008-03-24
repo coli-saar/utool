@@ -22,7 +22,7 @@ public class Chain extends DomGraph {
 	private Map<Integer, List<Integer>> additionalDomedges;
 	private boolean domEdgesComputed;
 	
-	private NodeLabels standardLabels;
+	private NodeLabels standardLabels, modifiedLabels;
 	
 	public Chain() {
 		super();
@@ -104,10 +104,18 @@ public class Chain extends DomGraph {
 	}
 	
 	
-	
 	public NodeLabels getStandardLabels() {
-		return standardLabels;
+		if(modifiedLabels == null) {
+			return standardLabels;
+		}
+		return modifiedLabels;
+		
 	}
+	
+	public void setStandardLabels(NodeLabels l) {
+		modifiedLabels = l;
+	}
+	
 	public boolean addDominanceEdge(String src, String tgt) {
 		Set<Edge> debugEdges = new HashSet<Edge>();
 		if(! isAllowedEdge(src,tgt,1,debugEdges)) {

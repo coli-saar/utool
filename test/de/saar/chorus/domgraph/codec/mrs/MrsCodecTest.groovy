@@ -9,14 +9,18 @@ import java.util.*;
 
 import de.saar.testingtools.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-class MrsCodecTest extends GroovyTestCase {
+
+class MrsCodecTest  {
 	private DomGraph graph, goldGraph;
     private NodeLabels labels, goldLabels;
     private InputCodec ozcodec;
     private InputCodec mrscodec;
     
-	//  @Configuration(beforeTestMethod = true)
+	@Before
     public void setUp() {
         ozcodec = new DomconOzInputCodec();
         mrscodec = new MrsPrologInputCodec(Normalisation.nets, LabelStyle.plain);
@@ -27,6 +31,7 @@ class MrsCodecTest extends GroovyTestCase {
     }
 	
 	// Stefan Mueller's problem MRS 1 of 10/08/2007
+	@Test
 	public void testSM1() {
 		mrscodec.decode(new StringReader("psoa(h1,e2,[ rel('one_q',h3,     [ attrval('ARG0',x4),       attrval('RSTR',h5),       attrval('BODY',h6)]), rel('compound_rel',h7,     [ attrval('ARG0',x4),       attrval('ARG1',x8)]), rel('udef_q',h9,     [ attrval('ARG0',x8),       attrval('RSTR',h10),       attrval('BODY',h11)]), rel('bag',h7,     [ attrval('ARG0',x4)]), rel('leather',h12,     [ attrval('ARG0',x8)]), rel('past',h13,     [ attrval('ARG0',e2),       attrval('ARG3',h14)]), rel('see',h14,     [ attrval('ARG0',e2),       attrval('ARG1',i15),       attrval('ARG2',x4)])], hcons([ qeq(h1,h3), qeq(h5,h7), qeq(h1,h9), qeq(h10,h12) ]))"),
 				graph, labels);
@@ -36,6 +41,7 @@ class MrsCodecTest extends GroovyTestCase {
 	}
 	
 	//  Stefan Mueller's problem MRS 2 of 10/08/2007
+	@Test
 	public void testSM2() {
 		mrscodec.decode(new StringReader("psoa(h1,e2, [ rel('one_q',h3,     [ attrval('ARG0',x4),       attrval('RSTR',h5),       attrval('BODY',h6)]), rel('compound_rel',h7,     [ attrval('ARG0',x4),       attrval('ARG1',x8)]), rel('udef_q',h9,     [ attrval('ARG0',x8),       attrval('RSTR',h10),       attrval('BODY',h7)]), rel('bag',h7,     [ attrval('ARG0',x4)]), rel('leather',h11,     [ attrval('ARG0',x8)]), rel('past',h12,     [ attrval('ARG0',e2),       attrval('ARG3',h13)]), rel('see',h13,     [ attrval('ARG0',e2),       attrval('ARG1',i14),       attrval('ARG2',x4)])], hcons([ qeq(h1,h3), qeq(h5,h7), qeq(h1,h9), qeq(h10,h11) ]))"),
 				graph, labels);

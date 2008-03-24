@@ -129,9 +129,6 @@ public class ExtractPatterns {
 						
 						if(onlyLeafs) {
 							countUp(relation, BooleanFeatures.TWO_EDUS_LEFT);
-							if(relation.contains("ondition")) {
-								System.err.println("2 edus left (" + relation + ") here!");
-							}
 						}
 						
 						boolean childmulti = 
@@ -196,6 +193,8 @@ public class ExtractPatterns {
 							}
 						}
 						
+						/**** VERSION FROM THE TRUNK ***/
+						/*
 						boolean onlyLeafs = true;
 						for(String hole : graph.getHoles(rightChild)) {
 							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
@@ -212,6 +211,22 @@ public class ExtractPatterns {
 							if(relation.contains("ondition")) {
 								System.err.println("two edus right (" + relation + ") here!");
 							}
+						}
+						*/
+						
+						boolean onlyLeafs = true;
+						for(String hole : graph.getHoles(rightChild)) {
+							for(String grandchild : graph.getChildren(hole, EdgeType.DOMINANCE)) {
+								if(! graph.isLeaf(grandchild)) {
+									onlyLeafs = false;
+									break;
+								}
+							}
+							
+						}
+						
+						if(onlyLeafs) {
+							countUp(relation, BooleanFeatures.TWO_EDUS_RIGHT);
 						}
 						
 						countUp(relation, rightRel, StringFeatures.RIGHT_CHILD);
