@@ -1,8 +1,8 @@
 /*
  * @(#)Utool.java created 27.01.2006
- * 
+ *
  * Copyright (c) 2006 Alexander Koller
- *  
+ *
  */
 
 package de.saar.chorus.domgraph.utool;
@@ -20,8 +20,8 @@ import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
-import de.saar.chorus.domgraph.equivalence.IndividualRedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
+import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
@@ -33,17 +33,17 @@ import de.saar.chorus.ubench.Ubench;
  * command-line. Utool ("Underspecification Tool") is the Swiss Army Knife of
  * Underspecification (Java version).
  * <p>
- * 
+ *
  * The operation of this class is described in more detail in the end-user
  * documentation of Utool.
- * 
+ *
  * @author Alexander Koller
- * 
+ *
  */
 public class Utool {
     public static void main(String[] args) {
-    	
-    
+
+
         CommandLineParser optionsParser = new CommandLineParser();
         AbstractOptions options = null;
 
@@ -197,7 +197,7 @@ public class Utool {
             try {
                 if( options.hasOptionEliminateEquivalence() ) {
                     solvable = ChartSolver.solve(graph, chart, new RedundancyEliminationSplitSource(
-                            new IndividualRedundancyElimination(graph, options.getLabels(), options.getEquations()),
+                            new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations()),
                             graph));
 
                 } else {
@@ -435,14 +435,14 @@ public class Utool {
             System.err.println(op.longDescription);
         }
     }
-    
-   
-    
+
+
+
     public static void exit(int syscode) {
     	UserProperties.saveProperties();
     	System.exit(syscode);
     }
-    
+
     private static void displayVersion() {
         System.err.println("Utool (The Swiss Army Knife of Underspecification), " + "version "
                 + GlobalDomgraphProperties.getVersion());

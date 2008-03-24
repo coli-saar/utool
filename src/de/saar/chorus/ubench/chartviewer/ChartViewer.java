@@ -507,7 +507,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 				@Override
                 public void run() {
-					Split selectedSplit = orderedSplits.get(
+					Split<SubgraphNonterminal> selectedSplit = orderedSplits.get(
 							prettyprint.getSelectedRow());
 
 
@@ -594,7 +594,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 *
 	 * @param split the <code>Split</code> to mark.
 	 */
-	public void markSplit(Split split) {
+	public void markSplit(Split<SubgraphNonterminal> split) {
 
 		// indexing the subgraphs
 		// within the split (starting at 0).
@@ -616,14 +616,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		// iterating over the holes of the root fragment
 		for(String hole : dominators) {
 
-			List<Set<String>> wccs = new ArrayList<Set<String>>(split.getWccs(hole));
+			List<SubgraphNonterminal> wccs = new ArrayList<SubgraphNonterminal>(split.getWccs(hole));
 
 			// for each subgraph of a hole...
-			for( Set<String> subg : wccs) {
+			for( SubgraphNonterminal subg : wccs) {
 
 				// count it
 				subgraphindex++;
-				Set<String> wcc = new HashSet<String>(subg);
+				Set<String> wcc = new HashSet<String>(subg.getNodes());
 
 				// color it together with the hole
 				// TODO decide which color the hole should
@@ -709,7 +709,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 			} else if(columnIndex == 2) {
 				// a split
-				Split next = orderedSplits.get(rowIndex);
+				Split<SubgraphNonterminal> next = orderedSplits.get(rowIndex);
 
 				if( next != null) {
 					if( rowIndex == currentrow &&
