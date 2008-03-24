@@ -133,6 +133,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         }
 
 
+        out.recomputeSingletons();
         out.reduce();
     }
 

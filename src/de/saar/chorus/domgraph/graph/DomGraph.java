@@ -23,6 +23,7 @@ import org._3pq.jgrapht.graph.DirectedMultigraph;
 
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 
 /**
  * A dominance graph. Dominance graphs are directed graphs. Nodes are either
@@ -1207,10 +1208,20 @@ public class DomGraph implements Cloneable {
             } else {
                 return cacheResult("isHypernormallyConnected", false);
             }
-        } else if( OneSplitSource.canSolveGraph(this) ) {
-            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
         } else {
-            return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
+            boolean isSolvable = false;
+
+            try {
+                isSolvable = OneSplitSource.isGraphSolvable(this);
+            } catch( SolverNotApplicableException e ) {
+                isSolvable = false;
+            }
+
+            if( isSolvable ) {
+                return cacheResult("isHypernormallyConnected", isHypernormallyConnectedFast());
+            } else {
+                return cacheResult("isHypernormallyConnected", isHypernormallyConnectedSlow());
+            }
         }
     }
 

@@ -59,14 +59,6 @@ public class OneSplitSource extends SplitSource<SubgraphNonterminal> {
         return ChartSolver.solve(graph, chart, new OneSplitSource(graph));
     }
 
-    public static boolean canSolveGraph(DomGraph graph) {
-    	try {
-			return isGraphSolvable(graph);
-		} catch (SolverNotApplicableException e) {
-			return false;
-		}
-    }
-
     @Override
     public SubgraphNonterminal makeToplevelSubgraph(Set<String> graph) {
         return new SubgraphNonterminal(graph);

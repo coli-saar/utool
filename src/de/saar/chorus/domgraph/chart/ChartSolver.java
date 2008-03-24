@@ -85,6 +85,8 @@ public class ChartSolver<E extends GraphBasedNonterminal> {
         ChartSolver<E> solver = new ChartSolver<E>(preprocessed, chart, splitsource);
         isSolvable = solver.solve();
 
+        chart.recomputeSingletons();
+
         if( isSolvable ) {
             splitsource.reduceIfNecessary(chart);
         } else {

@@ -45,6 +45,13 @@ public abstract class SplitSource<E extends GraphBasedNonterminal> {
      */
     abstract protected Iterator<Split<E>> computeSplits(E subgraph) throws UnsolvableSubgraphException;
 
+    /**
+     * Reduces the computed RTG. If your split source is such that the RTG it computes
+     * is not automatically reduced, you should implement this method to call reduce()
+     * on the output RTG.  This method is called as the last operation by the chart solver.
+     *
+     * @param chart the output RTG computed by the chart solver
+     */
     abstract public void reduceIfNecessary(RegularTreeGrammar<E> chart);
 
     /**
