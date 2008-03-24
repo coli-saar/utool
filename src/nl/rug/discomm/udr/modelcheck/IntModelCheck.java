@@ -106,8 +106,8 @@ public class IntModelCheck {
 
 		if(splits2 != null) {
 			for(IntegerChart.IntSplit split : splits2) {
-				// IntegerChart.IntSplit match = c1.getSplitWithRoot(sg1, split.getRoot());
-			    IntegerChart.IntSplit match = null; // TODO -- problem with merge -- ak
+				IntegerChart.IntSplit match = c1.getSplitWithRoot(sg1, split.getRoot());
+			  //  IntegerChart.IntSplit match = null; // TODO -- problem with merge -- ak
 				if(match == null) {
 			//.err.println("Split missing");
 					return false;
