@@ -1,8 +1,7 @@
 package de.saar.chorus.domgraph.chart.rtgparser;
 
-import de.saar.chorus.domgraph.chart.Nonterminal;
 
-public class StringNonterminal implements Nonterminal {
+public class StringNonterminal  {
     private final String string;
 
 

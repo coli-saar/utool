@@ -26,9 +26,6 @@ public class DecoratedGraphBasedNonterminal<E extends GraphBasedNonterminal, F> 
     }
 */
 
-    public boolean isEmpty() {
-        return nonterminal.isEmpty();
-    }
 
     /*
     public boolean isSingleton(Set<String> roots) {

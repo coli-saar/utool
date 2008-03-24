@@ -20,7 +20,7 @@ import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
-public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
+public class RegularTreeGrammar<E> implements Cloneable {
     protected Map<E, List<Split<E>>> chart;
     protected Map<E, ModifiableInteger> refcount;
     protected final Map<E, BigInteger> numSolvedForms;
@@ -521,7 +521,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
     }
 
 
-    public <F extends Nonterminal> RegularTreeGrammar<DecoratedNonterminal<E,F>> intersect(RegularTreeGrammar<F> other) {
+    public <F> RegularTreeGrammar<DecoratedNonterminal<E,F>> intersect(RegularTreeGrammar<F> other) {
         RegularTreeGrammar<DecoratedNonterminal<E,F>> ret = new RegularTreeGrammar<DecoratedNonterminal<E,F>>();
 
         /*
@@ -549,7 +549,7 @@ public class RegularTreeGrammar<E extends Nonterminal> implements Cloneable {
         return ret;
     }
 
-    private static <E extends Nonterminal, F extends Nonterminal> void intersectPopulate(DecoratedNonterminal<E,F> nt, RegularTreeGrammar<DecoratedNonterminal<E,F>> out, RegularTreeGrammar<E> in1, RegularTreeGrammar<F> in2) {
+    private static <E, F> void intersectPopulate(DecoratedNonterminal<E,F> nt, RegularTreeGrammar<DecoratedNonterminal<E,F>> out, RegularTreeGrammar<E> in1, RegularTreeGrammar<F> in2) {
         E nt1 = nt.nonterminal;
         F nt2 = nt.decoration;
 

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
-import de.saar.chorus.domgraph.chart.Nonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.Split;
@@ -17,13 +16,12 @@ import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.chart.SubgraphSplitComputer;
-import de.saar.chorus.domgraph.chart.UnsolvableSubgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 
-	
+
 
 
 	@Override
@@ -37,18 +35,18 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 	@Override
 	public void reduceIfNecessary(RegularTreeGrammar chart) {
 		// do nothing? this should not be applicable for model checking.
-		
+
 	}
 
 
 
-	private NodeLabels graphlabels, solvedFormLabels;
-	private Map<SubgraphNonterminal, SubgraphNonterminal> subgraphToSubtree;
-	private DomGraph solvedForm;
-	private Chart sfchart;
-	
-	
-	public ModelSplitSource(DomGraph graph, NodeLabels labels, DomGraph solvedForm, 
+	private final NodeLabels graphlabels, solvedFormLabels;
+	private final Map<SubgraphNonterminal, SubgraphNonterminal> subgraphToSubtree;
+	private final DomGraph solvedForm;
+	private final Chart sfchart;
+
+
+	public ModelSplitSource(DomGraph graph, NodeLabels labels, DomGraph solvedForm,
 			NodeLabels sfLabels) {
 		super(graph);
 		graphlabels = labels;
@@ -68,47 +66,48 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 		} catch( SolverNotApplicableException e ) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
-	
-	
-	protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
+
+
+
+
+	@Override
+    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
 		 List<Split<SubgraphNonterminal>> ret = new ArrayList<Split<SubgraphNonterminal>>();
 		SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
 		 List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
-		
+
 		if( subgraphToSubtree.containsKey(subgraph) ) {
 			SubgraphNonterminal subtree = subgraphToSubtree.get(subgraph);
 
-			
+
 			Split<SubgraphNonterminal> treesplit = sfchart.getSplitsFor(subtree).get(0); // TA
 			String sfroot = treesplit.getRootFragment();
 			List<String> holes = solvedForm.getHoles(sfroot);
-			
+
 			SubgraphNonterminal leftSubtree = treesplit.getWccs(holes.get(0)).get(0); // TA / BA
 			SubgraphNonterminal rightSubtree = treesplit.getWccs(holes.get(1)).get(0); // TA / BA
-			
+
 			String rootlabel = solvedFormLabels.getLabel(sfroot);
-			
-			
+
+
 
 		        for( String root : potentialFreeRoots ) {
 		        	if(graphlabels.getLabel(root).equals(rootlabel)) {
 		        		Split<SubgraphNonterminal> split = sc.computeSplit(root, subgraph);
-		            
+
 		            	if( split != null ) {
 		            		List<String> dom = graph.getHoles(root);
 		            		SubgraphNonterminal leftSubgraph = split.getWccs(dom.get(0)).get(0); // TA / BA
 		            		SubgraphNonterminal rightSubgraph = split.getWccs(dom.get(1)).get(0); // TA / BA
-		            		
+
 		            		if(leftSubgraph.size() == leftSubtree.size() &&
 		            			rightSubgraph.size() == rightSubtree.size() ) {
 		            			if(leftSubtree.size() == 1) {
-		            				String treeleaf = 
+		            				String treeleaf =
 		            					leftSubtree.iterator().next();
-		            				String dgleaf = 
+		            				String dgleaf =
 		            					leftSubgraph.iterator().next();
 		            					if(! graphlabels.getLabel(dgleaf).equals(
 		            							solvedFormLabels.getLabel(treeleaf))) {
@@ -116,32 +115,32 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 		            					}
 		            			}
 		            			if(rightSubtree.size() == 1) {
-		            				String treeleaf = 
+		            				String treeleaf =
 		            					rightSubtree.iterator().next();
-		            				String dgleaf = 
+		            				String dgleaf =
 		            					rightSubgraph.iterator().next();
 		            					if(! graphlabels.getLabel(dgleaf).equals(
 		            							solvedFormLabels.getLabel(treeleaf))) {
 		            						continue;
 		            					}
 		            			}
-		            			
+
 		            	    	ret.add(split);
 		            	    	subgraphToSubtree.put(leftSubgraph, leftSubtree);
 		            	    	subgraphToSubtree.put(rightSubgraph, rightSubtree);
 		            		}
-		            
+
 		            	}
 		        	}
 		        }
-			
-			
+
+
 		} else {
 			// elsewise I have no Idea.
 			System.err.println("Not in a recursive step.");
 		}
-		
-		
+
+
 		return ret.iterator();
 	}
 

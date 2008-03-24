@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.Nonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.rtgparser.StringNonterminal;
@@ -16,7 +15,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
-public class StrongerRtgRedundancyElimination<E extends Nonterminal> extends RedundancyElimination<E> {
+public class StrongerRtgRedundancyElimination<E> extends RedundancyElimination<E> {
 	public StrongerRtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
 		super(graph, labels, eqs);
 	}
