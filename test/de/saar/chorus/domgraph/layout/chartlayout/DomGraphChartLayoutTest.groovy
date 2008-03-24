@@ -12,8 +12,12 @@ import java.util.*;
 
 import de.saar.testingtools.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-class DomGraphChartLayoutTest extends GroovyTestCase {
+
+class DomGraphChartLayoutTest  {
 	private DomGraph graph;
     private NodeLabels labels;
     
@@ -21,6 +25,7 @@ class DomGraphChartLayoutTest extends GroovyTestCase {
     private DomGraphChartLayout layout;
     private LayoutOptions options;
     
+    @Before
     public void setUp() {
     	graph = new DomGraph();
     	labels = new NodeLabels();
@@ -29,20 +34,24 @@ class DomGraphChartLayoutTest extends GroovyTestCase {
     	options = new LayoutOptions(LayoutOptions.LabelType.BOTH, true);
     }
     
+    @Test
 	public void testSolvedFormGraph() {
 		checkLayoutReturns("[label(x f(x1)) dom(x1 y) label(y a)]");
 	}
 	
+    @Test
 	public void testNormalGraph() {
 		checkLayoutReturns("[label(x f(x1)) label(y g(y1)) dom(x1 z) dom(y1 z) label(z a)]");
 	}
 	
+    @Test
 	public void testUnsolvableGraph() {
 		TestingTools.expectException(LayoutException,
 			{ checkLayoutReturns("[label(x f(x))]"); }
 		);
 	}
 	
+    @Test
 	public void testEmptyFragmentsGraph() {
 		TestingTools.expectException(LayoutException,
 				{ checkLayoutReturns("[label(x f(x1)) dom(x1 y) dom(y z) label(z a)]"); }

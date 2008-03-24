@@ -136,7 +136,11 @@ public class RegularTreeGrammar<E> implements Cloneable {
     /**
      * Removes all unproductive nonterminals and splits from this chart.
      * A nonterminal is called unproductive if it isn't possible to derive a solved
-     * form from it (but it may still be inaccessible from the top-level subgraphs).
+     * form from it (but it may still be inaccessible from the top-level subgraphs).<p>
+     *
+     * This method accesses the precomputed preterminals of this RTG, and therefore
+     * assumes that recomputeSingletons() has been called since the latest change
+     * to the RTG.
      *
      * @param roots the roots of the dominance graph on which this chart is based
      */
@@ -145,7 +149,6 @@ public class RegularTreeGrammar<E> implements Cloneable {
         Map<E,List<Split<E>>> nonterminalUses = new HashMap<E,List<Split<E>>>();
         Map<Split<E>,List<E>> splitToLhs = new HashMap<Split<E>,List<E>>();
         Queue<E> agenda = new LinkedList<E>();
-        Set<E> singletons = new HashSet<E>();
 
         // compute mappings of nonterminals to the splits that use them,
         // and of splits to their LHSs
@@ -172,15 +175,11 @@ public class RegularTreeGrammar<E> implements Cloneable {
                 }
 
 
-                if( split.getAllDominators().isEmpty() ) {
-                    singletons.add(lhs);
-                }
-
             }
         }
 
         // bottom-up pass: initialize agenda with singletons
-        agenda.addAll(singletons);
+        agenda.addAll(singletons.keySet());
 
         // then propagate usefulness up from RHSs to LHSs of productions
         while( !agenda.isEmpty() ) {
@@ -466,40 +465,6 @@ public class RegularTreeGrammar<E> implements Cloneable {
         }
     }
 
-    /*
-    public Map<String,Set<String>> computePossibleDominators() {
-        Map<String,Set<String>> ret = new HashMap<String,Set<String>>();
-
-        for( E key : getAllNonterminals() ) {
-            for( Split<E> split : getSplitsFor(key)) {
-                for( String hole : split.getAllDominators() ) {
-                    for( E subgraph : split.getWccs(hole)) {
-                        for( String node : subgraph.getNodes() ) {
-                            addDominee(ret, split.getRootFragment(), node);
-                            addDominee(ret, hole, node);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        return ret;
-    }
-
-
-    private void addDominee(Map<String,Set<String>> possibleDominators, String dominator, String dominee) {
-        Set<String> dominees = possibleDominators.get(dominator);
-
-        if( dominees == null ) {
-            dominees = new HashSet<String>();
-            possibleDominators.put(dominator, dominees);
-        }
-
-        dominees.add(dominee);
-    }
-
-*/
 
 
 

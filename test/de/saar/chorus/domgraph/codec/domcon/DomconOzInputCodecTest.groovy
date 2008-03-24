@@ -2,7 +2,12 @@ package de.saar.chorus.domgraph.codec.domcon;
 
 import de.saar.chorus.domgraph.graph.*;
 
-class DomconOzInputCodecTest extends GroovyTestCase {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+class DomconOzInputCodecTest  {
+    @Test
 	public void testTrivialDomEdge() throws Exception {
 		DomGraph graph = new DomGraph();
 		NodeLabels labels = new NodeLabels();
@@ -26,6 +31,7 @@ class DomconOzInputCodecTest extends GroovyTestCase {
 		assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
 	}
 	
+    @Test
 	public void testChain3() throws Exception {
     		DomGraph graph = new DomGraph();
     		NodeLabels labels = new NodeLabels();
@@ -76,6 +82,7 @@ class DomconOzInputCodecTest extends GroovyTestCase {
 	        assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
     	}
     
+    @Test
 	public void testEmptyGraph() {
 		DomGraph graph = new DomGraph();
 		NodeLabels labels = new NodeLabels();
