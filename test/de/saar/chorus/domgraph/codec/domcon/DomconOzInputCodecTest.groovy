@@ -95,4 +95,21 @@ class DomconOzInputCodecTest  {
 		
 		assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
 	}
+    
+    @Test
+    public void testUmlauts() {
+        DomGraph graph = new DomGraph();
+		NodeLabels labels = new NodeLabels();
+		
+		graph.addNode("x", new NodeData(NodeType.LABELLED));
+		labels.addLabel("x", "pflücken");
+		
+		DomGraph myGraph = new DomGraph();
+		NodeLabels myLabels = new NodeLabels();
+		
+		DomconOzInputCodec codec = new DomconOzInputCodec();
+		codec.decode(new StringReader("[label(x pflücken)]"), myGraph, myLabels);
+		
+		assert DomGraph.isEqual(graph, labels, myGraph, myLabels);
+    }
 }
