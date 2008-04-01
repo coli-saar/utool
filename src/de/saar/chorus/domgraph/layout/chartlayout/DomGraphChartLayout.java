@@ -311,8 +311,8 @@ public class DomGraphChartLayout extends FragmentLayoutAlgorithm {
 
 
 				// child of the hole is a leaf?
-				if (getFragDegree(child) == 1) {
-					return fragWidth.get(child);
+				if(getFragDegree(child) == 1) {
+					return fragWidth.get(domgraph.getRoot(child) );
 				} else {
 					return canvas.getNodeWidth(nodeToLabel.get(hole));
 				}
