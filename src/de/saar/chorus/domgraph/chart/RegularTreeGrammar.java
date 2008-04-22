@@ -64,6 +64,28 @@ public class RegularTreeGrammar<E> implements Cloneable {
 
         size++;
     }
+    
+    public Object clone() {
+    	RegularTreeGrammar<E> ret = new RegularTreeGrammar<E>();
+
+        for( Map.Entry<E, List<Split<E>>> entry : chart.entrySet() ) {
+            ret.chart.put(entry.getKey(), new ArrayList<Split<E>>(entry.getValue()));
+        }
+
+        for( Map.Entry<E, ModifiableInteger> entry : refcount.entrySet() ) {
+            ret.refcount.put(entry.getKey(), new ModifiableInteger(entry.getValue().getValue()));
+        }
+
+        for( Map.Entry<E, String> entry : singletons.entrySet() ) {
+        	ret.singletons.put(entry.getKey(), new String(entry.getValue()));
+        }
+        
+        ret.size = size;
+
+        ret.toplevelSubgraphs = new ArrayList<E>(toplevelSubgraphs);
+        ret.finalStates = new HashSet<E>(finalStates);
+        return ret;
+    }
 
     public String getLabelForSplit(Split<E> split) {
 		return split.getRootFragment();
