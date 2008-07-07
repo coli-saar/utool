@@ -16,7 +16,7 @@ import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyEliminationTest;
 import de.saar.chorus.domgraph.graph.DomGraphTest;
 import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayoutTest;
 import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
-
+import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
 
 @RunWith(Suite.class)
 @SuiteClasses(value={
@@ -33,7 +33,8 @@ import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
         DomGraphLayoutTest.class,
         RedundancyEliminationTest.class,
         UnionFindTest.class,
-        RtgRedundancyEliminationTest.class
+        RtgRedundancyEliminationTest.class,
+        ModelCheckTest.class
 })
 public class DomgraphTestSuite4 {
 
