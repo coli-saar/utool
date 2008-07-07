@@ -1,4 +1,4 @@
-package nl.rug.discomm.udr.modelcheck;
+package de.saar.chorus.domgraph.chart.modelcheck;
 
 import java.util.ArrayList;
 import java.util.HashMap;
