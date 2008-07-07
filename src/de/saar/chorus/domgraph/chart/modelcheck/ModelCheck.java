@@ -49,10 +49,12 @@ public class ModelCheck {
 		}
 		
 		Set<SubgraphNonterminal> checked = new HashSet<SubgraphNonterminal>();
-		Map<String, String> variables = new HashMap<String,String>()
-;		for(int i = 0; i< top1.size(); i++) {
+		Map<String, String> variables = new HashMap<String,String>();
+;		Map<String, String> selbairav = new HashMap<String,String>();
+		
+		for(int i = 0; i< top1.size(); i++) {
 			if(! matchesSubgraph(top1.get(i), chart1, dg1, nl1, top2.get(i), chart2, dg2, nl2, 
-					checked, variables, true)) {
+					checked, variables, selbairav, true)) {
 				return false;
 			}
 		}
@@ -96,10 +98,11 @@ public class ModelCheck {
 		}
 		
 		Set<SubgraphNonterminal> checked = new HashSet<SubgraphNonterminal>();
-		Map<String, String> variables = new HashMap<String,String>()
+		Map<String, String> variables = new HashMap<String,String>();
+		Map<String, String> selbairav = new HashMap<String, String>();
 ;		for(int i = 0; i< top1.size(); i++) {
 			if(! matchesSubgraph(top1.get(i), chart1, dg1, nl1, top2.get(i), chart2, dg2, nl2, 
-					checked, variables,false)) {
+					checked, variables,selbairav,false)) {
 				return false;
 			}
 		}
@@ -110,7 +113,8 @@ public class ModelCheck {
 	private static boolean matchesSplit(Split<SubgraphNonterminal> sp1, Chart c1, 
 			DomGraph dg1, NodeLabels nl1,
 			Split<SubgraphNonterminal> sp2, Chart c2, DomGraph dg2,  NodeLabels nl2,
-			Set<SubgraphNonterminal> checked, Map<String, String> variables, boolean equal) {
+			Set<SubgraphNonterminal> checked, Map<String, String> variables,
+			Map<String,String> selbairav, boolean equal) {
 		
 	//	System.err.println("Checking splits...");
 		if(! nl1.getLabel(sp1.getRootFragment()).equals(nl2.getLabel(sp2.getRootFragment())) ) {
@@ -130,6 +134,14 @@ public class ModelCheck {
 				}
 			} else {
 				variables.put(var1, var2);
+			}
+			
+			if(selbairav.containsKey(var1)) {
+				if(! var1.equals(variables.get(var1))) {
+					return false;
+				}
+			} else {
+				selbairav.put(var2, var1);
 			}
 			
 		}
@@ -161,7 +173,7 @@ public class ModelCheck {
 			for(int h = 0; h < wccs1.size(); h++) {
 		//		System.err.println("Subgraph match failed");
 				if(! matchesSubgraph(wccs1.get(h), c1, dg1, nl1, wccs2.get(h), 
-						c2, dg2, nl2, checked, variables,equal)) {
+						c2, dg2, nl2, checked, variables,selbairav,equal)) {
 					return false;
 				}
 			}
@@ -174,7 +186,7 @@ public class ModelCheck {
 	
 	private static boolean matchesSubgraph(SubgraphNonterminal st1, Chart c1, DomGraph dg1, NodeLabels nl1,
 			SubgraphNonterminal st2, Chart c2, DomGraph dg2, NodeLabels nl2, 
-			Set<SubgraphNonterminal> checked, Map<String, String> variables, boolean equal) {
+			Set<SubgraphNonterminal> checked, Map<String, String> variables, Map<String, String> selbairav, boolean equal) {
 		
 		if(checked.contains(st2)) {
 			return true;
@@ -227,7 +239,7 @@ public class ModelCheck {
 		
 		for(Split<SubgraphNonterminal> values : splits2) {
 			for(Split<SubgraphNonterminal> key : splits1) {
-				if(matchesSplit(key, c1, dg1, nl1, values, c2, dg2, nl2, checked, variables, equal)) {
+				if(matchesSplit(key, c1, dg1, nl1, values, c2, dg2, nl2, checked, variables,selbairav, equal)) {
 					kickoutsplits.remove(values);
 				}
 			}

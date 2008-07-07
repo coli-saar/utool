@@ -75,6 +75,27 @@ public class ModelCheckTest {
 		assert ModelCheck.equals(c1,g1,l1,c2,sf,l2) == true;
 	}
 	
+	
+	@Test
+	public void testRecognizeWrongVariableBinding() {
+		DomGraph g1 = new DomGraph();
+		NodeLabels l1 = new NodeLabels();
+		makeVariableBoundChain4(g1,l1);
+		
+		Chart c1 = new Chart(l1);
+		
+		ChartSolver.solve(g1,c1)
+		
+		DomGraph sf = new DomGraph();
+		NodeLabels l2 = new NodeLabels();
+		makeWrongVariableBoundChain4(sf,l2);
+		
+		Chart c2 = new Chart(l2);
+		ChartSolver.solve(sf,c2);
+		
+		assert ModelCheck.equals(c1,g1,l1,c2,sf,l2) == false;
+	}
+	
 	/**
 	 * TODO create testcase for wrong variable match
 	 **/
@@ -176,6 +197,107 @@ public class ModelCheckTest {
 		        graph.addEdge("hl4", "ht3", new EdgeData(EdgeType.DOMINANCE));
 		        graph.addEdge("hr4", "ht4", new EdgeData(EdgeType.DOMINANCE));
 		}
+  
+  
+  
+  void makeWrongVariableBoundChain4(DomGraph graph, NodeLabels labels) {
+		 graph.clear();
+	        labels.clear();
+
+	        graph.addNode("ht0", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht0", "a0");
+	        graph.addNode("h1", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h1", "f1");
+	        graph.addNode("hl1", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr1", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht1", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht1", "a1");
+	        graph.addNode("h2", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h2", "f2");
+	        graph.addNode("hl2", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr2", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht2", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht2", "a2h14");
+	        graph.addNode("h3", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h3", "f3h14h7");
+	        graph.addNode("hl3", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr3", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht3", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht3", "a3h7");
+	        graph.addNode("h4", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h4", "f4");
+	        graph.addNode("hl4", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr4", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht4", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht4", "a4");
+
+	        graph.addEdge("h1", "hl1", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h1", "hr1", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl1", "ht0", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr1", "ht1", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h2", "hl2", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h2", "hr2", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl2", "ht1", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr2", "ht2", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h3", "hl3", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h3", "hr3", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl3", "ht2", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr3", "ht3", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h4", "hl4", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h4", "hr4", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl4", "ht3", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr4", "ht4", new EdgeData(EdgeType.DOMINANCE));
+	}
+  
+  
+  void makeVariableBoundChain4(DomGraph graph, NodeLabels labels) {
+		 graph.clear();
+	        labels.clear();
+
+	        graph.addNode("ht0", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht0", "a0");
+	        graph.addNode("h1", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h1", "f1");
+	        graph.addNode("hl1", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr1", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht1", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht1", "a1");
+	        graph.addNode("h2", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h2", "f2");
+	        graph.addNode("hl2", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr2", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht2", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht2", "a2h7");
+	        graph.addNode("h3", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h3", "f3h14h7");
+	        graph.addNode("hl3", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr3", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht3", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht3", "a3h14");
+	        graph.addNode("h4", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("h4", "f4");
+	        graph.addNode("hl4", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("hr4", new NodeData(NodeType.UNLABELLED));
+	        graph.addNode("ht4", new NodeData(NodeType.LABELLED));
+	        labels.addLabel("ht4", "a4");
+
+	        graph.addEdge("h1", "hl1", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h1", "hr1", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl1", "ht0", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr1", "ht1", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h2", "hl2", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h2", "hr2", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl2", "ht1", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr2", "ht2", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h3", "hl3", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h3", "hr3", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl3", "ht2", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr3", "ht3", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("h4", "hl4", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("h4", "hr4", new EdgeData(EdgeType.TREE));
+	        graph.addEdge("hl4", "ht3", new EdgeData(EdgeType.DOMINANCE));
+	        graph.addEdge("hr4", "ht4", new EdgeData(EdgeType.DOMINANCE));
+	}
   
   public static void makeGoodSolvedForm(DomGraph graph, NodeLabels labels) {
 	  graph.clear();
