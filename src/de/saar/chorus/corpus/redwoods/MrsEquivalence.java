@@ -134,6 +134,7 @@ public class MrsEquivalence {
 			} catch( Exception e) {
 				//	System.err.println("Parser or IO");
 				otex++;
+				e.printStackTrace();
 				continue;
 			}
 		}
@@ -183,8 +184,10 @@ public class MrsEquivalence {
 			Set<String> mrses = fullpair.getKey().allStrings;
 			int i = 1;
 			for(String usr : mrses) {
-				filelog.append("(" + i + ") " + usr + n);
+				
+				filelog.append("[" + i + "] " + usr + n);
 				i++;
+				
 			}
 			
 			filelog.append("(" + fullpair.getValue().size() +")" + n);
@@ -203,7 +206,7 @@ public class MrsEquivalence {
 	 */
 	public static void main(String[] args) {
 		
-		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh0.06-01-30.";
+		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh3.06-01-30.";
 		MrsEquivalence mrse = new MrsEquivalence(redwoods + "/mrs");
 		
 		try {

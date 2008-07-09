@@ -282,17 +282,11 @@ public class MrsComparator {
 			
 			NodeLabels tmp = new NodeLabels();
 			
-				mrsin.decode(in, dg, tmp);
+				mrsin.decode(in, dg, labels);
 			
 				try {
-				for(String node : dg.getAllNodes()) {
-					String old = tmp.getLabel(node);
-					if( old!= null ) {
-						labels.addLabel(node, old.replaceAll("[eixuh]\\d+", "_"));
-					}
-				}
 				
-				chart = new Chart(tmp);
+				chart = new Chart(labels);
 				ChartSolver.solve(dg, chart);
 			} catch( Exception e) {
 				e.printStackTrace();
@@ -321,7 +315,10 @@ public class MrsComparator {
 				}
 				
 				if( ModelCheck.subsumes(chart, dg, labels, compare.chart, compare.dg, compare.labels) ) {
+				
 					allStrings.add(compare.mrsstring);
+					compare.allStrings.add(mrsstring);
+		
 					return true;
 				} 
 			}
