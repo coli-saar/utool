@@ -21,7 +21,9 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class ModelCheck {
 
-	
+
+	public static final String variableMatch = "[eixuh]\\d+";
+
 	/**
 	 * Checks whether two <code>Chart</code> objects, based on the given <code>DomGraph</code>s,
 	 * are equivalent. Node names are ignored. Variable naming within labels is taken into account
@@ -35,34 +37,58 @@ public class ModelCheck {
 	 * @param chart2 a second chart
 	 * @param dg2 the <code>DomGraph</code> chart2 is based on
 	 * @param nl2 the labels dg2 is labeled with
+	 * 
 	 * @return true if chart1 and chart2 are equivalent with respect to the labels, false otherwise.
 	 */
-	
+
 	public static boolean equals(Chart chart1, DomGraph dg1, NodeLabels nl1,
 			Chart chart2, DomGraph dg2, NodeLabels nl2) {
+
+
+
 		List<SubgraphNonterminal> top1 = chart1.getToplevelSubgraphs();
 		List<SubgraphNonterminal> top2 = chart2.getToplevelSubgraphs();
-		
+
 		if(top1.size() != top2.size()) {
 			System.err.println("different number of top wccs.");
 			return false;
 		}
-		
+
 		Set<SubgraphNonterminal> checked = new HashSet<SubgraphNonterminal>();
 		Map<String, String> variables = new HashMap<String,String>();
-;		Map<String, String> selbairav = new HashMap<String,String>();
-		
+		Map<String, String> selbairav = new HashMap<String,String>();
+
+
+
 		for(int i = 0; i< top1.size(); i++) {
-			if(! matchesSubgraph(top1.get(i), chart1, dg1, nl1, top2.get(i), chart2, dg2, nl2, 
+
+			NodeLabels clean1 = new NodeLabels();
+			for(String node : top1.get(i).getNodes()) {
+				String oldlabel = nl1.getLabel(node);
+				if(oldlabel != null) {
+					clean1.addLabel(node, oldlabel.replaceAll(variableMatch, "_"));
+				}
+			}
+
+			NodeLabels clean2 = new NodeLabels();
+			for(String node : top2.get(i).getNodes()) {
+				String oldlabel = nl2.getLabel(node);
+				if(oldlabel != null) {
+					clean2.addLabel(node, oldlabel.replaceAll(variableMatch, "_"));
+				}
+			}
+
+
+			if(! matchesSubgraph(top1.get(i), chart1, dg1, clean1, top2.get(i), chart2, dg2, clean2, 
 					checked, variables, selbairav, true)) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
-	
+
+
 	/**
 	 * Determines whether a <code>Chart</code> object basing on a given <code>DomGraph</code> is 
 	 * more general (subsumes) a second one. The first argument has to be the more general one,
@@ -88,43 +114,60 @@ public class ModelCheck {
 	public static boolean subsumes(Chart chart1, DomGraph dg1, NodeLabels nl1,
 			Chart chart2, DomGraph dg2, NodeLabels nl2) {
 
-		
+
 		List<SubgraphNonterminal> top1 = chart1.getToplevelSubgraphs();
 		List<SubgraphNonterminal> top2 = chart2.getToplevelSubgraphs();
-		
+
 		if(top1.size() != top2.size()) {
 			System.err.println("different number of top wccs.");
 			return false;
 		}
-		
+
 		Set<SubgraphNonterminal> checked = new HashSet<SubgraphNonterminal>();
 		Map<String, String> variables = new HashMap<String,String>();
 		Map<String, String> selbairav = new HashMap<String, String>();
-;		for(int i = 0; i< top1.size(); i++) {
-			if(! matchesSubgraph(top1.get(i), chart1, dg1, nl1, top2.get(i), chart2, dg2, nl2, 
+		;		for(int i = 0; i< top1.size(); i++) {
+
+			NodeLabels clean1 = new NodeLabels();
+			for(String node : top1.get(i).getNodes()) {
+				String oldlabel = nl1.getLabel(node);
+				if(oldlabel != null) {
+					clean1.addLabel(node, oldlabel.replaceAll(variableMatch, "_"));
+				}
+			}
+
+			NodeLabels clean2 = new NodeLabels();
+			for(String node : top2.get(i).getNodes()) {
+				String oldlabel = nl2.getLabel(node);
+				if(oldlabel != null) {
+					clean2.addLabel(node, oldlabel.replaceAll(variableMatch, "_"));
+				}
+			}
+
+			if(! matchesSubgraph(top1.get(i), chart1, dg1, clean1, top2.get(i), chart2, dg2, clean2, 
 					checked, variables,selbairav,false)) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	private static boolean matchesSplit(Split<SubgraphNonterminal> sp1, Chart c1, 
 			DomGraph dg1, NodeLabels nl1,
 			Split<SubgraphNonterminal> sp2, Chart c2, DomGraph dg2,  NodeLabels nl2,
 			Set<SubgraphNonterminal> checked, Map<String, String> variables,
 			Map<String,String> selbairav, boolean equal) {
-		
-	//	System.err.println("Checking splits...");
+
+		//	System.err.println("Checking splits...");
 		if(! nl1.getLabel(sp1.getRootFragment()).equals(nl2.getLabel(sp2.getRootFragment())) ) {
-		//	System.err.println("root " + c1.getLabelForSplit(sp1) + " doesn't match " + c2.getLabelForSplit(sp2));
+			//	System.err.println("root " + c1.getLabelForSplit(sp1) + " doesn't match " + c2.getLabelForSplit(sp2));
 			return false;
 		}
-		
-		Matcher match1 = Pattern.compile("[eixuh]\\d+").matcher(c1.getLabelForSplit(sp1));
-		Matcher match2 = Pattern.compile("[eixuh]\\d+").matcher(c2.getLabelForSplit(sp2));
-		
+
+		Matcher match1 = Pattern.compile(variableMatch).matcher(c1.getLabelForSplit(sp1));
+		Matcher match2 = Pattern.compile(variableMatch).matcher(c2.getLabelForSplit(sp2));
+
 		while(match1.find() && match2.find()) {
 			String var1 = match1.group();
 			String var2 = match2.group();
@@ -135,7 +178,7 @@ public class ModelCheck {
 			} else {
 				variables.put(var1, var2);
 			}
-			
+
 			if(selbairav.containsKey(var1)) {
 				if(! var1.equals(variables.get(var1))) {
 					return false;
@@ -143,100 +186,100 @@ public class ModelCheck {
 			} else {
 				selbairav.put(var2, var1);
 			}
-			
+
 		}
-		
+
 		List<String> dominators1 = dg1.getHoles(sp1.getRootFragment());
 		List<String> dominators2 = dg2.getHoles(sp2.getRootFragment());
-		
-		
+
+
 		if( dominators1.size() != dominators2.size() ) {
 			//this should actually never occur in our label style, als labels include the arity.
-	//		System.err.println("Wrong arity.");
+			//		System.err.println("Wrong arity.");
 			return false;
 		}
 		for(int i = 0; i < dominators1.size(); i++) {
 			List<SubgraphNonterminal> wccs1 = sp1.getWccs(dominators1.get(i));
 			List<SubgraphNonterminal> wccs2 = sp2.getWccs(dominators2.get(i));
-			
-			
+
+
 			if( wccs1.size() != wccs2.size() ) {
 				// I'm not sure whether or not this is too strict
-	//			System.err.println("Wrong number of targets of hole.");
+				//			System.err.println("Wrong number of targets of hole.");
 				return false;
 			}
-			
+
 			/*
 			 * TODO this is not correct, but should work for hnv graphs.
 			 * Find a way to match wccs properly.
 			 */
 			for(int h = 0; h < wccs1.size(); h++) {
-		//		System.err.println("Subgraph match failed");
+				//		System.err.println("Subgraph match failed");
 				if(! matchesSubgraph(wccs1.get(h), c1, dg1, nl1, wccs2.get(h), 
 						c2, dg2, nl2, checked, variables,selbairav,equal)) {
 					return false;
 				}
 			}
-			
+
 		}
-	//	System.err.println("Matched Splits.");
+		//	System.err.println("Matched Splits.");
 		return true;
 	}
 
-	
+
 	private static boolean matchesSubgraph(SubgraphNonterminal st1, Chart c1, DomGraph dg1, NodeLabels nl1,
 			SubgraphNonterminal st2, Chart c2, DomGraph dg2, NodeLabels nl2, 
 			Set<SubgraphNonterminal> checked, Map<String, String> variables, Map<String, String> selbairav, boolean equal) {
-		
+
 		if(checked.contains(st2)) {
 			return true;
 		}
-		
+
 		if( st1.getNodes().size()!= st2.getNodes().size() ) {
-			
-	//		System.err.println("Wrong number of nodes in SG.");
+
+			//		System.err.println("Wrong number of nodes in SG.");
 			return false;
 		}
-		
-	
+
+
 		Multiset<String> labels1 = new HashMultiset<String>();		
 		Multiset<String> labels2 = new HashMultiset<String>();		
-		
+
 		for(String node : st1.getNodes()) {
 			labels1.add(nl1.getLabel(node));
 		}
-	
+
 		for(String node : st2.getNodes()) {
 			labels2.add(nl2.getLabel(node));
 		}
-		
-		
+
+
 		if(! labels1.equals(labels2)) {
-	//		System.err.println("Label sets don't match.");
+			//		System.err.println("Label sets don't match.");
 			return false;
 		}
-		
+
 		List<Split<SubgraphNonterminal>> splits1 = c1.getSplitsFor(st1);
-		
+
 		List<Split<SubgraphNonterminal>> splits2 = c2.getSplitsFor(st2);
-		
+
 		Set<Split<SubgraphNonterminal>> kickoutsplits = new HashSet<Split<SubgraphNonterminal>>(splits2);
-		
+
 		// the first argument is meant to be either equal or more general than the second one
-		
-		
+
+
 		if(equal) {
 			if(splits1.size() != splits2.size()) {
 				//		System.err.println("the first SG is more specific than the second");
-						return false;
-					}
+				return false;
+			}
 		} else {
 			if(splits1.size() < splits2.size()) {
 				//		System.err.println("the first SG is more specific than the second");
-						return false;
-					}
+				return false;
+			}
 		}
-		
+
 		for(Split<SubgraphNonterminal> values : splits2) {
 			for(Split<SubgraphNonterminal> key : splits1) {
 				if(matchesSplit(key, c1, dg1, nl1, values, c2, dg2, nl2, checked, variables,selbairav, equal)) {
@@ -244,17 +287,17 @@ public class ModelCheck {
 				}
 			}
 		}
-		
+
 		if(kickoutsplits.isEmpty()) {
 			checked.add(st2);
-	//		System.err.println("Matched SGs.");
+			//		System.err.println("Matched SGs.");
 			return true;
 		}
 //		System.err.println("Could not match all of the more specific splits.");
 		return false;
 	}
-	
-	
+
+
 	/**
 	 * Checks whether some tree is a solved form of a <code>DomGraph</code>. 
 	 * This works with pure chains only. 
@@ -272,7 +315,7 @@ public class ModelCheck {
 			return false;
 		} else {
 			try {
-			return ChartSolver.solve(dg, new Chart(dgl), new ModelSplitSource(dg,dgl,sf,sfl));
+				return ChartSolver.solve(dg, new Chart(dgl), new ModelSplitSource(dg,dgl,sf,sfl));
 			} catch(SolverNotApplicableException e) {
 				e.printStackTrace();
 				return false;
@@ -280,6 +323,6 @@ public class ModelCheck {
 		}
 	}
 
-	
-	
+
+
 }
