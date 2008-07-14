@@ -49,7 +49,7 @@ public class MrsComparator {
 		log.append("File\t\t parses\t mrs_string\t mrs_chart\t malformed\t other err.\n");
 		double averageReadings = 1.0, averageMRSes = 1.0, averageCharts = 1.0, 
 			averageMF = 1.0, averageOther = 1.0;
-		int singletons = 0;
+		int singletons = 0, all = 0;
 		File[] sentences = corpusDir.listFiles();
 		for(File file : sentences) {
 			if(file.isDirectory() && (file.list().length < 300 ) ) {
@@ -59,18 +59,18 @@ public class MrsComparator {
 				averageCharts += (double) result.get(2);
 				averageMF += (double) result.get(3);
 				averageOther += (double) result.get(4);
-				
+				all++;
 				if(result.get(0) == 1) {
 					singletons++;
 				}
 			}
 		}
 		
-		averageReadings = averageReadings/ (double) sentences.length;
-		averageMRSes = averageMRSes / (double) sentences.length;
-		averageCharts = averageCharts / (double) sentences.length;
-		averageMF = averageMF / (double) sentences.length;
-		averageOther = averageOther / (double) sentences.length;
+		averageReadings = averageReadings/ (double) all;
+		averageMRSes = averageMRSes / (double) all;
+		averageCharts = averageCharts / (double) all;
+		averageMF = averageMF / (double)all;
+		averageOther = averageOther / (double) all;
 		
 		
 		log.flush();
