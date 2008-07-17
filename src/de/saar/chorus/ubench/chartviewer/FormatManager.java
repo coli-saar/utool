@@ -16,8 +16,8 @@ import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.JGraphUtilities;
 
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.Split;
-import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.ubench.jdomgraph.EdgeType;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
@@ -250,7 +250,7 @@ public class FormatManager {
 	 * @param roots
 	 * @return
 	 */
-	public static String getHTMLforMarkedSplit(Split<SubgraphNonterminal> split, Set<String> roots) {
+	public static String getHTMLforMarkedSplit(Split<GraphBasedNonterminal> split, Set<String> roots) {
 
 		if( splitToMarkedHTML.containsKey(split) ) {
 			return splitToMarkedHTML.get(split);
@@ -275,7 +275,7 @@ public class FormatManager {
 				List<Set<String>> x = new ArrayList<Set<String>>();
 
 				boolean firstsubgraph = true;
-				for (SubgraphNonterminal wcc : split.getWccs(hole)) {
+				for (GraphBasedNonterminal wcc : split.getWccs(hole)) {
 					if(firstsubgraph) {
 						firstsubgraph = false;
 					} else {
