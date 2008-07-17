@@ -23,6 +23,8 @@ public class MrsEquivalence {
 	public MrsEquivalence(String corpus) {
 		man = new CodecManager(); 
 		corpusDir = new File(corpus);
+		File analysis = new File(corpus.replace("/mrs", "/mrsanalysis") );
+		analysis.mkdir();
 		try {
 			man.registerAllDeclaredCodecs();
 		} catch(Exception e) {
@@ -88,7 +90,7 @@ public class MrsEquivalence {
 		//	Set<MRStriple> finalmirses = new HashSet<MRStriple>();
 		int malformed = 0, otex = 0;
 		for(File file : files) {
-
+			System.err.println("checking " + file.getName() + "...");
 			StringBuffer nextmrs = new StringBuffer(500);
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line = reader.readLine();
@@ -98,23 +100,28 @@ public class MrsEquivalence {
 			}
 
 			String mrsstring = nextmrs.toString();
+			System.err.print("Read MRS...");
 			List<String> parsenumbers = mrsesToParses.get(mrsstring);
 
 			if(parsenumbers == null) {
 				parsenumbers = new ArrayList<String>();
 				mrsesToParses.put(mrsstring, parsenumbers);
 			}
+			System.err.print("In String-Map...");
 
 			parsenumbers.add(file.getName());
 			//		mrses.add(nextmrs.toString());
 
 		}
 
+		System.err.println("Full matching: ");
 		for(String mrs : mrsesToParses.keySet()) {
+			System.err.print("MRS " + mrsesToParses.get(mrs));
 			MRStriple trio = new MRStriple(mrs);
 			try {
+				long time = System.currentTimeMillis();
 				trio.readAndSolve();
-
+				System.err.print("Solved...(" + (System.currentTimeMillis() - time) + "ms)");
 				List<String> parses = mrsFullToParses.get(trio);
 				if(parses == null) {
 					parses = new ArrayList<String>();
@@ -124,15 +131,16 @@ public class MrsEquivalence {
 				}
 			
 				parses.addAll(mrsesToParses.get(mrs));
+				System.err.println("Compared!");
 
 				//finalmirses.add(trio);
 			}
 			catch( MalformedDomgraphException e) {
-				//	System.err.println("Mf DG Exc.!");
+					System.err.println("Mf DG Exc.!");
 				malformed++;
 				continue;
 			} catch( Exception e) {
-				//	System.err.println("Parser or IO");
+					System.err.println("Parser or IO");
 				otex++;
 				e.printStackTrace();
 				continue;
@@ -161,8 +169,12 @@ public class MrsEquivalence {
 
 	private static void writeLog(Map<String, List<String>> mrses1, Map<MRStriple, List<String>>
 	mrses2, File folder) throws IOException {
+		
+		
+	//	File storage = new File(folder.getAbsolutePath().replace("/mrs", "/mrsanalysis"));
+	//	storage.createNewFile();
 		FileWriter filelog = new FileWriter(folder.getAbsolutePath().replace("/mrs", "/mrsanalysis"));
-
+		
 
 		String n = System.getProperty("line.separator");
 
@@ -206,11 +218,12 @@ public class MrsEquivalence {
 	 */
 	public static void main(String[] args) {
 		
-		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh3.06-01-30.";
+		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh4.06-01-30.";
 		MrsEquivalence mrse = new MrsEquivalence(redwoods + "/mrs");
 		
 		try {
-			mrse.checkCorpus();
+			checkFolder(new File("/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh4.06-01-30./mrs/41503"));
+		//	mrse.checkCorpus();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

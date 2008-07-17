@@ -12,11 +12,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import de.saar.basic.XMLFilter;
-import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.Split;
-import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -105,13 +105,13 @@ public class ChartViewerListener implements ActionListener {
 		} else if( command.equals("delSplit") ) {
 			// a Split was deleted
 
-			Split<SubgraphNonterminal> selectedSplit = viewer.getSelectedSplit();
+			Split<GraphBasedNonterminal> selectedSplit = viewer.getSelectedSplit();
 			if( selectedSplit != null ) {
 				try {
 					// remove the split from the chart itself
-					Chart chart = viewer.getChart();
-					SubgraphNonterminal subgraph = viewer.getSubgraphForMarkedSplit();
-					List<Split<SubgraphNonterminal>> splits = new ArrayList<Split<SubgraphNonterminal>>(chart.getSplitsFor(subgraph));
+					RegularTreeGrammar<GraphBasedNonterminal> chart = viewer.getChart();
+					GraphBasedNonterminal subgraph = viewer.getSubgraphForMarkedSplit();
+					List<Split<GraphBasedNonterminal>> splits = new ArrayList<Split<GraphBasedNonterminal>>(chart.getSplitsFor(subgraph));
 
 					splits.remove(selectedSplit);
 					chart.setSplitsForSubgraph(subgraph, splits);
@@ -133,9 +133,10 @@ public class ChartViewerListener implements ActionListener {
 		} else if( command.equals("solvechart")) {
 			// display the first solved form of the chart
 
-			Chart chart = viewer.getChart();
+			RegularTreeGrammar<GraphBasedNonterminal> chart = viewer.getChart();
 			DomGraph firstForm = (DomGraph) viewer.getDg().clone();
-			SolvedFormIterator sfi = new SolvedFormIterator((Chart) chart.clone() ,firstForm);
+			SolvedFormIterator<GraphBasedNonterminal> sfi = new SolvedFormIterator<GraphBasedNonterminal>(
+					(RegularTreeGrammar<GraphBasedNonterminal>) chart.clone() ,firstForm);
 			SolvedFormSpec spec = sfi.next();
 			firstForm = firstForm.makeSolvedForm(spec);
 			NodeLabels labels = viewer.getLabels().makeSolvedForm(spec);
