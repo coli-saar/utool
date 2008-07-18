@@ -102,7 +102,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * for determining the cell widths
 	 */
 	private String longestSplit;
-	private Set<String> biggestSubgraph;
+	private GraphBasedNonterminal biggestSubgraph;
 	private int lastIndex;
 
 	// keeping track of the currently marked field
@@ -293,16 +293,16 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private void calculateChartTable() {
 
 		Set<String> roots = dg.getAllRoots();
-		Set<Set<String>> visited = new HashSet<Set<String>>();
+		Set<GraphBasedNonterminal> visited = new HashSet<GraphBasedNonterminal>();
 
 		for (GraphBasedNonterminal fragset : chart.getToplevelSubgraphs()) {
 			corSubgraph(fragset, roots, visited);
 		}
 
 		if(!subgraphs.isEmpty()) {
-			biggestSubgraph = subgraphs.get(0).getNodes();
+			biggestSubgraph = subgraphs.get(0);
 		} else {
-			biggestSubgraph = new HashSet<String>();
+			biggestSubgraph = new SubgraphNonterminal();
 		}
 		lastIndex = orderedSplits.size();
 
@@ -316,7 +316,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 * @param roots the roots of the current subgraph
 	 * @param visited the set of visited subgraphs
 	 */
-	private void corSubgraph(GraphBasedNonterminal subgraph, Set<String> roots, Set<Set<String>> visited) {
+	private void corSubgraph(GraphBasedNonterminal subgraph, Set<String> roots, Set<GraphBasedNonterminal> visited) {
 		GraphBasedNonterminal s = new SubgraphNonterminal(subgraph.getNodes()); // TODO - is this really necessary? - ak
 
 		Set<GraphBasedNonterminal> toVisit = new HashSet<GraphBasedNonterminal>();
@@ -324,8 +324,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		if (!visited.contains(subgraph)) {
 
 			// a new subgraph
-			visited.add(subgraph.getNodes());
-
+			visited.add(subgraph);
+		//	System.err.println(subgraph);
 			s.getNodes().retainAll(roots);
 			rootsToSubgraphs.put(s.getNodes(), subgraph);
 
@@ -354,7 +354,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 					 * just using the index of the currently
 					 * marked row.
 					 */
-					subgraphs.add(s);
+					subgraphs.add(subgraph);
 					splitcount++;
 
 					// to compute the string representations of
@@ -413,9 +413,9 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 			map.put(hole, x);
 
 			for (GraphBasedNonterminal wcc : split.getWccs(hole)) {
-				Set<String> copy = new HashSet<String>(wcc.getNodes());
-				copy.retainAll(roots);
-				x.add(copy);
+				GraphBasedNonterminal copy = new SubgraphNonterminal(wcc.getNodes());
+				copy.getNodes().retainAll(roots);
+				x.add(copy.getNodes());
 			}
 		}
 
@@ -706,10 +706,20 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						return FormatManager.getHTMLforMarkedSubgraph(toShow);
 					}
 					// a subgraph that is not marked
-					if(subgraphs.get(rowIndex) instanceof QuantifierMarkedNonterminal) {
-						return toShow.toString() + "<sub>" + 
-						((QuantifierMarkedNonterminal) sub).getPreviousQuantifier()+ "</sub>";
+		/*		try {
+					
+					return toShow.toString() + "<b>" + 
+							((QuantifierMarkedNonterminal) sub).getPreviousQuantifier() + "</b>";
+				} catch( ClassCastException e) {
+				//	System.err.println("noe" + toShow);
+					return toShow;
+				}*/
+					
+					if(sub instanceof QuantifierMarkedNonterminal) {
+						return "<html>" + toShow.toString() + "<sub>" + 
+						((QuantifierMarkedNonterminal) sub).getPreviousQuantifier()+ "</sub></html>";
 					} else {
+					
 						return toShow;
 					}
 					
@@ -816,7 +826,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		orderedSplits.clear();
 		rootsToSubgraphs.clear();
 		longestSplit = "";
-		biggestSubgraph = new HashSet<String>();
+		biggestSubgraph = new SubgraphNonterminal();
 		lastIndex = -1;
 		subgraphs.clear();
 		noOfSubgraphs = 0;
@@ -1030,22 +1040,8 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				reduced = true;
 				eqsname = eqsn;
 				
-			/*	chart = new RegularTreeGrammar<GraphBasedNonterminal>();
-				for(QuantifierMarkedNonterminal top : out.getToplevelSubgraphs()) {
-					chart.addToplevelSubgraph(top);
-				}
-				for(QuantifierMarkedNonterminal nt : out.getAllNonterminals()) {
-					for(Split<QuantifierMarkedNonterminal> split : out.getSplitsFor(nt)) {
-						Split<GraphBasedNonterminal> next = new Split<GraphBasedNonterminal>(split.getRootFragment());
-						for(String dom : split.getAllDominators()) {
-							for(QuantifierMarkedNonterminal qmnt : split.getWccs(dom)) {
-								next.addWcc(dom, qmnt);
-							}
-						}
-						chart.addSplit(nt, next);
-					}
-				}*/
-				
+		
+				chart.clear();
 				chart = (RegularTreeGrammar<GraphBasedNonterminal>) out;
 			
 				
