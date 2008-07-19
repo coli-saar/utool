@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,7 @@ public class MrsComparator {
 	static {
 		man = new CodecManager(); try {
 		man.registerAllDeclaredCodecs();
-		log =   new BufferedWriter(new FileWriter("mrs_jh3.stats", true));
+		
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -46,13 +47,20 @@ public class MrsComparator {
 	
 	public static void checkCorpus(File corpusDir) throws IOException {
 		
+		
+		
+		//TODO refactor this mess. please.
+		//TODO change to 'true' if stuck again
+		log =   new BufferedWriter(new FileWriter(corpusDir.getAbsolutePath() + File.separator + "mrs.stats",true));
 		log.append("File\t\t parses\t mrs_string\t mrs_chart\t malformed\t other err.\n");
 		double averageReadings = 1.0, averageMRSes = 1.0, averageCharts = 1.0, 
 			averageMF = 1.0, averageOther = 1.0;
 		int singletons = 0, all = 0;
 		File[] sentences = corpusDir.listFiles();
+		Arrays.sort(sentences);
 		for(File file : sentences) {
-			if(file.isDirectory() && (file.list().length < 300 ) ) {
+			if(file.isDirectory() && (file.list().length < 300 )
+					&& (Integer.parseInt(file.getName()) > 14303)) {
 				List<Integer>result = checkFolder(file);
 				averageReadings += (double) result.get(0);
 				averageMRSes += (double) result.get(1); 
@@ -130,8 +138,8 @@ public class MrsComparator {
 				+ malformed + "\t" + otex + "\n");
 		log.flush();
 		System.err.println(dir.getName() + " has " + files.length + " parses and " + mrses.size() + 
-				" different USRs strings and " + finalmirses.size() + " valid USR charts (."
-				+ malformed + " mf, " + otex + "other exep.)");
+				" different USRs strings and " + finalmirses.size() + " valid USR charts ("
+				+ malformed + " mf, " + otex + "other excep.)");
 		List<Integer> ret = new ArrayList<Integer>();
 		ret.add(files.length);
 		ret.add(mrses.size());
@@ -247,7 +255,7 @@ public class MrsComparator {
 	// start again with 30103
 	
 	public static void main(String[] args) {
-		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh3.06-01-30.";
+		String redwoods = "/export/black/regneri/delphin/Redwoods_tsdb_export/redwoods.jan-06.jh1.06-01-30.";
 		try {
 			checkCorpus(new File(redwoods + "/mrs"));
 		} catch(Exception e) {
