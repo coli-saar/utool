@@ -50,7 +50,7 @@ public class MrsComparator {
 		
 		
 		//TODO refactor this mess. please.
-		//TODO change to 'true' if stuck again
+		//TODO change to 'true' if stuck again; last one: 422 (beware; lex. ordering!!)
 		log =   new BufferedWriter(new FileWriter(corpusDir.getAbsolutePath() + File.separator + "mrs.stats",true));
 		log.append("File\t\t parses\t mrs_string\t mrs_chart\t malformed\t other err.\n");
 		double averageReadings = 1.0, averageMRSes = 1.0, averageCharts = 1.0, 
@@ -59,8 +59,7 @@ public class MrsComparator {
 		File[] sentences = corpusDir.listFiles();
 		Arrays.sort(sentences);
 		for(File file : sentences) {
-			if(file.isDirectory() && (file.list().length < 300 )
-					&& (Integer.parseInt(file.getName()) > 14303)) {
+			if(file.isDirectory() && (file.list().length < 300 )) {
 				List<Integer>result = checkFolder(file);
 				averageReadings += (double) result.get(0);
 				averageMRSes += (double) result.get(1); 
@@ -255,7 +254,7 @@ public class MrsComparator {
 	// start again with 30103
 	
 	public static void main(String[] args) {
-		String redwoods = "/export/black/regneri/delphin/Redwoods_tsdb_export/redwoods.jan-06.jh1.06-01-30.";
+		String redwoods = "/Users/Michaela/Uni/Resources/Redwoods_tsdb_export/redwoods.jan-06.jh0.06-01-30.";
 		try {
 			checkCorpus(new File(redwoods + "/mrs"));
 		} catch(Exception e) {
