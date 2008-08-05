@@ -31,7 +31,9 @@
     <property name="jgraph.jar" location="${packages}/jgraph.jar" />
     <property name="jgraphaddons.jar" location="${packages}/jgraphaddons.jar" />
     <property name="jgraph.unpacked.classes" value="org/jgraph/**" />
-    
+	
+    <property name="google-collections.jar" value="${packages}/google-collect-snapshot-20071022.jar"/>
+	<property name="google.unpacked.classes" value ="com/google/**"/>
     
     <property name="coli" value="de/saar" />
     <property name="chorus" value="de/saar/chorus" />
@@ -63,7 +65,7 @@
         <jar jarfile="${domgraph.jar}">
             <fileset dir="${build.classes}"
 includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
-${getopt.unpacked.classes},${itext.unpacked.classes}"
+${getopt.unpacked.classes},${itext.unpacked.classes},${google.unpacked.classes}"
 excludes="**/*$UnitTests.class,**/testsuite/**" />
             <fileset dir="." includes="examples/**/*, pictures/**/*" />
             <manifest>
@@ -75,7 +77,7 @@ value="de.saar.chorus.domgraph.utool.Utool" />
     </target>
     
     
-    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,rmrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked">
+    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,rmrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked,google.unpacked">
         <javac srcdir="${source}"
  destdir="${build.classes}"
  debug="true"
@@ -130,7 +132,7 @@ value="de.saar.chorus.domgraph.utool.Utool" />
         <jar jarfile="${domgraph-dist.jar}"
 basedir="${build.classes}"
 includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},
-${itext.unpacked.classes},${jgraph.unpacked.classes}"
+${itext.unpacked.classes},${jgraph.unpacked.classes},${google.unpacked.classes}"
 excludes="**/*$UnitTests.class,**/testsuite/**">
             
             <manifest>
@@ -320,6 +322,12 @@ password="${deploy.password}">
         </antcall>
     </target>
     
+	 <target name="google.unpacked" depends="init" if="google-collections.jar.present">
+	        <antcall target="unpack">
+	            <param name="unpack.jar" value="${google-collections.jar}" />
+	            <param name="unpack.jar.id" value="google" />
+	        </antcall>
+	    </target>
     
     <!-- Javadoc -->
 
@@ -352,7 +360,9 @@ excludes="**/*.jj, **/*.properties, **/testsuite/**/*" />
         <available file="${getopt.jar}" property="getopt.jar.present"/>
         <available file="${itext.jar}" property="itext.jar.present"/>
         <available file="${jgraph.jar}" property="jgraph.jar.present"/>
-        <available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+        <available file="${google-collections.jar}" property="google-collections.jar.present"/>
+		<available file="${jgraphaddons.jar}" property="jgraphaddons.jar.present"/>
+    	
     </target>
     
     <!-- Delete all compiled files -->
