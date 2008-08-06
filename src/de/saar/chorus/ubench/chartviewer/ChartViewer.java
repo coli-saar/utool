@@ -37,13 +37,17 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.CellView;
+import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultGraphCell;
+
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
-import de.saar.chorus.domgraph.equivalence.RedundancyElimination;
 import de.saar.chorus.domgraph.equivalence.rtg.QuantifierMarkedNonterminal;
 import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -80,6 +84,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	private JDomGraph jdg; // the Graph to highlight the nodes in
 	// the node labels object of the DomGraph
 	private NodeLabels labels;
+	private Map<CellView, AttributeMap> backup;
 
 	// splits and their string representation
 	private final Map<Split<GraphBasedNonterminal>, String> nameToSplit;
@@ -156,7 +161,15 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		jdg = jg;
 		modified = false;
 		reduced = false;
-
+		
+		// TODO actually I think it's impossible that this should be the only way.
+	
+		backup = new HashMap<CellView, AttributeMap>();
+		for(CellView view : jdg.getGraphLayoutCache().getCellViews()) {
+			AttributeMap copy = (AttributeMap) view.getAllAttributes().clone();
+			backup.put(view,copy);
+		}
+		
 		// automatical chart reduction is selected
 		if(Ubench.getInstance().reduceAutomatically) {
 			if( ! dg.isNormal() ) {
@@ -441,7 +454,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
     public void setVisible(boolean b) {
 		super.setVisible(b);
 
-		FormatManager.unmark(jdg);
+		FormatManager.unmark(jdg,backup);
 	}
 
 
@@ -520,10 +533,13 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						// marking the split in the main window
 
 						markSplit(selectedSplit);
+						if(selectedSplit.getAllSubgraphs().isEmpty()) {
+							FormatManager.refreshGraphLayout(jdg);
+						}
 
 					} else {
 						// and empty row -> unmarking the graph
-						FormatManager.unmark(jdg);
+						FormatManager.unmark(jdg,backup);
 					}
 				}} );
 		} else if (col == 0) {
@@ -542,14 +558,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 
 						} else {
 							// and empty row -> unmarking the graph
-							FormatManager.unmark(jdg);
+							FormatManager.unmark(jdg,backup);
 						}
 					}
 				});
 			}
 		} else {
 			// nothing marked -> unmarking the graph
-			FormatManager.unmark(jdg);
+			FormatManager.unmark(jdg,backup);
 		}
 
 	}

@@ -186,6 +186,16 @@ public class FormatManager {
 		refreshGraphLayout(graph);
 
 	}
+	
+	public static void unmark(JDomGraph graph, Map<CellView, AttributeMap> backup) {
+		for(Map.Entry<CellView, AttributeMap> pair : backup.entrySet()) {
+			pair.getKey().changeAttributes(pair.getValue());
+		//	System.err.println(pair);
+			graph.getGraphLayoutCache().update(pair.getKey());
+		}
+		
+		refreshGraphLayout(graph);
+	}
 
 
 	/**
