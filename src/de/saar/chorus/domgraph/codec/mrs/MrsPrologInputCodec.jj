@@ -113,7 +113,7 @@ void Input() throws MalformedDomgraphException:
     String handle;
 }
 {
-    <PSOA> "(" handle = Handle() "," (Other() | Variable()) "," RelList() "," QeqList() ")"
+    <PSOA> "(" handle = Handle() "," (Other() | Variable()) "," RelList() [ "," QeqList() ] ")"
 	{
 	    codec.setTopHandleAndFinish(handle);
 	}
