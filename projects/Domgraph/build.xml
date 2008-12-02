@@ -32,8 +32,6 @@
     <property name="jgraphaddons.jar" location="${packages}/jgraphaddons.jar" />
     <property name="jgraph.unpacked.classes" value="org/jgraph/**" />
 	
-    <property name="google-collections.jar" value="${packages}/google-collect-snapshot-20071022.jar"/>
-	<property name="google.unpacked.classes" value ="com/google/**"/>
     
     <property name="coli" value="de/saar" />
     <property name="chorus" value="de/saar/chorus" />
@@ -51,7 +49,7 @@
     
     <!-- parameters for the distribution -->
     <property name="domgraph-dist.jar" value="${build.lib}/Utool-src-${domgraph.version}.jar" />
-    <property name="distribution.exclude" value="**/testsuite/**" />
+    <property name="distribution.exclude" value="**/testsuite/**, ${chorus}/domgraph/chart/modelcheck/**" />
     
     <!-- deployment -->
     <property name="deploy.dir" value="/web/www.coli.uni-saarland.de/html/projects/chorus/utool" />
@@ -66,7 +64,7 @@
             <fileset dir="${build.classes}"
 includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${jgraph.unpacked.classes},
 ${getopt.unpacked.classes},${itext.unpacked.classes},${google.unpacked.classes}"
-excludes="**/*$UnitTests.class,**/testsuite/**" />
+excludes="**/*$UnitTests.class,**/testsuite/**,${chorus}/domgraph/chart/modelcheck/**" />
             <fileset dir="." includes="examples/**/*, pictures/**/*" />
             <manifest>
                 <attribute name="Main-Class"
@@ -77,12 +75,12 @@ value="de.saar.chorus.domgraph.utool.Utool" />
     </target>
     
     
-    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,rmrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked,google.unpacked">
+    <target name="compile-all" depends="init,termparser.javacc,domconOz.javacc,holesemComsem.javacc,mrs.javacc,rmrs.javacc,glue.javacc,jgrapht.unpacked,itext.unpacked,getopt.unpacked,jgraph.unpacked">
         <javac srcdir="${source}"
  destdir="${build.classes}"
  debug="true"
  includes="${domgraph.allsourcefiles}"
- excludes="**/Test*.java"
+ excludes="**/Test*.java,${chorus}/domgraph/chart/modelcheck/**"
  source="1.5"
  fork="yes" memoryMaximumSize="512m"
         >
@@ -133,7 +131,7 @@ value="de.saar.chorus.domgraph.utool.Utool" />
 basedir="${build.classes}"
 includes="${domgraph.jar.classes},${jgrapht.unpacked.classes},${getopt.unpacked.classes},
 ${itext.unpacked.classes},${jgraph.unpacked.classes},${google.unpacked.classes}"
-excludes="**/*$UnitTests.class,**/testsuite/**">
+excludes="**/*$UnitTests.class,**/testsuite/**,${chorus}/domgraph/chart/modelcheck/**">
             
             <manifest>
                 <attribute name="Main-Class" value="de.saar.chorus.domgraph.utool.Utool" />
@@ -322,12 +320,7 @@ password="${deploy.password}">
         </antcall>
     </target>
     
-	 <target name="google.unpacked" depends="init" if="google-collections.jar.present">
-	        <antcall target="unpack">
-	            <param name="unpack.jar" value="${google-collections.jar}" />
-	            <param name="unpack.jar.id" value="google" />
-	        </antcall>
-	    </target>
+
     
     <!-- Javadoc -->
 
