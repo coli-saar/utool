@@ -36,7 +36,7 @@ class RtgRedundancyEliminationTest {
         ozcodec.decode(new StringReader(graphstr), graph, labels);
         
         chart = new Chart();
-        out = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
+        out = new ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>();
         this.eqsys = eqsys;
         goldSfs = intendedSolvedForms;
         this.id = id;
@@ -108,6 +108,12 @@ class RtgRedundancyEliminationTest {
 
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+/*
+		if( !TestingTools.solvedFormsEqual(sfs, goldSfs) ) {
+			System.err.println("wrong rtg!!" + out);
+		}
+*/		
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
 	}

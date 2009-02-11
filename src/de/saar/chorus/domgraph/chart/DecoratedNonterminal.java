@@ -34,8 +34,15 @@ public class DecoratedNonterminal<E extends GraphBasedNonterminal, DecorationTyp
 		return base.getNodes();
 	}
 
+	@Override
+	public String toString() {
+		return "<" + base.toString() + "," + decoration + ">";
+	}
+
+
+	
 	public String toString(Set<String> roots) {
-		return "<" + base.toString() + "," + decoration.toString() + ">";
+		return "<" + base.toString(roots) + "," + decoration.toString() + ">";
 	}
 
 }

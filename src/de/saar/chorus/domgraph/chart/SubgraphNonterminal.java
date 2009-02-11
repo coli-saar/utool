@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class SubgraphNonterminal implements GraphBasedNonterminal {
-    private String rootForThisFragset;
     private boolean changed;
     private int previousHashcode;
 
@@ -100,5 +99,8 @@ public class SubgraphNonterminal implements GraphBasedNonterminal {
     }
 
 
-
+    @Override
+    public String toString() {
+    	return nodes.toString();
+    }
 }

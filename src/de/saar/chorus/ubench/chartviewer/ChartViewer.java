@@ -43,6 +43,7 @@ import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
@@ -1052,7 +1053,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 						labels, eqs);
 
 				ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>();
-				elim.eliminate(toElim, (ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>) out);
+				elim.eliminate(toElim, (ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>) out); //TA
 				reduced = true;
 				eqsname = eqsn;
 				
