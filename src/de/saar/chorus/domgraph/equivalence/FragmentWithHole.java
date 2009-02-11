@@ -7,7 +7,7 @@
 
 package de.saar.chorus.domgraph.equivalence;
 
-class FragmentWithHole {
+public class FragmentWithHole {
     private String rootlabel;
     private int holeindex;
     

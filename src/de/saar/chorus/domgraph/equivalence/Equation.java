@@ -7,7 +7,7 @@
 
 package de.saar.chorus.domgraph.equivalence;
 
-class Equation {
+public class Equation {
     private FragmentWithHole q1, q2;
 
     public Equation(FragmentWithHole q1, FragmentWithHole q2) {
