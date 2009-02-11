@@ -17,7 +17,7 @@ import org._3pq.jgrapht.util.ModifiableInteger;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -143,7 +143,7 @@ public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
      *
      * @param c a chart
      */
-    public void eliminate(RegularTreeGrammar<E> c) {
+    public void eliminate(ConcreteRegularTreeGrammar<E> c) {
         Set<E> visited = new HashSet<E>();
         //possibleDominators = c.computePossibleDominators();
 
@@ -155,7 +155,7 @@ public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
 
 
 
-    private void eliminate(E subgraph, RegularTreeGrammar<E> c, Set<E> visited) {
+    private void eliminate(E subgraph, ConcreteRegularTreeGrammar<E> c, Set<E> visited) {
         List<Split<E>> splits = c.getSplitsFor(subgraph);
 
         if( !visited.contains(subgraph)) {

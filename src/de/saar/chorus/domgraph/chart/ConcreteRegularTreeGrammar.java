@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org._3pq.jgrapht.util.ModifiableInteger;
 
-public class RegularTreeGrammar<E> implements Cloneable {
+public class ConcreteRegularTreeGrammar<E> implements Cloneable {
     protected Map<E, List<Split<E>>> chart;
     protected Map<E, ModifiableInteger> refcount;
     protected final Map<E, BigInteger> numSolvedForms;
@@ -26,7 +26,7 @@ public class RegularTreeGrammar<E> implements Cloneable {
     /**
      * The constructor.
      */
-    public RegularTreeGrammar() {
+    public ConcreteRegularTreeGrammar() {
         chart = new HashMap<E, List<Split<E>>>();
         refcount = new HashMap<E, ModifiableInteger>();
         numSolvedForms = new HashMap<E, BigInteger>();
@@ -66,7 +66,7 @@ public class RegularTreeGrammar<E> implements Cloneable {
     }
     
     public Object clone() {
-    	RegularTreeGrammar<E> ret = new RegularTreeGrammar<E>();
+    	ConcreteRegularTreeGrammar<E> ret = new ConcreteRegularTreeGrammar<E>();
 
         for( Map.Entry<E, List<Split<E>>> entry : chart.entrySet() ) {
             ret.chart.put(entry.getKey(), new ArrayList<Split<E>>(entry.getValue()));

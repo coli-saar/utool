@@ -11,7 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
@@ -70,7 +70,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
 
-    private void addSplitAndSubgraphs(QuantifierMarkedNonterminal sub, Split<QuantifierMarkedNonterminal> split, RegularTreeGrammar<QuantifierMarkedNonterminal> out) {
+    private void addSplitAndSubgraphs(QuantifierMarkedNonterminal sub, Split<QuantifierMarkedNonterminal> split, ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal> out) {
         out.addSplit(sub, split);
         if( DEBUG ) {
             System.err.println("add split: " + split + " for " + sub);
@@ -81,7 +81,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
         }
     }
 
-    public void eliminate(Chart c, RegularTreeGrammar<QuantifierMarkedNonterminal> out) {
+    public void eliminate(Chart c, ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal> out) {
         out.clear();
         agenda.clear();
 

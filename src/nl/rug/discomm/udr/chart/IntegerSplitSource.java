@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.rug.discomm.udr.graph.Chain;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitSource;
 import de.saar.chorus.domgraph.chart.UnsolvableSubgraphException;
@@ -63,7 +63,7 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 	}
 
 	@Override
-	public void reduceIfNecessary(RegularTreeGrammar<IntegerNonterminal> chart) {
+	public void reduceIfNecessary(ConcreteRegularTreeGrammar<IntegerNonterminal> chart) {
 		// TODO ?
 
 	}

@@ -22,7 +22,7 @@ import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
@@ -169,7 +169,7 @@ class ServerThread extends Thread {
             // compute chart
             long start_solver = System.nanoTime();
             Chart chart = new Chart(options.getLabels());
-            RegularTreeGrammar reducedChart;
+            ConcreteRegularTreeGrammar reducedChart;
             boolean solvable;
 
             try {
@@ -177,7 +177,7 @@ class ServerThread extends Thread {
             	if( options.hasOptionEliminateEquivalence() ) {
             	    RedundancyElimination<QuantifierMarkedNonterminal> elim = new RtgRedundancyElimination(graph, options.getLabels(), options.getEquations());
 
-            	    reducedChart = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
+            	    reducedChart = new ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>();
                     solvable = ChartSolver.solve(graph, reducedChart,
                             new RedundancyEliminationSplitSource<QuantifierMarkedNonterminal>(elim, graph));
 

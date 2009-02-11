@@ -9,7 +9,7 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
@@ -33,7 +33,7 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 
 
 	@Override
-	public void reduceIfNecessary(RegularTreeGrammar chart) {
+	public void reduceIfNecessary(ConcreteRegularTreeGrammar chart) {
 		// do nothing? this should not be applicable for model checking.
 
 	}

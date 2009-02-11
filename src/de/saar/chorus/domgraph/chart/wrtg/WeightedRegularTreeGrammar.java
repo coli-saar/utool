@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 
-public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extends Comparable<T>> extends RegularTreeGrammar<E> {
+public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extends Comparable<T>> extends ConcreteRegularTreeGrammar<E> {
 		private final Semiring<T> semiring;
 		private final Map<Split<E>, T> weights;
 
