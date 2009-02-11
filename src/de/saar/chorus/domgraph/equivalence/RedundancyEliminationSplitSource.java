@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SplitSource;
@@ -64,7 +64,7 @@ public class RedundancyEliminationSplitSource<E extends GraphBasedNonterminal> e
     }
 
     @Override
-    public void reduceIfNecessary(RegularTreeGrammar<E> chart) {
+    public void reduceIfNecessary(ConcreteRegularTreeGrammar<E> chart) {
         if( elim.requiresReduce() ) {
             chart.reduce();
         }

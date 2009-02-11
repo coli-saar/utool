@@ -40,7 +40,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
  * @author Alexander Koller
  *
  */
-public class Chart extends RegularTreeGrammar<SubgraphNonterminal> {
+public class Chart extends ConcreteRegularTreeGrammar<SubgraphNonterminal> {
 	private final NodeLabels labels;
 
 	public Chart(NodeLabels labels) {

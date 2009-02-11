@@ -44,7 +44,7 @@ import org.jgraph.graph.DefaultGraphCell;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
@@ -76,7 +76,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 */
 	private static final long serialVersionUID = 2614540458877105512L;
 	private final JTable prettyprint;	// the chart as JTable
-	private RegularTreeGrammar<GraphBasedNonterminal> chart;
+	private ConcreteRegularTreeGrammar<GraphBasedNonterminal> chart;
 	//private Chart chart; 		// the chart to work with
 	private final Chart chartcopy; 	// a safety copy
 
@@ -156,7 +156,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 		labels = la;
 		listener = new ChartViewerListener(this);
 		chartcopy = c;
-		chart = (RegularTreeGrammar<GraphBasedNonterminal>) c.clone();
+		chart = (ConcreteRegularTreeGrammar<GraphBasedNonterminal>) c.clone();
 		dg = g;
 		jdg = jg;
 		modified = false;
@@ -785,14 +785,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	/**
 	 * @return Returns the chart.
 	 */
-	RegularTreeGrammar<GraphBasedNonterminal> getChart() {
+	ConcreteRegularTreeGrammar<GraphBasedNonterminal> getChart() {
 		return  chart;
 	}
 
 	/**
 	 * @param chart The chart to set.
 	 */
-	void setChart(RegularTreeGrammar<GraphBasedNonterminal> chart) {
+	void setChart(ConcreteRegularTreeGrammar<GraphBasedNonterminal> chart) {
 		this.chart = chart;
 	}
 
@@ -918,7 +918,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 	 *
 	 */
 	void resetChart() {
-		chart = (RegularTreeGrammar<GraphBasedNonterminal>) chartcopy.clone();
+		chart = (ConcreteRegularTreeGrammar<GraphBasedNonterminal>) chartcopy.clone();
 		reduced = false;
 		modified = false;
 		if(Ubench.getInstance().reduceAutomatically) {
@@ -1051,14 +1051,14 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				RtgRedundancyElimination elim = new RtgRedundancyElimination(((DomGraph) dg.clone()).preprocess(), 
 						labels, eqs);
 
-				RegularTreeGrammar<? extends GraphBasedNonterminal> out = new RegularTreeGrammar<QuantifierMarkedNonterminal>();
-				elim.eliminate(toElim, (RegularTreeGrammar<QuantifierMarkedNonterminal>) out);
+				ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>();
+				elim.eliminate(toElim, (ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>) out);
 				reduced = true;
 				eqsname = eqsn;
 				
 		
 				chart.clear();
-				chart = (RegularTreeGrammar<GraphBasedNonterminal>) out;
+				chart = (ConcreteRegularTreeGrammar<GraphBasedNonterminal>) out;
 			
 				
 				if(statusbar != null) {

@@ -52,7 +52,7 @@ public abstract class SplitSource<E extends GraphBasedNonterminal> {
      *
      * @param chart the output RTG computed by the chart solver
      */
-    abstract public void reduceIfNecessary(RegularTreeGrammar<E> chart);
+    abstract public void reduceIfNecessary(ConcreteRegularTreeGrammar<E> chart);
 
     /**
      * Computes the list of all nodes in the subgraphs which have no

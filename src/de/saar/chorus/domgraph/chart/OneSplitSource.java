@@ -65,6 +65,6 @@ public class OneSplitSource extends SplitSource<SubgraphNonterminal> {
     }
 
     @Override
-    public void reduceIfNecessary(RegularTreeGrammar<SubgraphNonterminal> chart) {
+    public void reduceIfNecessary(ConcreteRegularTreeGrammar<SubgraphNonterminal> chart) {
     }
 }
