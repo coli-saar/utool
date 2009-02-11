@@ -27,6 +27,8 @@ public class EliminatingRtg extends RegularTreeGrammar<String> {
     protected DomGraph compact; // compact version of the graph
     protected NodeLabels labels;
     protected EquationSystem eqs;
+    
+    private Map<String,List<Integer>> wildcardLabeledNodes;
 
 
     // The compactification deletes labelled leaves, so there may be a discrepancy
@@ -71,41 +73,33 @@ public class EliminatingRtg extends RegularTreeGrammar<String> {
 	
 
     private boolean allowedSplit(String previousQuantifier, String currentRoot) {
+    	if(DEBUG) System.err.print("(check split: " + currentRoot + " below " + previousQuantifier + ") ");
+    	
     	// if there was no previous quantifier, all splits are allowed
         if( previousQuantifier == null ) {
-            if(DEBUG) {
-                System.err.print("[pq=null -> allowed] ");
-            }
+            if(DEBUG)  System.err.print("[pq=null -> allowed] ");
             return true;
         }
 
-        /* ** don't know how to deal with wildcards **
-        // if the previous quantifier was a wildcard, then it doesn't restrict the allowed splits
-        if( wildcardLabeledNodes.containsKey(previousQuantifier)) {
-            if(DEBUG) {
-                System.err.print("[pq=wildcard -> allowed]");
-            }
-            return true;
-        
-        }
-        */
-
-
-
-        // if the two quantifiers are in the right order (previous < here), then the split is allowed
-        if( previousQuantifier.compareTo(currentRoot) < 0 ) {
-            if(DEBUG) {
-                System.err.println("[pq smaller -> allowed]");
-            }
-            return true;
+        // If previousQuantifier < currentRoot, the split is allowed.
+        // The order is the lexicographical order of (wildcard status, node name) where
+        // wildcard status is 1 for wildcards and 2 for non-wildcards.
+        int wildcardDiff = getWildcardStatus(previousQuantifier) - getWildcardStatus(currentRoot); 
+        if( wildcardDiff < 0 ) {
+        	if(DEBUG) System.err.println("[wc status -> allowed]");
+        	return true;
+        } else if( wildcardDiff == 0 ) {
+        	if( previousQuantifier.compareTo(currentRoot) < 0 ) {
+        		if(DEBUG) System.err.println("[pq smaller -> allowed]");
+        		return true;
+        	}
         }
         
+        // Now check permutability. The quantifiers are permutable if they are co-free, and
+        // either the eq system says they are permutable (with their connecting holes), or
+        // the currentRoot is a wildcard.
         boolean permutable = isPermutable(previousQuantifier, currentRoot);
-
-        // if the two quantifiers are co-free, then the split is not allowed
-        if(DEBUG) {
-            System.err.println("[perm: allowed=" + !permutable + "] ");
-        }
+        if(DEBUG)  System.err.println("[perm: allowed=" + !permutable + "] ");
         return !permutable;
     }
     
@@ -114,9 +108,16 @@ public class EliminatingRtg extends RegularTreeGrammar<String> {
     	if( !analyzer.isCoFree(u, v) ) {
     		return false;
     	} else {
-    		FragmentWithHole f1 = new FragmentWithHole(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)));
-    		FragmentWithHole f2 = new FragmentWithHole(labels.getLabel(v), indicesCompactToOriginal.get(v).get(analyzer.getReachability(v, u)));
-    		return eqs.contains(new Equation(f1,f2));
+    		int vToU = indicesCompactToOriginal.get(v).get(analyzer.getReachability(v, u));
+    		
+    		if( wildcardLabeledNodes.containsKey(v) && wildcardLabeledNodes.get(v).contains(vToU)) {
+    			return true;
+    		} else {
+    			FragmentWithHole f1 = new FragmentWithHole(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)));
+    			FragmentWithHole f2 = new FragmentWithHole(labels.getLabel(v), vToU);
+
+    			return eqs.contains(new Equation(f1,f2));
+    		}
     	}
     }
 
@@ -180,12 +181,40 @@ public class EliminatingRtg extends RegularTreeGrammar<String> {
 
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();
         computeIndexTable();
+        
+        analyzeWildcards();
     }
     
 
 	
 
-    /*
+    private void analyzeWildcards() {
+        Set<String> roots = graph.getAllRoots();
+
+        wildcardLabeledNodes = new HashMap<String,List<Integer>>();
+        for( String node : roots ) {
+            if( eqs.isWildcardLabel(labels.getLabel(node)) ) {
+                List<Integer> holeIndices = new ArrayList<Integer>();
+                wildcardLabeledNodes.put(node, holeIndices);
+
+                for( int i = 0; i < compact.outdeg(node,EdgeType.TREE); i++ ) {
+                    if( eqs.isWildcard(labels.getLabel(node), i) ) {
+                        holeIndices.add(i);
+                    }
+                }
+            }
+        }
+	}
+    
+    private int getWildcardStatus(String u) {
+    	if( wildcardLabeledNodes.containsKey(u)) {
+    		return 1;
+    	} else {
+    		return 2;
+    	}
+    }
+
+	/*
      * computation of the mapping from holes (in the compact graph)
      * to the children of the root (in the original graph).
      */

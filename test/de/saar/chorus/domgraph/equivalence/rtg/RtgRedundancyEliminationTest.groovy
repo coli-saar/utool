@@ -99,6 +99,8 @@ class RtgRedundancyEliminationTest {
     
     @Test
 	public void testEliminatedSolvedForms() {
+    	System.err.println("\n\n\nTest: " + id);
+    	
 		graph = graph.preprocess();
 		chart.clear();
 		ChartSolver.solve(graph,chart);
