@@ -12,6 +12,7 @@ import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
@@ -47,9 +48,13 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     private final Queue<QuantifierMarkedNonterminal> agenda;
     private final Set<String> roots;
     private final Map<String,List<Integer>> wildcardLabeledNodes;
+    
+    private EliminatingRtg eliminatingRtg;
 
     public RtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
+        
+        eliminatingRtg  = new EliminatingRtg(graph,labels,eqs);
 
         agenda = new LinkedList<QuantifierMarkedNonterminal>();
         roots = graph.getAllRoots();
@@ -70,17 +75,14 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
 
-    private void addSplitAndSubgraphs(QuantifierMarkedNonterminal sub, Split<QuantifierMarkedNonterminal> split, ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal> out) {
-        out.addSplit(sub, split);
-        if( DEBUG ) {
-            System.err.println("add split: " + split + " for " + sub);
-        }
+    
+    public void eliminate(Chart c, ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> out) {
+    	eliminatingRtg.intersect(c, out);
 
-        for( QuantifierMarkedNonterminal candidate : split.getAllSubgraphs() ) {
-            agenda.add(candidate);
-        }
     }
-
+    
+    
+    /* ** this is ACL-08 code **
     public void eliminate(Chart c, ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal> out) {
         out.clear();
         agenda.clear();
@@ -136,6 +138,19 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
 
         out.recomputeSingletons();
         out.reduce();
+    }
+*/
+    
+
+    private void addSplitAndSubgraphs(QuantifierMarkedNonterminal sub, Split<QuantifierMarkedNonterminal> split, ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal> out) {
+        out.addSplit(sub, split);
+        if( DEBUG ) {
+            System.err.println("add split: " + split + " for " + sub);
+        }
+
+        for( QuantifierMarkedNonterminal candidate : split.getAllSubgraphs() ) {
+            agenda.add(candidate);
+        }
     }
 
     private List<String> getPermutingWildcards(QuantifierMarkedNonterminal subgraph, Set<String> roots) {

@@ -34,9 +34,11 @@ abstract public class RegularTreeGrammar<E> {
 	 * @param other
 	 * @return
 	 */
-	public <F extends GraphBasedNonterminal> RegularTreeGrammar<DecoratedNonterminal<F,E>> intersect(RegularTreeGrammar<F> other) {
-		ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>>();
+	public <F extends GraphBasedNonterminal> void intersect(RegularTreeGrammar<F> other, ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>>  out) {
 		Queue<DecoratedNonterminal<F,E>> agenda = new LinkedList<DecoratedNonterminal<F,E>>();
+		
+		prepareForIntersection(other);
+		out.clear();
 		
 		if( (getToplevelSubgraphs().size() != 1) || (other.getToplevelSubgraphs().size() != 1) ) {
 			throw new UnsupportedOperationException("Can't intersect these automata! Toplevel subgraphs: " + getToplevelSubgraphs() + ", " + other.getToplevelSubgraphs());
@@ -73,8 +75,6 @@ abstract public class RegularTreeGrammar<E> {
         
         out.recomputeSingletons();
         out.reduce();
-		
-		return out;
 	}
 	
 	
@@ -87,7 +87,7 @@ abstract public class RegularTreeGrammar<E> {
         	if( (split.getWccs(dominator).size() != 1) || (otherSplit.getWccs(dominator).size() != 1) ) {
         		throw new UnsupportedOperationException("Can't intersect these grammars! Offending splits: " + split + ", " + otherSplit);
         	} else {
-        		ret.addWcc(dominator, new DecoratedNonterminal<F, E>(otherSplit.getWccs(dominator).get(0), split.getWccs(dominator).get(1)));
+        		ret.addWcc(dominator, new DecoratedNonterminal<F, E>(otherSplit.getWccs(dominator).get(0), split.getWccs(dominator).get(0)));
         	}
         }
         
