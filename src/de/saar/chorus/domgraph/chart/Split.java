@@ -28,6 +28,7 @@ public class Split<E> {
     private final Map<String,List<E>> wccs;  // node -> wccs
     private Map<String,String> substitution; // hole -> root
     private final List<String> dominators;
+    private List<E> allSubgraphs = null;
 
     private boolean changed;
     private int previousHashcode;
@@ -42,7 +43,7 @@ public class Split<E> {
         wccs = new HashMap<String,List<E>>();
         substitution = new HashMap<String, String>();
         dominators = new ArrayList<String>();
-        changed = true;
+        setChanged();
     }
 
     /**
@@ -61,7 +62,7 @@ public class Split<E> {
         }
 
         wccSet.add(wcc);
-        changed = true;
+        setChanged();
     }
 
 
@@ -105,13 +106,15 @@ public class Split<E> {
      * @return the set of wccs
      */
     public List<E> getAllSubgraphs() {
-        List<E> ret = new ArrayList<E>();
+    	if( allSubgraphs == null ) {
+    		allSubgraphs = new ArrayList<E>();
 
-        for( String node : wccs.keySet() ) {
-            ret.addAll(wccs.get(node));
-        }
+    		for( String node : wccs.keySet() ) {
+    			allSubgraphs.addAll(wccs.get(node));
+    		}
+    	}
 
-        return ret;
+        return allSubgraphs;
     }
 
     @Override
@@ -125,7 +128,12 @@ public class Split<E> {
 
 	public void setSubstitution(Map<String,String> subst) {
 		substitution = subst;
+		setChanged();
+	}
+	
+	private void setChanged() {
 		changed = true;
+		allSubgraphs = null;
 	}
 
     @Override

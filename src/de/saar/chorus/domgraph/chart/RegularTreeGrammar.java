@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
+
 abstract public class RegularTreeGrammar<E> {
 	private static final boolean DEBUG = false;
-	
+
 	protected final Map<E, BigInteger> numSolvedForms;
-	
+
 	abstract public Set<E> getAllNonterminals();
 	abstract public boolean isSingleton(E nt);
 	abstract public String getRootForSingleton(E nt);
@@ -20,15 +22,15 @@ abstract public class RegularTreeGrammar<E> {
 	abstract public List<Split<E>> getSplitsFor(E subgraph, String label);
 	abstract public boolean containsSplitFor(E subgraph);
 	abstract public List<E> getToplevelSubgraphs();
-	
+
 	/*
 	abstract public <F extends GraphBasedNonterminal> void prepareForIntersection(RegularTreeGrammar<F> other);
-	*/
-	
+	 */
+
 	public RegularTreeGrammar() {
-        numSolvedForms = new HashMap<E, BigInteger>();
+		numSolvedForms = new HashMap<E, BigInteger>();
 	}
-	
+
 	/**
 	 * Call this method on the filtering grammar and pass the grammar that is to be filtered as the argument.
 	 * 
@@ -38,132 +40,129 @@ abstract public class RegularTreeGrammar<E> {
 	 */
 	public <F extends GraphBasedNonterminal> void intersect(RegularTreeGrammar<F> other, ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>>  out) {
 		Queue<DecoratedNonterminal<F,E>> agenda = new LinkedList<DecoratedNonterminal<F,E>>();
-		
+
 		//prepareForIntersection(other);
 		out.clear();
-		
+
 		if( (getToplevelSubgraphs().size() != 1) || (other.getToplevelSubgraphs().size() != 1) ) {
 			throw new UnsupportedOperationException("Can't intersect these automata! Toplevel subgraphs: " + getToplevelSubgraphs() + ", " + other.getToplevelSubgraphs());
 		}
-		
+
 		DecoratedNonterminal<F,E> nt = new DecoratedNonterminal<F,E>(other.getToplevelSubgraphs().get(0), getToplevelSubgraphs().get(0));
 		agenda.add(nt);
 		out.addToplevelSubgraph(nt);
 
-        while( !agenda.isEmpty() ) {
-            DecoratedNonterminal<F,E> sub = agenda.remove();
+		while( !agenda.isEmpty() ) {
+			DecoratedNonterminal<F,E> sub = agenda.remove();
 
-            if( !out.containsSplitFor(sub) ) {
-                List<Split<F>> splits = other.getSplitsFor(sub.getBase());
-                
-                for( Split<F> split : splits ) {
-                	List<Split<E>> otherSplits = getSplitsFor(sub.getDecoration(), split.getRootFragment() );
-                	
-                	for( Split<E> otherSplit : otherSplits ) {
-                		Split<DecoratedNonterminal<F, E>> newSplit = makeSplit(split, otherSplit);
-                		out.addSplit(sub, newSplit);
-                		
-                        if( DEBUG ) {
-                            System.err.println("add split: " + newSplit + " for " + sub);
-                        }
+			if( !out.containsSplitFor(sub) ) {
+				List<Split<F>> splits = other.getSplitsFor(sub.getBase());
 
-                        for( DecoratedNonterminal<F, E> candidate : newSplit.getAllSubgraphs() ) {
-                            agenda.add(candidate);
-                        }
-                	}
-                }
-            }
-        }
-        
-        out.recomputeSingletons();
-        out.reduce();
+				if( splits != null ) {
+					for( Split<F> split : splits ) {
+						List<Split<E>> otherSplits = getSplitsFor(sub.getDecoration(), split.getRootFragment() );
+
+						for( Split<E> otherSplit : otherSplits ) {
+							Split<DecoratedNonterminal<F, E>> newSplit = makeSplit(split, otherSplit);
+							out.addSplit(sub, newSplit);
+
+							if( DEBUG ) {
+								System.err.println("add split: " + newSplit + " for " + sub);
+							}
+
+							for( DecoratedNonterminal<F, E> candidate : newSplit.getAllSubgraphs() ) {
+								agenda.add(candidate);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	
-	
 
-    private <F extends GraphBasedNonterminal> Split<DecoratedNonterminal<F, E>> makeSplit(Split<F> otherSplit, Split<E> split) {
-        String root = split.getRootFragment();
-        Split<DecoratedNonterminal<F, E>> ret = new Split<DecoratedNonterminal<F, E>>(root);
+	private <F extends GraphBasedNonterminal> Split<DecoratedNonterminal<F, E>> makeSplit(Split<F> otherSplit, Split<E> split) {
+		String root = split.getRootFragment();
+		Split<DecoratedNonterminal<F, E>> ret = new Split<DecoratedNonterminal<F, E>>(root);
 
-        for( String dominator : split.getAllDominators() ) {
-        	if( (split.getWccs(dominator).size() != 1) || (otherSplit.getWccs(dominator).size() != 1) ) {
-        		throw new UnsupportedOperationException("Can't intersect these grammars! Offending splits: " + split + ", " + otherSplit);
-        	} else {
-        		ret.addWcc(dominator, new DecoratedNonterminal<F, E>(otherSplit.getWccs(dominator).get(0), split.getWccs(dominator).get(0)));
-        	}
-        }
-        
-        return ret;
-    }
-	
+		for( String dominator : split.getAllDominators() ) {
+			if( (split.getWccs(dominator).size() != 1) || (otherSplit.getWccs(dominator).size() != 1) ) {
+				throw new UnsupportedOperationException("Can't intersect these grammars! Offending splits: " + split + ", " + otherSplit);
+			} else {
+				ret.addWcc(dominator, new DecoratedNonterminal<F, E>(otherSplit.getWccs(dominator).get(0), split.getWccs(dominator).get(0)));
+			}
+		}
+
+		return ret;
+	}
+
 	/**
-     * Returns a string representation of the chart.
-     */
-    @Override
-    public String toString() {
-        StringBuilder ret = new StringBuilder();
+	 * Returns a string representation of the chart.
+	 */
+	@Override
+	public String toString() {
+		StringBuilder ret = new StringBuilder();
 
-        ret.append("Top-level subgraphs: " + getToplevelSubgraphs() + "\n");
+		ret.append("Top-level subgraphs: " + getToplevelSubgraphs() + "\n");
 
-        for( E fragset : getAllNonterminals() ) {
-            for( Split<E> split : getSplitsFor(fragset) ) {
-                ret.append(fragset.toString() + " -> " + split + "\n");
-            }
-        }
+		for( E fragset : getAllNonterminals() ) {
+			for( Split<E> split : getSplitsFor(fragset) ) {
+				ret.append(fragset.toString() + " -> " + split + "\n");
+			}
+		}
 
-        return ret.toString();
-    }
-    
-    /**
-     * Returns the number of solved forms represented by this chart.
-     * This method doesn't compute the solved forms themselves (and
-     * is much faster than that), but it can take a few hundred
-     * milliseconds for a large chart.<p>
-     *
-     * The method assumes that the chart belongs to a solvable dominance
-     * graph, i.e. that it represents any solved forms in the first place.
-     * You can assume this for all charts that were generated by
-     * ChartSolver#solve with a return value of <code>true</code>.
-     *
-     * @return the number of solved forms
-     */
-    public BigInteger countSolvedForms() {
-        BigInteger ret = BigInteger.ONE;
+		return ret.toString();
+	}
 
-        numSolvedForms.clear();
+	/**
+	 * Returns the number of solved forms represented by this chart.
+	 * This method doesn't compute the solved forms themselves (and
+	 * is much faster than that), but it can take a few hundred
+	 * milliseconds for a large chart.<p>
+	 *
+	 * The method assumes that the chart belongs to a solvable dominance
+	 * graph, i.e. that it represents any solved forms in the first place.
+	 * You can assume this for all charts that were generated by
+	 * ChartSolver#solve with a return value of <code>true</code>.
+	 *
+	 * @return the number of solved forms
+	 */
+	public BigInteger countSolvedForms() {
+		BigInteger ret = BigInteger.ONE;
 
-        for( E subgraph : getToplevelSubgraphs() ) {
-            ret = ret.multiply(countSolvedFormsFor(subgraph, numSolvedForms));
-        }
+		numSolvedForms.clear();
 
-        return ret;
-    }
+		for( E subgraph : getToplevelSubgraphs() ) {
+			ret = ret.multiply(countSolvedFormsFor(subgraph, numSolvedForms));
+		}
 
-    public BigInteger countSolvedFormsFor(E subgraph) {
-        return countSolvedFormsFor(subgraph, numSolvedForms);
-    }
+		return ret;
+	}
 
-    private BigInteger countSolvedFormsFor(E subgraph, Map<E,BigInteger> numSolvedForms) {
-        BigInteger ret = BigInteger.ZERO;
+	public BigInteger countSolvedFormsFor(E subgraph) {
+		return countSolvedFormsFor(subgraph, numSolvedForms);
+	}
 
-        if( numSolvedForms.containsKey(subgraph) ) {
-            return numSolvedForms.get(subgraph);
-        } else if( !containsSplitFor(subgraph) ) {
-            // subgraph contains only one fragment => 1 solved form
-            return BigInteger.ONE;
-        } else {
-            for( Split<E> split : getSplitsFor(subgraph) ) {
-                BigInteger sfsThisSplit = BigInteger.ONE;
+	private BigInteger countSolvedFormsFor(E subgraph, Map<E,BigInteger> numSolvedForms) {
+		BigInteger ret = BigInteger.ZERO;
 
-                for( E subsubgraph : split.getAllSubgraphs() ) {
-                    sfsThisSplit = sfsThisSplit.multiply(countSolvedFormsFor(subsubgraph, numSolvedForms));
-                }
+		if( numSolvedForms.containsKey(subgraph) ) {
+			return numSolvedForms.get(subgraph);
+		} else if( !containsSplitFor(subgraph) ) {
+			// subgraph contains only one fragment => 1 solved form
+			return BigInteger.ONE;
+		} else {
+			for( Split<E> split : getSplitsFor(subgraph) ) {
+				BigInteger sfsThisSplit = BigInteger.ONE;
 
-                ret = ret.add(sfsThisSplit);
-            }
+				for( E subsubgraph : split.getAllSubgraphs() ) {
+					sfsThisSplit = sfsThisSplit.multiply(countSolvedFormsFor(subsubgraph, numSolvedForms));
+				}
 
-            numSolvedForms.put(subgraph, ret);
-            return ret;
-        }
-    }
+				ret = ret.add(sfsThisSplit);
+			}
+
+			numSolvedForms.put(subgraph, ret);
+			return ret;
+		}
+	}
 }

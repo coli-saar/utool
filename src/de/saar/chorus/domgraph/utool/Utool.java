@@ -7,7 +7,9 @@
 
 package de.saar.chorus.domgraph.utool;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.UserProperties;
@@ -69,6 +71,16 @@ public class Utool {
 
 		// if we run on a Mac, set the application name here
 		MacIntegration.integrate();
+		
+		/*
+		// wait for user to press return
+		try {
+			new BufferedReader(new InputStreamReader(System.in)).readLine();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		*/
 
 		// check statistics
 		if( options.getOperation().requiresInput ) {
@@ -262,6 +274,10 @@ public class Utool {
 					if( options.hasOptionStatistics() ) {
 						System.err.println("Time spent on computing weakest readings: " + (end_elimination-start_elimination) + " ms.");
 					}
+				}
+				
+				if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() ) {
+					chart.cleanup();
 				}
 
 				// TODO runtime prediction (see ticket #11)

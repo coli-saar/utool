@@ -32,7 +32,7 @@
     <property name="jgraphaddons.jar" location="${packages}/jgraphaddons.jar" />
     <property name="jgraph.unpacked.classes" value="org/jgraph/**" />
 
-    <property name="google-collections.jar" location="${packages}/google-collect-snapshot-20071022.jar" />
+    <property name="google-collections.jar" location="${packages}/google-collect-snapshot-20090211.jar" />
     <property name="google.unpacked.classes" value="com/google/**" />
 	
     

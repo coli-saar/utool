@@ -53,6 +53,7 @@ public class WeakestReadingsComputerTest {
 		analyzer.analyze();
 		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,analyzer,eqsys,annotator);
 		filter.intersect(chart,out);
+		out.cleanup();
 
 		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,Annotation>>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);

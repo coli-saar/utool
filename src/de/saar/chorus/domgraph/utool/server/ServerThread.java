@@ -211,10 +211,15 @@ class ServerThread extends Thread {
 				
 				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator());
 				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-				filter.intersect(chart, out);
+				filter.intersect(reducedChart, out);
 				reducedChart = out;
 			}
 
+			if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() ) {
+				reducedChart.cleanup();
+			}
+
+			
 			if( options.getOperation() == Operation.solvable ) {
 				// Operation = solvable
 				out.println("<result solvable='" + solvable + "' "
