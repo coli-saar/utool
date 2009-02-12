@@ -42,24 +42,24 @@ public class WeakestReadingsComputerTest {
     }
     
     @Test
-	public void testEliminatedSolvedForms() {
+	public void testWeakestSolvedForms() {
     	System.err.println("\n\n\nTest: " + id);
     	
 		graph = graph.preprocess();
 		chart.clear();
 		ChartSolver.solve(graph,chart);
 		
-		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,eqsys,annotator);
+		RtgFreeFragmentAnalyzer analyzer = new RtgFreeFragmentAnalyzer(chart);
+		analyzer.analyze();
+		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,analyzer,eqsys,annotator);
 		filter.intersect(chart,out);
 
 		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,Annotation>>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
 		
-/*
 		if( !TestingTools.solvedFormsEqual(sfs, goldSfs) ) {
 			System.err.println("wrong rtg!!" + out);
 		}
-*/		
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
 	}
@@ -89,7 +89,7 @@ public class WeakestReadingsComputerTest {
     	try {
 			new RewriteSystemParser().read(new StringReader(rewriteSystemFol), ann, rs);
 		} catch(Exception e) {
-			System.err.println("************ " + e);
+			throw new RuntimeException(e);
 		}
     	
         return (Object[]) [id, graphstr, intendedSolvedForms, rs, ann];
@@ -109,7 +109,6 @@ public class WeakestReadingsComputerTest {
 	}
 	
 	public static String rewriteSystemFol = '''<?xml version="1.0" ?>
-
 		<rewrite-system>
 			<annotator initial="+">
 				<rule annotation="+" label="a"> <hole annotation="+" /> <hole annotation="+" /> </rule>

@@ -453,11 +453,6 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
     	finalStates.add(nt);
     }
 
-	@Override
-	public <F extends GraphBasedNonterminal> void prepareForIntersection(RegularTreeGrammar<F> other) {
-		// TODO Auto-generated method stub
-		
-	}
 
 
 }

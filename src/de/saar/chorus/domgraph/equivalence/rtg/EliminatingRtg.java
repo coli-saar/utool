@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.RewritingRtg;
+import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.equivalence.Equation;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
@@ -16,7 +17,7 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
 public class EliminatingRtg extends RewritingRtg<String> {
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 	
     protected EquationSystem eqs;
     private Map<String,List<Integer>> wildcardLabeledNodes;
@@ -94,8 +95,8 @@ public class EliminatingRtg extends RewritingRtg<String> {
     
     
     
-    public EliminatingRtg(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
-    	super(graph,labels);
+    public EliminatingRtg(DomGraph graph, NodeLabels labels, EquationSystem eqs, RtgFreeFragmentAnalyzer<?> analyzer) {
+    	super(graph,labels,analyzer);
     	
     	this.eqs = eqs;
     	analyzeWildcards();

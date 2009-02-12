@@ -53,13 +53,14 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
 
     
 
-
+/*
 
 	@Override
 	public <F extends GraphBasedNonterminal> void prepareForIntersection(RegularTreeGrammar<F> other) {
 		analyzer = new RtgFreeFragmentAnalyzer<F>(other);
 		analyzer.analyze();
 	}
+	*/
 
 	
 	// because this grammar is only ever used as a filter grammar, the following RTG methods
@@ -104,11 +105,11 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
     
     
     
-    public RewritingRtg(DomGraph graph, NodeLabels labels) {
-    	analyzer = null; 
-    	
+    public RewritingRtg(DomGraph graph, NodeLabels labels, RtgFreeFragmentAnalyzer<?> analyzer) {
     	this.graph = graph;
         this.labels = labels;
+        this.analyzer = analyzer;
+        
         compact = graph.compactify();
 
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();

@@ -5,7 +5,7 @@ import de.saar.chorus.domgraph.chart.*;
 import de.saar.chorus.domgraph.codec.domcon.*;
 import de.saar.chorus.domgraph.codec.*;
 import de.saar.chorus.domgraph.equivalence.*;
-
+import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer
 import de.saar.testingtools.*;
 
 import org.junit.After;
@@ -103,10 +103,13 @@ class RtgRedundancyEliminationTest {
     	
 		graph = graph.preprocess();
 		chart.clear();
+		out.clear();
 		ChartSolver.solve(graph,chart);
 	    
-		RtgRedundancyElimination elim = new RtgRedundancyElimination(graph, labels, eqsys);
-		elim.eliminate(chart, out);
+		RtgFreeFragmentAnalyzer analyzer = new RtgFreeFragmentAnalyzer(chart);
+		analyzer.analyze();
+		EliminatingRtg filter = new EliminatingRtg(graph, labels, eqsys, analyzer);
+		filter.intersect(chart, out);
 
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
@@ -188,70 +191,72 @@ class RtgRedundancyEliminationTest {
 		try {
 			ret.read(new StringReader(eqs));
 		} catch(Exception e) {
-			
+			throw new RuntimeException(e);
 		}
 		
 		return ret;
 	}
 	
-	public static String eqSystemFOL = "<?xml version='1.0' ?> "+
-	"<equivalences style='FOL'> " +
-	"	<equivalencegroup>" +
-	"       <quantifier label='a' hole='1' />" +
-	"       <quantifier label='a' hole='0' />" +
-	"   </equivalencegroup>" +
-	"   <equivalencegroup>" +
-	"       <quantifier label='every' hole='1' />" +
-	"   </equivalencegroup>" +
-	"   <permutesWithEverything label='permute' hole='0' />" +
-	"</equivalences>";
+	public static String eqSystemFOL = '''<?xml version="1.0" ?> 
+	<equivalences style="FOL"> 
+		<equivalencegroup>
+	       <quantifier label="a" hole="1" />
+	       <quantifier label="a" hole="0" />
+	   </equivalencegroup>
+	   <equivalencegroup>
+	       <quantifier label="every" hole="1" />
+	   </equivalencegroup>
+	   <permutesWithEverything label="permute" hole="0" />
+	</equivalences>
+	''';
 	
-	public static String eqSystemERG = "<?xml version='1.0' ?> " +
-	"<equivalences style='ERG'>" +   
-	"<!-- Version 2005-06-05 (Apr-05) -->" +
-	"<equivalencegroup>" +
-		"<quantifier label='implicit_q' hole='1'/>" +
-		"<quantifier label='def_q' hole='1'/>" +
-		"<quantifier label='udef_q' hole='1'/>" +
+	public static String eqSystemERG = '''<?xml version="1.0" ?> 
+	<equivalences style="ERG">   
+	<!-- Version 2005-06-05 (Apr-05) -->
+	<equivalencegroup>
+		<quantifier label="implicit_q" hole="1"/>
+		<quantifier label="def_q" hole="1"/>
+		<quantifier label="udef_q" hole="1"/>
 
-		"<quantifier label='def_explicit_q' hole='1'/>" +
-		"<quantifier label='_both_q' hole='1'/>" +
-		"<quantifier label='def_both_rel' hole='1'/>" +
-		"<quantifier label='_the_q' hole='1'/>" +
+		<quantifier label="def_explicit_q" hole="1"/>
+		<quantifier label="_both_q" hole="1"/>
+		<quantifier label="def_both_rel" hole="1"/>
+		<quantifier label="_the_q" hole="1"/>
 
-		"<quantifier label='_that_q_dem' hole='1'/>" +
-		"<quantifier label='_these_q_dem' hole='1'/>" +
-		"<quantifier label='_this_q_dem' hole='1'/>" +
-		"<quantifier label='_those_q_dem' hole='1'/>" +
-		"<quantifier label='demon_far_q' hole='1'/>" +
-		"<quantifier label='demon_near_q' hole='1'/>" +
-		"<quantifier label='demonstrative_q' hole='1'/>" +
+		<quantifier label="_that_q_dem" hole="1"/>
+		<quantifier label="_these_q_dem" hole="1"/>
+		<quantifier label="_this_q_dem" hole="1"/>
+		<quantifier label="_those_q_dem" hole="1"/>
+		<quantifier label="demon_far_q" hole="1"/>
+		<quantifier label="demon_near_q" hole="1"/>
+		<quantifier label="demonstrative_q" hole="1"/>
 
-		"<quantifier label='_a_q' hole='0'/>" +
-		"<quantifier label='_a_q' hole='1'/>" +
-		"<quantifier label='_another_q' hole='0'/>" +
-		"<quantifier label='_another_q' hole='1'/>" +
-		"<quantifier label='_less+than+a_q' hole='0'/>" +
-		"<quantifier label='_less+than+a_q' hole='1'/>" +
-		"<quantifier label='_some_q' hole='0'/>" +
-		"<quantifier label='_some_q' hole='1'/>" +
-		"<quantifier label='_such+a_q' hole='0'/>" +
-		"<quantifier label='_such+a_q' hole='1'/>" +
-		"<quantifier label='_what+a_q' hole='0'/>" +
-		"<quantifier label='_what+a_q' hole='1'/>" +
-		"<quantifier label='some_q' hole='0'/>" +
-		"<quantifier label='some_q' hole='1'/>" +
-		"<quantifier label='some_q_indiv' hole='0'/>" +
-		"<quantifier label='some_q_indiv' hole='1'/>" +
-	"</equivalencegroup>" +
+		<quantifier label="_a_q" hole="0"/>
+		<quantifier label="_a_q" hole="1"/>
+		<quantifier label="_another_q" hole="0"/>
+		<quantifier label="_another_q" hole="1"/>
+		<quantifier label="_less+than+a_q" hole="0"/>
+		<quantifier label="_less+than+a_q" hole="1"/>
+		<quantifier label="_some_q" hole="0"/>
+		<quantifier label="_some_q" hole="1"/>
+		<quantifier label="_such+a_q" hole="0"/>
+		<quantifier label="_such+a_q" hole="1"/>
+		<quantifier label="_what+a_q" hole="0"/>
+		<quantifier label="_what+a_q" hole="1"/>
+		<quantifier label="some_q" hole="0"/>
+		<quantifier label="some_q" hole="1"/>
+		<quantifier label="some_q_indiv" hole="0"/>
+		<quantifier label="some_q_indiv" hole="1"/>
+	</equivalencegroup>
 
-	"<equivalencegroup>" +
-	    "<quantifier label='every_q' hole='1' />" +
-		"<quantifier label='each_q' hole='1' />" +
-	"</equivalencegroup>" +
+	<equivalencegroup>
+	    <quantifier label="every_q" hole="1" />
+		<quantifier label="each_q" hole="1" />
+	</equivalencegroup>
 
 	
-	"<permutesWithEverything label='proper_q' hole='1' />" +
-	"<permutesWithEverything label='pronoun_q' hole='1' />" +
-	"</equivalences>";
+	<permutesWithEverything label="proper_q" hole="1" />
+	<permutesWithEverything label="pronoun_q" hole="1" />
+	</equivalences>
+	''';
 }
