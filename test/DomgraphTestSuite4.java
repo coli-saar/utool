@@ -13,6 +13,7 @@ import de.saar.chorus.domgraph.codec.holesem.HolesemCodecTest;
 import de.saar.chorus.domgraph.codec.mrs.MrsCodecTest;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationTest;
 import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyEliminationTest;
+import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
 import de.saar.chorus.domgraph.graph.DomGraphTest;
 import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayoutTest;
 import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
@@ -34,6 +35,7 @@ import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
         RedundancyEliminationTest.class,
         UnionFindTest.class,
         RtgRedundancyEliminationTest.class,
+        WeakestReadingsComputerTest.class,
         ModelCheckTest.class
 })
 public class DomgraphTestSuite4 {
