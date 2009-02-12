@@ -27,6 +27,7 @@ public class WeakestReadingsComputerTest {
     private InputCodec ozcodec;
     private Chart chart;
     private RewriteSystem eqsys;
+    private Annotator annotator;
     private RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,Annotation>> out;
     private List goldSfs;
     private String id;
@@ -35,7 +36,7 @@ public class WeakestReadingsComputerTest {
     
     @Parameters
     public static data() {
-        return [prepareFOL("AA", "[label(x1 a(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
+        return [prepareFOL("EA", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
                 [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ])
                 ];
     }
@@ -48,7 +49,7 @@ public class WeakestReadingsComputerTest {
 		chart.clear();
 		ChartSolver.solve(graph,chart);
 		
-		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels);
+		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,eqsys,annotator);
 		filter.intersect(chart,out);
 
 		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,Annotation>>(out, graph);
@@ -64,7 +65,7 @@ public class WeakestReadingsComputerTest {
 	}
 
 	
-    WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, eqsys) {
+    WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, eqsys, annotator) {
         ozcodec = new DomconOzInputCodec();
         graph = new DomGraph();
         labels = new NodeLabels();
@@ -74,6 +75,7 @@ public class WeakestReadingsComputerTest {
         chart = new Chart();
         out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,Annotation>>();
         this.eqsys = eqsys;
+        this.annotator = annotator;
         goldSfs = intendedSolvedForms;
         this.id = id;
     }
@@ -81,7 +83,16 @@ public class WeakestReadingsComputerTest {
 
     
     static Object[] prepareFOL(id, graphstr, intendedSolvedForms) {
-        return (Object[]) [id, graphstr, intendedSolvedForms, makeRewriteSystem(rewriteSystemFol)];
+    	RewriteSystem rs = new RewriteSystem();
+    	Annotator ann = new Annotator();
+    	
+    	try {
+			new RewriteSystemParser().read(new StringReader(rewriteSystemFol), ann, rs);
+		} catch(Exception e) {
+			System.err.println("************ " + e);
+		}
+    	
+        return (Object[]) [id, graphstr, intendedSolvedForms, rs, ann];
     }
     
 
@@ -97,11 +108,10 @@ public class WeakestReadingsComputerTest {
 		return ret;
 	}
 	
-	public static String rewriteSystemFol = '''
-		<?xml version='1.0' ?>
+	public static String rewriteSystemFol = '''<?xml version="1.0" ?>
 
 		<rewrite-system>
-			<annotator>
+			<annotator initial="+">
 				<rule annotation="+" label="a"> <hole annotation="+" /> <hole annotation="+" /> </rule>
 				<rule annotation="-" label="a"> <hole annotation="-" /> <hole annotation="-" /> </rule>
 				<rule annotation="+" label="every"> <hole annotation="-" /> <hole annotation="+" /> </rule>
