@@ -54,10 +54,12 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
         // add split to the chart
         splitset.add(split);
 
+        /*//TA -- removed for efficiency, and because I think we'll end up not needing this
         // update reference counts
         for( E subsubgraph : split.getAllSubgraphs() ) {
             incReferenceCount(subsubgraph);
         }
+        */
 
         size++;
     }
@@ -153,6 +155,14 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
     }
 
 
+
+	public void cleanup() {
+		recomputeSingletons();
+		reduce();
+	}
+
+
+	
     /**
      * Removes all unproductive nonterminals and splits from this chart.
      * A nonterminal is called unproductive if it isn't possible to derive a solved

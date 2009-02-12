@@ -1,5 +1,6 @@
 package de.saar.chorus.domgraph.chart;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,12 +15,14 @@ public class RtgFreeFragmentAnalyzer<E extends GraphBasedNonterminal> {
 	private Multimap<String, E> ntsWhereFree;
 	private Map<String, Map<String,Integer>> reachability;
 	private Set<String> roots;
+	private Map<String,Boolean> coFreenessTable;
 	
 	public RtgFreeFragmentAnalyzer(RegularTreeGrammar<E> rtg) {
 		this.rtg = rtg;
 		ntsWhereFree = new ArrayListMultimap<String, E>();
 		reachability = new HashMap<String, Map<String,Integer>>();
 		roots = new HashSet<String>();
+		coFreenessTable = new HashMap<String, Boolean>();
 	}
 	
 	public void analyze() {
@@ -72,9 +75,22 @@ public class RtgFreeFragmentAnalyzer<E extends GraphBasedNonterminal> {
 	 * @return
 	 */
 	public boolean isCoFree(String u, String v) {
+		String key = u + "_" + v;
+		
+		if( coFreenessTable.containsKey(key) ) {
+			return coFreenessTable.get(key);
+		} else {
+			boolean ret = ! Collections.disjoint(getSubgraphsWhereFree(u), getSubgraphsWhereFree(v));
+			coFreenessTable.put(key, ret);
+			return ret;
+		}
+		
+		
+		/*
 		Set<E> subgraphs = new HashSet<E>(getSubgraphsWhereFree(u));
 		subgraphs.retainAll(getSubgraphsWhereFree(v));
 		
 		return ! subgraphs.isEmpty();
+		*/
 	}
 }

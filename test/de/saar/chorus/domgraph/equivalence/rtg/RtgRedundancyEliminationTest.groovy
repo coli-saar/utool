@@ -110,6 +110,7 @@ class RtgRedundancyEliminationTest {
 		analyzer.analyze();
 		EliminatingRtg filter = new EliminatingRtg(graph, labels, eqsys, analyzer);
 		filter.intersect(chart, out);
+		out.cleanup();
 
 		SolvedFormIterator sfi = new SolvedFormIterator<QuantifierMarkedNonterminal>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);

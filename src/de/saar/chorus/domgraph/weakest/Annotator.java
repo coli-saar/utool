@@ -39,6 +39,21 @@ public class Annotator {
 	}
 	
 	public String getChildAnnotation(String parentAnnotation, String label, int hole) {
-		return rules.get(parentAnnotation).get(label).get(hole);
+		assert rules.get(parentAnnotation) != null : "par " + parentAnnotation + "/" + label + "/" + hole;
+		assert rules.get(parentAnnotation).get(label) != null : "lab " + parentAnnotation + "/" + label + "/" + hole;
+		//assert rules.get(parentAnnotation).get(label).get(hole) != null : "hole " + parentAnnotation + "/" + label + "/" + hole;
+		
+		try {
+			return rules.get(parentAnnotation).get(label).get(hole);
+		} catch(Throwable e) {
+			System.err.println(e);
+			System.err.println("par " + parentAnnotation + "/" + label + "/" + hole);
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return rules.toString();
 	}
 }

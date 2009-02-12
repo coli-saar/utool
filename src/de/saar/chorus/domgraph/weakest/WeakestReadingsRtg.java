@@ -48,8 +48,14 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 		Split<Annotation> ret = new Split<Annotation>(root);
 		List<String> children = compact.getChildren(root, EdgeType.TREE);
 		
+		try {
 		for( int i = 0; i < children.size(); i++ ) {
 			ret.addWcc(children.get(i), new Annotation(root, annotator.getChildAnnotation(previous.getAnnotation(), labels.getLabel(root), i)));
+		}
+		} catch(Throwable e) {
+			System.err.println("makesplit " + previous + " at " + root);
+			System.err.println("childrenL " + children);
+			System.exit(0);
 		}
 		
 		return ret;
