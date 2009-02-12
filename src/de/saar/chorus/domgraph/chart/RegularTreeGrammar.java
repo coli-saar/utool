@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.Set;
 
 abstract public class RegularTreeGrammar<E> {
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	protected final Map<E, BigInteger> numSolvedForms;
 	
@@ -21,7 +21,9 @@ abstract public class RegularTreeGrammar<E> {
 	abstract public boolean containsSplitFor(E subgraph);
 	abstract public List<E> getToplevelSubgraphs();
 	
+	/*
 	abstract public <F extends GraphBasedNonterminal> void prepareForIntersection(RegularTreeGrammar<F> other);
+	*/
 	
 	public RegularTreeGrammar() {
         numSolvedForms = new HashMap<E, BigInteger>();
@@ -37,7 +39,7 @@ abstract public class RegularTreeGrammar<E> {
 	public <F extends GraphBasedNonterminal> void intersect(RegularTreeGrammar<F> other, ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>>  out) {
 		Queue<DecoratedNonterminal<F,E>> agenda = new LinkedList<DecoratedNonterminal<F,E>>();
 		
-		prepareForIntersection(other);
+		//prepareForIntersection(other);
 		out.clear();
 		
 		if( (getToplevelSubgraphs().size() != 1) || (other.getToplevelSubgraphs().size() != 1) ) {

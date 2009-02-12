@@ -13,6 +13,7 @@ import java.util.Set;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
+import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
@@ -54,7 +55,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     public RtgRedundancyElimination(DomGraph graph, NodeLabels labels, EquationSystem eqs) {
         super(graph, labels, eqs);
         
-        eliminatingRtg  = new EliminatingRtg(graph,labels,eqs);
+//        eliminatingRtg  = new EliminatingRtg(graph,labels,eqs);
 
         agenda = new LinkedList<QuantifierMarkedNonterminal>();
         roots = graph.getAllRoots();
@@ -75,7 +76,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     }
 
 
-    
+    @Deprecated
     public void eliminate(Chart c, ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> out) {
     	eliminatingRtg.intersect(c, out);
 

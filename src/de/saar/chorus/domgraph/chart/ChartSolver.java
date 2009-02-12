@@ -127,7 +127,7 @@ public class ChartSolver<E extends GraphBasedNonterminal> {
      *
      * @see #solve(DomGraph, Chart, SplitSource)
      */
-    public static boolean solve(DomGraph graph, Chart chart) throws SolverNotApplicableException {
+    public static boolean solve(DomGraph graph, ConcreteRegularTreeGrammar<SubgraphNonterminal> chart) throws SolverNotApplicableException {
         return solve(graph, chart, new CompleteSplitSource(graph));
     }
 
