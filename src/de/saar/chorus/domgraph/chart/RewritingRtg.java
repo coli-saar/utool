@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.saar.chorus.domgraph.graph.CompactificationRecord;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -110,7 +111,7 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
         this.labels = labels;
         this.analyzer = analyzer;
         
-        compact = graph.compactify();
+        compact = graph.compactify(new CompactificationRecord());
 
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();
         computeIndexTable();
