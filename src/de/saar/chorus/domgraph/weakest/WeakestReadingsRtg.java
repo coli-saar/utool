@@ -8,6 +8,7 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.CompactificationRecord.NodeChildPair;
 
 public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 	private static boolean DEBUG = false;
@@ -35,30 +36,63 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 			if(DEBUG) System.err.println("[allowed, not co-free]");
 			return true;
 		} else {
-			boolean permutable = rewriteSystem.hasRule(labels.getLabel(parent), analyzer.getReachability(parent, currentRoot), 
-					labels.getLabel(currentRoot), analyzer.getReachability(currentRoot, parent),
-					previousQuantifier.getAnnotation()); 
+			boolean permutable = isPermutable(previousQuantifier, currentRoot);
 			if(DEBUG) System.err.println("[allowed=" + !permutable + " perm]");
 			return !permutable;
 		}
 	}
 
+	private boolean isPermutable(Annotation previousQuantifier, String currentRoot) {
+		String parent = previousQuantifier.getPreviousNode();
+		int parentToCurrent = analyzer.getReachability(parent, currentRoot);
+		int currentToParent = analyzer.getReachability(currentRoot, parent);
+		
+		List<NodeChildPair> pathInParent = compactificationRecord.getRecord(parent, parentToCurrent);
+		List<NodeChildPair> pathInCurrent = compactificationRecord.getRecord(currentRoot, currentToParent);
+		
+		String annotation = previousQuantifier.getAnnotation();
+		
+		for( NodeChildPair ncpInParent : pathInParent ) {
+			for( NodeChildPair ncpInCurrent : pathInCurrent ) {
+				if( ! rewriteSystem.hasRule(labels.getLabel(ncpInParent.node), ncpInParent.childIndex,
+						labels.getLabel(ncpInCurrent.node), ncpInCurrent.childIndex, annotation) ) {
+					return false;
+				}	
+			}
+			
+			annotation = annotator.getChildAnnotation(annotation, labels.getLabel(ncpInParent.node), ncpInParent.childIndex);
+		}
+
+		return true;
+	}
+
 	@Override
 	protected Split<Annotation> makeSplit(Annotation previous, String root) {
 		Split<Annotation> ret = new Split<Annotation>(root);
+		String myAnnotation = (previous.getPreviousNode() == null) ? annotator.getStart() : getPathAnnotation(previous.getPreviousNode(), previous.getAnnotation(), analyzer.getReachability(previous.getPreviousNode(), root));
+		Annotation ann = new Annotation(root,myAnnotation);
 		List<String> children = compact.getChildren(root, EdgeType.TREE);
 		
-		try {
 		for( int i = 0; i < children.size(); i++ ) {
-			ret.addWcc(children.get(i), new Annotation(root, annotator.getChildAnnotation(previous.getAnnotation(), labels.getLabel(root), i)));
-		}
-		} catch(Throwable e) {
-			System.err.println("makesplit " + previous + " at " + root);
-			System.err.println("childrenL " + children);
-			System.exit(0);
+			ret.addWcc(children.get(i), ann);
 		}
 		
 		return ret;
+	}
+	
+	private String getPathAnnotation(String root, String rootAnnotation, int hole) {
+		if( root == null ) {
+			return annotator.getStart();
+		} else {
+			List<NodeChildPair> path = compactificationRecord.getRecord(root, hole);
+			String ret = rootAnnotation;
+
+			for( NodeChildPair ncp : path ) {
+				ret = annotator.getChildAnnotation(ret, labels.getLabel(ncp.node), ncp.childIndex);
+			}
+
+			return ret;
+		}
 	}
 
 	@Override

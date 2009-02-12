@@ -7,8 +7,6 @@
 
 package de.saar.chorus.domgraph.graph;
 
-import groovy.util.slurpersupport.NodeChild;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1680,6 +1678,7 @@ public class DomGraph implements Cloneable {
         			}
         		}
         	}
+        	record.setCompactGraph(this);
         	
             return this;
         } else {
@@ -1697,6 +1696,8 @@ public class DomGraph implements Cloneable {
                     ret.addEdge((String) edge.getSource(), (String) edge.getTarget(), getData(edge));
                 }
             }
+            
+            record.setCompactGraph(ret);
 
             return ret;
         }

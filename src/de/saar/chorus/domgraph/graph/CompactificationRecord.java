@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class CompactificationRecord {
 	private Map<String,List<List<NodeChildPair>>> records;
+	private DomGraph compact;
 	
 	public CompactificationRecord() {
 		records = new HashMap<String, List<List<NodeChildPair>>>();
@@ -31,6 +32,13 @@ public class CompactificationRecord {
 		return records.get(root).size();
 	}
 	
+	public void setCompactGraph(DomGraph compact) {
+		this.compact = compact;
+	}
+	
+	public DomGraph getCompactGraph() {
+		return compact;
+	}
 	
 	
 	public static class NodeChildPair {

@@ -39,16 +39,20 @@ public class Annotator {
 	}
 	
 	public String getChildAnnotation(String parentAnnotation, String label, int hole) {
+		/*
 		assert rules.get(parentAnnotation) != null : "par " + parentAnnotation + "/" + label + "/" + hole;
 		assert rules.get(parentAnnotation).get(label) != null : "lab " + parentAnnotation + "/" + label + "/" + hole;
 		//assert rules.get(parentAnnotation).get(label).get(hole) != null : "hole " + parentAnnotation + "/" + label + "/" + hole;
+		 */
 		
 		try {
 			return rules.get(parentAnnotation).get(label).get(hole);
-		} catch(Throwable e) {
-			System.err.println(e);
-			System.err.println("par " + parentAnnotation + "/" + label + "/" + hole);
-			throw new RuntimeException(e);
+		} catch(NullPointerException e) {
+			System.err.println("WARNING: Unknown label " + parentAnnotation + "/" + label + "/" + hole);
+			return getStart();
+		} catch(IndexOutOfBoundsException e) {
+			System.err.println("WARNING: Unkown hole " + parentAnnotation + "/" + label + "/" + hole);
+			return getStart();
 		}
 	}
 	
