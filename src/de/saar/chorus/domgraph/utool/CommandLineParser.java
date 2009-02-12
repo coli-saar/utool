@@ -18,7 +18,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import de.saar.chorus.domgraph.ExampleManager;
-import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.InputCodec;
@@ -29,6 +28,9 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.RewriteSystem;
+import de.saar.chorus.domgraph.weakest.RewriteSystemParser;
 import de.saar.getopt.ConvenientGetopt;
 
 class CommandLineParser {
@@ -277,6 +279,18 @@ class CommandLineParser {
             }
         }
         
+        if( getopt.hasOption('w')) {
+        	Annotator annotator = new Annotator();
+        	RewriteSystem trs = new RewriteSystem();
+        	try {
+				new RewriteSystemParser().read(new FileReader(getopt.getValue('w')), annotator, trs);
+				ret.setOptionWeakestReadings(true);
+				ret.setAnnotator(annotator);
+				ret.setRewriteSystem(trs);
+			} catch (Exception e) {
+				throw new AbstractOptionsParsingException("An error occurred while reading the rewrite system.", e, ExitCodes.REWRITE_READING_ERROR);
+			}
+        }
 
         return ret;
     }
@@ -300,6 +314,8 @@ class CommandLineParser {
                         "Specify an output file", "-");
         getopt.addOption('e', "equivalences", ConvenientGetopt.REQUIRED_ARGUMENT,
                         "Eliminate equivalence readings", null);
+        getopt.addOption('w', "weakest-readings", ConvenientGetopt.REQUIRED_ARGUMENT,
+        				"Compute weakest readings", null);
         getopt.addOption('h', "help", ConvenientGetopt.NO_ARGUMENT,
                         "Display help information", null);
         getopt.addOption('s', "display-statistics", ConvenientGetopt.NO_ARGUMENT,

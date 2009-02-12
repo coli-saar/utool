@@ -16,6 +16,8 @@ import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.RewriteSystem;
 
 /**
  * 
@@ -171,6 +173,7 @@ public class AbstractOptions {
     private boolean optionStatistics;
     private boolean optionNoOutput;
     private boolean optionEliminateEquivalence;
+    private boolean optionWeakestReadings;
     private boolean optionDumpChart;
     private boolean optionWarmup;
     private boolean optionNochart;
@@ -186,6 +189,8 @@ public class AbstractOptions {
     private String inputName;
     
     private EquationSystem equations;
+    private Annotator annotator;
+    private RewriteSystem rewriteSystem;
     
     private int port;
     private PrintWriter logWriter;
@@ -204,6 +209,7 @@ public class AbstractOptions {
         setOptionStatistics(false);
         setOptionNoOutput(false);
         setOptionEliminateEquivalence(false);
+        setOptionWeakestReadings(false);
         setOptionDumpChart(false);
         setOptionWarmup(false);
         setOptionNochart(false);
@@ -296,6 +302,14 @@ public class AbstractOptions {
     public void setOptionDumpChart(boolean optionDumpChart) {
         this.optionDumpChart = optionDumpChart;
     }
+    
+    public void setOptionWeakestReadings(boolean optionWeakestReadings) {
+		this.optionWeakestReadings = optionWeakestReadings;
+	}
+    
+    public boolean hasOptionWeakestReadings() {
+		return optionWeakestReadings;
+	}
 
 
 
@@ -402,4 +416,30 @@ public class AbstractOptions {
 		}
     }
 
+
+
+	public Annotator getAnnotator() {
+		return annotator;
+	}
+
+
+
+	public void setAnnotator(Annotator annotator) {
+		this.annotator = annotator;
+	}
+
+
+
+	public RewriteSystem getRewriteSystem() {
+		return rewriteSystem;
+	}
+
+
+
+	public void setRewriteSystem(RewriteSystem rewriteSystem) {
+		this.rewriteSystem = rewriteSystem;
+	}
+
+    
+    
 }

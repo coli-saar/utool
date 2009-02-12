@@ -42,6 +42,7 @@ import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.Ubench;
 
 class ServerThread extends Thread {
@@ -175,6 +176,7 @@ class ServerThread extends Thread {
 			long start_solver = System.nanoTime();
 			Chart chart = new Chart(options.getLabels());
 			ConcreteRegularTreeGrammar reducedChart;
+			RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = null;
 			boolean solvable = false;
 
 			try {
@@ -189,13 +191,28 @@ class ServerThread extends Thread {
 			long time_solver = (end_solver - start_solver)/1000000L;
 			
 			if( options.hasOptionEliminateEquivalence() ) {
-				RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-				analyzer.analyze();
+				if( analyzer == null ) {
+					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
+					analyzer.analyze();
+				}
+				
 				EliminatingRtg filter = new EliminatingRtg(graph, options.getLabels(), options.getEquations(), analyzer);
 				reducedChart = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 				filter.intersect((Chart) chart, reducedChart);
 			} else {
 				reducedChart = chart;
+			}
+			
+			if( options.hasOptionWeakestReadings() ) {
+				if( analyzer == null ) {
+					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
+					analyzer.analyze();
+				}
+				
+				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator());
+				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
+				filter.intersect(chart, out);
+				reducedChart = out;
 			}
 
 			if( options.getOperation() == Operation.solvable ) {

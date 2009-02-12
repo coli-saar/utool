@@ -8,6 +8,7 @@
 package de.saar.chorus.domgraph.utool.server;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -38,6 +39,9 @@ import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.RewriteSystem;
+import de.saar.chorus.domgraph.weakest.RewriteSystemParser;
 
 class XmlParser extends DefaultHandler {
     private CodecManager codecManager;
@@ -215,6 +219,17 @@ class XmlParser extends DefaultHandler {
             } catch(Exception e) {
                 throw new SAXException(new AbstractOptionsParsingException("An error occurred while reading the equivalences file!", e, ExitCodes.EQUIVALENCE_READING_ERROR));
             }
+        } else if( qName.equals("weakest-readings")) {
+        	Annotator annotator = new Annotator();
+        	RewriteSystem trs = new RewriteSystem();
+        	try {
+				new RewriteSystemParser().read(new StringReader(XmlEntities.decode(attributes.getValue("rewrite-system"))), annotator, trs);
+				options.setOptionWeakestReadings(true);
+				options.setAnnotator(annotator);
+				options.setRewriteSystem(trs);
+			} catch (Exception e) {
+				throw new SAXException(new AbstractOptionsParsingException("An error occurred while reading the rewrite system.", e, ExitCodes.REWRITE_READING_ERROR));
+			}
         }
     }
     
