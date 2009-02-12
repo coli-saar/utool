@@ -32,6 +32,7 @@ import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
+import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.MacIntegration;
 import de.saar.chorus.ubench.Ubench;
 
@@ -199,6 +200,7 @@ public class Utool {
 			// compute chart
 			long start_solver = System.currentTimeMillis();
 			ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> chart = new Chart(options.getLabels());
+			RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = null;
 			boolean solvable = false;
 
 			try {
@@ -225,8 +227,13 @@ public class Utool {
 				}
 				
 				if( options.hasOptionEliminateEquivalence() ) {
-					RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-					analyzer.analyze();
+					long start_elimination = System.currentTimeMillis();
+					
+					if( analyzer == null ) {
+						analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
+						analyzer.analyze();
+					}
+					
 					EliminatingRtg filter = new EliminatingRtg(graph, options.getLabels(), options.getEquations(), analyzer);
 					ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 					filter.intersect((Chart) chart, out);
@@ -234,7 +241,26 @@ public class Utool {
 					
 					long end_elimination = System.currentTimeMillis();
 					if( options.hasOptionStatistics() ) {
-						System.err.println("Time spent on redundancy elimination: " + (end_elimination-end_solver) + " ms.");
+						System.err.println("Time spent on redundancy elimination: " + (end_elimination-start_elimination) + " ms.");
+					}
+				}
+				
+				if( options.hasOptionWeakestReadings() ) {
+					long start_elimination = System.currentTimeMillis();
+					
+					if( analyzer == null ) {
+						analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
+						analyzer.analyze();
+					}
+					
+					WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator());
+					ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
+					filter.intersect(chart, out);
+					chart = out;
+					
+					long end_elimination = System.currentTimeMillis();
+					if( options.hasOptionStatistics() ) {
+						System.err.println("Time spent on computing weakest readings: " + (end_elimination-start_elimination) + " ms.");
 					}
 				}
 
@@ -472,6 +498,7 @@ public class Utool {
 		System.err.println("  --display-statistics, -s          Displays runtime and other statistics.");
 		System.err.println("  --no-output, -n                   Do not display computed output.");
 		System.err.println("  --equivalences, -e <filename>     Eliminate equivalent readings.");
+		System.err.println("  --weakest-readings, -w <filename> Compute weakest readings.");
 		System.err.println("  --version                         Display version and copyright information.");
 	}
 

@@ -54,6 +54,7 @@ public class ExitCodes {
     public static final int OUTPUT_CODEC_NOT_MULTI = 162;
 
     public static final int EQUIVALENCE_READING_ERROR = 170;
+    public static final int REWRITE_READING_ERROR = 171;
     
 
     
