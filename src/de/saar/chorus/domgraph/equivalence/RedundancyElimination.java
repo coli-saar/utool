@@ -20,6 +20,7 @@ import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SplitComputer;
+import de.saar.chorus.domgraph.graph.CompactificationRecord;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -104,7 +105,7 @@ public abstract class RedundancyElimination<E extends GraphBasedNonterminal> {
         this.graph = graph;
         this.labels = labels;
         this.eqs = eqs;
-        compact = graph.compactify();
+        compact = graph.compactify(new CompactificationRecord());
 
         hypernormalReachability = new HashMap<String,Map<String,Integer>>();
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();

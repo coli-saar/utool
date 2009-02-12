@@ -5,6 +5,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import de.saar.basic.UnionFindTest;
 import de.saar.chorus.domgraph.chart.SolvedFormIteratorTest;
 import de.saar.chorus.domgraph.chart.SplitComputerTest;
+import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
 import de.saar.chorus.domgraph.codec.CodecManagerTest;
 import de.saar.chorus.domgraph.codec.basic.ChainTest;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodecTest;
@@ -13,11 +14,11 @@ import de.saar.chorus.domgraph.codec.holesem.HolesemCodecTest;
 import de.saar.chorus.domgraph.codec.mrs.MrsCodecTest;
 import de.saar.chorus.domgraph.equivalence.RedundancyEliminationTest;
 import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyEliminationTest;
-import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
 import de.saar.chorus.domgraph.graph.DomGraphTest;
+import de.saar.chorus.domgraph.graph.CompactificationRecordTest;
 import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayoutTest;
 import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
-import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
+import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses(value={
@@ -28,6 +29,7 @@ import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
         HolesemCodecTest.class,
         MrsCodecTest.class,
         DomGraphTest.class,
+        CompactificationRecordTest.class,
         SplitComputerTest.class,
         SolvedFormIteratorTest.class,
         DomGraphChartLayoutTest.class,

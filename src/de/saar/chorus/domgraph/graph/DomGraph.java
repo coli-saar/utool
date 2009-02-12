@@ -7,6 +7,8 @@
 
 package de.saar.chorus.domgraph.graph;
 
+import groovy.util.slurpersupport.NodeChild;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +26,7 @@ import org._3pq.jgrapht.graph.DirectedMultigraph;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
+import de.saar.chorus.domgraph.graph.CompactificationRecord.NodeChildPair;
 
 /**
  * A dominance graph. Dominance graphs are directed graphs. Nodes are either
@@ -1666,8 +1669,18 @@ public class DomGraph implements Cloneable {
      *
      * @return a compact version of this graph.
      */
-    public DomGraph compactify() {
+    public DomGraph compactify(CompactificationRecord record) {
         if( isCompact() ) {
+        	for( String node : getAllNodes() ) {
+        		if( isRoot(node) ) {
+        			for( int i = 0; i < outdeg(node); i++ ) {
+        				List<NodeChildPair> list = new ArrayList<NodeChildPair>();
+        				list.add(new NodeChildPair(node, i));
+        				record.addRecord(node, list);
+        			}
+        		}
+        	}
+        	
             return this;
         } else {
             DomGraph ret = new DomGraph();
@@ -1675,7 +1688,7 @@ public class DomGraph implements Cloneable {
             // build fragments
             for( String root : getAllRoots() ) {
                 ret.addNode(root, getData(root));
-                copyFragment(root, root, ret);
+                copyFragment(root, root, ret, record, new ArrayList<NodeChildPair>());
             }
 
             // copy dominance edges
@@ -1697,17 +1710,22 @@ public class DomGraph implements Cloneable {
      * @param root
      * @param ret
      */
-    private void copyFragment(String node, String root, DomGraph ret) {
+    private void copyFragment(String node, String root, DomGraph ret, CompactificationRecord record, List<NodeChildPair> path) {
         if( getData(node).getType() == NodeType.UNLABELLED ) {
             if( !node.equals(root) ) { // i.e. not an empty fragment with root
                 // = hole
                 ret.addNode(node, getData(node));
                 ret.addEdge(root, node, new EdgeData(EdgeType.TREE));
+                record.addRecord(root, path);
             }
             // System.err.print("cpt edge from " + root + " to " + node);
         } else {
+        	int i = 0;
             for( String child : getChildren(node, EdgeType.TREE) ) {
-                copyFragment(child, root, ret);
+            	path.add(new NodeChildPair(node,i));
+                copyFragment(child, root, ret, record, path);
+                path.remove(path.size()-1);
+                i++;
             }
         }
     }
