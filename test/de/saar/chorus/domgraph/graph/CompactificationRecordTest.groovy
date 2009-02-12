@@ -35,12 +35,12 @@ public class CompactificationRecordTest {
 	
 	@Test
 	public void testCompactificationRecord() {
-		System.err.println("\n\n\nTest: " + id);
+		//System.err.println("\n\n\nTest: " + id);
 		
 		CompactificationRecord record = new CompactificationRecord();
 		DomGraph compact = graph.compactify(record);
 		
-		System.err.println(record)
+		//System.err.println(record)
 		
 		gold.each { root, pathspecs ->
 			pathspecs.eachWithIndex { pathspec, i ->

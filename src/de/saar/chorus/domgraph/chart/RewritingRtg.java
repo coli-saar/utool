@@ -18,6 +18,7 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
     protected DomGraph graph; // original graph
     protected DomGraph compact; // compact version of the graph
     protected NodeLabels labels;
+    protected CompactificationRecord compactificationRecord;
 
 
     // The compactification deletes labelled leaves, so there may be a discrepancy
@@ -110,8 +111,10 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
     	this.graph = graph;
         this.labels = labels;
         this.analyzer = analyzer;
+        compactificationRecord = new CompactificationRecord();
         
-        compact = graph.compactify(new CompactificationRecord());
+        compact = graph.compactify(compactificationRecord);
+        //System.err.println(compactificationRecord);
 
         indicesCompactToOriginal = new HashMap<String,Map<Integer,Integer>>();
         computeIndexTable();

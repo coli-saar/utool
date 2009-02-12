@@ -37,13 +37,19 @@ public class WeakestReadingsComputerTest {
     @Parameters
     public static data() {
         return [prepareFOL("EA", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
-                [ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ])
+                			[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]),
+                prepareFOL("EEA", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 a(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
+                		[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y4","z4"], ["y5", "z3"]],[:]] ]),
+                prepareFOL("thesis c-", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(a1 not(a2)) label(z1 b) label(z2 b) label(z3 b) dom(a2 x1) dom(a2 y1) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
+                		[ [[["a2", "x1"], ["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y3", "z3"]],[:]] ]),
+                prepareFOL("thesis c+", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(z1 b) label(z2 b) label(z3 b) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
+                   		[ [[["y3", "z3"], ["y2", "x1"], ["x2", "z1"], ["x3", "z2"]],[:]] ])
                 ];
     }
     
     @Test
 	public void testWeakestSolvedForms() {
-    	System.err.println("\n\n\nTest: " + id);
+    	//System.err.println("\n\n\nTest: " + id);
     	
 		graph = graph.preprocess();
 		chart.clear();
@@ -58,9 +64,11 @@ public class WeakestReadingsComputerTest {
 		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,Annotation>>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
 		
+		/*
 		if( !TestingTools.solvedFormsEqual(sfs, goldSfs) ) {
 			System.err.println("wrong rtg!!" + out);
 		}
+		*/
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
 	}
@@ -125,6 +133,8 @@ public class WeakestReadingsComputerTest {
 				<rule llabel="every" lhole="1" rlabel="a" rhole="1" annotation="-" />
 				<rule llabel="not" lhole="0" rlabel="a" rhole="1" annotation="+" />
 				<rule llabel="every" lhole="1" rlabel="not" rhole="0" annotation="+" />
+				<rule llabel="every" lhole="0" rlabel="every" rhole="1" annotation="-" />
+				<rule llabel="every" lhole="1" rlabel="every" rhole="0" annotation="+" />
 				<!-- etc. -->
 			</rewriting>
 		</rewrite-system>
