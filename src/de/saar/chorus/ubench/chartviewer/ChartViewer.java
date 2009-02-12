@@ -1052,7 +1052,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener  {
 				RtgRedundancyElimination elim = new RtgRedundancyElimination(((DomGraph) dg.clone()).preprocess(), 
 						labels, eqs);
 
-				ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<QuantifierMarkedNonterminal>();
+				ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>();
 				elim.eliminate(toElim, (ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>) out); //TA
 				reduced = true;
 				eqsname = eqsn;
