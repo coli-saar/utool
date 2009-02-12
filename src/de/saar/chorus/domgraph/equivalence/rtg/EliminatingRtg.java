@@ -23,12 +23,10 @@ public class EliminatingRtg extends RewritingRtg<String> {
 
 
 	@Override
-	public List<String> getToplevelSubgraphs() {
-		List<String> ret = new ArrayList<String>();
-		ret.add(null);
-		return ret;
+	protected String makeTopLevelNonterminal() {
+		return null;
 	}
-	
+
 	@Override
 	protected Split<String> makeSplit(String previous, String root) {
 		Split<String> ret = new Split<String>(root);
@@ -131,6 +129,7 @@ public class EliminatingRtg extends RewritingRtg<String> {
     		return 2;
     	}
     }
+
 
 
 }

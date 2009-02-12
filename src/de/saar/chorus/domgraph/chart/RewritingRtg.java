@@ -29,7 +29,12 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
     private int currentLeafIdx;
     
     
-    
+    @Override
+    public List<E> getToplevelSubgraphs() {
+    	List<E> ret = new ArrayList<E>();
+    	ret.add(makeTopLevelNonterminal());
+    	return ret;
+    }
 	
 	@Override
 	public List<Split<E>> getSplitsFor(E previousQuantifier, String currentRoot) {
@@ -44,6 +49,8 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
 	
 	abstract protected Split<E> makeSplit(E previous, String root);
     abstract protected boolean allowedSplit(E previousQuantifier, String currentRoot);
+	abstract protected E makeTopLevelNonterminal();
+
     
 
 
