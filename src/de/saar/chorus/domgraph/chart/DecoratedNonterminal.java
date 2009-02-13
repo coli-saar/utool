@@ -45,4 +45,41 @@ public class DecoratedNonterminal<E extends GraphBasedNonterminal, DecorationTyp
 		return "<" + base.toString(roots) + "," + decoration.toString() + ">";
 	}
 
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((base == null) ? 0 : base.hashCode());
+		result = prime * result
+				+ ((decoration == null) ? 0 : decoration.hashCode());
+		return result;
+	}
+
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DecoratedNonterminal other = (DecoratedNonterminal) obj;
+		if (base == null) {
+			if (other.base != null)
+				return false;
+		} else if (!base.equals(other.base))
+			return false;
+		if (decoration == null) {
+			if (other.decoration != null)
+				return false;
+		} else if (!decoration.equals(other.decoration))
+			return false;
+		return true;
+	}
+
+	
 }
