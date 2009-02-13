@@ -79,7 +79,7 @@ public class RtgRedundancyElimination extends RedundancyElimination<QuantifierMa
     @Deprecated
     public void eliminate(Chart c, ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> out) {
     	eliminatingRtg.intersect(c, out);
-
+    	out.cleanup();
     }
     
     
