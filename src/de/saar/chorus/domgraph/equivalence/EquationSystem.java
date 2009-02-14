@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -32,8 +33,10 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class EquationSystem extends DefaultHandler {
-    private final Collection<Equation> equations;
+    //private final Collection<Equation> equations;
     private final Collection<FragmentWithHole> wildcards;
+    
+    private Set<String> equationStrings;
 
     // for XML parsing
     private List<FragmentWithHole> currentEquivalenceGroup;
@@ -42,30 +45,23 @@ public class EquationSystem extends DefaultHandler {
     public EquationSystem() {
         super();
 
-        equations = new HashSet<Equation>();
+        // equations = new HashSet<Equation>();
         wildcards = new HashSet<FragmentWithHole>();
+        
+        equationStrings = new HashSet<String>();
 
         currentEquivalenceGroup = null;
         currentEquivalencePartner = null;
 
     }
+    
+	private String constructKey(String llabel, int lhole, String rlabel, int rhole) {
+		return llabel + "/" + lhole + "-" + rlabel + "/" + rhole ;
+	}
 
-    public Collection<Integer> getIndicesForLabel(String label) {
-        Collection<Integer> ret = new HashSet<Integer>();
-
-        for( Equation eq : equations ) {
-            if( eq.getQ1().getRootLabel().equals(label)) {
-                ret.add(eq.getQ1().getHoleIndex());
-            }
-        }
-
-        for( FragmentWithHole fwh : wildcards ) {
-            if( fwh.getRootLabel().equals(label)) {
-                ret.add(fwh.getHoleIndex());
-            }
-        }
-
-        return ret;
+    
+    public boolean permutes(String f, int i, String g, int k) {
+    	return isWildcard(f,i) || isWildcard(g, k) || equationStrings.contains(constructKey(f, i, g, k));
     }
 
     public boolean isWildcard(String label, int holeindex) {
@@ -85,20 +81,6 @@ public class EquationSystem extends DefaultHandler {
         return false;
     }
 
-    public Collection<String> getPermutingLabels(String label, int holeindex) {
-        Collection<String> ret = new ArrayList<String>();
-        FragmentWithHole it = new FragmentWithHole(label,holeindex);
-
-        for( Equation eq : equations ) {
-            if( eq.getQ1().equals(it) ) {
-                ret.add(eq.getQ2().getRootLabel());
-            }
-        }
-
-
-        return ret;
-    }
-
 
     /**
      * Add an equation between two label-hole pairs.
@@ -107,7 +89,7 @@ public class EquationSystem extends DefaultHandler {
      * @param fh2 another label-hole pair
      */
     public void add(FragmentWithHole fh1, FragmentWithHole fh2) {
-        equations.add(new Equation(fh1,fh2));
+    	equationStrings.add(constructKey(fh1.getRootLabel(), fh1.getHoleIndex(), fh2.getRootLabel(), fh2.getHoleIndex()));
     }
 
     /**
@@ -125,19 +107,12 @@ public class EquationSystem extends DefaultHandler {
     }
 
     /**
-     * Remove all equations from this equation system.
-     */
-    public void clear() {
-        equations.clear();
-    }
-
-    /**
      * Checks whether a given equation is contained in the
      * equation system.
      *
      * @param eq an equation
      * @return true iff this equation is contained in this equation system.
-     */
+     *
     public boolean contains(Equation eq) {
         return
         // Wildcards -- no longer necessary for RTGE
@@ -145,6 +120,7 @@ public class EquationSystem extends DefaultHandler {
         // ||
         equations.contains(eq);
     }
+    */
 
     /**
      * Returns the number of equations.
@@ -152,7 +128,7 @@ public class EquationSystem extends DefaultHandler {
      * @return the number of equations
      */
     public int size() {
-        return equations.size();
+        return equationStrings.size();
     }
 
     /**
@@ -229,7 +205,7 @@ public class EquationSystem extends DefaultHandler {
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        for( Equation eq : equations ) {
+        for( String eq : equationStrings ) {
             buf.append("  " + eq + "\n");
         }
         return buf.toString();
