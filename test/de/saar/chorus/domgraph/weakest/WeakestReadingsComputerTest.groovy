@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.saar.chorus.domgraph.weakest
 
 
@@ -40,18 +37,28 @@ public class WeakestReadingsComputerTest {
     public static data() {
         return [prepareFOL("EA", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(z1 foo) label(z2 bar) label(z3 baz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y3 z3)]",
                 			[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y3", "z3"]],[:]] ]),
+
+                // weakening in non-compact fragments
                 prepareFOL("EEA", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 a(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                 		[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y4","z4"], ["y5", "z3"]],[:]] ]),
+                		
+                // rules c+ and c- from Alexander's thesis (sensitivity to annotations)
                 prepareFOL("thesis c-", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(a1 not(a2)) label(z1 b) label(z2 b) label(z3 b) dom(a2 x1) dom(a2 y1) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
                 		[ [[["a2", "x1"], ["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y3", "z3"]],[:]] ]),
                 prepareFOL("thesis c+", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(z1 b) label(z2 b) label(z3 b) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
                    		[ [[["y3", "z3"], ["y2", "x1"], ["x2", "z1"], ["x3", "z2"]],[:]] ]),
+                   		
+                // some test cases for weakening that can use equivalence permutations as well
                 prepareFOL("weakening + equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                    		[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y4","z4"], ["y5", "z3"]],[:]] ]),
                 prepareFOL("only equiv", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                 		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
                 prepareFOLnoEquiv("null equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                    		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
+                   		
+                // The following two test cases check that annotations are taken into account correctly when checking
+                // permutability of non-compact fragments: The negation gets permuted up _first_, and further rewrites
+                // between f and g must be checked in negative polarity.
                 prepareFG("non-cpt polarity 1", "[label(x1 not(x2)) label(x2 g(x3)) label(y1 f(y2)) label(z b) dom(x3 z) dom(y2 z)]",
                 		[[[["x3", "y1"], ["y2", "z"]],[:]] ]),
                 prepareFG("non-cpt polarity 2", "[label(x1 not(x2)) label(x2 f(x3)) label(y1 g(y2)) label(z b) dom(x3 z) dom(y2 z)]",
