@@ -265,7 +265,7 @@ public class Utool {
 						analyzer.analyze();
 					}
 					
-					WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator());
+					WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator(), options.getEquations());
 					ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 					filter.intersect(chart, out);
 					chart = out;

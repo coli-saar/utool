@@ -8,6 +8,8 @@ import de.saar.chorus.domgraph.graph.*;
 import de.saar.chorus.domgraph.chart.*;
 import de.saar.chorus.domgraph.codec.domcon.*;
 import de.saar.chorus.domgraph.codec.*;
+import de.saar.chorus.domgraph.equivalence.*;
+
 
 import de.saar.testingtools.*;
 
@@ -26,12 +28,12 @@ public class WeakestReadingsComputerTest {
     private NodeLabels labels;
     private InputCodec ozcodec;
     private Chart chart;
-    private RewriteSystem eqsys;
+    private RewriteSystem rewriteSystem;
     private Annotator annotator;
     private RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,Annotation>> out;
     private List goldSfs;
     private String id;
-    
+    private EquationSystem eqsys;
     
     
     @Parameters
@@ -43,7 +45,13 @@ public class WeakestReadingsComputerTest {
                 prepareFOL("thesis c-", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(a1 not(a2)) label(z1 b) label(z2 b) label(z3 b) dom(a2 x1) dom(a2 y1) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
                 		[ [[["a2", "x1"], ["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y3", "z3"]],[:]] ]),
                 prepareFOL("thesis c+", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(z1 b) label(z2 b) label(z3 b) dom(x2 z1) dom(x3 z2) dom(y2 z2) dom(y3 z3)]",
-                   		[ [[["y3", "z3"], ["y2", "x1"], ["x2", "z1"], ["x3", "z2"]],[:]] ])
+                   		[ [[["y3", "z3"], ["y2", "x1"], ["x2", "z1"], ["x3", "z2"]],[:]] ]),
+                prepareFOL("weakening + equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
+                   		[ [[["x2","z1"], ["x3", "y1"], ["y2","z2"], ["y4","z4"], ["y5", "z3"]],[:]] ]),
+                prepareFOL("only equiv", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
+                		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
+                prepareFOLnoEquiv("null equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
+                   		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]])
                 ];
     }
     
@@ -57,7 +65,7 @@ public class WeakestReadingsComputerTest {
 		
 		RtgFreeFragmentAnalyzer analyzer = new RtgFreeFragmentAnalyzer(chart);
 		analyzer.analyze();
-		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,analyzer,eqsys,annotator);
+		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,analyzer,rewriteSystem,annotator,eqsys);
 		filter.intersect(chart,out);
 		out.cleanup();
 
@@ -74,7 +82,7 @@ public class WeakestReadingsComputerTest {
 	}
 
 	
-    WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, eqsys, annotator) {
+    WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, rewriteSystem, eqsys, annotator) {
         ozcodec = new DomconOzInputCodec();
         graph = new DomGraph();
         labels = new NodeLabels();
@@ -83,6 +91,7 @@ public class WeakestReadingsComputerTest {
         
         chart = new Chart();
         out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,Annotation>>();
+        this.rewriteSystem = rewriteSystem;
         this.eqsys = eqsys;
         this.annotator = annotator;
         goldSfs = intendedSolvedForms;
@@ -93,6 +102,7 @@ public class WeakestReadingsComputerTest {
     
     static Object[] prepareFOL(id, graphstr, intendedSolvedForms) {
     	RewriteSystem rs = new RewriteSystem();
+    	EquationSystem eq;
     	Annotator ann = new Annotator();
     	
     	try {
@@ -100,8 +110,23 @@ public class WeakestReadingsComputerTest {
 		} catch(Exception e) {
 			throw new RuntimeException(e);
 		}
+		
+		eq = makeEqSystem(eqSystemFOL);
     	
-        return (Object[]) [id, graphstr, intendedSolvedForms, rs, ann];
+        return (Object[]) [id, graphstr, intendedSolvedForms, rs, eq, ann];
+    }
+    
+    static Object[] prepareFOLnoEquiv(id, graphstr, intendedSolvedForms) {
+    	RewriteSystem rs = new RewriteSystem();
+    	Annotator ann = new Annotator();
+    	
+    	try {
+			new RewriteSystemParser().read(new StringReader(rewriteSystemFol), ann, rs);
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		return (Object[]) [id, graphstr, intendedSolvedForms, rs, null, ann];
     }
     
 
@@ -112,6 +137,18 @@ public class WeakestReadingsComputerTest {
 			ret.read(new StringReader(eqs));
 		} catch(Exception e) {
 			
+		}
+		
+		return ret;
+	}
+	
+	public static EquationSystem makeEqSystem(String eqs) {
+		EquationSystem ret = new EquationSystem();
+		
+		try {
+			ret.read(new StringReader(eqs));
+		} catch(Exception e) {
+			throw new RuntimeException(e);
 		}
 		
 		return ret;
@@ -139,5 +176,18 @@ public class WeakestReadingsComputerTest {
 			</rewriting>
 		</rewrite-system>
 ''';
+
+	public static String eqSystemFOL = '''<?xml version="1.0" ?> 
+	<equivalences style="FOL"> 
+		<equivalencegroup>
+	       <quantifier label="a" hole="1" />
+	       <quantifier label="a" hole="0" />
+	   </equivalencegroup>
+	   <equivalencegroup>
+	       <quantifier label="every" hole="1" />
+	   </equivalencegroup>
+	   <permutesWithEverything label="permute" hole="0" />
+	</equivalences>
+	''';
 	
 }

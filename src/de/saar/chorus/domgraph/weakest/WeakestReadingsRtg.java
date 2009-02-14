@@ -5,6 +5,7 @@ import java.util.List;
 import de.saar.chorus.domgraph.chart.RewritingRtg;
 import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
 import de.saar.chorus.domgraph.chart.Split;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -15,12 +16,14 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 	
 	private RewriteSystem rewriteSystem;
 	private Annotator annotator;
+	private EquationSystem equivalences;
 	
-	public WeakestReadingsRtg(DomGraph graph, NodeLabels labels, RtgFreeFragmentAnalyzer<?> analyzer, RewriteSystem system, Annotator annotator) {
+	public WeakestReadingsRtg(DomGraph graph, NodeLabels labels, RtgFreeFragmentAnalyzer<?> analyzer, RewriteSystem system, Annotator annotator, EquationSystem equivalences) {
 		super(graph, labels, analyzer);
 		
 		this.rewriteSystem = system;
 		this.annotator = annotator;
+		this.equivalences = equivalences;
 	}
 
 	@Override
@@ -52,18 +55,25 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 		
 		String annotation = previousQuantifier.getAnnotation();
 		
+		int countWeakeningRewrites = 0;
+		
 		for( NodeChildPair ncpInParent : pathInParent ) {
 			for( NodeChildPair ncpInCurrent : pathInCurrent ) {
-				if( ! rewriteSystem.hasRule(labels.getLabel(ncpInParent.node), ncpInParent.childIndex,
+				if( rewriteSystem.hasRule(labels.getLabel(ncpInParent.node), ncpInParent.childIndex,
 						labels.getLabel(ncpInCurrent.node), ncpInCurrent.childIndex, annotation) ) {
+					countWeakeningRewrites++;
+				} else if( (equivalences != null) && (equivalences.permutes(labels.getLabel(ncpInParent.node), ncpInParent.childIndex,
+						labels.getLabel(ncpInCurrent.node), ncpInCurrent.childIndex)) ) {
+					;
+				} else {
 					return false;
-				}	
+				}
 			}
 			
 			annotation = annotator.getChildAnnotation(annotation, labels.getLabel(ncpInParent.node), ncpInParent.childIndex);
 		}
 
-		return true;
+		return countWeakeningRewrites > 0;
 	}
 
 	@Override
