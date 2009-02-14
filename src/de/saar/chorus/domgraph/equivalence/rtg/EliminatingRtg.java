@@ -1,10 +1,6 @@
 package de.saar.chorus.domgraph.equivalence.rtg;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import de.saar.chorus.domgraph.chart.RewritingRtg;
 import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
@@ -13,12 +9,13 @@ import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
+import de.saar.chorus.domgraph.graph.CompactificationRecord.NodeChildPair;
 
 public class EliminatingRtg extends RewritingRtg<String> {
 	private static boolean DEBUG = false;
 	
     protected EquationSystem eqs;
-    private Map<String,List<Integer>> wildcardLabeledNodes;
+    //private Map<String,List<Integer>> wildcardLabeledNodes;
 
 
 	@Override
@@ -74,14 +71,34 @@ public class EliminatingRtg extends RewritingRtg<String> {
     	if( !analyzer.isCoFree(u, v) ) {
     		return false;
     	} else {
+    		int uToV = analyzer.getReachability(u, v);
+    		int vToU = analyzer.getReachability(v, u);
+    		
+    		List<NodeChildPair> pathInU = compactificationRecord.getRecord(u, uToV);
+    		List<NodeChildPair> pathInV = compactificationRecord.getRecord(v, vToU);
+    		
+    		for( NodeChildPair ncpInU : pathInU ) {
+    			for( NodeChildPair ncpInV : pathInV ) {
+    				if( !eqs.permutes(labels.getLabel(ncpInU.node), ncpInU.childIndex, labels.getLabel(ncpInV.node), ncpInV.childIndex) ) {
+    					return false;
+    				}	
+    			}
+    		}
+
+    		return true;
+    		
+    		
+    		/*
     		int vToU = indicesCompactToOriginal.get(v).get(analyzer.getReachability(v, u));
     		
-    		if( wildcardLabeledNodes.containsKey(v) && wildcardLabeledNodes.get(v).contains(vToU)) {
-    			return true;
-    		} else {
+    	//	if( wildcardLabeledNodes.containsKey(v) && wildcardLabeledNodes.get(v).contains(vToU)) {
+    	//		return true;
+    	//	} else {
     			return eqs.permutes(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)),
     					labels.getLabel(v), vToU);
-    		}
+    	//	}
+    	 * 
+    	 */
     	}
     }
 
@@ -95,11 +112,11 @@ public class EliminatingRtg extends RewritingRtg<String> {
     	super(graph,labels,analyzer);
     	
     	this.eqs = eqs;
-    	analyzeWildcards();
+    	//analyzeWildcards();
     }
     
 
-	
+	/*
 
     private void analyzeWildcards() {
         Set<String> roots = graph.getAllRoots();
@@ -118,9 +135,15 @@ public class EliminatingRtg extends RewritingRtg<String> {
             }
         }
 	}
+	*/
     
+    /**
+     * @param u a node name
+     * @return
+     */
     private int getWildcardStatus(String u) {
-    	if( wildcardLabeledNodes.containsKey(u)) {
+    	//if( wildcardLabeledNodes.containsKey(u)) {
+    	if( eqs.isWildcardLabel(labels.getLabel(u)) ) {
     		return 1;
     	} else {
     		return 2;

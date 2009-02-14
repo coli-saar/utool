@@ -35,6 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class EquationSystem extends DefaultHandler {
     //private final Collection<Equation> equations;
     private final Collection<FragmentWithHole> wildcards;
+    private Set<String> wildcardLabels;
     
     private Set<String> equationStrings;
 
@@ -47,6 +48,7 @@ public class EquationSystem extends DefaultHandler {
 
         // equations = new HashSet<Equation>();
         wildcards = new HashSet<FragmentWithHole>();
+        wildcardLabels = new HashSet<String>();
         
         equationStrings = new HashSet<String>();
 
@@ -69,16 +71,7 @@ public class EquationSystem extends DefaultHandler {
     }
 
     public boolean isWildcardLabel(String label) {
-        //System.err.print("[wc " + label + ": ");
-        for( FragmentWithHole w : wildcards ) {
-            if( w.getRootLabel().equals(label)) {
-                //System.err.print("yes]");
-                return true;
-            }
-        }
-
-        //System.err.print("no]");
-        return false;
+    	return wildcardLabels.contains(label);
     }
 
 
@@ -90,6 +83,11 @@ public class EquationSystem extends DefaultHandler {
      */
     public void add(FragmentWithHole fh1, FragmentWithHole fh2) {
     	equationStrings.add(constructKey(fh1.getRootLabel(), fh1.getHoleIndex(), fh2.getRootLabel(), fh2.getHoleIndex()));
+    }
+    
+    public void addWildcard(FragmentWithHole fh) {
+        wildcards.add(fh);
+        wildcardLabels.add(fh.getRootLabel());
     }
 
     /**
@@ -105,22 +103,6 @@ public class EquationSystem extends DefaultHandler {
             }
         }
     }
-
-    /**
-     * Checks whether a given equation is contained in the
-     * equation system.
-     *
-     * @param eq an equation
-     * @return true iff this equation is contained in this equation system.
-     *
-    public boolean contains(Equation eq) {
-        return
-        // Wildcards -- no longer necessary for RTGE
-        // wildcards.contains(eq.getQ1()) || wildcards.contains(eq.getQ2())
-        // ||
-        equations.contains(eq);
-    }
-    */
 
     /**
      * Returns the number of equations.
@@ -183,7 +165,7 @@ public class EquationSystem extends DefaultHandler {
                 new FragmentWithHole(
                         attributes.getValue("label"),
                         Integer.parseInt(attributes.getValue("hole")));
-            wildcards.add(frag);
+            addWildcard(frag);
         }
     }
 
