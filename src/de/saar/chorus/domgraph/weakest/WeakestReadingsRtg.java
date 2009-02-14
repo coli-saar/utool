@@ -53,12 +53,14 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 		List<NodeChildPair> pathInParent = compactificationRecord.getRecord(parent, parentToCurrent);
 		List<NodeChildPair> pathInCurrent = compactificationRecord.getRecord(currentRoot, currentToParent);
 		
-		String annotation = previousQuantifier.getAnnotation();
+		String rootAnnotation = previousQuantifier.getAnnotation();
 		
 		int countWeakeningRewrites = 0;
-		
-		for( NodeChildPair ncpInParent : pathInParent ) {
-			for( NodeChildPair ncpInCurrent : pathInCurrent ) {
+
+		for( NodeChildPair ncpInCurrent : pathInCurrent ) {
+			String annotation = rootAnnotation;
+
+			for( NodeChildPair ncpInParent : pathInParent ) {
 				if( rewriteSystem.hasRule(labels.getLabel(ncpInParent.node), ncpInParent.childIndex,
 						labels.getLabel(ncpInCurrent.node), ncpInCurrent.childIndex, annotation) ) {
 					countWeakeningRewrites++;
@@ -68,9 +70,11 @@ public class WeakestReadingsRtg extends RewritingRtg<Annotation> {
 				} else {
 					return false;
 				}
+
+				annotation = annotator.getChildAnnotation(annotation, labels.getLabel(ncpInParent.node), ncpInParent.childIndex);
 			}
 			
-			annotation = annotator.getChildAnnotation(annotation, labels.getLabel(ncpInParent.node), ncpInParent.childIndex);
+			rootAnnotation = annotator.getChildAnnotation(rootAnnotation, labels.getLabel(ncpInCurrent.node), ncpInCurrent.childIndex);
 		}
 
 		return countWeakeningRewrites > 0;

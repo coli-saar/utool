@@ -51,7 +51,11 @@ public class WeakestReadingsComputerTest {
                 prepareFOL("only equiv", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                 		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
                 prepareFOLnoEquiv("null equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
-                   		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]])
+                   		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
+                prepareFG("non-cpt polarity 1", "[label(x1 not(x2)) label(x2 g(x3)) label(y1 f(y2)) label(z b) dom(x3 z) dom(y2 z)]",
+                		[[[["x3", "y1"], ["y2", "z"]],[:]] ]),
+                prepareFG("non-cpt polarity 2", "[label(x1 not(x2)) label(x2 f(x3)) label(y1 g(y2)) label(z b) dom(x3 z) dom(y2 z)]",
+                		[[[["x3", "y1"], ["y2", "z"]],[:]], [[["y2", "x1"], ["x3", "z"]],[:]]])
                 ];
     }
     
@@ -129,6 +133,19 @@ public class WeakestReadingsComputerTest {
 		return (Object[]) [id, graphstr, intendedSolvedForms, rs, null, ann];
     }
     
+    static Object[] prepareFG(id, graphstr, intendedSolvedForms) {
+    	RewriteSystem rs = new RewriteSystem();
+    	Annotator ann = new Annotator();
+    	
+    	try {
+			new RewriteSystemParser().read(new StringReader(rewriteSystemFG), ann, rs);
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		return (Object[]) [id, graphstr, intendedSolvedForms, rs, null, ann];
+    }
+    
 
 	public static RewriteSystem makeRewriteSystem(String eqs) {
 		RewriteSystem ret = new RewriteSystem();
@@ -189,5 +206,25 @@ public class WeakestReadingsComputerTest {
 	   <permutesWithEverything label="permute" hole="0" />
 	</equivalences>
 	''';
+	
+	public static String rewriteSystemFG = '''<?xml version="1.0" ?>
+		<rewrite-system>
+			<annotator initial="+">
+				<rule annotation="+" label="not"> <hole annotation="-" /> </rule>
+				<rule annotation="-" label="not"> <hole annotation="+" /> </rule>
+				<rule annotation="+" label="f"> <hole annotation="+" /> </rule>
+				<rule annotation="-" label="f"> <hole annotation="-" /> </rule>
+				<rule annotation="+" label="g"> <hole annotation="+" /> </rule>
+				<rule annotation="-" label="g"> <hole annotation="-" /> </rule>
+			</annotator>
+			
+			<rewriting>
+				<rule llabel="f" lhole="0" rlabel="not" rhole="0" annotation="+" />
+				<rule llabel="g" lhole="0" rlabel="not" rhole="0" annotation="+" />
+				<rule llabel="g" lhole="0" rlabel="f" rhole="0" annotation="+" />
+				<rule llabel="f" lhole="0" rlabel="g" rhole="0" annotation="-" />
+			</rewriting>
+		</rewrite-system>
+			''';
 	
 }
