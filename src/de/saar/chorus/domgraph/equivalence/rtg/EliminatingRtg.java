@@ -9,9 +9,7 @@ import java.util.Set;
 import de.saar.chorus.domgraph.chart.RewritingRtg;
 import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
 import de.saar.chorus.domgraph.chart.Split;
-import de.saar.chorus.domgraph.equivalence.Equation;
 import de.saar.chorus.domgraph.equivalence.EquationSystem;
-import de.saar.chorus.domgraph.equivalence.FragmentWithHole;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -81,10 +79,8 @@ public class EliminatingRtg extends RewritingRtg<String> {
     		if( wildcardLabeledNodes.containsKey(v) && wildcardLabeledNodes.get(v).contains(vToU)) {
     			return true;
     		} else {
-    			FragmentWithHole f1 = new FragmentWithHole(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)));
-    			FragmentWithHole f2 = new FragmentWithHole(labels.getLabel(v), vToU);
-
-    			return eqs.contains(new Equation(f1,f2));
+    			return eqs.permutes(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)),
+    					labels.getLabel(v), vToU);
     		}
     	}
     }
