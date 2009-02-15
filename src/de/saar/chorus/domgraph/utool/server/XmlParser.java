@@ -246,6 +246,23 @@ class XmlParser extends DefaultHandler {
 					throw new SAXException(new AbstractOptionsParsingException("An error occurred while reading the rewrite system.", e, ExitCodes.REWRITE_READING_ERROR));
 				}
 			}
+		} else if( qName.equals("strongest-readings")) {
+			Annotator annotator = new Annotator();
+			RewriteSystem trs = new RewriteSystem();
+			if( (attributes.getValue("rewrite-system") == null) && (previousRewriteSystem != null) && (previousAnnotator != null)) {
+				options.setRewriteSystem(previousRewriteSystem);
+				options.setAnnotator(previousAnnotator);
+				options.setOptionStrongestReadings(true);
+			} else {
+				try {
+					new RewriteSystemParser().read(new StringReader(XmlEntities.decode(attributes.getValue("rewrite-system"))), annotator, trs);
+					options.setOptionStrongestReadings(true);
+					options.setAnnotator(annotator);
+					options.setRewriteSystem(trs);
+				} catch (Exception e) {
+					throw new SAXException(new AbstractOptionsParsingException("An error occurred while reading the rewrite system.", e, ExitCodes.REWRITE_READING_ERROR));
+				}
+			}
 		}
 	}
 
