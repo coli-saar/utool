@@ -7,9 +7,7 @@
 
 package de.saar.chorus.domgraph.utool;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.UserProperties;
@@ -20,7 +18,6 @@ import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
-import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
@@ -28,9 +25,7 @@ import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
-import de.saar.chorus.domgraph.equivalence.RedundancyEliminationSplitSource;
 import de.saar.chorus.domgraph.equivalence.rtg.EliminatingRtg;
-import de.saar.chorus.domgraph.equivalence.rtg.RtgRedundancyElimination;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;

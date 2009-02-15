@@ -91,6 +91,37 @@ public class WeakestReadingsComputerTest {
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
 	}
+    
+    @Test
+	public void testEliminatedSolvedFormsSS() {
+		//System.err.println("\n\n\nTest: " + id);
+		
+		graph = graph.preprocess();
+		chart.clear();
+		ChartSolver.solve(graph,chart);
+		
+		RtgFreeFragmentAnalyzer analyzer = new RtgFreeFragmentAnalyzer(chart);
+		analyzer.analyze();
+		
+		WeakestReadingsRtg filter = new WeakestReadingsRtg(graph,labels,analyzer,rewriteSystem,annotator,eqsys);
+		//filter.DEBUG  = true;
+
+		
+		ChartSolver.solve(graph, out, 
+				new RewritingSplitSource<SubgraphNonterminal,Annotation>(filter, new CompleteSplitSource(graph)));
+		out.cleanup();
+		
+		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,Annotation>>(out, graph);
+		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		/*
+		if( !TestingTools.solvedFormsEqual(sfs, goldSfs) ) {
+			 System.err.println("wrong rtg!!" + out);
+			 }
+			 */
+		
+		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
+	}
 
 	
     WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, rewriteSystem, eqsys, annotator) {

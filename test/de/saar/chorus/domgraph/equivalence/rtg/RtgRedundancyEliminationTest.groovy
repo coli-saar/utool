@@ -141,12 +141,18 @@ class RtgRedundancyEliminationTest {
 	
 	@Test
 	public void testEliminatedSolvedFormsSS() {
+		//System.err.println("\n\n\nTest: " + id);
+		
 		graph = graph.preprocess();
 		chart.clear();
+		ChartSolver.solve(graph,chart);
 		
 		RtgFreeFragmentAnalyzer analyzer = new RtgFreeFragmentAnalyzer(chart);
 		analyzer.analyze();
+		
 		EliminatingRtg filter = new EliminatingRtg(graph, labels, eqsys, analyzer);
+		//filter.DEBUG  = true;
+
 		
 		ChartSolver.solve(graph, out, 
 				new RewritingSplitSource<SubgraphNonterminal,String>(filter, new CompleteSplitSource(graph)));
@@ -154,6 +160,12 @@ class RtgRedundancyEliminationTest {
 		
 		SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,String>>(out, graph);
 		List sfs = TestingTools.collectIteratorValues(sfi);
+		
+		/*
+		if( !TestingTools.solvedFormsEqual(sfs, goldSfs) ) {
+			 System.err.println("wrong rtg!!" + out);
+			 }
+			 */
 		
 		assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
 	}
