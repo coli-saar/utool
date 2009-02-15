@@ -28,10 +28,11 @@ public class RewritingSplitSource<E extends GraphBasedNonterminal,F> extends Spl
 			throws UnsolvableSubgraphException {
 		List<Split<DecoratedNonterminal<E, F>>> splits = new ArrayList<Split<DecoratedNonterminal<E,F>>>();
 		Iterator<Split<E>> baseSplits = embeddedSplitSource.computeSplits(subgraph.getBase());
+		List<Split<F>> filterSplits = new ArrayList<Split<F>>();
 		
 		while(baseSplits.hasNext()) {
 			Split<E> baseSplit = baseSplits.next();
-			List<Split<F>> filterSplits = filter.getSplitsFor(subgraph.getDecoration(), baseSplit.getRootFragment());
+			filter.getSplitsFor(subgraph.getDecoration(), baseSplit.getRootFragment(), filterSplits);
 			
 			for( Split<F> filterSplit : filterSplits ) {
 				splits.add(makeSplit(baseSplit, filterSplit));

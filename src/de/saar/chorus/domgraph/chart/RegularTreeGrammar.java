@@ -1,14 +1,13 @@
 package de.saar.chorus.domgraph.chart;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
-import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 
 abstract public class RegularTreeGrammar<E> {
 	private static final boolean DEBUG = false;
@@ -19,7 +18,7 @@ abstract public class RegularTreeGrammar<E> {
 	abstract public boolean isSingleton(E nt);
 	abstract public String getRootForSingleton(E nt);
 	abstract public List<Split<E>> getSplitsFor(E subgraph);
-	abstract public List<Split<E>> getSplitsFor(E subgraph, String label);
+	abstract public void getSplitsFor(E subgraph, String label, List<Split<E>> splits);
 	abstract public boolean containsSplitFor(E subgraph);
 	abstract public List<E> getToplevelSubgraphs();
 
@@ -40,8 +39,8 @@ abstract public class RegularTreeGrammar<E> {
 	 */
 	public <F extends GraphBasedNonterminal> void intersect(RegularTreeGrammar<F> other, ConcreteRegularTreeGrammar<DecoratedNonterminal<F,E>>  out) {
 		Queue<DecoratedNonterminal<F,E>> agenda = new LinkedList<DecoratedNonterminal<F,E>>();
-
-		//prepareForIntersection(other);
+		List<Split<E>> otherSplits = new ArrayList<Split<E>>();
+		
 		out.clear();
 
 		if( (getToplevelSubgraphs().size() != 1) || (other.getToplevelSubgraphs().size() != 1) ) {
@@ -60,7 +59,7 @@ abstract public class RegularTreeGrammar<E> {
 
 				if( splits != null ) {
 					for( Split<F> split : splits ) {
-						List<Split<E>> otherSplits = getSplitsFor(sub.getDecoration(), split.getRootFragment() );
+						getSplitsFor(sub.getDecoration(), split.getRootFragment(), otherSplits );
 
 						for( Split<E> otherSplit : otherSplits ) {
 							Split<DecoratedNonterminal<F, E>> newSplit = makeSplit(split, otherSplit);
