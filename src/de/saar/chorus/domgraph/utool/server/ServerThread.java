@@ -39,6 +39,7 @@ import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.InverseRewriteSystem;
 import de.saar.chorus.domgraph.weakest.RewriteSystem;
 import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.Ubench;
@@ -80,7 +81,7 @@ class ServerThread extends Thread {
 				rsCache.setPreviousEquationSystem(options.getEquations());
 			}
 			
-			if( options.hasOptionWeakestReadings() ) {
+			if( options.hasOptionWeakestReadings() || options.hasOptionStrongestReadings() ) {
 				rsCache.setPreviousRewriteSystem(options.getRewriteSystem());
 				rsCache.setPreviousAnnotator(options.getAnnotator());
 			}
@@ -198,7 +199,7 @@ class ServerThread extends Thread {
 			long end_solver = System.nanoTime();
 			long time_solver = (end_solver - start_solver)/1000000L;
 			
-			if( options.hasOptionEliminateEquivalence() || options.hasOptionWeakestReadings() ) {
+			if( options.hasOptionEliminateEquivalence() || options.hasOptionWeakestReadings() || options.hasOptionStrongestReadings() ) {
 				if( analyzer == null ) {
 					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
 					analyzer.analyze();
@@ -218,9 +219,13 @@ class ServerThread extends Thread {
 				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 				filter.intersect(reducedChart, out);
 				reducedChart = out;
+			} else if( options.hasOptionStrongestReadings() ) {
+				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, new InverseRewriteSystem(options.getRewriteSystem()), options.getAnnotator(), options.getEquations());
+				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
+				filter.intersect(reducedChart, out);
 			}
 
-			if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() ) {
+			if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() || options.hasOptionStrongestReadings() ) {
 				reducedChart.cleanup();
 			}
 

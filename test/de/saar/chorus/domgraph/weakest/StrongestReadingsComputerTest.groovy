@@ -1,4 +1,8 @@
+/**
+ * 
+ */
 package de.saar.chorus.domgraph.weakest
+
 
 
 import de.saar.chorus.domgraph.graph.*;
@@ -20,7 +24,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(value=Parameterized.class)
-public class WeakestReadingsComputerTest {
+public class StrongestReadingsComputerTest {
 	private DomGraph graph;
     private NodeLabels labels;
     private InputCodec ozcodec;
@@ -54,15 +58,7 @@ public class WeakestReadingsComputerTest {
                 prepareFOL("only equiv", "[label(x1 every(x2 x3)) label(y1 every(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
                 		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
                 prepareFOLnoEquiv("null equiv", "[label(x1 every(x2 x3)) label(y1 a(y2 y3)) label(y3 every(y4 y5)) label(z1 foo) label(z2 bar) label(z3 baz) label(z4 bazz) dom(x2 z1) dom(y2 z2) dom(x3 z3) dom(y4 z4) dom(y5 z3)]",
-                   		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]]),
-                   		
-                // The following two test cases check that annotations are taken into account correctly when checking
-                // permutability of non-compact fragments: The negation gets permuted up _first_, and further rewrites
-                // between f and g must be checked in negative polarity.
-                prepareFG("non-cpt polarity 1", "[label(x1 not(x2)) label(x2 g(x3)) label(y1 f(y2)) label(z b) dom(x3 z) dom(y2 z)]",
-                		[[[["x3", "y1"], ["y2", "z"]],[:]] ]),
-                prepareFG("non-cpt polarity 2", "[label(x1 not(x2)) label(x2 f(x3)) label(y1 g(y2)) label(z b) dom(x3 z) dom(y2 z)]",
-                		[[[["x3", "y1"], ["y2", "z"]],[:]], [[["y2", "x1"], ["x3", "z"]],[:]]])
+                   		[[[["x2", "z1"], ["x3", "y1"], ["y2", "z2"], ["y4", "z4"], ["y5", "z3"]],[:]], [[["y2", "z2"], ["y4", "z4"], ["y5", "x1"], ["x2", "z1"], ["x3", "z3"]],[:]]])
                 ];
     }
     
@@ -124,7 +120,7 @@ public class WeakestReadingsComputerTest {
 	}
 
 	
-    WeakestReadingsComputerTest(id, graphstr, intendedSolvedForms, rewriteSystem, eqsys, annotator) {
+    StrongestReadingsComputerTest(id, graphstr, intendedSolvedForms, rewriteSystem, eqsys, annotator) {
         ozcodec = new DomconOzInputCodec();
         graph = new DomGraph();
         labels = new NodeLabels();
@@ -155,7 +151,7 @@ public class WeakestReadingsComputerTest {
 		
 		eq = makeEqSystem(eqSystemFOL);
     	
-        return (Object[]) [id, graphstr, intendedSolvedForms, rs, eq, ann];
+        return (Object[]) [id, graphstr, intendedSolvedForms, new InverseRewriteSystem(rs), eq, ann];
     }
     
     static Object[] prepareFOLnoEquiv(id, graphstr, intendedSolvedForms) {
@@ -168,21 +164,7 @@ public class WeakestReadingsComputerTest {
 			throw new RuntimeException(e);
 		}
 		
-		return (Object[]) [id, graphstr, intendedSolvedForms, rs, null, ann];
-    }
-    
-
-    static Object[] prepareFG(id, graphstr, intendedSolvedForms) {
-    	RewriteSystem rs = new RewriteSystem();
-    	Annotator ann = new Annotator();
-    	
-    	try {
-			new RewriteSystemParser().read(new StringReader(rewriteSystemFG), ann, rs);
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		}
-		
-		return (Object[]) [id, graphstr, intendedSolvedForms, rs, null, ann];
+		return (Object[]) [id, graphstr, intendedSolvedForms, new InverseRewriteSystem(rs), null, ann];
     }
     
 
@@ -209,6 +191,7 @@ public class WeakestReadingsComputerTest {
 		
 		return ret;
 	}
+	
 
 	public static String rewriteSystemFol = '''<?xml version="1.0" ?>
 		<rewrite-system>
@@ -222,16 +205,17 @@ public class WeakestReadingsComputerTest {
 			</annotator>
 
 			<rewriting>
-				<rule llabel="a" lhole="1" rlabel="every" rhole="1" annotation="+" />
-				<rule llabel="every" lhole="1" rlabel="a" rhole="1" annotation="-" />
-				<rule llabel="not" lhole="0" rlabel="a" rhole="1" annotation="+" />
-				<rule llabel="every" lhole="1" rlabel="not" rhole="0" annotation="+" />
-				<rule llabel="every" lhole="0" rlabel="every" rhole="1" annotation="-" />
-				<rule llabel="every" lhole="1" rlabel="every" rhole="0" annotation="+" />
+				<rule llabel="a" lhole="1" rlabel="every" rhole="1" annotation="-" />
+				<rule llabel="every" lhole="1" rlabel="a" rhole="1" annotation="+" />
+				<rule llabel="a" lhole="1" rlabel="not" rhole="0" annotation="+" />
+				<rule llabel="not" lhole="0" rlabel="every" rhole="1" annotation="+" />
+				<rule llabel="every" lhole="1" rlabel="every" rhole="0" annotation="-" />
+				<rule llabel="every" lhole="0" rlabel="every" rhole="1" annotation="+" />
 				<!-- etc. -->
 			</rewriting>
 		</rewrite-system>
 ''';
+	
 
 	public static String eqSystemFOL = '''<?xml version="1.0" ?> 
 	<equivalences style="FOL"> 
@@ -246,24 +230,4 @@ public class WeakestReadingsComputerTest {
 	</equivalences>
 	''';
 	
-	
-	 	        public static String rewriteSystemFG = '''<?xml version="1.0" ?>
- 	                <rewrite-system>
- 	                        <annotator initial="+">
- 	                                <rule annotation="+" label="not"> <hole annotation="-" /> </rule>
- 	                                <rule annotation="-" label="not"> <hole annotation="+" /> </rule>
- 	                                <rule annotation="+" label="f"> <hole annotation="+" /> </rule>
- 	                                <rule annotation="-" label="f"> <hole annotation="-" /> </rule>
- 	                                <rule annotation="+" label="g"> <hole annotation="+" /> </rule>
- 	                                <rule annotation="-" label="g"> <hole annotation="-" /> </rule>
- 	                        </annotator>
- 	                       
- 	                        <rewriting>
- 	                                <rule llabel="f" lhole="0" rlabel="not" rhole="0" annotation="+" />
- 	                                <rule llabel="g" lhole="0" rlabel="not" rhole="0" annotation="+" />
- 	                                <rule llabel="g" lhole="0" rlabel="f" rhole="0" annotation="+" />
- 	                                <rule llabel="f" lhole="0" rlabel="g" rhole="0" annotation="-" />
- 	                        </rewriting>
- 	                </rewrite-system>
- 	                        ''';
 }

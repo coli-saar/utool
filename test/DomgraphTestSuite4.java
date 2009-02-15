@@ -18,6 +18,7 @@ import de.saar.chorus.domgraph.graph.DomGraphTest;
 import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayoutTest;
 import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
 import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
+import de.saar.chorus.domgraph.weakest.StrongestReadingsComputerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses(value={
@@ -36,6 +37,7 @@ import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
         UnionFindTest.class,
         RtgRedundancyEliminationTest.class,
         WeakestReadingsComputerTest.class,
+        StrongestReadingsComputerTest.class,
         ModelCheckTest.class
 })
 public class DomgraphTestSuite4 {

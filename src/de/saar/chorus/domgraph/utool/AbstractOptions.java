@@ -174,6 +174,7 @@ public class AbstractOptions {
     private boolean optionNoOutput;
     private boolean optionEliminateEquivalence;
     private boolean optionWeakestReadings;
+    private boolean optionStrongestReadings;
     private boolean optionDumpChart;
     private boolean optionWarmup;
     private boolean optionNochart;
@@ -210,6 +211,7 @@ public class AbstractOptions {
         setOptionNoOutput(false);
         setOptionEliminateEquivalence(false);
         setOptionWeakestReadings(false);
+        setOptionStrongestReadings(false);
         setOptionDumpChart(false);
         setOptionWarmup(false);
         setOptionNochart(false);
@@ -311,6 +313,13 @@ public class AbstractOptions {
 		return optionWeakestReadings;
 	}
 
+    public void setOptionStrongestReadings(boolean optionStrongestReadings) {
+		this.optionStrongestReadings = optionStrongestReadings;
+	}
+    
+    public boolean hasOptionStrongestReadings() {
+		return optionStrongestReadings;
+	}
 
 
     public PrintWriter getLogWriter() {
