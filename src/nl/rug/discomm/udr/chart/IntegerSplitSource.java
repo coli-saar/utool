@@ -22,7 +22,7 @@ public class IntegerSplitSource extends SplitSource<IntegerNonterminal> {
 	}
 	
 	@Override
-	protected Iterator<Split<IntegerNonterminal>> computeSplits(IntegerNonterminal subgraph)
+	public Iterator<Split<IntegerNonterminal>> computeSplits(IntegerNonterminal subgraph)
 			throws UnsolvableSubgraphException {
 		
 		List<Split<IntegerNonterminal>> splits = new ArrayList<Split<IntegerNonterminal>>();

@@ -43,7 +43,7 @@ public abstract class SplitSource<E extends GraphBasedNonterminal> {
      * @param subgraph a subgraph
      * @return an iterator over some or all splits of this subgraph
      */
-    abstract protected Iterator<Split<E>> computeSplits(E subgraph) throws UnsolvableSubgraphException;
+    abstract public Iterator<Split<E>> computeSplits(E subgraph) throws UnsolvableSubgraphException;
 
     /**
      * Reduces the computed RTG. If your split source is such that the RTG it computes
@@ -74,5 +74,9 @@ public abstract class SplitSource<E extends GraphBasedNonterminal> {
         }
 
         return potentialFreeRoots;
+    }
+    
+    public DomGraph getGraph() {
+    	return graph;
     }
 }
