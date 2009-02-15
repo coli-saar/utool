@@ -12,7 +12,7 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.CompactificationRecord.NodeChildPair;
 
 public class EliminatingRtg extends RewritingRtg<String> {
-	private static boolean DEBUG = false;
+	public boolean DEBUG = false;
 	
     protected EquationSystem eqs;
 

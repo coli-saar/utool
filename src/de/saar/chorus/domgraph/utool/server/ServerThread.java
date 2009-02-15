@@ -185,12 +185,14 @@ class ServerThread extends Thread {
 			long end_solver = System.nanoTime();
 			long time_solver = (end_solver - start_solver)/1000000L;
 			
-			if( options.hasOptionEliminateEquivalence() ) {
+			if( options.hasOptionEliminateEquivalence() || options.hasOptionWeakestReadings() ) {
 				if( analyzer == null ) {
 					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
 					analyzer.analyze();
 				}
-				
+			}
+			
+			if( options.hasOptionEliminateEquivalence() ) {
 				EliminatingRtg filter = new EliminatingRtg(graph, options.getLabels(), options.getEquations(), analyzer);
 				reducedChart = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 				filter.intersect((Chart) chart, reducedChart);
@@ -199,11 +201,6 @@ class ServerThread extends Thread {
 			}
 			
 			if( options.hasOptionWeakestReadings() ) {
-				if( analyzer == null ) {
-					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-					analyzer.analyze();
-				}
-				
 				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator(), options.getEquations());
 				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
 				filter.intersect(reducedChart, out);
