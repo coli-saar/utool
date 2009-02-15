@@ -73,7 +73,7 @@ public class ModelSplitSource extends SplitSource<SubgraphNonterminal> {
 
 
 	@Override
-    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
+    public Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) {
 		 List<Split<SubgraphNonterminal>> ret = new ArrayList<Split<SubgraphNonterminal>>();
 		SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
 		 List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);

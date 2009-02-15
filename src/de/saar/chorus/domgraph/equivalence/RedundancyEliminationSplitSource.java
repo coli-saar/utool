@@ -40,7 +40,7 @@ public class RedundancyEliminationSplitSource extends SplitSource<QuantifierMark
     }
 
     @Override
-    protected Iterator<Split<QuantifierMarkedNonterminal>> computeSplits(QuantifierMarkedNonterminal subgraph) throws UnsolvableSubgraphException {
+    public Iterator<Split<QuantifierMarkedNonterminal>> computeSplits(QuantifierMarkedNonterminal subgraph) throws UnsolvableSubgraphException {
         List<Split<QuantifierMarkedNonterminal>> splits = new ArrayList<Split<QuantifierMarkedNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);
 

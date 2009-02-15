@@ -32,7 +32,7 @@ public class OneSplitSource extends SplitSource<SubgraphNonterminal> {
     }
 
     @Override
-    protected Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) throws UnsolvableSubgraphException {
+    public Iterator<Split<SubgraphNonterminal>> computeSplits(SubgraphNonterminal subgraph) throws UnsolvableSubgraphException {
         SplitComputer<SubgraphNonterminal> sc = new SubgraphSplitComputer(graph);
         List<Split<SubgraphNonterminal>> ret = new ArrayList<Split<SubgraphNonterminal>>();
         List<String> potentialFreeRoots = computePotentialFreeRoots(subgraph);

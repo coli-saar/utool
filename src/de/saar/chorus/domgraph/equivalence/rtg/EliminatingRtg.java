@@ -15,8 +15,6 @@ public class EliminatingRtg extends RewritingRtg<String> {
 	private static boolean DEBUG = false;
 	
     protected EquationSystem eqs;
-    //private Map<String,List<Integer>> wildcardLabeledNodes;
-
 
 	@Override
 	protected String makeTopLevelNonterminal() {
@@ -86,63 +84,20 @@ public class EliminatingRtg extends RewritingRtg<String> {
     		}
 
     		return true;
-    		
-    		
-    		/*
-    		int vToU = indicesCompactToOriginal.get(v).get(analyzer.getReachability(v, u));
-    		
-    	//	if( wildcardLabeledNodes.containsKey(v) && wildcardLabeledNodes.get(v).contains(vToU)) {
-    	//		return true;
-    	//	} else {
-    			return eqs.permutes(labels.getLabel(u), indicesCompactToOriginal.get(u).get(analyzer.getReachability(u, v)),
-    					labels.getLabel(v), vToU);
-    	//	}
-    	 * 
-    	 */
     	}
     }
 
-
-    
-    
-    
-    
-    
     public EliminatingRtg(DomGraph graph, NodeLabels labels, EquationSystem eqs, RtgFreeFragmentAnalyzer<?> analyzer) {
     	super(graph,labels,analyzer);
     	
     	this.eqs = eqs;
-    	//analyzeWildcards();
     }
-    
-
-	/*
-
-    private void analyzeWildcards() {
-        Set<String> roots = graph.getAllRoots();
-
-        wildcardLabeledNodes = new HashMap<String,List<Integer>>();
-        for( String node : roots ) {
-            if( eqs.isWildcardLabel(labels.getLabel(node)) ) {
-                List<Integer> holeIndices = new ArrayList<Integer>();
-                wildcardLabeledNodes.put(node, holeIndices);
-
-                for( int i = 0; i < compact.outdeg(node,EdgeType.TREE); i++ ) {
-                    if( eqs.isWildcard(labels.getLabel(node), i) ) {
-                        holeIndices.add(i);
-                    }
-                }
-            }
-        }
-	}
-	*/
     
     /**
      * @param u a node name
      * @return
      */
     private int getWildcardStatus(String u) {
-    	//if( wildcardLabeledNodes.containsKey(u)) {
     	if( eqs.isWildcardLabel(labels.getLabel(u)) ) {
     		return 1;
     	} else {
