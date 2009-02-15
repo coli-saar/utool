@@ -18,6 +18,7 @@ import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeData;
 import de.saar.chorus.domgraph.graph.EdgeType;
@@ -25,6 +26,8 @@ import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
+import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.RewriteSystem;
 
 
 /**
@@ -52,6 +55,9 @@ public class ConnectionManager {
     public static enum State { RUNNING, STOPPED };
     private static State state = State.STOPPED;
     private static ServerSocket ssock = null;
+    
+    private static RewriteSystemsCache rsCache = new RewriteSystemsCache();
+
     
     public static interface StateChangeListener {
     	public void stateChanged(State newState);
@@ -125,7 +131,7 @@ public class ConnectionManager {
         		logger.log("accepted connection from " + sock);
 
         		synchronized (ConnectionManager.class) {
-        			ServerThread thread = new ServerThread(sock, logger);
+        			ServerThread thread = new ServerThread(sock, logger, rsCache);
         			thread.start();
         			threads.add(thread);
         		}

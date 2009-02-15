@@ -31,12 +31,15 @@ import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.rtg.EliminatingRtg;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
+import de.saar.chorus.domgraph.weakest.Annotator;
+import de.saar.chorus.domgraph.weakest.RewriteSystem;
 import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.Ubench;
 
@@ -45,13 +48,14 @@ class ServerThread extends Thread {
 	private final BufferedReader in;
 	private final Logger logger;
 	private final Socket socket;
-	private XmlParser parser ;
+	private XmlParser parser;
+	private RewriteSystemsCache rsCache;
 
 
-
-	ServerThread(Socket socket, Logger logger) throws IOException {
+	ServerThread(Socket socket, Logger logger, RewriteSystemsCache rsCache) throws IOException {
 		this.logger = logger;
 		this.socket = socket;
+		this.rsCache = rsCache;
 
 		out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent: "), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -59,7 +63,7 @@ class ServerThread extends Thread {
 
 	@Override
 	public void run() {
-		parser = new XmlParser(logger);
+		parser = new XmlParser(logger, rsCache.getPreviousEquationSystem(), rsCache.getPreviousRewriteSystem(), rsCache.getPreviousAnnotator());
 		AbstractOptions options = null;
 
 		try {
@@ -70,6 +74,15 @@ class ServerThread extends Thread {
 
 				socket.close();
 				return;
+			}
+			
+			if( options.hasOptionEliminateEquivalence() ) {
+				rsCache.setPreviousEquationSystem(options.getEquations());
+			}
+			
+			if( options.hasOptionWeakestReadings() ) {
+				rsCache.setPreviousRewriteSystem(options.getRewriteSystem());
+				rsCache.setPreviousAnnotator(options.getAnnotator());
 			}
 
 			processCommand(options);
