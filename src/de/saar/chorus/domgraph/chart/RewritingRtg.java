@@ -39,14 +39,12 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
     }
 	
 	@Override
-	public List<Split<E>> getSplitsFor(E previousQuantifier, String currentRoot) {
-		List<Split<E>> ret = new ArrayList<Split<E>>();
+	public void getSplitsFor(E previousQuantifier, String currentRoot, List<Split<E>> ret) {
+		ret.clear();
 		
 		if( allowedSplit(previousQuantifier, currentRoot) ) {
 			ret.add(makeSplit(previousQuantifier, currentRoot));
 		}
-		
-		return ret;
 	}
 	
 	abstract protected Split<E> makeSplit(E previous, String root);

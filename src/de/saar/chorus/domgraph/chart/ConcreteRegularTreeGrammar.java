@@ -382,16 +382,14 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
     }
     
 	@Override
-	public List<Split<E>> getSplitsFor(E subgraph, String label) {
-		List<Split<E>> ret = new ArrayList<Split<E>>();
+	public void getSplitsFor(E subgraph, String label, List<Split<E>> ret) {
+		ret.clear();
 		
 		for( Split<E> split : getSplitsFor(subgraph)) {
 			if( split.getRootFragment().equals(label) ) {
 				ret.add(split);
 			}
 		}
-		
-		return ret;
 	}
 
 
