@@ -65,7 +65,9 @@ public class Utool {
 		}
 
 		// if we run on a Mac, set the application name here
-		MacIntegration.integrate();
+		if( options.getOperation() == Operation.display ) {
+			MacIntegration.integrate();
+		}
 		
 		/*
 		// wait for user to press return
