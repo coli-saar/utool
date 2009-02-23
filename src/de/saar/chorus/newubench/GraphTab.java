@@ -1,48 +1,100 @@
 package de.saar.chorus.newubench;
 
-import javax.swing.SwingUtilities;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
+import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.ChartSolver;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
+import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
-import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
-import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
-import de.saar.chorus.domgraph.layout.LayoutOptions;
+import de.saar.chorus.ubench.Preferences.LayoutType;
 
 public class GraphTab extends UbenchTab {
 	private DomGraph graph;
 	private NodeLabels labels;
+	private Chart chart;
+	private ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> reducedChart;
 
 	public GraphTab(String label, DomGraph graph, NodeLabels labels) {
-		super();
+		super(label);
 
 		this.graph = graph;
 		this.labels = labels;
+		
+		jgraph.setLayouttype(LayoutType.JDOMGRAPH);
 
-		drawGraph();
-		validate();
+		drawGraph(graph, labels);
+		setUnsolvedStatusBar();
+
+		if( true ) { // Preferences.isAutoCount()
+			
+		}
 	}
 
-	private void drawGraph() {
-		if(! graph.getAllNodes().isEmpty()) {
-			SwingUtilities.invokeLater(new Thread() {
-				public void run() {
-					try {
-						JDomGraphCanvas canvas = new JDomGraphCanvas(jgraph);
-						LayoutAlgorithm drawer = jgraph.getLayoutType().getLayout();
-						drawer.layout(graph, labels, canvas, 
-								new LayoutOptions(jgraph.getLabeltype(), true)); //XX Preferences.isRemoveRedundantEdges()));
-						canvas.finish();
-						
-						Ubench.getInstance().refresh();
-						
-						//Ubench.getInstance().refresh(true);
-						//Preferences.setFitWindowToGraph(false);
-					} catch (Exception e) {
-						throw new UnsupportedOperationException(e);
-					}
-				}
-			});
+	
+	
+	private void setSolvedStatusBar() {
+		JPanel p = new JPanel();
+		p.setLayout(new BoxLayout(p, BoxLayout.LINE_AXIS));
+		
+		JButton solveButton = new JButton("SOLVE");
+		solveButton.setActionCommand(CommandListener.SOLVE);
+		solveButton.addActionListener(Ubench.getInstance().getCommandListener());
+		
+		p.add(solveButton);
+		p.add(new JLabel("This graph has " + reducedChart.countSolvedForms() + " solved form(s)."));
+		p.add(Box.createHorizontalGlue());
+		p.add(new JLabel("X Y Z"));
+		
+		setStatusBar(p);
+	}
+	
+	private void setUnsolvedStatusBar() {
+		JPanel p = new JPanel();
+		p.setLayout(new BoxLayout(p, BoxLayout.LINE_AXIS));
+		
+		JButton solveButton = new JButton("SOLVE");
+		solveButton.setActionCommand(CommandListener.SOLVE);
+		solveButton.addActionListener(Ubench.getInstance().getCommandListener());
+		
+		p.add(solveButton);
+		p.add(new JLabel("This graph hasn't been solved yet."));
+		p.add(Box.createHorizontalGlue());
+		p.add(new JLabel("X Y Z"));
+		
+		setStatusBar(p);
+	}
+	
+	private void solve() {
+		if( chart == null ) {
+			chart = new Chart(labels);
+
+			setSolvingInProgressStatusBar();
+
+			try {
+				ChartSolver.solve(graph, chart);
+			} catch (SolverNotApplicableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			reducedChart = chart;
+			setSolvedStatusBar();
 		}
+	}
+	
+	public void showFirstSolvedForm() {
+		solve();
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
+		Ubench.getInstance().getTabManager().addSolvedFormTab(label + " sf x", sfi, graph, labels);
 	}
 	
 	private static final long serialVersionUID = -6342451939382113666L;

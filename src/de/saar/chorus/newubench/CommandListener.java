@@ -27,6 +27,16 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	}
 	
 	
+	public static final String SOLVE="solve";
+	
+	@CommandAnnotation(command=SOLVE)
+	private void solve(String command) {
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof GraphTab ) {
+			((GraphTab) tab).showFirstSolvedForm();
+		}
+	}
 	
 	
 	
