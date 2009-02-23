@@ -39,6 +39,36 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	}
 	
 	
+	public static final String NEXT="next";
+	@CommandAnnotation(command=NEXT)
+	private void next(String command) {
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof SolvedFormTab ) {
+			((SolvedFormTab) tab).showNextSolvedForm();
+		}
+	}
+	
+	public static final String PREVIOUS="prev";
+	@CommandAnnotation(command=PREVIOUS)
+	private void previous(String command) {
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof SolvedFormTab ) {
+			((SolvedFormTab) tab).showPreviousSolvedForm();
+		}
+	}
+	
+	public static final String JUMP_TO_SF="jumpToSf";
+	@CommandAnnotation(command=JUMP_TO_SF)
+	private void jumpToSf(String command) {
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof SolvedFormTab ) {
+			((SolvedFormTab) tab).showSelectedSolvedForm();
+		}
+	}
+	
 	
 	
 	
