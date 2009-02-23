@@ -51,7 +51,7 @@ public class GraphTab extends UbenchTab {
 		p.add(solveButton);
 		p.add(new JLabel("This graph has " + reducedChart.countSolvedForms() + " solved form(s)."));
 		p.add(Box.createHorizontalGlue());
-		p.add(new JLabel("X Y Z"));
+		p.add(new GraphClassificationPanel(graph));
 		
 		setStatusBar(p);
 	}
@@ -67,7 +67,7 @@ public class GraphTab extends UbenchTab {
 		p.add(solveButton);
 		p.add(new JLabel("This graph hasn't been solved yet."));
 		p.add(Box.createHorizontalGlue());
-		p.add(new JLabel("X Y Z"));
+		p.add(new GraphClassificationPanel(graph));
 		
 		setStatusBar(p);
 	}
@@ -77,11 +77,12 @@ public class GraphTab extends UbenchTab {
 			chart = new Chart(labels);
 
 			setSolvingInProgressStatusBar();
+			
+			// TODO - move this into another thread so it doesn't block the UI
 
 			try {
 				ChartSolver.solve(graph, chart);
 			} catch (SolverNotApplicableException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -94,7 +95,7 @@ public class GraphTab extends UbenchTab {
 		solve();
 		
 		SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
-		Ubench.getInstance().getTabManager().addSolvedFormTab(label + " sf x", sfi, graph, labels);
+		Ubench.getInstance().getTabManager().addSolvedFormTab("SF of " + label, sfi, reducedChart.countSolvedForms().intValue(), graph, labels);
 	}
 	
 	private static final long serialVersionUID = -6342451939382113666L;

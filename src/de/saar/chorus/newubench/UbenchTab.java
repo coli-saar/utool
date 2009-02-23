@@ -69,6 +69,7 @@ abstract public class UbenchTab extends JPanel {
 			SwingUtilities.invokeLater(new Thread() {
 				public void run() {
 					try {
+						jgraph.clear();
 						JDomGraphCanvas canvas = new JDomGraphCanvas(jgraph);
 						LayoutAlgorithm drawer = jgraph.getLayoutType().getLayout();
 						drawer.layout(graph, labels, canvas, 
