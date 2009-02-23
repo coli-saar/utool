@@ -48,11 +48,11 @@ public class Annotator {
 		try {
 			return rules.get(parentAnnotation).get(label).get(hole);
 		} catch(NullPointerException e) {
-			System.err.println("WARNING: Unknown label " + parentAnnotation + "/" + label + "/" + hole);
-			return getStart();
+			//System.err.println("WARNING: Unknown label " + parentAnnotation + "/" + label + "/" + hole);
+			return parentAnnotation;
 		} catch(IndexOutOfBoundsException e) {
-			System.err.println("WARNING: Unkown hole " + parentAnnotation + "/" + label + "/" + hole);
-			return getStart();
+			//System.err.println("WARNING: Unkown hole " + parentAnnotation + "/" + label + "/" + hole);
+			return parentAnnotation;
 		}
 	}
 	
