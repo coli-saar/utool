@@ -8,7 +8,6 @@
 package de.saar.chorus.jgraph;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -24,12 +23,16 @@ public class JScrollableJGraph extends JPanel {
     public JScrollableJGraph(JGraph graph) {
         super(new BorderLayout());
         
+        //setBorder(new LineBorder(Color.black));
+        
         slider = new JGraphSlider(graph);
+        slider.setMinimumSize(slider.getPreferredSize());
+        
         scrollpane = new JScrollPane(graph);
        
         add(scrollpane, BorderLayout.CENTER);
         add(slider, BorderLayout.EAST);
-        validate();
+        //validate();
     }
     
     /**

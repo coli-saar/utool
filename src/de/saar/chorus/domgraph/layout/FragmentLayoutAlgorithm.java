@@ -275,11 +275,11 @@ public abstract class FragmentLayoutAlgorithm extends LayoutAlgorithm {
 		initialise(graph, labels,canvas);
 		computeFragDimensions();
 		computeFragmentPositions();
-		
+
 		computeNodePositions();
-		
+
 		placeNodes();
-		
+
 		drawEdges();
 
 	}
