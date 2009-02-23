@@ -20,15 +20,12 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	/******** actions *********/
 	
 	public static final String QUIT="quit";
-	
 	@CommandAnnotation(command=QUIT)
 	private void quit(String command) {
 		Ubench.getInstance().quit();
 	}
 	
-	
 	public static final String SOLVE="solve";
-	
 	@CommandAnnotation(command=SOLVE)
 	private void solve(String command) {
 		UbenchTab tab = Ubench.getInstance().getCurrentTab();
@@ -37,7 +34,6 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 			((GraphTab) tab).showFirstSolvedForm();
 		}
 	}
-	
 	
 	public static final String NEXT="next";
 	@CommandAnnotation(command=NEXT)

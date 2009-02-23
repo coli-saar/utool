@@ -1,6 +1,6 @@
 package de.saar.chorus.newubench;
 
-import java.math.BigInteger;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,6 +98,7 @@ public class SolvedFormTab extends UbenchTab {
 		prevButton.addActionListener(Ubench.getInstance().getCommandListener());
 
 		sfSelectionTextField = new JTextField(5);
+		sfSelectionTextField.setMaximumSize(sfSelectionTextField.getPreferredSize());
 		sfSelectionTextField.setActionCommand(CommandListener.JUMP_TO_SF);
 		sfSelectionTextField.addActionListener(Ubench.getInstance().getCommandListener());
 		
