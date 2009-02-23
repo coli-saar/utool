@@ -21,7 +21,7 @@ import de.saar.chorus.domgraph.utool.Utool;
 public class Ubench {
 	private static Ubench instance = null;
 	private JFrame window;
-	private CommandListener listener;
+	private CommandListener commandListener;
 	private CodecManager codecManager;
 	private ExampleManager exampleManager;
 	private TabManager tabManager;
@@ -79,7 +79,7 @@ public class Ubench {
 		
 		tabManager = new TabManager();
 		
-		listener = new CommandListener();
+		commandListener = new CommandListener();
 
 		// Set look and feel. Currently we are only setting the Windows L&F, as
 		// the GTK L&F (for Linux) looks ugly even on Java 6.0, and on MacOS even
@@ -102,7 +102,7 @@ public class Ubench {
 	
 	private void setupSwing() {
 		window = new JFrame("Underspecification Workbench");
-		window.addWindowListener(listener);
+		window.addWindowListener(commandListener);
 		window.setMaximizedBounds(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds());
 		
 		window.add(tabManager.getTabbedPane());
@@ -125,6 +125,20 @@ public class Ubench {
 	public void quit() {
     	Utool.exit(0);
     }
+	
+	public CommandListener getCommandListener() {
+		return commandListener;
+	}
+	
+	public UbenchTab getCurrentTab() {
+		return tabManager.getCurrentTab();
+	}
+	
+	public TabManager getTabManager() {
+		return tabManager;
+	}
+	
+	
 	
 	public void loadDemoGraph() {
 		InputCodec chainCodec = codecManager.getInputCodecForName("chain", "");
