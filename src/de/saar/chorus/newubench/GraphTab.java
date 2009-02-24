@@ -91,6 +91,7 @@ public class GraphTab extends UbenchTab {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void showFirstSolvedForm() {
 		solve();
 		

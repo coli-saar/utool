@@ -31,6 +31,7 @@ public class TabManager {
 		add(label, new GraphTab(label, graph, labels));
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void addSolvedFormTab(String label, SolvedFormIterator sfi, int numSolvedForms, DomGraph graph, NodeLabels labels) {
 		add(label, new SolvedFormTab(label, sfi, numSolvedForms, graph, labels));
 	}
