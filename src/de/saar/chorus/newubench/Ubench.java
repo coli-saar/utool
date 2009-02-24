@@ -198,6 +198,10 @@ public class Ubench {
 		return codecManager;
 	}
 	
+	public ExampleManager getExampleManager() {
+		return exampleManager;
+	}
+	
 	public File getLastPath() {
 		return lastPath;
 	}
