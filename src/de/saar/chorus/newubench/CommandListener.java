@@ -14,6 +14,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.saar.chorus.domgraph.graph.DomGraph;
+import de.saar.chorus.domgraph.graph.NodeLabels;
+
 public class CommandListener extends WindowAdapter implements ActionListener, ItemListener {
 	private Map<Object,String> eventSources;
 	
@@ -68,7 +71,13 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	public static final String FILE_OPEN="fileOpen";
 	@CommandAnnotation(command=FILE_OPEN)
 	private void fileOpen(String command) {
-		System.err.println("FILE OPEN");
+		DomGraph graph = new DomGraph();
+		NodeLabels labels = new NodeLabels();
+		
+		String filename = FileUtilities.loadGraphFromFilechooser(graph, labels);
+		if( filename != null ) {
+			Ubench.getInstance().getTabManager().addDomGraphTab(filename, graph, labels);
+		}
 	}
 	
 	
@@ -113,6 +122,8 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	}
 	
 	private void call(String command) {
+		System.err.println("Call: " + command);
+		
 		try {
 			for( Method m : getClass().getDeclaredMethods() ) {
 				if( m.isAnnotationPresent(CommandAnnotation.class) ) {

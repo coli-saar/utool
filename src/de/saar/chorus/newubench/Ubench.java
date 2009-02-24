@@ -143,6 +143,18 @@ public class Ubench {
 		return tabManager;
 	}
 	
+	public CodecManager getCodecManager() {
+		return codecManager;
+	}
+	
+	public File getLastPath() {
+		return lastPath;
+	}
+	
+	public void setLastPath(File lastPath) {
+		this.lastPath = lastPath;
+	}
+	
 	
 	
 	public void loadDemoGraph() {
