@@ -17,6 +17,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.Utool;
+import de.saar.chorus.ubench.MacIntegration;
 
 public class Ubench {
 	private static Ubench instance = null;
@@ -27,7 +28,7 @@ public class Ubench {
 	private TabManager tabManager;
 	private File lastPath;
 	private boolean fitWindowToNextGraph;
-
+	
 
 
 
@@ -42,13 +43,15 @@ public class Ubench {
 	 */
 	public static Ubench getInstance() {
 		if( instance == null ) {
-			instance = new Ubench();
+			new Ubench();
 		}
 
 		return instance;
 	}
 
 	private Ubench() {
+		instance = this;
+		
 		// register codecs
 		codecManager = new CodecManager();
 		try {
@@ -107,6 +110,8 @@ public class Ubench {
 		
 		window.add(tabManager.getTabbedPane());
 		
+		window.setJMenuBar(new UbenchMenu());
+		
 		window.pack();
 		window.setVisible(true);
 	}
@@ -158,6 +163,7 @@ public class Ubench {
 	
 	
 	public static void main(String[] args) {
+		MacIntegration.integrate();
 		Ubench.getInstance();
 		
 		Ubench.getInstance().loadDemoGraph();
