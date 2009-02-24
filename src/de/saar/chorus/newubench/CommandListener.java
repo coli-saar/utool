@@ -65,6 +65,11 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 		}
 	}
 	
+	public static final String FILE_OPEN="fileOpen";
+	@CommandAnnotation(command=FILE_OPEN)
+	private void fileOpen(String command) {
+		System.err.println("FILE OPEN");
+	}
 	
 	
 	
