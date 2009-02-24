@@ -18,6 +18,7 @@ import javax.swing.KeyStroke;
 
 import de.saar.chorus.ubench.MacIntegration;
 
+@SuppressWarnings("unused")
 public class UbenchMenu extends JMenuBar {
 	private Map<String,JMenu> menus;
 	private Map<String,ButtonGroup> checkBoxGroups;
@@ -43,6 +44,9 @@ public class UbenchMenu extends JMenuBar {
 	
 	@MenuItemAnnotation(title="Copy", parentTitle="Edit", command="edit")
 	private JMenuItem editCopy;
+	
+	@MenuItemAnnotation(title="Hi Andrew", parentTitle="Edit", command="andrew")
+	private JMenuItem andrewItem;
 	
 	@MenuAnnotation(title="Solver")
 	private JMenu solverMenu;
@@ -74,8 +78,6 @@ public class UbenchMenu extends JMenuBar {
 	}
 	
 	private void computeMenuBar() {
-		System.err.println("start");
-		
 		// add all menus
 		try {
 			for( Field f : getClass().getDeclaredFields() ) {
@@ -95,17 +97,12 @@ public class UbenchMenu extends JMenuBar {
 						menus.put(ann.title(), menu);
 						f.set(this, menu);
 					}
-					
-					System.err.println("done: " + ann.title());
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-
-		
-		System.err.println("done");
 
 		// add all menu items
 		try {
