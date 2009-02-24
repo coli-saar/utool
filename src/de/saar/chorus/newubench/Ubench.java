@@ -219,7 +219,6 @@ public class Ubench {
 	}
 	
 	
-	
 	public void loadDemoGraph() {
 		InputCodec chainCodec = codecManager.getInputCodecForName("chain", "");
 		

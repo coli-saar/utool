@@ -1,5 +1,7 @@
 package de.saar.chorus.newubench;
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,6 +18,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
+import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.ubench.MacIntegration;
 
 @SuppressWarnings("unused")
@@ -41,6 +44,12 @@ public class UbenchMenu extends JMenuBar {
 	
 	@MenuAnnotation(title="Edit")
 	private JMenu editMenu;
+	
+	@MenuAnnotation(title="Copy to clipboard", parentTitle="Edit")
+	private JMenu editCopyMenu;
+	
+	@MenuAnnotation(title="Paste into new tab", parentTitle="Edit")
+	private JMenu editPasteMenu;
 	
 	
 	@MenuAnnotation(title="Solver")
@@ -157,7 +166,32 @@ public class UbenchMenu extends JMenuBar {
 	}
 	
 	private void addCodecMenus() {
-		
+		String definput = UserProperties.getDefaultInputCodec();
+        String defoutput = UserProperties.getDefaultOutputCodec();
+        int control = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        CommandListener listener = Ubench.getInstance().getCommandListener();
+        
+        for( String codecname : Ubench.getInstance().getCodecManager().getAllOutputCodecs() ) {
+        	JMenuItem item = new JMenuItem("as " + codecname);
+        	item.setActionCommand(CommandListener.EXPORT_CLIPBOARD + codecname);
+        	item.addActionListener(listener);
+        	editCopyMenu.add(item);
+        	
+        	if( codecname.equals(defoutput)) {
+        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, control));
+        	} 
+        }
+
+        for( String codecname : Ubench.getInstance().getCodecManager().getAllInputCodecs() ) {
+        	JMenuItem item = new JMenuItem("as " + codecname);
+        	item.setActionCommand(CommandListener.IMPORT_CLIPBOARD + codecname);
+        	item.addActionListener(listener);
+        	editPasteMenu.add(item);
+        	
+        	if( codecname.equals(definput)) {
+        		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, control));
+        	} 
+        }
 	}
 
 
