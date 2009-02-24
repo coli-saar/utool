@@ -100,4 +100,16 @@ public class GraphTab extends UbenchTab {
 	}
 	
 	private static final long serialVersionUID = -6342451939382113666L;
+
+	@Override
+	public DomGraph getGraph() {
+		return graph;
+	}
+
+
+
+	@Override
+	public NodeLabels getNodeLabels() {
+		return labels;
+	}
 }

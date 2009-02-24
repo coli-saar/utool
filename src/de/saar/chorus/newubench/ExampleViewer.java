@@ -202,13 +202,9 @@ class ExampleViewer extends JFrame implements
 			final String selected = exampleNames[files.getSelectedIndex()];
 			setVisible(false);
 			
-			DomGraph graph = new DomGraph();
-			NodeLabels labels = new NodeLabels();
-			FileUtilities.genericLoadGraph(manager.getExampleReader(selected), 
-					Ubench.getInstance().getCodecManager().getInputCodecForFilename(selected, ""),
-					graph, labels);
-			
-			Ubench.getInstance().getTabManager().addDomGraphTab(selected, graph, labels);
+			Ubench.getInstance().getTabManager().addDomGraphTab(selected,
+					manager.getExampleReader(selected), 
+					Ubench.getInstance().getCodecManager().getInputCodecForFilename(selected, ""));
 		} else if (e.getActionCommand().equals("cancel")) {
 			setVisible(false);
 			dispose();

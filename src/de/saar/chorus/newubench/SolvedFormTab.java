@@ -114,4 +114,14 @@ public class SolvedFormTab extends UbenchTab {
 	
 
 	private static final long serialVersionUID = 3795056217569335558L;
+
+	@Override
+	public DomGraph getGraph() {
+		return currentSolvedForm;
+	}
+
+	@Override
+	public NodeLabels getNodeLabels() {
+		return labels;
+	}
 }

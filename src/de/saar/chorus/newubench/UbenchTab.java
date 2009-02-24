@@ -85,7 +85,8 @@ abstract public class UbenchTab extends JPanel {
 		}
 	}
 	
-	
+	abstract public DomGraph getGraph();
+	abstract public NodeLabels getNodeLabels();
 	
 	
 	private static final long serialVersionUID = -5841770553185589414L;
