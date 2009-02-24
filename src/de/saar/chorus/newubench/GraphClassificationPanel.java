@@ -29,4 +29,6 @@ public class GraphClassificationPanel extends JPanel {
 	public void analyzeGraph(DomGraph graph) {
 		
 	}
+
+	private static final long serialVersionUID = -7127679535879306421L;
 }

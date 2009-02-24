@@ -17,6 +17,7 @@ import java.util.Map;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 
+@SuppressWarnings("unused")
 public class CommandListener extends WindowAdapter implements ActionListener, ItemListener {
 	private Map<Object,String> eventSources;
 	

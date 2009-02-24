@@ -1,6 +1,5 @@
 package de.saar.chorus.newubench;
 
-import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 
