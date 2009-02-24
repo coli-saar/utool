@@ -80,7 +80,11 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 		}
 	}
 	
-	
+	public static final String FILE_OPEN_EXAMPLE="fileExample";
+	@CommandAnnotation(command=FILE_OPEN_EXAMPLE)
+	private void fileOpenExample(String command) {
+		new ExampleViewer().setVisible(true);
+	}
 	
 	
 	

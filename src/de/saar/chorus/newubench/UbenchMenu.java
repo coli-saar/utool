@@ -32,7 +32,7 @@ public class UbenchMenu extends JMenuBar {
 	@MenuItemAnnotation(title="Open...", parentTitle="File", keystroke="control O", command=CommandListener.FILE_OPEN, isEnabledOnEmptyWindow=true)
 	private JMenuItem fileOpen;
 
-	@MenuItemAnnotation(title="Open example...", parentTitle="File", command=CommandListener.FILE_OPEN, isEnabledOnEmptyWindow=true)
+	@MenuItemAnnotation(title="Open example...", parentTitle="File", command=CommandListener.FILE_OPEN_EXAMPLE, isEnabledOnEmptyWindow=true)
 	private JMenuItem fileExample;
 
 	@MenuItemAnnotation(title="Quit", parentTitle="File", keystroke="control Q", command=CommandListener.QUIT, addSeparatorBefore=true, useForNonMacOnly=true)
@@ -42,11 +42,6 @@ public class UbenchMenu extends JMenuBar {
 	@MenuAnnotation(title="Edit")
 	private JMenu editMenu;
 	
-	@MenuItemAnnotation(title="Copy", parentTitle="Edit", command="edit")
-	private JMenuItem editCopy;
-	
-	@MenuItemAnnotation(title="Hi Andrew", parentTitle="Edit", command="andrew")
-	private JMenuItem andrewItem;
 	
 	@MenuAnnotation(title="Solver")
 	private JMenu solverMenu;
