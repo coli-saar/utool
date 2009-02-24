@@ -38,10 +38,11 @@ public class SolvedFormTab extends UbenchTab {
 		jgraph.setLayouttype(LayoutType.TREELAYOUT);
 		
 		computedSolvedForms = new ArrayList<SolvedFormSpec>();
-		setSolvedFormStatusBar();
 
-		sfSelectionTextField.setText("1");
 		showSolvedForm(0);
+
+		setSolvedFormStatusBar(); // must happen after currentSolvedForm is selected
+		sfSelectionTextField.setText("1");
 	}
 	
 	public void showSolvedForm(int index) {
