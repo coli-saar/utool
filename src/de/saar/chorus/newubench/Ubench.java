@@ -1,6 +1,8 @@
 package de.saar.chorus.newubench;
 
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -160,6 +162,14 @@ public class Ubench {
 	synchronized public void refresh() {
 		if( fitWindowToNextGraph ) {
 			window.pack();
+			
+			GraphicsEnvironment env =
+	        	GraphicsEnvironment.getLocalGraphicsEnvironment();
+			Rectangle bounds = env.getMaximumWindowBounds();
+			Dimension oldWindowSize = window.getSize();
+			Dimension windowsize = new Dimension(Math.min(bounds.width, oldWindowSize.width), Math.min(bounds.height, oldWindowSize.height));
+			window.setSize(windowsize);
+			
 			fitWindowToNextGraph = false;
 		}
 	}
