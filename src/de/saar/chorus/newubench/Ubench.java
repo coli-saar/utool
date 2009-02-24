@@ -3,11 +3,14 @@ package de.saar.chorus.newubench;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
+import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.ExampleManager;
 import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.codec.CodecManager;
@@ -29,6 +32,10 @@ public class Ubench {
 	private File lastPath;
 	private boolean fitWindowToNextGraph;
 	
+	private List<GenericFileFilter> ffInputCodecs;
+	private List<GenericFileFilter> ffOutputCodecs;
+	private List<GenericFileFilter> ffMultiOutputCodecs;
+
 
 
 
@@ -101,8 +108,39 @@ public class Ubench {
 */
 		
 		setupSwing();
+		setupCodecFileFilters();
 	}
 	
+	private void setupCodecFileFilters() {
+		ffInputCodecs = new ArrayList<GenericFileFilter>();
+		ffOutputCodecs = new ArrayList<GenericFileFilter>();
+		ffMultiOutputCodecs = new ArrayList<GenericFileFilter>();
+		
+		for( String codecname : codecManager.getAllInputCodecs() ) {
+			String extension = codecManager.getInputCodecExtension(codecname);
+			
+			if( (codecname != null) && (extension != null)) {
+				ffInputCodecs.add(new GenericFileFilter(extension, codecname));
+			}
+		}
+		
+		for( String codecname : codecManager.getAllOutputCodecs() ) {
+			String extension = codecManager.getOutputCodecExtension(codecname);
+			
+			if( (codecname != null) && (extension != null)) {
+				ffOutputCodecs.add(new GenericFileFilter(extension, codecname));
+			}
+		}
+		
+		for( String codecname : codecManager.getAllMultiOutputCodecs() ) {
+			String extension = codecManager.getOutputCodecExtension(codecname);
+			
+			if( (codecname != null) && (extension != null)) {
+				ffMultiOutputCodecs.add(new GenericFileFilter(extension, codecname));
+			}
+		}
+	}
+
 	private void setupSwing() {
 		window = new JFrame("Underspecification Workbench");
 		window.addWindowListener(commandListener);
@@ -113,6 +151,9 @@ public class Ubench {
 		window.setJMenuBar(new UbenchMenu());
 		
 		window.pack();
+		window.setSize(300, 200);
+		window.setLocationByPlatform(true);
+		
 		window.setVisible(true);
 	}
 
@@ -155,6 +196,14 @@ public class Ubench {
 		this.lastPath = lastPath;
 	}
 	
+	public List<GenericFileFilter> getInputCodecFileFilters() {
+		return ffInputCodecs;
+	}
+	
+	public List<GenericFileFilter> getOutputCodecFileFilters() {
+		return ffOutputCodecs;
+	}
+	
 	
 	
 	public void loadDemoGraph() {
@@ -178,6 +227,6 @@ public class Ubench {
 		MacIntegration.integrate();
 		Ubench.getInstance();
 		
-		Ubench.getInstance().loadDemoGraph();
+		//Ubench.getInstance().loadDemoGraph();
 	}
 }

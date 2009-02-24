@@ -80,9 +80,8 @@ public class FileUtilities {
 		final CodecFileChooser fc = new CodecFileChooser(
 				Ubench.getInstance().getLastPath().getAbsolutePath(),
 				CodecFileChooser.Type.OPEN);
-
-		//fc.addCodecFileFilters(ffInputCodecs); //XX
-
+		
+		fc.addCodecFileFilters(Ubench.getInstance().getInputCodecFileFilters());
 		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 
 		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
