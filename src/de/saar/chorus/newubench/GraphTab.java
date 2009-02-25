@@ -228,4 +228,20 @@ public class GraphTab extends UbenchTab {
 	public NodeLabels getNodeLabels() {
 		return labels;
 	}
+
+
+
+	@Override
+	public UbenchTab duplicate() {
+		GraphTab ret = new GraphTab(label, graph, labels);
+		
+		if( chart != null ) {
+			ret.chart = (Chart) chart.clone();
+			ret.reducedChart = (ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal>) reducedChart.clone();
+			
+			ret.setSolvedStatusBar();
+		}
+		
+		return ret;
+	}
 }

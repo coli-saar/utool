@@ -101,6 +101,18 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	private void fileOpenExample(String command) {
 		new ExampleViewer().setVisible(true);
 	}
+	
+	public static final String FILE_CLOSE="fileClose";
+	@CommandAnnotation(command=FILE_CLOSE)
+	private void fileClose(String command) {
+		Ubench.getInstance().getTabManager().closeCurrentTab();
+	}
+	
+	public static final String DUPLICATE="duplicate";
+	@CommandAnnotation(command=DUPLICATE)
+	private void duplicate(String command) {
+		Ubench.getInstance().getTabManager().duplicateCurrentTab();
+	}
 
 	public static final String EXPORT_CLIPBOARD="export-clipboard-";
 	@CommandAnnotation(command=EXPORT_CLIPBOARD)

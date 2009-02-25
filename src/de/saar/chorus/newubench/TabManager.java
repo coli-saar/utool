@@ -54,4 +54,20 @@ public class TabManager {
 	public UbenchTab getCurrentTab() {
 		return (UbenchTab) tabbedPane.getSelectedComponent();
 	}
+	
+	public void closeCurrentTab() {
+		int index = tabbedPane.getSelectedIndex();
+		
+		tabbedPane.remove(index);
+		tabs.remove(index);
+	}
+	
+	public void duplicateCurrentTab() {
+		int index = tabbedPane.getSelectedIndex();
+		String label = tabbedPane.getTitleAt(index);
+		UbenchTab tab = (UbenchTab) tabbedPane.getSelectedComponent();
+		
+		UbenchTab newTab = tab.duplicate();
+		add(label, newTab);
+	}
 }

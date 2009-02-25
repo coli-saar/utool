@@ -45,6 +45,19 @@ public class SolvedFormTab extends UbenchTab {
 		sfSelectionTextField.setText("1");
 	}
 	
+	private SolvedFormTab(String label, int numSolvedForms, DomGraph baseGraph, NodeLabels labels) {
+		super(label);
+		
+		this.baseGraph = baseGraph;
+		this.labels = labels;
+		this.numSolvedForms = numSolvedForms;
+		
+		jgraph.setLayouttype(LayoutType.TREELAYOUT);
+	}
+	
+	// -- TODO: generalize Swing thread so it passes on value from asynch to the other thread;
+	// then apply this here
+	
 	public void showSolvedForm(int index) {
 		SolvedFormSpec spec = getSolvedForm(index);
 		currentSolvedForm = baseGraph.makeSolvedForm(spec);
@@ -124,5 +137,20 @@ public class SolvedFormTab extends UbenchTab {
 	@Override
 	public NodeLabels getNodeLabels() {
 		return labels;
+	}
+
+	@Override
+	public UbenchTab duplicate() {
+		SolvedFormTab ret = new SolvedFormTab(label, numSolvedForms, baseGraph, labels);
+		
+		ret.sfi = new SolvedFormIterator(sfi.getChart(), baseGraph);
+		ret.computedSolvedForms = new ArrayList<SolvedFormSpec>(computedSolvedForms);
+		ret.currentSolvedFormIndex = currentSolvedFormIndex;
+		
+		ret.showSolvedForm(currentSolvedFormIndex);
+		ret.setSolvedFormStatusBar(); // must happen after currentSolvedForm is selected
+		ret.sfSelectionTextField.setText(String.valueOf(currentSolvedFormIndex+1));
+		
+		return ret;
 	}
 }
