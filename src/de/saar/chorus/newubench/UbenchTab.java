@@ -3,7 +3,6 @@ package de.saar.chorus.newubench;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -119,7 +118,7 @@ abstract public class UbenchTab extends JPanel {
 
 	abstract protected DomGraph getGraph();
 	abstract protected NodeLabels getNodeLabels();
-
+	abstract public UbenchTab duplicate();
 
 	private static final long serialVersionUID = -5841770553185589414L;
 }

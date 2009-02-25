@@ -46,6 +46,12 @@ public class UbenchMenu extends JMenuBar {
 	@MenuItemAnnotation(title="Display codecs", parentTitle="File", command=CommandListener.DISPLAY_CODECS, useForMacOnly=true)
 	private JMenuItem fileDisplayCodecs;
 
+	@MenuItemAnnotation(title="Duplicate tab", parentTitle="File", keystroke="control D", command=CommandListener.DUPLICATE, addSeparatorBefore=true)
+	private JMenuItem fileDuplicate;
+
+	@MenuItemAnnotation(title="Close tab", parentTitle="File", keystroke="control W", command=CommandListener.FILE_CLOSE)
+	private JMenuItem fileCloseTab;
+
 	@MenuItemAnnotation(title="Quit", parentTitle="File", keystroke="control Q", command=CommandListener.QUIT, addSeparatorBefore=true, useForNonMacOnly=true)
 	private JMenuItem fileQuit;
 
