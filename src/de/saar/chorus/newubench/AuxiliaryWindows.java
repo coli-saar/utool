@@ -102,4 +102,10 @@ public class AuxiliaryWindows {
 				"About the Underspecification Workbench", 
 				JOptionPane.INFORMATION_MESSAGE);
 	}
+	
+	public static void showErrorMessage(String message, String title) {
+		JOptionPane
+		.showMessageDialog(
+				Ubench.getInstance().getWindow(), message, title, JOptionPane.ERROR_MESSAGE);
+	}
 }

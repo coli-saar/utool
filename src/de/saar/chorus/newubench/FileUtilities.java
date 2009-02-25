@@ -152,46 +152,4 @@ public class FileUtilities {
 		}
 	}
 	
-	public static void saveSolvedFormsToFilechooser() {
-		UbenchTab tab = Ubench.getInstance().getCurrentTab();
-		
-		if( tab instanceof GraphTab ) {
-			CodecFileChooser fc = new CodecFileChooser(
-					Ubench.getInstance().getLastPath().getAbsolutePath(),
-					CodecFileChooser.Type.EXPORT);
-
-			fc.addCodecFileFilters(Ubench.getInstance().getMultiOutputCodecFileFilters());
-			fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-			fc.setAcceptAllFileFilterUsed(false);		
-
-			int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
-
-			if( fcVal == JFileChooser.APPROVE_OPTION ) {
-				File file = fc.getSelectedFile();
-				Ubench.getInstance().setLastPath( file.getParentFile() );
-
-				String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
-				if( !file.getName().endsWith(defaultExtension) ) {
-					file = new File(file.getAbsolutePath() + defaultExtension);
-				}
-
-				try {
-					((GraphTab) tab).printAllSolvedForms(new FileWriter(file), 
-							(MultiOutputCodec) Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
-				} catch (IOException e) {
-					JOptionPane
-					.showMessageDialog(
-							Ubench.getInstance().getWindow(),
-							"An error occurred while saving a solved form: " + e,
-							"Error during save", JOptionPane.ERROR_MESSAGE);
-				} catch (MalformedDomgraphException e) {
-					JOptionPane
-					.showMessageDialog(
-							Ubench.getInstance().getWindow(),
-							"A solved form couldn't be saved with this codec: " + e,
-							"Error during save", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		}
-	}
 }

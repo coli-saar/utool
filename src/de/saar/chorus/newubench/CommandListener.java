@@ -136,7 +136,11 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	public static final String FILE_SAVE_SOLVED_FORMS="fileSavAllSolvedForms";
 	@CommandAnnotation(command=FILE_SAVE_SOLVED_FORMS)
 	private void fileSaveSolvedForms(String command) {
-		FileUtilities.saveSolvedFormsToFilechooser();
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof GraphTab ) {
+			((GraphTab) tab).saveAllSolvedFormsToFilechooser();
+		}
 	}
 
 	public static final String DISPLAY_CODECS="fileDisplayCodecs";
