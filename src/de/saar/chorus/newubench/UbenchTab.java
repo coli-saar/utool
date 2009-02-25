@@ -1,16 +1,22 @@
 package de.saar.chorus.newubench;
 
 import java.awt.BorderLayout;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import de.saar.basic.GUIUtilities;
+import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -118,6 +124,46 @@ abstract public class UbenchTab extends JPanel {
 		codec.print_footer(buf);
 	}
 
+	
+	public void saveGraphToFilechooser() {
+		CodecFileChooser fc = new CodecFileChooser(
+				Ubench.getInstance().getLastPath().getAbsolutePath(),
+				CodecFileChooser.Type.EXPORT);
+		
+		fc.addCodecFileFilters(Ubench.getInstance().getOutputCodecFileFilters());
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+		fc.setAcceptAllFileFilterUsed(false);		
+		
+		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
+		
+		if( fcVal == JFileChooser.APPROVE_OPTION ) {
+			File file = fc.getSelectedFile();
+			Ubench.getInstance().setLastPath( file.getParentFile() );
+			
+			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
+			if( !file.getName().endsWith(defaultExtension) ) {
+				file = new File(file.getAbsolutePath() + defaultExtension);
+			}
+			
+			try {
+				printGraph(new FileWriter(file), 
+						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
+			} catch (IOException e) {
+				JOptionPane
+				.showMessageDialog(
+						Ubench.getInstance().getWindow(),
+						"An error occurred while saving this file: " + e,
+						"Error during save", JOptionPane.ERROR_MESSAGE);
+			} catch (MalformedDomgraphException e) {
+				JOptionPane
+				.showMessageDialog(
+						Ubench.getInstance().getWindow(),
+						"This graph couldn't be saved with this codec: " + e,
+						"Error during save", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
 	abstract protected DomGraph getGraph();
 	abstract protected NodeLabels getNodeLabels();
 	abstract public UbenchTab duplicate();
