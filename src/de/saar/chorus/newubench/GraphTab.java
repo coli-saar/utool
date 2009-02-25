@@ -4,17 +4,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import de.saar.basic.GUIUtilities;
-import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
@@ -107,63 +106,50 @@ public class GraphTab extends UbenchTab {
 				setUnsolvedStatusBar();
 			}
 		}
-	}			
-
+	}
+	
 	@SuppressWarnings("unchecked")
-	public void saveAllSolvedFormsToFilechooser() {
-		final CodecFileChooser fc = new CodecFileChooser(
-				Ubench.getInstance().getLastPath().getAbsolutePath(),
-				CodecFileChooser.Type.EXPORT);
+	private int printAllSolvedForms(Writer writer, MultiOutputCodec codec) throws IOException, MalformedDomgraphException {
+		int count = 0;
+		SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
 
-		fc.addCodecFileFilters(Ubench.getInstance().getMultiOutputCodecFileFilters());
-		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-		fc.setAcceptAllFileFilterUsed(false);		
+		codec.print_header(writer);
+		codec.print_start_list(writer);
 
-		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
+		while(sfi.hasNext()) {
+			SolvedFormSpec spec = sfi.next();
+			count++;
 
-		if( fcVal == JFileChooser.APPROVE_OPTION ) {
-			File file = fc.getSelectedFile();
-			Ubench.getInstance().setLastPath( file.getParentFile() );
-
-			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
-			if( !file.getName().endsWith(defaultExtension) ) {
-				file = new File(file.getAbsolutePath() + defaultExtension);
+			if( count > 1 ) {
+				codec.print_list_separator(writer);
 			}
-			
-			final File finalFile = file; // grr
 
+			codec.encode(graph.makeSolvedForm(spec), labels, writer);
+			updateProgressBar(count);
+		}
 
-			new ResumingSwingThread<Object>() { // GraphTab for the dummy return value
+		codec.print_end_list(writer);
+		codec.print_footer(writer);
+		
+		return count;
+	}
+
+	public void saveAllSolvedFormsToFilechooser() {
+		final Map<String,String> codecOptions = new HashMap<String,String>();
+		final File file = FileUtilities.getFileFromExportFileChooser(Ubench.getInstance().getMultiOutputCodecFileFilters(), codecOptions);
+		
+		if( file != null ) {
+			new ResumingSwingThread<Integer>() { // GraphTab for the dummy return value
 				@Override
-				public Object executeAsynchronously() {
+				public Integer executeAsynchronously() {
+					int count = 0;
 					solve();
 					
 					if( reducedChart != null ) {
 						setInProgressStatusBar("Computing solved forms...", reducedChart.countSolvedForms().intValue());
 
 						try {
-							int count = 0;
-							SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
-							MultiOutputCodec codec = (MultiOutputCodec) Ubench.getInstance().getCodecManager().getOutputCodecForFilename(finalFile.getName(),fc.getCodecOptions());
-							Writer writer = new FileWriter(finalFile);
-
-							codec.print_header(writer);
-							codec.print_start_list(writer);
-
-							while(sfi.hasNext()) {
-								SolvedFormSpec spec = sfi.next();
-								count++;
-
-								if( count > 1 ) {
-									codec.print_list_separator(writer);
-								}
-
-								codec.encode(graph.makeSolvedForm(spec), labels, writer);
-								updateProgressBar(count);
-							}
-
-							codec.print_end_list(writer);
-							codec.print_footer(writer);
+							count = printAllSolvedForms(new FileWriter(file), (MultiOutputCodec) Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),codecOptions));
 						} catch (IOException e) {
 							JOptionPane
 							.showMessageDialog(
@@ -181,16 +167,16 @@ public class GraphTab extends UbenchTab {
 						}
 					}
 					
-					return this;
+					return count;
 				}
 
 				@Override
-				public void thenWhat(Object arg) {
+				public void thenWhat(Integer count) {
 					if( reducedChart != null ) {
 						JOptionPane
 						.showMessageDialog(
 								Ubench.getInstance().getWindow(),
-								"Successfully saved " + reducedChart.countSolvedForms() + " solved forms.",
+								"Successfully saved " + count + " solved forms.",
 								"Saved solved forms", JOptionPane.INFORMATION_MESSAGE);
 					}
 				}

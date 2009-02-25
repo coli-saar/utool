@@ -5,10 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -77,21 +77,12 @@ public class TabManager {
 	}
 	
 	public void addGraphFromFilechooser() {
-		CodecFileChooser fc = new CodecFileChooser(
-				Ubench.getInstance().getLastPath().getAbsolutePath(),
-				CodecFileChooser.Type.OPEN);
+		Map<String, String> codecOptions = new HashMap<String, String>();
+		File file = FileUtilities.getFileFromOpenFileChooser(Ubench.getInstance().getInputCodecFileFilters(), codecOptions);
 		
-		fc.addCodecFileFilters(Ubench.getInstance().getInputCodecFileFilters());
-		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-
-		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
-
-		if (fcVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			Ubench.getInstance().setLastPath(file.getParentFile());
-
+		if( file != null ) {
 			try {
-				addDomGraphTab(file.getName(), new FileReader(file), Ubench.getInstance().getCodecManager().getInputCodecForFilename(file.getName(), fc.getCodecOptions()));
+				addDomGraphTab(file.getName(), new FileReader(file), Ubench.getInstance().getCodecManager().getInputCodecForFilename(file.getName(), codecOptions));
 			} catch (FileNotFoundException e) {
 				AuxiliaryWindows.showErrorMessage("The file " + file + " couldn't be read.", "Error loading file");
 			}

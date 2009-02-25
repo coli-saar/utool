@@ -1,11 +1,10 @@
 package de.saar.chorus.newubench;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -14,7 +13,6 @@ import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -80,7 +78,57 @@ public class FileUtilities {
 		return true;
 	}
 
+	public static File getFileFromExportFileChooser(List<GenericFileFilter> fileFilters, Map<String,String> options) {
+		final CodecFileChooser fc = new CodecFileChooser(
+				Ubench.getInstance().getLastPath().getAbsolutePath(),
+				CodecFileChooser.Type.EXPORT);
+
+		fc.addCodecFileFilters(fileFilters);
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+		fc.setAcceptAllFileFilterUsed(false);		
+
+		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
+
+		if( fcVal == JFileChooser.APPROVE_OPTION ) {
+			File file = fc.getSelectedFile();
+			Ubench.getInstance().setLastPath( file.getParentFile() );
+
+			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
+			if( !file.getName().endsWith(defaultExtension) ) {
+				file = new File(file.getAbsolutePath() + defaultExtension);
+			}
+			
+			options.clear();
+			options.putAll(fc.getCodecOptions());
+			
+			return file;
+		} else {
+			return null;
+		}
+	}
 	
+	public static File getFileFromOpenFileChooser(List<GenericFileFilter> fileFilters, Map<String,String> options) {
+		CodecFileChooser fc = new CodecFileChooser(
+				Ubench.getInstance().getLastPath().getAbsolutePath(),
+				CodecFileChooser.Type.OPEN);
+		
+		fc.addCodecFileFilters(fileFilters);
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+
+		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
+
+		if (fcVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			Ubench.getInstance().setLastPath(file.getParentFile());
+			
+			options.clear();
+			options.putAll(fc.getCodecOptions());
+			
+			return file;
+		} else {
+			return null;
+		}
+	}
 	
 	
 }

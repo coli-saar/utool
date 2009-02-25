@@ -5,18 +5,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-import de.saar.basic.GUIUtilities;
-import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -126,28 +125,13 @@ abstract public class UbenchTab extends JPanel {
 
 	
 	public void saveGraphToFilechooser() {
-		CodecFileChooser fc = new CodecFileChooser(
-				Ubench.getInstance().getLastPath().getAbsolutePath(),
-				CodecFileChooser.Type.EXPORT);
+		final Map<String,String> codecOptions = new HashMap<String,String>();
+		final File file = FileUtilities.getFileFromExportFileChooser(Ubench.getInstance().getOutputCodecFileFilters(), codecOptions);
 		
-		fc.addCodecFileFilters(Ubench.getInstance().getOutputCodecFileFilters());
-		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-		fc.setAcceptAllFileFilterUsed(false);		
-		
-		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
-		
-		if( fcVal == JFileChooser.APPROVE_OPTION ) {
-			File file = fc.getSelectedFile();
-			Ubench.getInstance().setLastPath( file.getParentFile() );
-			
-			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
-			if( !file.getName().endsWith(defaultExtension) ) {
-				file = new File(file.getAbsolutePath() + defaultExtension);
-			}
-			
+		if( file != null ) {
 			try {
 				printGraph(new FileWriter(file), 
-						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
+						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),codecOptions));
 			} catch (IOException e) {
 				JOptionPane
 				.showMessageDialog(
