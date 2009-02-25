@@ -133,9 +133,9 @@ public class GraphTab extends UbenchTab {
 			final File finalFile = file; // grr
 
 
-			new ResumingSwingThread() {
+			new ResumingSwingThread<Object>() { // GraphTab for the dummy return value
 				@Override
-				public void executeAsynchronously() {
+				public Object executeAsynchronously() {
 					solve();
 					
 					if( reducedChart != null ) {
@@ -180,10 +180,12 @@ public class GraphTab extends UbenchTab {
 							setSolvedStatusBar();
 						}
 					}
+					
+					return this;
 				}
 
 				@Override
-				public void thenWhat() {
+				public void thenWhat(Object arg) {
 					if( reducedChart != null ) {
 						JOptionPane
 						.showMessageDialog(
@@ -199,14 +201,15 @@ public class GraphTab extends UbenchTab {
 
 	@SuppressWarnings("unchecked")
 	public void showFirstSolvedForm() {
-		new ResumingSwingThread() {
+		new ResumingSwingThread<Object>() {
 			@Override
-			public void executeAsynchronously() {
+			public Object executeAsynchronously() {
 				solve();
+				return this;
 			}
 
 			@Override
-			public void thenWhat() {
+			public void thenWhat(Object dummy) {
 				if( reducedChart != null ) {
 					SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
 					Ubench.getInstance().getTabManager().addSolvedFormTab("SF of " + label, sfi, reducedChart.countSolvedForms().intValue(), graph, labels);

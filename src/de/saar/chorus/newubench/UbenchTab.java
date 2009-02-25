@@ -52,7 +52,7 @@ abstract public class UbenchTab extends JPanel {
 	}
 
 	protected void setStatusBar(final JComponent statusBar) {
-		SwingNowExecutor.execute(new Runnable() {
+		SwingNowExecutor.executeAndWait(new Runnable() {
 			public void run() {
 				statusBarPanel.removeAll();
 				statusBarPanel.add(statusBar, BorderLayout.CENTER);
@@ -84,7 +84,9 @@ abstract public class UbenchTab extends JPanel {
 	protected void updateProgressBar(final int n) {
 		SwingNowExecutor.execute(new Runnable() {
 			public void run() {
-				currentProgressBar.setValue(n);
+				if( currentProgressBar != null ) {
+					currentProgressBar.setValue(n);
+				}
 			}
 		});
 	}

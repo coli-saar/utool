@@ -65,6 +65,8 @@ public class UbenchMenu extends JMenuBar {
 	@MenuAnnotation(title="Paste into new tab", parentTitle="Edit")
 	private JMenu editPasteMenu;
 	
+	@MenuAnnotation(title="View")
+	private JMenu viewMenu;
 	
 	@MenuAnnotation(title="Solver")
 	private JMenu solverMenu;
