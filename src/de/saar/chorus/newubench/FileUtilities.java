@@ -3,14 +3,18 @@ package de.saar.chorus.newubench;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import de.saar.basic.GUIUtilities;
+import de.saar.basic.GenericFileFilter;
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.codec.ParserException;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -77,7 +81,7 @@ public class FileUtilities {
 	}
 
 	static public String loadGraphFromFilechooser(DomGraph graph, NodeLabels nl) {
-		final CodecFileChooser fc = new CodecFileChooser(
+		CodecFileChooser fc = new CodecFileChooser(
 				Ubench.getInstance().getLastPath().getAbsolutePath(),
 				CodecFileChooser.Type.OPEN);
 		
@@ -86,9 +90,8 @@ public class FileUtilities {
 
 		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
 
-		// proceeding the selected file
 		if (fcVal == JFileChooser.APPROVE_OPTION) {
-			final File file = fc.getSelectedFile();
+			File file = fc.getSelectedFile();
 			Ubench.getInstance().setLastPath(file.getParentFile());
 
 			try {
@@ -107,6 +110,88 @@ public class FileUtilities {
 			}
 		} else {
 			return null;
+		}
+	}
+
+	public static void saveGraphToFilechooser() {
+		CodecFileChooser fc = new CodecFileChooser(
+				Ubench.getInstance().getLastPath().getAbsolutePath(),
+				CodecFileChooser.Type.EXPORT);
+		
+		fc.addCodecFileFilters(Ubench.getInstance().getOutputCodecFileFilters());
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+		fc.setAcceptAllFileFilterUsed(false);		
+		
+		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
+		
+		if( fcVal == JFileChooser.APPROVE_OPTION ) {
+			File file = fc.getSelectedFile();
+			Ubench.getInstance().setLastPath( file.getParentFile() );
+			
+			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
+			if( !file.getName().endsWith(defaultExtension) ) {
+				file = new File(file.getAbsolutePath() + defaultExtension);
+			}
+			
+			try {
+				Ubench.getInstance().getCurrentTab().printGraph(new FileWriter(file), 
+						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
+			} catch (IOException e) {
+				JOptionPane
+				.showMessageDialog(
+						Ubench.getInstance().getWindow(),
+						"An error occurred while saving this file: " + e,
+						"Error during save", JOptionPane.ERROR_MESSAGE);
+			} catch (MalformedDomgraphException e) {
+				JOptionPane
+				.showMessageDialog(
+						Ubench.getInstance().getWindow(),
+						"This graph couldn't be saved with this codec: " + e,
+						"Error during save", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
+	public static void saveSolvedFormsToFilechooser() {
+		UbenchTab tab = Ubench.getInstance().getCurrentTab();
+		
+		if( tab instanceof GraphTab ) {
+			CodecFileChooser fc = new CodecFileChooser(
+					Ubench.getInstance().getLastPath().getAbsolutePath(),
+					CodecFileChooser.Type.EXPORT);
+
+			fc.addCodecFileFilters(Ubench.getInstance().getMultiOutputCodecFileFilters());
+			fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+			fc.setAcceptAllFileFilterUsed(false);		
+
+			int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
+
+			if( fcVal == JFileChooser.APPROVE_OPTION ) {
+				File file = fc.getSelectedFile();
+				Ubench.getInstance().setLastPath( file.getParentFile() );
+
+				String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
+				if( !file.getName().endsWith(defaultExtension) ) {
+					file = new File(file.getAbsolutePath() + defaultExtension);
+				}
+
+				try {
+					((GraphTab) tab).printAllSolvedForms(new FileWriter(file), 
+							(MultiOutputCodec) Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
+				} catch (IOException e) {
+					JOptionPane
+					.showMessageDialog(
+							Ubench.getInstance().getWindow(),
+							"An error occurred while saving a solved form: " + e,
+							"Error during save", JOptionPane.ERROR_MESSAGE);
+				} catch (MalformedDomgraphException e) {
+					JOptionPane
+					.showMessageDialog(
+							Ubench.getInstance().getWindow(),
+							"A solved form couldn't be saved with this codec: " + e,
+							"Error during save", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		}
 	}
 }

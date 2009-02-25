@@ -19,7 +19,6 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 import de.saar.chorus.domgraph.UserProperties;
-import de.saar.chorus.ubench.MacIntegration;
 
 @SuppressWarnings("unused")
 public class UbenchMenu extends JMenuBar {
@@ -37,6 +36,15 @@ public class UbenchMenu extends JMenuBar {
 
 	@MenuItemAnnotation(title="Open example...", parentTitle="File", command=CommandListener.FILE_OPEN_EXAMPLE, isEnabledOnEmptyWindow=true)
 	private JMenuItem fileExample;
+	
+	@MenuItemAnnotation(title="Save...", parentTitle="File", keystroke="control S", command=CommandListener.FILE_SAVE)
+	private JMenuItem fileSave;
+	
+	@MenuItemAnnotation(title="Save all solved forms...", parentTitle="File", command=CommandListener.FILE_SAVE_SOLVED_FORMS, isEnabledForSolvedForms=false)
+	private JMenuItem fileSaveSolvedForms;
+	
+	@MenuItemAnnotation(title="Display codecs", parentTitle="File", command=CommandListener.DISPLAY_CODECS, useForMacOnly=true)
+	private JMenuItem fileDisplayCodecs;
 
 	@MenuItemAnnotation(title="Quit", parentTitle="File", keystroke="control Q", command=CommandListener.QUIT, addSeparatorBefore=true, useForNonMacOnly=true)
 	private JMenuItem fileQuit;
