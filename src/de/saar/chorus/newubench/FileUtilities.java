@@ -80,76 +80,7 @@ public class FileUtilities {
 		return true;
 	}
 
-	static public String loadGraphFromFilechooser(DomGraph graph, NodeLabels nl) {
-		CodecFileChooser fc = new CodecFileChooser(
-				Ubench.getInstance().getLastPath().getAbsolutePath(),
-				CodecFileChooser.Type.OPEN);
-		
-		fc.addCodecFileFilters(Ubench.getInstance().getInputCodecFileFilters());
-		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-
-		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
-
-		if (fcVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			Ubench.getInstance().setLastPath(file.getParentFile());
-
-			try {
-				if( genericLoadGraph(new FileReader(file), Ubench.getInstance().getCodecManager().getInputCodecForFilename(file.getName(), fc.getCodecOptions()), graph, nl) ) {
-					return file.getName();
-				} else {
-					return null;
-				}
-			} catch (FileNotFoundException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"This file couldn't be loaded.",
-						"Error during import", JOptionPane.ERROR_MESSAGE);
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-
-	public static void saveGraphToFilechooser() {
-		CodecFileChooser fc = new CodecFileChooser(
-				Ubench.getInstance().getLastPath().getAbsolutePath(),
-				CodecFileChooser.Type.EXPORT);
-		
-		fc.addCodecFileFilters(Ubench.getInstance().getOutputCodecFileFilters());
-		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
-		fc.setAcceptAllFileFilterUsed(false);		
-		
-		int fcVal = GUIUtilities.confirmFileOverwriting(fc, Ubench.getInstance().getWindow());
-		
-		if( fcVal == JFileChooser.APPROVE_OPTION ) {
-			File file = fc.getSelectedFile();
-			Ubench.getInstance().setLastPath( file.getParentFile() );
-			
-			String defaultExtension = ((GenericFileFilter) fc.getFileFilter()).getExtension();
-			if( !file.getName().endsWith(defaultExtension) ) {
-				file = new File(file.getAbsolutePath() + defaultExtension);
-			}
-			
-			try {
-				Ubench.getInstance().getCurrentTab().printGraph(new FileWriter(file), 
-						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),fc.getCodecOptions()));
-			} catch (IOException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"An error occurred while saving this file: " + e,
-						"Error during save", JOptionPane.ERROR_MESSAGE);
-			} catch (MalformedDomgraphException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"This graph couldn't be saved with this codec: " + e,
-						"Error during save", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
+	
+	
 	
 }

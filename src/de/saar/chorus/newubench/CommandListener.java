@@ -87,13 +87,7 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	public static final String FILE_OPEN="fileOpen";
 	@CommandAnnotation(command=FILE_OPEN)
 	private void fileOpen(String command) {
-		DomGraph graph = new DomGraph();
-		NodeLabels labels = new NodeLabels();
-
-		String filename = FileUtilities.loadGraphFromFilechooser(graph, labels);
-		if( filename != null ) {
-			Ubench.getInstance().getTabManager().addDomGraphTab(filename, graph, labels);
-		}
+		Ubench.getInstance().getTabManager().addGraphFromFilechooser();		
 	}
 
 	public static final String FILE_OPEN_EXAMPLE="fileExample";
@@ -142,7 +136,7 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	public static final String FILE_SAVE="fileSave";
 	@CommandAnnotation(command=FILE_SAVE)
 	private void fileSave(String command) {
-		FileUtilities.saveGraphToFilechooser();
+		Ubench.getInstance().getCurrentTab().saveGraphToFilechooser();
 	}
 	
 	public static final String FILE_SAVE_SOLVED_FORMS="fileSavAllSolvedForms";

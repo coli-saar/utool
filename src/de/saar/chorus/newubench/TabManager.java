@@ -1,9 +1,14 @@
 package de.saar.chorus.newubench;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
@@ -70,4 +75,29 @@ public class TabManager {
 		UbenchTab newTab = tab.duplicate();
 		add(label, newTab);
 	}
+	
+	public void addGraphFromFilechooser() {
+		CodecFileChooser fc = new CodecFileChooser(
+				Ubench.getInstance().getLastPath().getAbsolutePath(),
+				CodecFileChooser.Type.OPEN);
+		
+		fc.addCodecFileFilters(Ubench.getInstance().getInputCodecFileFilters());
+		fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
+
+		int fcVal = fc.showOpenDialog(Ubench.getInstance().getWindow());	
+
+		if (fcVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			Ubench.getInstance().setLastPath(file.getParentFile());
+
+			try {
+				addDomGraphTab(file.getName(), new FileReader(file), Ubench.getInstance().getCodecManager().getInputCodecForFilename(file.getName(), fc.getCodecOptions()));
+			} catch (FileNotFoundException e) {
+				AuxiliaryWindows.showErrorMessage("The file " + file + " couldn't be read.", "Error loading file");
+			}
+		}
+	}
+				
+		
+
 }
