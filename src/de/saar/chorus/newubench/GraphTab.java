@@ -1,5 +1,8 @@
 package de.saar.chorus.newubench;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -11,7 +14,10 @@ import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
+import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.MultiOutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.Preferences.LayoutType;
@@ -90,6 +96,32 @@ public class GraphTab extends UbenchTab {
 			setSolvedStatusBar();
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public void printAllSolvedForms(Writer writer, MultiOutputCodec codec) throws IOException, MalformedDomgraphException {
+		solve();
+		
+		SolvedFormIterator sfi = new SolvedFormIterator(reducedChart, graph);
+		int count = 0;
+		
+		codec.print_header(writer);
+		codec.print_start_list(writer);
+
+		while(sfi.hasNext()) {
+			SolvedFormSpec spec = sfi.next();
+			count++;
+			
+			if( count > 1 ) {
+				codec.print_list_separator(writer);
+			}
+			
+			codec.encode(graph.makeSolvedForm(spec), labels, writer);
+		}
+		
+		codec.print_end_list(writer);
+		codec.print_footer(writer);
+	}
+		
 	
 	@SuppressWarnings("unchecked")
 	public void showFirstSolvedForm() {

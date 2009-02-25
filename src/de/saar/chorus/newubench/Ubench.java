@@ -22,7 +22,6 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.Utool;
-import de.saar.chorus.ubench.MacIntegration;
 
 public class Ubench {
 	private static Ubench instance = null;
@@ -216,6 +215,10 @@ public class Ubench {
 	
 	public List<GenericFileFilter> getOutputCodecFileFilters() {
 		return ffOutputCodecs;
+	}
+	
+	public List<GenericFileFilter> getMultiOutputCodecFileFilters() {
+		return ffMultiOutputCodecs;
 	}
 	
 	

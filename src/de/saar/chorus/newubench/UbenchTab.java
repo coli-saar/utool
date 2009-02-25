@@ -1,6 +1,8 @@
 package de.saar.chorus.newubench;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
+import java.io.Writer;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -8,6 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
+import de.saar.chorus.domgraph.codec.OutputCodec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
@@ -85,8 +89,14 @@ abstract public class UbenchTab extends JPanel {
 		}
 	}
 	
-	abstract public DomGraph getGraph();
-	abstract public NodeLabels getNodeLabels();
+	public void printGraph(Writer buf, OutputCodec codec) throws IOException, MalformedDomgraphException {
+		codec.print_header(buf);
+		codec.encode(getGraph(), getNodeLabels(), buf);
+		codec.print_footer(buf);
+	}
+	
+	abstract protected DomGraph getGraph();
+	abstract protected NodeLabels getNodeLabels();
 	
 	
 	private static final long serialVersionUID = -5841770553185589414L;

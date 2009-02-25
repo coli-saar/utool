@@ -111,12 +111,7 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 		StringWriter buf = new StringWriter();
 
 		try {
-			codec.print_header(buf);
-			codec.encode(Ubench.getInstance().getCurrentTab().getGraph(),
-					Ubench.getInstance().getCurrentTab().getNodeLabels(),
-					buf);
-			codec.print_footer(buf);
-
+			Ubench.getInstance().getCurrentTab().printGraph(buf, codec);
 			new MyClipboardOwner().setClipboardContents(buf.toString());
 		} catch (IOException e1) {
 			// highly unlikely unless the StringWriter ran out of memory or something
@@ -130,6 +125,24 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 					"Error during output",
 					JOptionPane.ERROR_MESSAGE);
 		}
+	}
+	
+	public static final String FILE_SAVE="fileSave";
+	@CommandAnnotation(command=FILE_SAVE)
+	private void fileSave(String command) {
+		FileUtilities.saveGraphToFilechooser();
+	}
+	
+	public static final String FILE_SAVE_SOLVED_FORMS="fileSavAllSolvedForms";
+	@CommandAnnotation(command=FILE_SAVE_SOLVED_FORMS)
+	private void fileSaveSolvedForms(String command) {
+		FileUtilities.saveSolvedFormsToFilechooser();
+	}
+
+	public static final String DISPLAY_CODECS="fileDisplayCodecs";
+	@CommandAnnotation(command=DISPLAY_CODECS)
+	private void fileDisplayCodecs(String command) {
+		AuxiliaryWindows.showCodecWindow();
 	}
 
 	public static final String IMPORT_CLIPBOARD="import-clipboard-";
