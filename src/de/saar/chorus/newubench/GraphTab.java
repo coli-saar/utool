@@ -151,17 +151,9 @@ public class GraphTab extends UbenchTab {
 						try {
 							count = printAllSolvedForms(new FileWriter(file), (MultiOutputCodec) Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),codecOptions));
 						} catch (IOException e) {
-							JOptionPane
-							.showMessageDialog(
-									Ubench.getInstance().getWindow(),
-									"An error occurred while saving a solved form: " + e,
-									"Error during save", JOptionPane.ERROR_MESSAGE);
+							AuxiliaryWindows.showErrorMessage("An error occurred while saving a solved form: " + e, "Error during save");
 						} catch (MalformedDomgraphException e) {
-							JOptionPane
-							.showMessageDialog(
-									Ubench.getInstance().getWindow(),
-									"A solved form couldn't be saved with this codec: " + e,
-									"Error during save", JOptionPane.ERROR_MESSAGE);
+							AuxiliaryWindows.showErrorMessage("A solved form couldn't be saved with this codec: " + e, "Error during save");
 						} finally {
 							setSolvedStatusBar();
 						}
@@ -173,11 +165,7 @@ public class GraphTab extends UbenchTab {
 				@Override
 				public void thenWhat(Integer count) {
 					if( reducedChart != null ) {
-						JOptionPane
-						.showMessageDialog(
-								Ubench.getInstance().getWindow(),
-								"Successfully saved " + count + " solved forms.",
-								"Saved solved forms", JOptionPane.INFORMATION_MESSAGE);
+						AuxiliaryWindows.showInformationMessage("Successfully saved " + count + " solved forms.", "Saved solved forms");
 					}
 				}
 			}.start();

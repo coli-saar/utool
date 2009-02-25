@@ -38,39 +38,17 @@ public class FileUtilities {
 				inputCodec.decode(reader, graph, nl);
 
 			} catch (IOException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"The specified file doesn't exist or cannot be opened.",
-						"Error during import", JOptionPane.ERROR_MESSAGE);
-				//e.printStackTrace();
+				AuxiliaryWindows.showErrorMessage("The specified file doesn't exist or cannot be opened.", "Error during import");
 				return false;
 			} catch (ParserException pe) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"A parsing error occurred while reading the input file:\n"
-						+ pe,
-						"Error during import", JOptionPane.ERROR_MESSAGE);
-
+				AuxiliaryWindows.showErrorMessage("A parsing error occurred while reading the input file:\n" + pe, "Error during import");
 				return false;
 			} catch (MalformedDomgraphException me) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"A semantic error occurred while decoding the graph:\n" +
-						me,
-						"Error during import", JOptionPane.ERROR_MESSAGE);
-
+				AuxiliaryWindows.showErrorMessage("A semantic error occurred while decoding the graph:\n" + me, "Error during import");
 				return false;
 			}
 		} else {
-			JOptionPane
-			.showMessageDialog(
-					Ubench.getInstance().getWindow(),
-					"The filename extension of this file is not associated with any known input codec.",
-					"Error during import", JOptionPane.ERROR_MESSAGE);
-
+			AuxiliaryWindows.showErrorMessage("The filename extension of this file is not associated with any known input codec.", "Error during import");
 			return false;
 		}
 

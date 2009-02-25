@@ -121,15 +121,9 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 			new MyClipboardOwner().setClipboardContents(buf.toString());
 		} catch (IOException e1) {
 			// highly unlikely unless the StringWriter ran out of memory or something
-			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"An error occurred while writing into an internal buffer.",
-					"Error during output",
-					JOptionPane.ERROR_MESSAGE);
+			AuxiliaryWindows.showErrorMessage("An error occurred while writing into an internal buffer.", "Error during output");
 		} catch (MalformedDomgraphException e1) {
-			JOptionPane.showMessageDialog(Ubench.getInstance().getWindow(),
-					"The output codec doesn't support output of this graph:\n" + e1,
-					"Error during output",
-					JOptionPane.ERROR_MESSAGE);
+			AuxiliaryWindows.showErrorMessage("The output codec doesn't support output of this graph:\n" + e1, "Error during output");
 		}
 	}
 	
