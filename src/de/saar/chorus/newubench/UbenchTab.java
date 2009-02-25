@@ -133,17 +133,9 @@ abstract public class UbenchTab extends JPanel {
 				printGraph(new FileWriter(file), 
 						Ubench.getInstance().getCodecManager().getOutputCodecForFilename(file.getName(),codecOptions));
 			} catch (IOException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"An error occurred while saving this file: " + e,
-						"Error during save", JOptionPane.ERROR_MESSAGE);
+				AuxiliaryWindows.showErrorMessage("An error occurred while saving this file: " + e, "Error during save");
 			} catch (MalformedDomgraphException e) {
-				JOptionPane
-				.showMessageDialog(
-						Ubench.getInstance().getWindow(),
-						"This graph couldn't be saved with this codec: " + e,
-						"Error during save", JOptionPane.ERROR_MESSAGE);
+				AuxiliaryWindows.showErrorMessage("This graph couldn't be encoded with this codec: " + e, "Error during save");
 			}
 		}
 	}

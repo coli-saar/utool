@@ -108,4 +108,10 @@ public class AuxiliaryWindows {
 		.showMessageDialog(
 				Ubench.getInstance().getWindow(), message, title, JOptionPane.ERROR_MESSAGE);
 	}
+	
+	public static void showInformationMessage(String message, String title) {
+		JOptionPane
+		.showMessageDialog(
+				Ubench.getInstance().getWindow(), message, title, JOptionPane.INFORMATION_MESSAGE);
+	}
 }
