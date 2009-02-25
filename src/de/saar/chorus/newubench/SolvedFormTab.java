@@ -15,6 +15,7 @@ import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.ubench.Preferences.LayoutType;
+import de.saar.swing.ResumingSwingThread;
 
 @SuppressWarnings("unchecked")
 public class SolvedFormTab extends UbenchTab {
@@ -24,6 +25,7 @@ public class SolvedFormTab extends UbenchTab {
 	private List<SolvedFormSpec> computedSolvedForms;
 	private JTextField sfSelectionTextField;
 	private int numSolvedForms, currentSolvedFormIndex;
+	private JPanel statusBarPanel;
 
 	protected SolvedFormTab(String label, SolvedFormIterator sfi, int numSolvedForms, DomGraph graph, NodeLabels labels) {
 		super(label);
@@ -40,9 +42,6 @@ public class SolvedFormTab extends UbenchTab {
 		computedSolvedForms = new ArrayList<SolvedFormSpec>();
 
 		showSolvedForm(0);
-
-		setSolvedFormStatusBar(); // must happen after currentSolvedForm is selected
-		sfSelectionTextField.setText("1");
 	}
 	
 	private SolvedFormTab(String label, int numSolvedForms, DomGraph baseGraph, NodeLabels labels) {
@@ -55,13 +54,25 @@ public class SolvedFormTab extends UbenchTab {
 		jgraph.setLayouttype(LayoutType.TREELAYOUT);
 	}
 	
-	// -- TODO: generalize Swing thread so it passes on value from asynch to the other thread;
-	// then apply this here
-	
-	public void showSolvedForm(int index) {
-		SolvedFormSpec spec = getSolvedForm(index);
-		currentSolvedForm = baseGraph.makeSolvedForm(spec);
-		drawGraph(currentSolvedForm, labels);
+	private void showSolvedForm(final int index) {
+		if( index > computedSolvedForms.size()) {
+			setInProgressStatusBar("Computing solved form...", index - computedSolvedForms.size());
+		}
+		
+		new ResumingSwingThread<SolvedFormSpec>() {
+			@Override
+			public SolvedFormSpec executeAsynchronously() {
+				return getSolvedForm(index);
+			}
+
+			@Override
+			public void thenWhat(SolvedFormSpec spec) {
+				currentSolvedForm = baseGraph.makeSolvedForm(spec);
+				drawGraph(currentSolvedForm, labels);
+				
+				setSolvedFormStatusBar();
+			}
+		}.start();
 	}
 	
 	public void showSelectedSolvedForm() {
@@ -76,54 +87,60 @@ public class SolvedFormTab extends UbenchTab {
 	public void showNextSolvedForm() {
 		if( currentSolvedFormIndex < numSolvedForms-1 ) {
 			currentSolvedFormIndex++;
-			showSolvedForm(currentSolvedFormIndex);
 			sfSelectionTextField.setText("" + (currentSolvedFormIndex+1));
+			showSolvedForm(currentSolvedFormIndex);
 		}
 	}
 	
 	public void showPreviousSolvedForm() {
 		if( currentSolvedFormIndex > 0 ) {
 			currentSolvedFormIndex--;
-			showSolvedForm(currentSolvedFormIndex);
 			sfSelectionTextField.setText("" + (currentSolvedFormIndex+1));
+			showSolvedForm(currentSolvedFormIndex);
 		}
 	}
 	
 	
 	private SolvedFormSpec getSolvedForm(int index) {
-		for( int i = computedSolvedForms.size(); i <= index; i++ ) {
+		int len = computedSolvedForms.size();
+		for( int i = 0; i <= index - len; i++ ) {
 			computedSolvedForms.add(sfi.next());
+			updateProgressBar(i);
 		}
 		
 		return computedSolvedForms.get(index);
 	}
 	
 	private void setSolvedFormStatusBar() {
-		JPanel p = new JPanel();
-		p.setLayout(new BoxLayout(p, BoxLayout.LINE_AXIS));
+		if( statusBarPanel == null ) {
+			statusBarPanel = new JPanel();
+			statusBarPanel.setLayout(new BoxLayout(statusBarPanel, BoxLayout.LINE_AXIS));
 
-		JButton nextButton = new JButton(">");
-		nextButton.setActionCommand(CommandListener.NEXT);
-		nextButton.addActionListener(Ubench.getInstance().getCommandListener());
-		
-		JButton prevButton = new JButton("<");
-		prevButton.setActionCommand(CommandListener.PREVIOUS);
-		prevButton.addActionListener(Ubench.getInstance().getCommandListener());
+			JButton nextButton = new JButton(">");
+			nextButton.setActionCommand(CommandListener.NEXT);
+			nextButton.addActionListener(Ubench.getInstance().getCommandListener());
 
-		sfSelectionTextField = new JTextField(5);
-		sfSelectionTextField.setMaximumSize(sfSelectionTextField.getPreferredSize());
-		sfSelectionTextField.setActionCommand(CommandListener.JUMP_TO_SF);
-		sfSelectionTextField.addActionListener(Ubench.getInstance().getCommandListener());
+			JButton prevButton = new JButton("<");
+			prevButton.setActionCommand(CommandListener.PREVIOUS);
+			prevButton.addActionListener(Ubench.getInstance().getCommandListener());
+
+			sfSelectionTextField = new JTextField(5);
+			sfSelectionTextField.setText(String.valueOf(currentSolvedFormIndex+1));
+			sfSelectionTextField.setMaximumSize(sfSelectionTextField.getPreferredSize());
+			sfSelectionTextField.setActionCommand(CommandListener.JUMP_TO_SF);
+			sfSelectionTextField.addActionListener(Ubench.getInstance().getCommandListener());
+
+			statusBarPanel.add(new JLabel("Solved form "));
+			statusBarPanel.add(prevButton);
+			statusBarPanel.add(sfSelectionTextField);
+			statusBarPanel.add(nextButton);
+			statusBarPanel.add(new JLabel(" of " + numSolvedForms));
+			statusBarPanel.add(Box.createHorizontalGlue());
+			statusBarPanel.add(new GraphClassificationPanel(currentSolvedForm));
+		}
 		
-		p.add(new JLabel("Solved form "));
-		p.add(prevButton);
-		p.add(sfSelectionTextField);
-		p.add(nextButton);
-		p.add(new JLabel(" of " + numSolvedForms));
-		p.add(Box.createHorizontalGlue());
-		p.add(new GraphClassificationPanel(currentSolvedForm));
-		
-		setStatusBar(p);
+		setStatusBar(statusBarPanel);
+		validate();
 	}
 	
 
@@ -148,8 +165,6 @@ public class SolvedFormTab extends UbenchTab {
 		ret.currentSolvedFormIndex = currentSolvedFormIndex;
 		
 		ret.showSolvedForm(currentSolvedFormIndex);
-		ret.setSolvedFormStatusBar(); // must happen after currentSolvedForm is selected
-		ret.sfSelectionTextField.setText(String.valueOf(currentSolvedFormIndex+1));
 		
 		return ret;
 	}

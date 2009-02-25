@@ -210,7 +210,7 @@ public class CommandListener extends WindowAdapter implements ActionListener, It
 	}
 
 	private void call(String command) {
-		System.err.println("Call: " + command);
+		//System.err.println("Call: " + command);
 
 		try {
 			for( Method m : getClass().getDeclaredMethods() ) {

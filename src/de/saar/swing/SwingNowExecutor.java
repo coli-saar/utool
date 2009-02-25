@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
 public class SwingNowExecutor {
-	public static void execute(Runnable r) {
+	public static void executeAndWait(Runnable r) {
 		if( java.awt.EventQueue.isDispatchThread() ) {
 			r.run();
 		} else {
@@ -18,6 +18,14 @@ public class SwingNowExecutor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public static void execute(Runnable r) {
+		if( java.awt.EventQueue.isDispatchThread() ) {
+			r.run();
+		} else {
+			SwingUtilities.invokeLater(r);
 		}
 	}
 }

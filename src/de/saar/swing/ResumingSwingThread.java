@@ -2,17 +2,17 @@ package de.saar.swing;
 
 import javax.swing.SwingUtilities;
 
-abstract public class ResumingSwingThread extends Thread {
-	abstract public void executeAsynchronously();
-	abstract public void thenWhat();
+abstract public class ResumingSwingThread<E> extends Thread {
+	abstract public E executeAsynchronously();
+	abstract public void thenWhat(E result);
 	
 	@Override
 	public void run() {
-		executeAsynchronously();
+		final E result = executeAsynchronously();
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				thenWhat();
+				thenWhat(result);
 			}
 		});
 	}
