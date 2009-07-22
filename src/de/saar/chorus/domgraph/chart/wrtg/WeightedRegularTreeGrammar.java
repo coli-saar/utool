@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.Split;
 
 public class WeightedRegularTreeGrammar<E extends GraphBasedNonterminal,T extends Comparable<T>> extends ConcreteRegularTreeGrammar<E> {

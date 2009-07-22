@@ -7,8 +7,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -17,18 +15,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import de.saar.chorus.domgraph.chart.Chart;
-import de.saar.chorus.domgraph.chart.ChartSolver;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.layout.JDomGraphCanvas;
-import de.saar.chorus.domgraph.layout.LayoutAlgorithm;
 import de.saar.chorus.domgraph.layout.LayoutException;
 import de.saar.chorus.domgraph.layout.LayoutOptions;
 import de.saar.chorus.domgraph.layout.solvedformlayout.SFGecodeTreeLayout;
-import de.saar.chorus.ubench.JGraphTab.ClassifyLabel;
-import de.saar.chorus.ubench.chartviewer.ChartViewer;
 import de.saar.chorus.ubench.jdomgraph.JDomGraph;
 
 /**

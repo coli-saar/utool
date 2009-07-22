@@ -12,8 +12,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import de.saar.basic.XMLFilter;
-import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.Split;

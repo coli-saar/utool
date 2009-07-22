@@ -11,7 +11,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import de.saar.chorus.domgraph.chart.Chart;
@@ -209,6 +208,7 @@ public class GraphTab extends UbenchTab {
 
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public UbenchTab duplicate() {
 		GraphTab ret = new GraphTab(label, graph, labels);
 		

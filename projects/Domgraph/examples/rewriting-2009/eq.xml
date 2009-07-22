@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<equivalences style="ERG">
+  <permutesWithEverything label="imp_m" hole="0"/>
+  <permutesWithEverything label="prpstn_m" hole="0"/>
+  <permutesWithEverything label="prop-or-ques_m" hole="0"/>
+  <permutesWithEverything label="int_m" hole="0"/>
+  <permutesWithEverything label="basic_imp_m" hole="0"/>
+  <permutesWithEverything label="nominalization" hole="0"/>
+  <permutesWithEverything label="_then_a_1" hole="0"/>
+  <permutesWithEverything label="proper_q" hole="1"/>
+  <permutesWithEverything label="pronoun_q" hole="1"/>
+  <permutesWithEverything label="number_q" hole="1"/>
+  <equivalencegroup>
+    <quantifier label="_some_q" hole="0"/>
+    <quantifier label="_some_q" hole="1"/>
+    <quantifier label="_a_q" hole="0"/>
+    <quantifier label="_a_q" hole="1"/>
+    <quantifier label="_any_q" hole="0"/>
+    <quantifier label="_any_q" hole="1"/>
+    <quantifier label="_another_q" hole="0"/>
+    <quantifier label="_another_q" hole="1"/>
+    <quantifier label="which_q" hole="0"/>
+    <quantifier label="which_q" hole="1"/>
+    <quantifier label="free_relative_q" hole="0"/>
+    <quantifier label="free_relative_q" hole="1"/>
+    <quantifier label="idiom_q" hole="0"/>
+    <quantifier label="idiom_q" hole="1"/>
+    <quantifier label="udef_q" hole="1"/>
+    <quantifier label="_the_q" hole="1"/>
+    <quantifier label="def_explicit_q" hole="1"/>
+    <quantifier label="def_implicit_q" hole="1"/>
+    <quantifier label="_this_q_dem" hole="1"/>
+    <quantifier label="_these_q_dem" hole="1"/>
+    <quantifier label="_that_q_dem" hole="1"/>
+    <quantifier label="implicit_conj" hole="0"/>
+    <quantifier label="implicit_conj" hole="1"/>
+  </equivalencegroup>
+  <equivalencegroup>
+    <quantifier label="_some_q" hole="0"/>
+    <quantifier label="_some_q" hole="1"/>
+    <quantifier label="_a_q" hole="0"/>
+    <quantifier label="_a_q" hole="1"/>
+    <quantifier label="_any_q" hole="0"/>
+    <quantifier label="_any_q" hole="1"/>
+    <quantifier label="_another_q" hole="0"/>
+    <quantifier label="_another_q" hole="1"/>
+    <quantifier label="which_q" hole="0"/>
+    <quantifier label="which_q" hole="1"/>
+    <quantifier label="free_relative_q" hole="0"/>
+    <quantifier label="free_relative_q" hole="1"/>
+    <quantifier label="idiom_q" hole="0"/>
+    <quantifier label="idiom_q" hole="1"/>
+    <quantifier label="udef_q" hole="1"/>
+    <quantifier label="_the_q" hole="1"/>
+    <quantifier label="def_explicit_q" hole="1"/>
+    <quantifier label="def_implicit_q" hole="1"/>
+    <quantifier label="_this_q_dem" hole="1"/>
+    <quantifier label="_these_q_dem" hole="1"/>
+    <quantifier label="_that_q_dem" hole="1"/>
+    <quantifier label="_and_c" hole="0"/>
+    <quantifier label="_and_c" hole="1"/>
+  </equivalencegroup>
+  <equivalencegroup>
+    <quantifier label="_some_q" hole="0"/>
+    <quantifier label="_some_q" hole="1"/>
+    <quantifier label="_a_q" hole="0"/>
+    <quantifier label="_a_q" hole="1"/>
+    <quantifier label="_any_q" hole="0"/>
+    <quantifier label="_any_q" hole="1"/>
+    <quantifier label="_another_q" hole="0"/>
+    <quantifier label="_another_q" hole="1"/>
+    <quantifier label="which_q" hole="0"/>
+    <quantifier label="which_q" hole="1"/>
+    <quantifier label="free_relative_q" hole="0"/>
+    <quantifier label="free_relative_q" hole="1"/>
+    <quantifier label="idiom_q" hole="0"/>
+    <quantifier label="idiom_q" hole="1"/>
+    <quantifier label="udef_q" hole="1"/>
+    <quantifier label="_the_q" hole="1"/>
+    <quantifier label="def_explicit_q" hole="1"/>
+    <quantifier label="def_implicit_q" hole="1"/>
+    <quantifier label="_this_q_dem" hole="1"/>
+    <quantifier label="_these_q_dem" hole="1"/>
+    <quantifier label="_that_q_dem" hole="1"/>
+    <quantifier label="_but_c" hole="0"/>
+    <quantifier label="_but_c" hole="1"/>
+  </equivalencegroup>
+  <equivalencegroup>
+    <quantifier label="_some_q" hole="0"/>
+    <quantifier label="_some_q" hole="1"/>
+    <quantifier label="_a_q" hole="0"/>
+    <quantifier label="_a_q" hole="1"/>
+    <quantifier label="_any_q" hole="0"/>
+    <quantifier label="_any_q" hole="1"/>
+    <quantifier label="_another_q" hole="0"/>
+    <quantifier label="_another_q" hole="1"/>
+    <quantifier label="which_q" hole="0"/>
+    <quantifier label="which_q" hole="1"/>
+    <quantifier label="free_relative_q" hole="0"/>
+    <quantifier label="free_relative_q" hole="1"/>
+    <quantifier label="idiom_q" hole="0"/>
+    <quantifier label="idiom_q" hole="1"/>
+    <quantifier label="udef_q" hole="1"/>
+    <quantifier label="_the_q" hole="1"/>
+    <quantifier label="def_explicit_q" hole="1"/>
+    <quantifier label="def_implicit_q" hole="1"/>
+    <quantifier label="_this_q_dem" hole="1"/>
+    <quantifier label="_these_q_dem" hole="1"/>
+    <quantifier label="_that_q_dem" hole="1"/>
+    <quantifier label="_or_c" hole="0"/>
+    <quantifier label="_or_c" hole="1"/>
+  </equivalencegroup>
+</equivalences>

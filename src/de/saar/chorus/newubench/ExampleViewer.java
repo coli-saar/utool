@@ -22,8 +22,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import de.saar.chorus.domgraph.ExampleManager;
-import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.NodeLabels;
 
 /**
  * A window showing the examples registered in the

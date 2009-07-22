@@ -14,8 +14,6 @@ import de.saar.chorus.gecode.ShapeList;
 import de.saar.chorus.jgraph.improvedjgraph.ImprovedJGraph;
 import de.saar.chorus.jgraph.improvedjgraph.layout.ImprovedJGraphLayout;
 
-import de.saar.chorus.jgraph.improvedjgraph.layout.treelayout.TreeLayoutSettings;;
-
 /**
  * A class to determine the positions of nodes in a graph that 
  * is a tree, relative to their direct parents. These positions are stored 

@@ -34,7 +34,6 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.Ubench;
 
 @CodecMetadata(name="urml-input", extension=".urml.xml", experimental=true)
 public class URMLInputCodec extends InputCodec {

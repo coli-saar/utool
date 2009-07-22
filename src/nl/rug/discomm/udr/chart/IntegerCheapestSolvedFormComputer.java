@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.rug.discomm.udr.graph.Chain;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.wrtg.Semiring;
 import de.saar.chorus.domgraph.graph.DomEdge;

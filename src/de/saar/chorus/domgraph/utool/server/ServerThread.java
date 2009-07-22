@@ -31,16 +31,13 @@ import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.equivalence.EquationSystem;
 import de.saar.chorus.domgraph.equivalence.rtg.EliminatingRtg;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
-import de.saar.chorus.domgraph.weakest.Annotator;
 import de.saar.chorus.domgraph.weakest.InverseRewriteSystem;
-import de.saar.chorus.domgraph.weakest.RewriteSystem;
 import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.Ubench;
 
