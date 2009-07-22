@@ -2,7 +2,6 @@ package nl.rug.discomm.udr.modelcheck;
 
 
 
-import nl.rug.discomm.udr.chart.IntegerChart;
 import nl.rug.discomm.udr.graph.Chain;
 
 import org._3pq.jgrapht.Edge;
@@ -13,7 +12,6 @@ import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeData;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
-import de.saar.chorus.ubench.Ubench;
 
 public class ModelCheckTest {
 

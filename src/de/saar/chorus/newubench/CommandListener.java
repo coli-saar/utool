@@ -24,13 +24,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import de.saar.chorus.domgraph.codec.InputCodec;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.OutputCodec;
-import de.saar.chorus.domgraph.graph.DomGraph;
-import de.saar.chorus.domgraph.graph.NodeLabels;
 
 @SuppressWarnings("unused")
 public class CommandListener extends WindowAdapter implements ActionListener, ItemListener {

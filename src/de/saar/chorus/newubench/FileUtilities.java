@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
 import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;

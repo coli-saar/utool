@@ -34,6 +34,9 @@
 
     <property name="google-collections.jar" location="${packages}/google-collect-snapshot-20090211.jar" />
     <property name="google.unpacked.classes" value="com/google/**" />
+
+    <property name="junit.jar" location="${packages}/junit-4.4.jar" />
+    <property name="groovy.jar" location="${packages}/groovy-all-1.5.4.jar" />
 	
     
     <property name="coli" value="de/saar" />
@@ -98,6 +101,7 @@ value="de.saar.chorus.domgraph.utool.Utool" />
             <fileset dir="${source}" includes="${chorus}/**/*.properties" />
         </copy>
     </target>
+
     
     
     <!-- distributing -->
@@ -348,6 +352,29 @@ excludes="**/*.jj, **/*.properties, **/testsuite/**/*" />
     </target>
     
     
+    <!-- quality tools -->
+    <target name="findbugs" depends="compile-all">
+      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
+	       classpath="/tmp/findbugs-1.3.8/lib/findbugs-ant.jar" />
+
+      <findbugs home="/tmp/findbugs-1.3.8"
+		output="xml"
+		jvmargs="-Xmx512m"
+		outputFile="${prefix}/utool-fb.xml" >
+	<sourcePath path="${source}" />
+	<class location="${domgraph.jar}" />
+      </findbugs>
+    </target>
+
+    <target name="checkstyle" depends="compile-all">
+      <taskdef resource="checkstyletask.properties" classpath="/tmp/checkstyle-5.0/checkstyle-all-5.0.jar"/>
+      <checkstyle config="/tmp/checkstyle-5.0/sun_checks.xml" failOnViolation="false"
+		  maxErrors="2000">
+	<fileset dir="${source}" includes="${domgraph.allsourcefiles}"/>
+	<formatter type="xml" toFile="${prefix}/utool-cs.xml" />
+      </checkstyle>
+    </target>
+
     <!-- Init -->
 
     <target name="init">
@@ -408,21 +435,33 @@ excludes="**/*.jj, **/*.properties, **/testsuite/**/*" />
     
    
     <!-- run unit tests -->
+    <target name="compile-tests" depends="compile-all">
+      <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpath="${groovy.jar}/"/>
+
+      <groovyc srcdir="${test}" destdir="${build.classes}" fork="yes" memoryMaximumSize="512m">
+	<classpath>
+	  <pathelement path="${build.classes}" />
+	  <pathelement path="${junit.jar}" />
+	</classpath>
+      </groovyc>
+    </target>
+
+
     <!-- to run these from the command line using Ant 1.6, do:
        CLASSPATH=packages/junit.jar ant run-tests -->
-    <target name="run-tests" depends="compile-all">
+    <target name="run-tests" depends="compile-tests">
         <junit fork="true" dir="${prefix}">
-            <test name="DomgraphTestSuite" />
+            <test name="DomgraphTestSuite4" />
             <formatter type="brief" usefile="false" />
             <formatter type="xml" />
             
             <classpath>
                 <pathelement path="${build.classes}" />
-                <pathelement path="${packages}/junit.jar" />
-                <pathelement path="${packages}/groovy-all-1.0.jar" />
+                <pathelement path="${packages}/junit-4.4.jar" />
+                <pathelement path="${packages}/groovy-all-1.5.4.jar" />
             </classpath>
         </junit>
     </target>
-    
+
     
 </project>

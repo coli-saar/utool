@@ -17,8 +17,8 @@ import de.saar.chorus.domgraph.graph.CompactificationRecordTest;
 import de.saar.chorus.domgraph.graph.DomGraphTest;
 import de.saar.chorus.domgraph.layout.chartlayout.DomGraphChartLayoutTest;
 import de.saar.chorus.domgraph.layout.domgraphlayout.DomGraphLayoutTest;
-import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
 import de.saar.chorus.domgraph.weakest.StrongestReadingsComputerTest;
+import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses(value={

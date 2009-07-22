@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.rug.discomm.udr.chart.IntegerChart;
-import nl.rug.discomm.udr.chart.IntegerCheapestSolvedFormComputer;
 import nl.rug.discomm.udr.chart.IntegerChart.IntSplit;
 import nl.rug.discomm.udr.codec.urml.URMLInputCodec;
 import nl.rug.discomm.udr.graph.Chain;
@@ -27,7 +26,6 @@ import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.chart.wrtg.CheapestSolvedFormComputer;
 import de.saar.chorus.domgraph.chart.wrtg.RealSemiring;
-import de.saar.chorus.domgraph.chart.wrtg.TropicalSemiring;
 import de.saar.chorus.domgraph.chart.wrtg.WeightedRegularTreeGrammar;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
