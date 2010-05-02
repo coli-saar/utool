@@ -19,7 +19,7 @@ public class RtgFreeFragmentAnalyzer<E extends GraphBasedNonterminal> {
 	
 	public RtgFreeFragmentAnalyzer(RegularTreeGrammar<E> rtg) {
 		this.rtg = rtg;
-		ntsWhereFree = new ArrayListMultimap<String, E>();
+		ntsWhereFree = ArrayListMultimap.create();
 		reachability = new HashMap<String, Map<String,Integer>>();
 		roots = new HashSet<String>();
 		coFreenessTable = new HashMap<String, Boolean>();

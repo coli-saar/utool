@@ -5,7 +5,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import de.saar.basic.UnionFindTest;
 import de.saar.chorus.domgraph.chart.SolvedFormIteratorTest;
 import de.saar.chorus.domgraph.chart.SplitComputerTest;
-import de.saar.chorus.domgraph.chart.modelcheck.ModelCheckTest;
 import de.saar.chorus.domgraph.codec.CodecManagerTest;
 import de.saar.chorus.domgraph.codec.basic.ChainTest;
 import de.saar.chorus.domgraph.codec.domcon.DomconOzInputCodecTest;
@@ -37,8 +36,7 @@ import de.saar.chorus.domgraph.weakest.WeakestReadingsComputerTest;
         UnionFindTest.class,
         RtgRedundancyEliminationTest.class,
         WeakestReadingsComputerTest.class,
-        StrongestReadingsComputerTest.class,
-        ModelCheckTest.class
+        StrongestReadingsComputerTest.class
 })
 public class DomgraphTestSuite4 {
 
