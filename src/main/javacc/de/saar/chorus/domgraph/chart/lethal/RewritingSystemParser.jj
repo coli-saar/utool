@@ -1,0 +1,105 @@
+
+options {
+  JDK_VERSION = "1.5";
+    LOOKAHEAD = 2;
+  UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN(RewritingSystemParser)
+package de.saar.chorus.domgraph.chart.lethal;
+
+import java.io.*;
+import java.util.*;
+import de.saar.chorus.domgraph.chart.*;
+
+public class RewritingSystemParser {
+	public RewritingSystemParser() {
+		this((Reader) null);
+    }
+
+    public void read(Reader reader) throws Exception {
+    	ReInit(reader);
+	    Input();
+
+//	    return grammar;
+    }
+
+
+}
+PARSER_END(RewritingSystemParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|	"\n"
+}
+
+
+
+
+TOKEN :
+{
+    <STARTANN  : "start annotation">
+ |  <NEUTRALANN : "neutral annotation">
+ |  <NUMBER : (["0"-"9"])+>
+ |  <ID   : ["a"-"z"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ |  <OTHER: ["A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ | <LINE_END_COMMENT: "//" (~["\n"])* >
+
+}
+
+void Input() : {
+}
+{
+    (<LINE_END_COMMENT> | WeakeningRule() | EquivalenceRule() | AnnotatorComponent())*
+}
+
+
+void WeakeningRule(): {
+    String ann;
+    String f1,f2;
+    int n1,n2;
+}{
+    "[" ann=Annotation() "]" f1=<ID>.image "/" n1=Number() ">" f2=<ID>.image "/" n2=Number() {
+        System.err.println(ann + ":" + f1 + n1 + " - " + f2 + n2);
+    }
+}
+
+int Number(): {
+    String x;
+}{
+    x=<NUMBER>.image {
+    return Integer.parseInt(x);
+    }
+}
+
+void EquivalenceRule(): {
+    String f1,f2;
+    int n1,n2;
+}{
+    (f1=<ID>.image "/" n1=Number() "=" f2=<ID>.image "/" n2=Number()) {
+        System.err.println(f1 + n1 + " = " + f2 + n2);
+    }
+
+    | ("*" "=" f1=<ID>.image "/" n1=Number()) {
+        System.err.println(f1 + n1 + " = wildcard");
+    }
+}
+
+
+void AnnotatorComponent(): {
+}{
+    <STARTANN> ":" Annotation()
+    | <NEUTRALANN> ":" Annotation()
+    | Annotation() ":" <ID> "(" Annotation() ("," Annotation())* ")"
+}
+
+String Annotation(): {
+    String x;
+}{
+    (x=<ID>.image | x=<NUMBER>.image | x=<OTHER>.image) {
+        return x;
+    }
+}
