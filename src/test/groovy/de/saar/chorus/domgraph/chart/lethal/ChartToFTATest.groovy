@@ -25,7 +25,7 @@ class ChartToFTATest {
         DomGraph graph = new DomGraph();
         NodeLabels labels = new NodeLabels();
 
-        TestingTools.decodeDomcon("[label(x every_1(x1)) label(y a_2(y2)) label(z love_3) dom(x1 z) dom(y2 z)]", graph, labels);
+        TestingTools.decodeDomcon("[label(x every(x1)) label(y a(y2)) label(z love) dom(x1 z) dom(y2 z)]", graph, labels);
 
         Chart chart = new Chart();
         DomGraph preprocessed = graph.preprocess();
@@ -35,7 +35,7 @@ class ChartToFTATest {
         System.out.println(fta);
 
         assertTreeSetEquality(new RegularTreeLanguage(fta),
-            ["a_2(every_1(love_3))", "every_1(a_2(love_3))"]);
+            ["a_y(every_x(love_z))", "every_x(a_y(love_z))"]);
     }
 
     @Test
@@ -54,8 +54,8 @@ class ChartToFTATest {
         EasyFTA fta = ChartToFTA.convert(chart, graph, labels);
         System.out.println(fta);
 
-        assertTreeSetEquality(new RegularTreeLanguage(EasyFTAOps.minimize(EasyFTAOps.determinize(fta))),
-            ["f(a,g(h(d,c)))", "h(f(a,g(d)),c)"]);
+        assertTreeSetEquality(new RegularTreeLanguage(fta),
+            ["f_x(a_x3,g_x2(h_y(d_z,c_y3)))", "h_y(f_x(a_x3,g_x2(d_z)),c_y3)"]);
     }
 
     private static void assertTreeSetEquality(Iterable<Tree> found, List<String> gold) {
