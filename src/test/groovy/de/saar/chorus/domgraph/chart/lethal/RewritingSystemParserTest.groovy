@@ -15,7 +15,12 @@ class RewritingSystemParserTest {
     @Test
     public void testParsing() throws Exception {
         RewritingSystemParser parser = new RewritingSystemParser();
-        parser.read(new StringReader(testRewriting));
+        RewriteSystem weakening = new RewriteSystem();
+        Annotator ann = new Annotator();
+
+        parser.read(new StringReader(testRewriting), weakening, null, ann);
+        System.out.println("weak=" + weakening);
+        System.out.println("ann=" + ann);
     }
 
     public static String testRewriting = """
