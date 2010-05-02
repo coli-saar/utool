@@ -54,9 +54,8 @@ public class ChartToFTA {
             }
         }
 
-        System.out.println("rtg=" + ret);
+//        System.out.println("rtg=" + ret);
 
-//        return new EasyFTA(ret, new StateBuilder<Object>());
         return new EasyFTA(ret, new TrivialConverter());
     }
 
@@ -75,7 +74,7 @@ public class ChartToFTA {
             // inner node
             List<String> children = graph.getChildren(node, EdgeType.TREE);
             List<Tree<BiSymbol<RankedSymbol, State>>> childTrees = new ArrayList<Tree<BiSymbol<RankedSymbol, State>>>();
-            BiSymbol<RankedSymbol, State> sym = new InnerSymbol<RankedSymbol, State>(new StdNamedRankedSymbol<String>(labels.getLabel(node), children.size()));
+            BiSymbol<RankedSymbol, State> sym = new InnerSymbol<RankedSymbol, State>(new StdNamedRankedSymbol<String>(labels.getLabel(node) + "_" + node, children.size()));
 
             for (String ch : children) {
                 childTrees.add(convertSplit(ch, split, graph, labels));
