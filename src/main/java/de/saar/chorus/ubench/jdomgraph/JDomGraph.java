@@ -92,7 +92,7 @@ public class JDomGraph extends JGraph implements Cloneable {
 		clear();
 
 		getGraphLayoutCache().setSelectsAllInsertedCells(false);
-		getGraphLayoutCache().setSelectLocalInsertedCells(false);
+                getGraphLayoutCache().setSelectsLocalInsertedCells(false);
 		
 		Color selection =
 			new Color(100, 149, 237);

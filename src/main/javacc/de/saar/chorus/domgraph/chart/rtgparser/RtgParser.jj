@@ -25,7 +25,7 @@ import de.saar.chorus.domgraph.chart.*;
 
 public class RtgParser {
 	private List<String> lhss;
-	private RegularTreeGrammar<StringNonterminal> grammar;
+	private ConcreteRegularTreeGrammar<StringNonterminal> grammar;
 	private Map<String,StringNonterminal> nts;
 	
 	public RtgParser() {
@@ -35,7 +35,7 @@ public class RtgParser {
     }
     
     public RegularTreeGrammar<StringNonterminal> read(Reader reader) throws Exception {
-    	grammar = new RegularTreeGrammar<StringNonterminal>();
+    	grammar = new ConcreteRegularTreeGrammar<StringNonterminal>();
     	lhss.clear();
     	nts.clear();
     	
