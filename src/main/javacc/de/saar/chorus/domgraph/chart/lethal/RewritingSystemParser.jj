@@ -13,13 +13,19 @@ import java.util.*;
 import de.saar.chorus.domgraph.chart.*;
 
 public class RewritingSystemParser {
-	public RewritingSystemParser() {
+    private static RewriteSystem weakening, equivalence;
+    private static Annotator annotator;
+
+    public RewritingSystemParser() {
 		this((Reader) null);
     }
 
-    public void read(Reader reader) throws Exception {
+    public void read(Reader reader, RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) throws Exception {
     	ReInit(reader);
-	    Input();
+
+        this.weakening = weakening;
+        this.annotator = annotator;
+	Input();
 
 //	    return grammar;
     }
@@ -63,16 +69,15 @@ void WeakeningRule(): {
     int n1,n2;
 }{
     "[" ann=Annotation() "]" f1=<ID>.image "/" n1=Number() ">" f2=<ID>.image "/" n2=Number() {
-        System.err.println(ann + ":" + f1 + n1 + " - " + f2 + n2);
+        weakening.addRule(f1,n1,f2,n2,ann);
+        //System.err.println(ann + ":" + f1 + n1 + " - " + f2 + n2);
     }
 }
 
 int Number(): {
     String x;
 }{
-    x=<NUMBER>.image {
-    return Integer.parseInt(x);
-    }
+    x=<NUMBER>.image  { return Integer.parseInt(x); }
 }
 
 void EquivalenceRule(): {
@@ -90,10 +95,15 @@ void EquivalenceRule(): {
 
 
 void AnnotatorComponent(): {
+    String x,y,f;
+    List<String> childAnnotations = new ArrayList<String>();
 }{
-    <STARTANN> ":" Annotation()
-    | <NEUTRALANN> ":" Annotation()
-    | Annotation() ":" <ID> "(" Annotation() ("," Annotation())* ")"
+    <STARTANN> ":" x=Annotation() { annotator.setStartAnnotation(x); }
+    | <NEUTRALANN> ":" x=Annotation() { annotator.setNeutralAnnotation(x); }
+    | (x=Annotation() ":" f=<ID>.image "("
+        y=Annotation() { childAnnotations.add(y); } ("," y=Annotation() { childAnnotations.add(y); })* ")") {
+      annotator.addRule(x,f,childAnnotations);
+     }
 }
 
 String Annotation(): {
