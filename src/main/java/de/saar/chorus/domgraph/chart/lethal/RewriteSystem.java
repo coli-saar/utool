@@ -5,28 +5,28 @@
 
 package de.saar.chorus.domgraph.chart.lethal;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author koller
  */
 public class RewriteSystem {
-    private SetMultimap<String,String> rules;
+    private List<Rule> rules;
 
     public RewriteSystem() {
-        rules = HashMultimap.create();
+        rules = new ArrayList<Rule>();
     }
 
     public void addRule(String f1, int n1, String f2, int n2, String annotation) {
-        rules.put(key(f1,n1,f2,n2), annotation);
+        rules.add(new Rule(f1,n1,f2,n2,annotation));
     }
 
-
-    private String key(String f1, int n1, String f2, int n2) {
-        return f1 + "_" + n1 + "_" + f2 + "_" + n2;
+    public List<Rule> getAllRules() {
+        return rules;
     }
+
 
     @Override
     public String toString() {
@@ -34,4 +34,24 @@ public class RewriteSystem {
     }
 
 
+    public static class Rule {
+        public String f1, f2;
+        public int n1, n2;
+        public String annotation;
+
+        public Rule(String f1, int n1, String f2, int n2, String annotation) {
+            this.f1 = f1;
+            this.f2 = f2;
+            this.n1 = n1;
+            this.n2 = n2;
+            this.annotation = annotation;
+        }
+
+        @Override
+        public String toString() {
+            return f1 + "/" + n1 + " > " + f2 + "/" + n2 + " [" + annotation + "]";
+        }
+
+
+    }
 }

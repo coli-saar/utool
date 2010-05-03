@@ -26,8 +26,8 @@ class RewritingSystemParserTest {
     public static String testRewriting = """
 
 // weakening rules
-[+] every/2 > a/2
-[-] a/2 > every/2
+[+] a/2 > every/2
+[-] every/2 > a/2
 
 // equivalence rules
 * = pron_rel/2
