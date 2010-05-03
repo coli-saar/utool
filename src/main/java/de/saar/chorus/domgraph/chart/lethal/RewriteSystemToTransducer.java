@@ -139,6 +139,10 @@ public class RewriteSystemToTransducer {
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
         for (Rule rule : weakening.getAllRules()) {
+            if( !symbolArities.containsKey(rule.f1) || !symbolArities.containsKey(rule.f2)) {
+                continue;
+            }
+
             int nextVariable = 1;
             List<Variable> variables1 = new ArrayList<Variable>();
             List<Variable> variables2 = new ArrayList<Variable>();
