@@ -51,8 +51,8 @@ TOKEN :
     <STARTANN  : "start annotation">
  |  <NEUTRALANN : "neutral annotation">
  |  <NUMBER : (["0"-"9"])+>
- |  <ID   : ["a"-"z"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
- |  <OTHER: ["A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ |  <ID   : ["a"-"z", "A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ //|  <OTHER: ["A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
  | <LINE_END_COMMENT: "//" (~["\n"])* >
 
 }
@@ -86,11 +86,11 @@ void EquivalenceRule(): {
     int n1,n2;
 }{
     (f1=<ID>.image "/" n1=Number() "=" f2=<ID>.image "/" n2=Number()) {
-        System.err.println(f1 + n1 + " = " + f2 + n2);
+       // System.err.println(f1 + n1 + " = " + f2 + n2);
     }
 
     | ("*" "=" f1=<ID>.image "/" n1=Number()) {
-        System.err.println(f1 + n1 + " = wildcard");
+       // System.err.println(f1 + n1 + " = wildcard");
     }
 }
 
@@ -110,7 +110,7 @@ void AnnotatorComponent(): {
 String Annotation(): {
     String x;
 }{
-    (x=<ID>.image | x=<NUMBER>.image | x=<OTHER>.image) {
+    (x=<ID>.image | x=<NUMBER>.image ) { // | x=<OTHER>.image
         return x;
     }
 }
