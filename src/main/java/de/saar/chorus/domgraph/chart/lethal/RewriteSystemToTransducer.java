@@ -7,6 +7,7 @@ package de.saar.chorus.domgraph.chart.lethal;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.saar.chorus.contexttransducer.ContextTreeTransducer;
+import de.saar.chorus.domgraph.chart.lethal.RewriteSystem.Rule;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.EdgeType;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -91,10 +92,11 @@ public class RewriteSystemToTransducer {
         }
 
         // type 2 rules: f(qbar:1,...,q_a:i,...,qbar:n) -> q_a', f(1,...,n)
+        // TODO - process null annotations correctly
         for (String label : symbolNodes.keySet()) {
             for (String node : symbolNodes.get(label)) {
                 // build symbols
-                RankedSymbol f = new StdNamedRankedSymbol(label + "_" + node, symbolArities.get(label));
+                RankedSymbol f = makeRankedSymbolForLabel(label, node);
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
                 BiSymbol<RankedSymbol, Variable> rf = new InnerSymbol<RankedSymbol, Variable>(f);
 
@@ -136,7 +138,49 @@ public class RewriteSystemToTransducer {
         }
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
-        
+        for (Rule rule : weakening.getAllRules()) {
+            int nextVariable = 1;
+            List<Variable> variables1 = new ArrayList<Variable>();
+            List<Variable> variables2 = new ArrayList<Variable>();
+            Variable footVariable;
+
+            for (int i = 1; i <= symbolArities.get(rule.f1); i++) {
+                if (i == rule.n1) {
+                    variables1.add(null);
+                } else {
+                    variables1.add(new NamedVariable(Integer.toString(nextVariable), nextVariable - 1));
+                    nextVariable++;
+                }
+            }
+
+            for (int i = 1; i <= symbolArities.get(rule.f2); i++) {
+                if (i == rule.n2) {
+                    variables2.add(null);
+                } else {
+                    variables2.add(new NamedVariable(Integer.toString(nextVariable), nextVariable - 1));
+                    nextVariable++;
+                }
+            }
+
+            footVariable = new NamedVariable(Integer.toString(nextVariable), nextVariable - 1);
+
+            for (String node1 : symbolNodes.get(rule.f1)) {
+                RankedSymbol f1 = makeRankedSymbolForLabel(rule.f1, node1);
+
+                for (String node2 : symbolNodes.get(rule.f2)) {
+                    RankedSymbol f2 = makeRankedSymbolForLabel(rule.f2, node2);
+
+                    Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = tf.makeTreeFromSymbol(lsv(qbar, footVariable));
+                    Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rv(footVariable));
+
+                    lhs = buildType3Lhs(f1, variables1, buildType3Lhs(f2, variables2, lhs));
+                    rhs = buildType3Rhs(f2, variables2, buildType3Rhs(f1, variables1, rhs));
+
+                    ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
+
+                }
+            }
+        }
 
         return ret;
     }
@@ -150,11 +194,56 @@ public class RewriteSystemToTransducer {
 
             if (label != null) {
                 symbolArities.put(label, graph.outdeg(node, EdgeType.TREE));
-
-                if (graph.isRoot(node)) {
-                    symbolNodes.put(label, node);
-                }
+                symbolNodes.put(label, node);
             }
         }
+    }
+
+    private RankedSymbol makeRankedSymbolForLabel(String label, String node) {
+        return new StdNamedRankedSymbol(label + "_" + node, symbolArities.get(label));
+    }
+
+    private static BiSymbol<RankedSymbol, Pair<State, Variable>> lsv(State s, Variable v) {
+        return new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(s, v));
+    }
+
+    private static BiSymbol<RankedSymbol, Pair<State, Variable>> li(RankedSymbol s) {
+        return new InnerSymbol<RankedSymbol, Pair<State, Variable>>(s);
+    }
+
+    private static BiSymbol<RankedSymbol, Variable> rv(Variable v) {
+        return new LeafSymbol<RankedSymbol, Variable>(v);
+    }
+
+    private static BiSymbol<RankedSymbol, Variable> ri(RankedSymbol s) {
+        return new InnerSymbol<RankedSymbol, Variable>(s);
+    }
+
+    private Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> buildType3Lhs(RankedSymbol f, List<Variable> variables, Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs) {
+        List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsSub = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
+
+        for (Variable v : variables) {
+            if (v == null) {
+                lhsSub.add(lhs);
+            } else {
+                lhsSub.add(tf.makeTreeFromSymbol(lsv(qbar, v)));
+            }
+        }
+
+        return tf.makeTreeFromSymbol(li(f), lhsSub);
+    }
+
+    private Tree<BiSymbol<RankedSymbol, Variable>> buildType3Rhs(RankedSymbol f, List<Variable> variables, Tree<BiSymbol<RankedSymbol, Variable>> rhs) {
+        List<Tree<BiSymbol<RankedSymbol, Variable>>> rhsSub = new ArrayList<Tree<BiSymbol<RankedSymbol, Variable>>>();
+
+        for (Variable v : variables) {
+            if (v == null) {
+                rhsSub.add(rhs);
+            } else {
+                rhsSub.add(tf.makeTreeFromSymbol(rv(v)));
+            }
+        }
+
+        return tf.makeTreeFromSymbol(ri(f), rhsSub);
     }
 }
