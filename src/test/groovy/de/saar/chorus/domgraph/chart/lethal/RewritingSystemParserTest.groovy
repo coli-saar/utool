@@ -36,13 +36,13 @@ class RewritingSystemParserTest {
 start annotation: +
 neutral annotation: 0
 
-+: exists(+,+)
--: exists(-,-)
-0: exists(0,0)
++: a(+,+)
+-: a(-,-)
+0: a(0,0)
 
-+: forall(-,+)
--: forall(+,-)
-0: forall(0,0)
++: every(-,+)
+-: every(+,-)
+0: every(0,0)
 
 
     """;

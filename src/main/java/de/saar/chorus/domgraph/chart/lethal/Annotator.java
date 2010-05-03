@@ -8,6 +8,7 @@ package de.saar.chorus.domgraph.chart.lethal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -47,6 +48,18 @@ public class Annotator {
         }
 
         rulesForParent.put(label, childAnnotations);
+    }
+
+    public Set<String> getAllAnnotations() {
+        return annotationRules.keySet();
+    }
+
+    public List<String> getChildAnnotations(String parentAnnotation, String parentLabel) {
+        if( annotationRules.containsKey(parentAnnotation)) {
+            return annotationRules.get(parentAnnotation).get(parentLabel);
+        } else {
+            return null;
+        }
     }
 
     @Override
