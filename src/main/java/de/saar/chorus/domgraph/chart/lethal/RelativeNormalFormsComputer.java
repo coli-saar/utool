@@ -33,10 +33,14 @@ public class RelativeNormalFormsComputer {
         EasyFTA chartFta = ChartToFTA.convert(chart, graph, labels);
         stopwatch.report("fta", "Converted");
 
+//        System.err.println("chart fta: " + chartFta);
+
         if(DEBUG) System.err.println("Computing ctt ...");
         stopwatch.start("ctt");
         ContextTreeTransducer<RankedSymbol,RankedSymbol,State> ctt = rstt.convert(graph, labels);
         stopwatch.report("ctt", "CTT computed");
+
+//        System.err.println("ctt: " + ctt);
 
         if(DEBUG) System.err.println("Computing pre-image ...");
         stopwatch.start("pre");
@@ -47,20 +51,7 @@ public class RelativeNormalFormsComputer {
         stopwatch.start("diff");
         FTA reduced = differenceSpecialized(chartFta, preImage);
         stopwatch.report("diff", "Computed");
-        if(DEBUG) System.err.println("difference automaton: " + reduced);
-
-        /*
-        if(DEBUG) System.err.println("Computing complement and intersection ...");
-        stopwatch.start("complement");
-        FTA a = complement(preImage);
-        stopwatch.report("complement", "Computed complement");
-
-        stopwatch.start("intersect");
-        FTA reduced = intersectionTD(chartFta, a);
-        stopwatch.report("intersect", "Computed intersection");
-
-         *
-         */
+//        if(DEBUG) System.err.println("difference automaton: " + reduced);
 
         return reduced;
     }
