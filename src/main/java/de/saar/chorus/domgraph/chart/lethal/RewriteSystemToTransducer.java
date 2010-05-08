@@ -64,8 +64,9 @@ public class RewriteSystemToTransducer {
         // prepare data structures
         collectSymbols(graph, labels);
 
-        // set final state
+        // set final and neutral state
         ret.addFinalState(annotationStates.get(annotator.getStartAnnotation()));
+        ret.setNeutralState(qbar);
 
         // type 1 rules: f(qbar:1,...,qbar:n) -> qbar, f(1,...,n)
         for (String label : symbolNodes.keySet()) {
