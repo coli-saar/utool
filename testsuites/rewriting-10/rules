@@ -171,719 +171,691 @@ neutral annotation: 0
 0: _all_q(0)
 +: _all_q(-)
 -: _all_q(+)
-[+] _some_q/0 > udef_q/0
-[-] udef_q/0 > _some_q/0
-[+] _some_q/0 > _the_q/0
-[-] _the_q/0 > _some_q/0
-[+] _some_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > _some_q/0
-[+] _some_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > _some_q/0
-[+] _some_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > _some_q/0
-[+] _some_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > _some_q/0
-[+] _some_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > _some_q/0
-[+] _some_q/1 > udef_q/0
-[-] udef_q/0 > _some_q/1
-[+] _some_q/1 > _the_q/0
-[-] _the_q/0 > _some_q/1
-[+] _some_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _some_q/1
-[+] _some_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _some_q/1
-[+] _some_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _some_q/1
-[+] _some_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _some_q/1
-[+] _some_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _some_q/1
-[+] _a_q/0 > udef_q/0
-[-] udef_q/0 > _a_q/0
-[+] _a_q/0 > _the_q/0
-[-] _the_q/0 > _a_q/0
-[+] _a_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > _a_q/0
-[+] _a_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > _a_q/0
-[+] _a_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > _a_q/0
-[+] _a_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > _a_q/0
-[+] _a_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > _a_q/0
-[+] _a_q/1 > udef_q/0
-[-] udef_q/0 > _a_q/1
-[+] _a_q/1 > _the_q/0
-[-] _the_q/0 > _a_q/1
-[+] _a_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _a_q/1
-[+] _a_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _a_q/1
-[+] _a_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _a_q/1
-[+] _a_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _a_q/1
-[+] _a_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _a_q/1
-[+] _any_q/0 > udef_q/0
-[-] udef_q/0 > _any_q/0
-[+] _any_q/0 > _the_q/0
-[-] _the_q/0 > _any_q/0
-[+] _any_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > _any_q/0
-[+] _any_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > _any_q/0
-[+] _any_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > _any_q/0
-[+] _any_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > _any_q/0
-[+] _any_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > _any_q/0
-[+] _any_q/1 > udef_q/0
-[-] udef_q/0 > _any_q/1
-[+] _any_q/1 > _the_q/0
-[-] _the_q/0 > _any_q/1
-[+] _any_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _any_q/1
-[+] _any_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _any_q/1
-[+] _any_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _any_q/1
-[+] _any_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _any_q/1
-[+] _any_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _any_q/1
-[+] _another_q/0 > udef_q/0
-[-] udef_q/0 > _another_q/0
-[+] _another_q/0 > _the_q/0
-[-] _the_q/0 > _another_q/0
-[+] _another_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > _another_q/0
-[+] _another_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > _another_q/0
-[+] _another_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > _another_q/0
-[+] _another_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > _another_q/0
-[+] _another_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > _another_q/0
-[+] _another_q/1 > udef_q/0
-[-] udef_q/0 > _another_q/1
-[+] _another_q/1 > _the_q/0
-[-] _the_q/0 > _another_q/1
-[+] _another_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _another_q/1
-[+] _another_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _another_q/1
-[+] _another_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _another_q/1
-[+] _another_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _another_q/1
-[+] _another_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _another_q/1
-[+] which_q/0 > udef_q/0
-[-] udef_q/0 > which_q/0
-[+] which_q/0 > _the_q/0
-[-] _the_q/0 > which_q/0
-[+] which_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > which_q/0
-[+] which_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > which_q/0
-[+] which_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > which_q/0
-[+] which_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > which_q/0
-[+] which_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > which_q/0
-[+] which_q/1 > udef_q/0
-[-] udef_q/0 > which_q/1
-[+] which_q/1 > _the_q/0
-[-] _the_q/0 > which_q/1
-[+] which_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > which_q/1
-[+] which_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > which_q/1
-[+] which_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > which_q/1
-[+] which_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > which_q/1
-[+] which_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > which_q/1
-[+] free_relative_q/0 > udef_q/0
-[-] udef_q/0 > free_relative_q/0
-[+] free_relative_q/0 > _the_q/0
-[-] _the_q/0 > free_relative_q/0
-[+] free_relative_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > free_relative_q/0
-[+] free_relative_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > free_relative_q/0
-[+] free_relative_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > free_relative_q/0
-[+] free_relative_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > free_relative_q/0
-[+] free_relative_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > free_relative_q/0
-[+] free_relative_q/1 > udef_q/0
-[-] udef_q/0 > free_relative_q/1
-[+] free_relative_q/1 > _the_q/0
-[-] _the_q/0 > free_relative_q/1
-[+] free_relative_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > free_relative_q/1
-[+] free_relative_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > free_relative_q/1
-[+] free_relative_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > free_relative_q/1
-[+] free_relative_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > free_relative_q/1
-[+] free_relative_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > free_relative_q/1
-[+] idiom_q/0 > udef_q/0
-[-] udef_q/0 > idiom_q/0
-[+] idiom_q/0 > _the_q/0
-[-] _the_q/0 > idiom_q/0
-[+] idiom_q/0 > def_explicit_q/0
-[-] def_explicit_q/0 > idiom_q/0
-[+] idiom_q/0 > def_implicit_q/0
-[-] def_implicit_q/0 > idiom_q/0
-[+] idiom_q/0 > _this_q_dem/0
-[-] _this_q_dem/0 > idiom_q/0
-[+] idiom_q/0 > _these_q_dem/0
-[-] _these_q_dem/0 > idiom_q/0
-[+] idiom_q/0 > _that_q_dem/0
-[-] _that_q_dem/0 > idiom_q/0
-[+] idiom_q/1 > udef_q/0
-[-] udef_q/0 > idiom_q/1
-[+] idiom_q/1 > _the_q/0
-[-] _the_q/0 > idiom_q/1
-[+] idiom_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > idiom_q/1
-[+] idiom_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > idiom_q/1
-[+] idiom_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > idiom_q/1
-[+] idiom_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > idiom_q/1
-[+] idiom_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > idiom_q/1
-[+] udef_q/1 > udef_q/0
-[-] udef_q/0 > udef_q/1
-[+] udef_q/1 > _the_q/0
-[-] _the_q/0 > udef_q/1
-[+] udef_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > udef_q/1
-[+] udef_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > udef_q/1
-[+] udef_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > udef_q/1
-[+] udef_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > udef_q/1
-[+] udef_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > udef_q/1
-[+] _the_q/1 > udef_q/0
-[-] udef_q/0 > _the_q/1
-[+] _the_q/1 > _the_q/0
-[-] _the_q/0 > _the_q/1
-[+] _the_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _the_q/1
-[+] _the_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _the_q/1
-[+] _the_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _the_q/1
-[+] _the_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _the_q/1
-[+] _the_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _the_q/1
-[+] def_explicit_q/1 > udef_q/0
-[-] udef_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _the_q/0
-[-] _the_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > def_explicit_q/1
-[+] def_implicit_q/1 > udef_q/0
-[-] udef_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _the_q/0
-[-] _the_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > def_explicit_q/0
-[-] def_explicit_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > def_implicit_q/0
-[-] def_implicit_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _this_q_dem/0
-[-] _this_q_dem/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _these_q_dem/0
-[-] _these_q_dem/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _that_q_dem/0
-[-] _that_q_dem/0 > def_implicit_q/1
-[+] _this_q_dem/1 > udef_q/0
-[-] udef_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _the_q/0
-[-] _the_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _this_q_dem/1
-[+] _these_q_dem/1 > udef_q/0
-[-] udef_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _the_q/0
-[-] _the_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _these_q_dem/1
-[+] _that_q_dem/1 > udef_q/0
-[-] udef_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _the_q/0
-[-] _the_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > def_explicit_q/0
-[-] def_explicit_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > def_implicit_q/0
-[-] def_implicit_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _this_q_dem/0
-[-] _this_q_dem/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _these_q_dem/0
-[-] _these_q_dem/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _that_q_dem/0
-[-] _that_q_dem/0 > _that_q_dem/1
-[+] _some_q/0 > _all_q/1
-[-] _all_q/1 > _some_q/0
-[+] _some_q/1 > _all_q/1
-[-] _all_q/1 > _some_q/1
-[+] _a_q/0 > _all_q/1
-[-] _all_q/1 > _a_q/0
-[+] _a_q/1 > _all_q/1
-[-] _all_q/1 > _a_q/1
-[+] _any_q/0 > _all_q/1
-[-] _all_q/1 > _any_q/0
-[+] _any_q/1 > _all_q/1
-[-] _all_q/1 > _any_q/1
-[+] _another_q/0 > _all_q/1
-[-] _all_q/1 > _another_q/0
-[+] _another_q/1 > _all_q/1
-[-] _all_q/1 > _another_q/1
-[+] which_q/0 > _all_q/1
-[-] _all_q/1 > which_q/0
-[+] which_q/1 > _all_q/1
-[-] _all_q/1 > which_q/1
-[+] free_relative_q/0 > _all_q/1
-[-] _all_q/1 > free_relative_q/0
-[+] free_relative_q/1 > _all_q/1
-[-] _all_q/1 > free_relative_q/1
-[+] idiom_q/0 > _all_q/1
-[-] _all_q/1 > idiom_q/0
-[+] idiom_q/1 > _all_q/1
-[-] _all_q/1 > idiom_q/1
-[+] udef_q/1 > _all_q/1
-[-] _all_q/1 > udef_q/1
-[+] _the_q/1 > _all_q/1
-[-] _all_q/1 > _the_q/1
-[+] def_explicit_q/1 > _all_q/1
-[-] _all_q/1 > def_explicit_q/1
-[+] def_implicit_q/1 > _all_q/1
-[-] _all_q/1 > def_implicit_q/1
-[+] _this_q_dem/1 > _all_q/1
-[-] _all_q/1 > _this_q_dem/1
-[+] _these_q_dem/1 > _all_q/1
-[-] _all_q/1 > _these_q_dem/1
-[+] _that_q_dem/1 > _all_q/1
-[-] _all_q/1 > _that_q_dem/1
-[+] _all_q/1 > neg/0
-[-] neg/0 > _all_q/1
-[+] neg/0 > _some_q/0
-[-] _some_q/0 > neg/0
-[+] neg/0 > _some_q/1
-[-] _some_q/1 > neg/0
-[+] neg/0 > _a_q/0
-[-] _a_q/0 > neg/0
-[+] neg/0 > _a_q/1
-[-] _a_q/1 > neg/0
-[+] neg/0 > _any_q/0
-[-] _any_q/0 > neg/0
-[+] neg/0 > _any_q/1
-[-] _any_q/1 > neg/0
-[+] neg/0 > _another_q/0
-[-] _another_q/0 > neg/0
-[+] neg/0 > _another_q/1
-[-] _another_q/1 > neg/0
-[+] neg/0 > which_q/0
-[-] which_q/0 > neg/0
-[+] neg/0 > which_q/1
-[-] which_q/1 > neg/0
-[+] neg/0 > free_relative_q/0
-[-] free_relative_q/0 > neg/0
-[+] neg/0 > free_relative_q/1
-[-] free_relative_q/1 > neg/0
-[+] neg/0 > idiom_q/0
-[-] idiom_q/0 > neg/0
-[+] neg/0 > idiom_q/1
-[-] idiom_q/1 > neg/0
-[+] neg/0 > udef_q/1
-[-] udef_q/1 > neg/0
-[+] neg/0 > _the_q/1
-[-] _the_q/1 > neg/0
-[+] neg/0 > def_explicit_q/1
-[-] def_explicit_q/1 > neg/0
-[+] neg/0 > def_implicit_q/1
-[-] def_implicit_q/1 > neg/0
-[+] neg/0 > _this_q_dem/1
-[-] _this_q_dem/1 > neg/0
-[+] neg/0 > _these_q_dem/1
-[-] _these_q_dem/1 > neg/0
-[+] neg/0 > _that_q_dem/1
-[-] _that_q_dem/1 > neg/0
-[+] _some_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > _some_q/0
-[+] _some_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > _some_q/0
-[+] _some_q/0 > _want_v_1/0
-[-] _want_v_1/0 > _some_q/0
-[+] _some_q/0 > _have_v_to/0
-[-] _have_v_to/0 > _some_q/0
-[+] _some_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _some_q/1
-[+] _some_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _some_q/1
-[+] _some_q/1 > _want_v_1/0
-[-] _want_v_1/0 > _some_q/1
-[+] _some_q/1 > _have_v_to/0
-[-] _have_v_to/0 > _some_q/1
-[+] _a_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > _a_q/0
-[+] _a_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > _a_q/0
-[+] _a_q/0 > _want_v_1/0
-[-] _want_v_1/0 > _a_q/0
-[+] _a_q/0 > _have_v_to/0
-[-] _have_v_to/0 > _a_q/0
-[+] _a_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _a_q/1
-[+] _a_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _a_q/1
-[+] _a_q/1 > _want_v_1/0
-[-] _want_v_1/0 > _a_q/1
-[+] _a_q/1 > _have_v_to/0
-[-] _have_v_to/0 > _a_q/1
-[+] _any_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > _any_q/0
-[+] _any_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > _any_q/0
-[+] _any_q/0 > _want_v_1/0
-[-] _want_v_1/0 > _any_q/0
-[+] _any_q/0 > _have_v_to/0
-[-] _have_v_to/0 > _any_q/0
-[+] _any_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _any_q/1
-[+] _any_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _any_q/1
-[+] _any_q/1 > _want_v_1/0
-[-] _want_v_1/0 > _any_q/1
-[+] _any_q/1 > _have_v_to/0
-[-] _have_v_to/0 > _any_q/1
-[+] _another_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > _another_q/0
-[+] _another_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > _another_q/0
-[+] _another_q/0 > _want_v_1/0
-[-] _want_v_1/0 > _another_q/0
-[+] _another_q/0 > _have_v_to/0
-[-] _have_v_to/0 > _another_q/0
-[+] _another_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _another_q/1
-[+] _another_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _another_q/1
-[+] _another_q/1 > _want_v_1/0
-[-] _want_v_1/0 > _another_q/1
-[+] _another_q/1 > _have_v_to/0
-[-] _have_v_to/0 > _another_q/1
-[+] which_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > which_q/0
-[+] which_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > which_q/0
-[+] which_q/0 > _want_v_1/0
-[-] _want_v_1/0 > which_q/0
-[+] which_q/0 > _have_v_to/0
-[-] _have_v_to/0 > which_q/0
-[+] which_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > which_q/1
-[+] which_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > which_q/1
-[+] which_q/1 > _want_v_1/0
-[-] _want_v_1/0 > which_q/1
-[+] which_q/1 > _have_v_to/0
-[-] _have_v_to/0 > which_q/1
-[+] free_relative_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > free_relative_q/0
-[+] free_relative_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > free_relative_q/0
-[+] free_relative_q/0 > _want_v_1/0
-[-] _want_v_1/0 > free_relative_q/0
-[+] free_relative_q/0 > _have_v_to/0
-[-] _have_v_to/0 > free_relative_q/0
-[+] free_relative_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > free_relative_q/1
-[+] free_relative_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > free_relative_q/1
-[+] free_relative_q/1 > _want_v_1/0
-[-] _want_v_1/0 > free_relative_q/1
-[+] free_relative_q/1 > _have_v_to/0
-[-] _have_v_to/0 > free_relative_q/1
-[+] idiom_q/0 > _can_v_modal/0
-[-] _can_v_modal/0 > idiom_q/0
-[+] idiom_q/0 > _could_v_modal/0
-[-] _could_v_modal/0 > idiom_q/0
-[+] idiom_q/0 > _want_v_1/0
-[-] _want_v_1/0 > idiom_q/0
-[+] idiom_q/0 > _have_v_to/0
-[-] _have_v_to/0 > idiom_q/0
-[+] idiom_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > idiom_q/1
-[+] idiom_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > idiom_q/1
-[+] idiom_q/1 > _want_v_1/0
-[-] _want_v_1/0 > idiom_q/1
-[+] idiom_q/1 > _have_v_to/0
-[-] _have_v_to/0 > idiom_q/1
-[+] udef_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > udef_q/1
-[+] udef_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > udef_q/1
-[+] udef_q/1 > _want_v_1/0
-[-] _want_v_1/0 > udef_q/1
-[+] udef_q/1 > _have_v_to/0
-[-] _have_v_to/0 > udef_q/1
-[+] _the_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _the_q/1
-[+] _the_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _the_q/1
-[+] _the_q/1 > _want_v_1/0
-[-] _want_v_1/0 > _the_q/1
-[+] _the_q/1 > _have_v_to/0
-[-] _have_v_to/0 > _the_q/1
-[+] def_explicit_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _want_v_1/0
-[-] _want_v_1/0 > def_explicit_q/1
-[+] def_explicit_q/1 > _have_v_to/0
-[-] _have_v_to/0 > def_explicit_q/1
-[+] def_implicit_q/1 > _can_v_modal/0
-[-] _can_v_modal/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _could_v_modal/0
-[-] _could_v_modal/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _want_v_1/0
-[-] _want_v_1/0 > def_implicit_q/1
-[+] def_implicit_q/1 > _have_v_to/0
-[-] _have_v_to/0 > def_implicit_q/1
-[+] _this_q_dem/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _want_v_1/0
-[-] _want_v_1/0 > _this_q_dem/1
-[+] _this_q_dem/1 > _have_v_to/0
-[-] _have_v_to/0 > _this_q_dem/1
-[+] _these_q_dem/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _want_v_1/0
-[-] _want_v_1/0 > _these_q_dem/1
-[+] _these_q_dem/1 > _have_v_to/0
-[-] _have_v_to/0 > _these_q_dem/1
-[+] _that_q_dem/1 > _can_v_modal/0
-[-] _can_v_modal/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _could_v_modal/0
-[-] _could_v_modal/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _want_v_1/0
-[-] _want_v_1/0 > _that_q_dem/1
-[+] _that_q_dem/1 > _have_v_to/0
-[-] _have_v_to/0 > _that_q_dem/1
-[+] udef_q/1 > proper_q/0
-[-] proper_q/0 > udef_q/1
-[+] udef_q/1 > pronoun_q/0
-[-] pronoun_q/0 > udef_q/1
-[+] udef_q/1 > number_q/0
-[-] number_q/0 > udef_q/1
-[+] _the_q/1 > proper_q/0
-[-] proper_q/0 > _the_q/1
-[+] _the_q/1 > pronoun_q/0
-[-] pronoun_q/0 > _the_q/1
-[+] _the_q/1 > number_q/0
-[-] number_q/0 > _the_q/1
-[+] def_explicit_q/1 > proper_q/0
-[-] proper_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > pronoun_q/0
-[-] pronoun_q/0 > def_explicit_q/1
-[+] def_explicit_q/1 > number_q/0
-[-] number_q/0 > def_explicit_q/1
-[+] def_implicit_q/1 > proper_q/0
-[-] proper_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > pronoun_q/0
-[-] pronoun_q/0 > def_implicit_q/1
-[+] def_implicit_q/1 > number_q/0
-[-] number_q/0 > def_implicit_q/1
-[+] _this_q_dem/1 > proper_q/0
-[-] proper_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > pronoun_q/0
-[-] pronoun_q/0 > _this_q_dem/1
-[+] _this_q_dem/1 > number_q/0
-[-] number_q/0 > _this_q_dem/1
-[+] _these_q_dem/1 > proper_q/0
-[-] proper_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > pronoun_q/0
-[-] pronoun_q/0 > _these_q_dem/1
-[+] _these_q_dem/1 > number_q/0
-[-] number_q/0 > _these_q_dem/1
-[+] _that_q_dem/1 > proper_q/0
-[-] proper_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > pronoun_q/0
-[-] pronoun_q/0 > _that_q_dem/1
-[+] _that_q_dem/1 > number_q/0
-[-] number_q/0 > _that_q_dem/1
-[+] _some_q/0 > proper_q/0
-[-] proper_q/0 > _some_q/0
-[+] _some_q/0 > pronoun_q/0
-[-] pronoun_q/0 > _some_q/0
-[+] _some_q/0 > number_q/0
-[-] number_q/0 > _some_q/0
-[+] _some_q/1 > proper_q/0
-[-] proper_q/0 > _some_q/1
-[+] _some_q/1 > pronoun_q/0
-[-] pronoun_q/0 > _some_q/1
-[+] _some_q/1 > number_q/0
-[-] number_q/0 > _some_q/1
-[+] _a_q/0 > proper_q/0
-[-] proper_q/0 > _a_q/0
-[+] _a_q/0 > pronoun_q/0
-[-] pronoun_q/0 > _a_q/0
-[+] _a_q/0 > number_q/0
-[-] number_q/0 > _a_q/0
-[+] _a_q/1 > proper_q/0
-[-] proper_q/0 > _a_q/1
-[+] _a_q/1 > pronoun_q/0
-[-] pronoun_q/0 > _a_q/1
-[+] _a_q/1 > number_q/0
-[-] number_q/0 > _a_q/1
-[+] _any_q/0 > proper_q/0
-[-] proper_q/0 > _any_q/0
-[+] _any_q/0 > pronoun_q/0
-[-] pronoun_q/0 > _any_q/0
-[+] _any_q/0 > number_q/0
-[-] number_q/0 > _any_q/0
-[+] _any_q/1 > proper_q/0
-[-] proper_q/0 > _any_q/1
-[+] _any_q/1 > pronoun_q/0
-[-] pronoun_q/0 > _any_q/1
-[+] _any_q/1 > number_q/0
-[-] number_q/0 > _any_q/1
-[+] _another_q/0 > proper_q/0
-[-] proper_q/0 > _another_q/0
-[+] _another_q/0 > pronoun_q/0
-[-] pronoun_q/0 > _another_q/0
-[+] _another_q/0 > number_q/0
-[-] number_q/0 > _another_q/0
-[+] _another_q/1 > proper_q/0
-[-] proper_q/0 > _another_q/1
-[+] _another_q/1 > pronoun_q/0
-[-] pronoun_q/0 > _another_q/1
-[+] _another_q/1 > number_q/0
-[-] number_q/0 > _another_q/1
-[+] which_q/0 > proper_q/0
-[-] proper_q/0 > which_q/0
-[+] which_q/0 > pronoun_q/0
-[-] pronoun_q/0 > which_q/0
-[+] which_q/0 > number_q/0
-[-] number_q/0 > which_q/0
-[+] which_q/1 > proper_q/0
-[-] proper_q/0 > which_q/1
-[+] which_q/1 > pronoun_q/0
-[-] pronoun_q/0 > which_q/1
-[+] which_q/1 > number_q/0
-[-] number_q/0 > which_q/1
-[+] free_relative_q/0 > proper_q/0
-[-] proper_q/0 > free_relative_q/0
-[+] free_relative_q/0 > pronoun_q/0
-[-] pronoun_q/0 > free_relative_q/0
-[+] free_relative_q/0 > number_q/0
-[-] number_q/0 > free_relative_q/0
-[+] free_relative_q/1 > proper_q/0
-[-] proper_q/0 > free_relative_q/1
-[+] free_relative_q/1 > pronoun_q/0
-[-] pronoun_q/0 > free_relative_q/1
-[+] free_relative_q/1 > number_q/0
-[-] number_q/0 > free_relative_q/1
-[+] idiom_q/0 > proper_q/0
-[-] proper_q/0 > idiom_q/0
-[+] idiom_q/0 > pronoun_q/0
-[-] pronoun_q/0 > idiom_q/0
-[+] idiom_q/0 > number_q/0
-[-] number_q/0 > idiom_q/0
-[+] idiom_q/1 > proper_q/0
-[-] proper_q/0 > idiom_q/1
-[+] idiom_q/1 > pronoun_q/0
-[-] pronoun_q/0 > idiom_q/1
-[+] idiom_q/1 > number_q/0
-[-] number_q/0 > idiom_q/1
-* = imp_m/0
-* = prpstn_m/0
-* = prop-or-ques_m/0
-* = int_m/0
-* = basic_imp_m/0
-* = nominalization/0
-* = _then_a_1/0
-* = proper_q/1
-* = pronoun_q/1
-* = number_q/1
-implicit_conj/0 = implicit_conj/1
-implicit_conj/0 = _some_q/0
-implicit_conj/0 = _a_q/0
-implicit_conj/0 = _any_q/0
-implicit_conj/0 = _another_q/0
-implicit_conj/0 = which_q/0
-implicit_conj/0 = free_relative_q/0
-implicit_conj/0 = idiom_q/0
-implicit_conj/0 = _some_q/1
-implicit_conj/0 = _a_q/1
-implicit_conj/0 = _any_q/1
-implicit_conj/0 = _another_q/1
-implicit_conj/0 = which_q/1
-implicit_conj/0 = free_relative_q/1
-implicit_conj/0 = idiom_q/1
-implicit_conj/0 = udef_q/1
-implicit_conj/0 = _the_q/1
-implicit_conj/0 = def_explicit_q/1
-implicit_conj/0 = def_implicit_q/1
-implicit_conj/0 = _this_q_dem/1
-implicit_conj/0 = _these_q_dem/1
-implicit_conj/0 = _that_q_dem/1
-implicit_conj/1 = _some_q/0
-implicit_conj/1 = _a_q/0
-implicit_conj/1 = _any_q/0
-implicit_conj/1 = _another_q/0
-implicit_conj/1 = which_q/0
-implicit_conj/1 = free_relative_q/0
-implicit_conj/1 = idiom_q/0
+[+] _some_q/1 > udef_q/1
+[-] udef_q/1 > _some_q/1
+[+] _some_q/1 > _the_q/1
+[-] _the_q/1 > _some_q/1
+[+] _some_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > _some_q/1
+[+] _some_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > _some_q/1
+[+] _some_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > _some_q/1
+[+] _some_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > _some_q/1
+[+] _some_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > _some_q/1
+[+] _some_q/2 > udef_q/1
+[-] udef_q/1 > _some_q/2
+[+] _some_q/2 > _the_q/1
+[-] _the_q/1 > _some_q/2
+[+] _some_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _some_q/2
+[+] _some_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _some_q/2
+[+] _some_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _some_q/2
+[+] _some_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _some_q/2
+[+] _some_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _some_q/2
+[+] _a_q/1 > udef_q/1
+[-] udef_q/1 > _a_q/1
+[+] _a_q/1 > _the_q/1
+[-] _the_q/1 > _a_q/1
+[+] _a_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > _a_q/1
+[+] _a_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > _a_q/1
+[+] _a_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > _a_q/1
+[+] _a_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > _a_q/1
+[+] _a_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > _a_q/1
+[+] _a_q/2 > udef_q/1
+[-] udef_q/1 > _a_q/2
+[+] _a_q/2 > _the_q/1
+[-] _the_q/1 > _a_q/2
+[+] _a_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _a_q/2
+[+] _a_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _a_q/2
+[+] _a_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _a_q/2
+[+] _a_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _a_q/2
+[+] _a_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _a_q/2
+[+] _any_q/1 > udef_q/1
+[-] udef_q/1 > _any_q/1
+[+] _any_q/1 > _the_q/1
+[-] _the_q/1 > _any_q/1
+[+] _any_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > _any_q/1
+[+] _any_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > _any_q/1
+[+] _any_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > _any_q/1
+[+] _any_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > _any_q/1
+[+] _any_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > _any_q/1
+[+] _any_q/2 > udef_q/1
+[-] udef_q/1 > _any_q/2
+[+] _any_q/2 > _the_q/1
+[-] _the_q/1 > _any_q/2
+[+] _any_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _any_q/2
+[+] _any_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _any_q/2
+[+] _any_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _any_q/2
+[+] _any_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _any_q/2
+[+] _any_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _any_q/2
+[+] _another_q/1 > udef_q/1
+[-] udef_q/1 > _another_q/1
+[+] _another_q/1 > _the_q/1
+[-] _the_q/1 > _another_q/1
+[+] _another_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > _another_q/1
+[+] _another_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > _another_q/1
+[+] _another_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > _another_q/1
+[+] _another_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > _another_q/1
+[+] _another_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > _another_q/1
+[+] _another_q/2 > udef_q/1
+[-] udef_q/1 > _another_q/2
+[+] _another_q/2 > _the_q/1
+[-] _the_q/1 > _another_q/2
+[+] _another_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _another_q/2
+[+] _another_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _another_q/2
+[+] _another_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _another_q/2
+[+] _another_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _another_q/2
+[+] _another_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _another_q/2
+[+] which_q/1 > udef_q/1
+[-] udef_q/1 > which_q/1
+[+] which_q/1 > _the_q/1
+[-] _the_q/1 > which_q/1
+[+] which_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > which_q/1
+[+] which_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > which_q/1
+[+] which_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > which_q/1
+[+] which_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > which_q/1
+[+] which_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > which_q/1
+[+] which_q/2 > udef_q/1
+[-] udef_q/1 > which_q/2
+[+] which_q/2 > _the_q/1
+[-] _the_q/1 > which_q/2
+[+] which_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > which_q/2
+[+] which_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > which_q/2
+[+] which_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > which_q/2
+[+] which_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > which_q/2
+[+] which_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > which_q/2
+[+] free_relative_q/1 > udef_q/1
+[-] udef_q/1 > free_relative_q/1
+[+] free_relative_q/1 > _the_q/1
+[-] _the_q/1 > free_relative_q/1
+[+] free_relative_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > free_relative_q/1
+[+] free_relative_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > free_relative_q/1
+[+] free_relative_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > free_relative_q/1
+[+] free_relative_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > free_relative_q/1
+[+] free_relative_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > free_relative_q/1
+[+] free_relative_q/2 > udef_q/1
+[-] udef_q/1 > free_relative_q/2
+[+] free_relative_q/2 > _the_q/1
+[-] _the_q/1 > free_relative_q/2
+[+] free_relative_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > free_relative_q/2
+[+] free_relative_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > free_relative_q/2
+[+] free_relative_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > free_relative_q/2
+[+] free_relative_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > free_relative_q/2
+[+] free_relative_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > free_relative_q/2
+[+] idiom_q/1 > udef_q/1
+[-] udef_q/1 > idiom_q/1
+[+] idiom_q/1 > _the_q/1
+[-] _the_q/1 > idiom_q/1
+[+] idiom_q/1 > def_explicit_q/1
+[-] def_explicit_q/1 > idiom_q/1
+[+] idiom_q/1 > def_implicit_q/1
+[-] def_implicit_q/1 > idiom_q/1
+[+] idiom_q/1 > _this_q_dem/1
+[-] _this_q_dem/1 > idiom_q/1
+[+] idiom_q/1 > _these_q_dem/1
+[-] _these_q_dem/1 > idiom_q/1
+[+] idiom_q/1 > _that_q_dem/1
+[-] _that_q_dem/1 > idiom_q/1
+[+] idiom_q/2 > udef_q/1
+[-] udef_q/1 > idiom_q/2
+[+] idiom_q/2 > _the_q/1
+[-] _the_q/1 > idiom_q/2
+[+] idiom_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > idiom_q/2
+[+] idiom_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > idiom_q/2
+[+] idiom_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > idiom_q/2
+[+] idiom_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > idiom_q/2
+[+] idiom_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > idiom_q/2
+[+] udef_q/2 > udef_q/1
+[-] udef_q/1 > udef_q/2
+[+] udef_q/2 > _the_q/1
+[-] _the_q/1 > udef_q/2
+[+] udef_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > udef_q/2
+[+] udef_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > udef_q/2
+[+] udef_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > udef_q/2
+[+] udef_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > udef_q/2
+[+] udef_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > udef_q/2
+[+] _the_q/2 > udef_q/1
+[-] udef_q/1 > _the_q/2
+[+] _the_q/2 > _the_q/1
+[-] _the_q/1 > _the_q/2
+[+] _the_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _the_q/2
+[+] _the_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _the_q/2
+[+] _the_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _the_q/2
+[+] _the_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _the_q/2
+[+] _the_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _the_q/2
+[+] def_explicit_q/2 > udef_q/1
+[-] udef_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _the_q/1
+[-] _the_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > def_explicit_q/2
+[+] def_implicit_q/2 > udef_q/1
+[-] udef_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _the_q/1
+[-] _the_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > def_explicit_q/1
+[-] def_explicit_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > def_implicit_q/1
+[-] def_implicit_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _this_q_dem/1
+[-] _this_q_dem/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _these_q_dem/1
+[-] _these_q_dem/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _that_q_dem/1
+[-] _that_q_dem/1 > def_implicit_q/2
+[+] _this_q_dem/2 > udef_q/1
+[-] udef_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _the_q/1
+[-] _the_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _this_q_dem/2
+[+] _these_q_dem/2 > udef_q/1
+[-] udef_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _the_q/1
+[-] _the_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _these_q_dem/2
+[+] _that_q_dem/2 > udef_q/1
+[-] udef_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _the_q/1
+[-] _the_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > def_explicit_q/1
+[-] def_explicit_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > def_implicit_q/1
+[-] def_implicit_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _this_q_dem/1
+[-] _this_q_dem/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _these_q_dem/1
+[-] _these_q_dem/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _that_q_dem/1
+[-] _that_q_dem/1 > _that_q_dem/2
+[+] _some_q/1 > _all_q/2
+[-] _all_q/2 > _some_q/1
+[+] _some_q/2 > _all_q/2
+[-] _all_q/2 > _some_q/2
+[+] _a_q/1 > _all_q/2
+[-] _all_q/2 > _a_q/1
+[+] _a_q/2 > _all_q/2
+[-] _all_q/2 > _a_q/2
+[+] _any_q/1 > _all_q/2
+[-] _all_q/2 > _any_q/1
+[+] _any_q/2 > _all_q/2
+[-] _all_q/2 > _any_q/2
+[+] _another_q/1 > _all_q/2
+[-] _all_q/2 > _another_q/1
+[+] _another_q/2 > _all_q/2
+[-] _all_q/2 > _another_q/2
+[+] which_q/1 > _all_q/2
+[-] _all_q/2 > which_q/1
+[+] which_q/2 > _all_q/2
+[-] _all_q/2 > which_q/2
+[+] free_relative_q/1 > _all_q/2
+[-] _all_q/2 > free_relative_q/1
+[+] free_relative_q/2 > _all_q/2
+[-] _all_q/2 > free_relative_q/2
+[+] idiom_q/1 > _all_q/2
+[-] _all_q/2 > idiom_q/1
+[+] idiom_q/2 > _all_q/2
+[-] _all_q/2 > idiom_q/2
+[+] udef_q/2 > _all_q/2
+[-] _all_q/2 > udef_q/2
+[+] _the_q/2 > _all_q/2
+[-] _all_q/2 > _the_q/2
+[+] def_explicit_q/2 > _all_q/2
+[-] _all_q/2 > def_explicit_q/2
+[+] def_implicit_q/2 > _all_q/2
+[-] _all_q/2 > def_implicit_q/2
+[+] _this_q_dem/2 > _all_q/2
+[-] _all_q/2 > _this_q_dem/2
+[+] _these_q_dem/2 > _all_q/2
+[-] _all_q/2 > _these_q_dem/2
+[+] _that_q_dem/2 > _all_q/2
+[-] _all_q/2 > _that_q_dem/2
+[+] _all_q/2 > neg/1
+[-] neg/1 > _all_q/2
+[+] neg/1 > _some_q/1
+[-] _some_q/1 > neg/1
+[+] neg/1 > _some_q/2
+[-] _some_q/2 > neg/1
+[+] neg/1 > _a_q/1
+[-] _a_q/1 > neg/1
+[+] neg/1 > _a_q/2
+[-] _a_q/2 > neg/1
+[+] neg/1 > _any_q/1
+[-] _any_q/1 > neg/1
+[+] neg/1 > _any_q/2
+[-] _any_q/2 > neg/1
+[+] neg/1 > _another_q/1
+[-] _another_q/1 > neg/1
+[+] neg/1 > _another_q/2
+[-] _another_q/2 > neg/1
+[+] neg/1 > which_q/1
+[-] which_q/1 > neg/1
+[+] neg/1 > which_q/2
+[-] which_q/2 > neg/1
+[+] neg/1 > free_relative_q/1
+[-] free_relative_q/1 > neg/1
+[+] neg/1 > free_relative_q/2
+[-] free_relative_q/2 > neg/1
+[+] neg/1 > idiom_q/1
+[-] idiom_q/1 > neg/1
+[+] neg/1 > idiom_q/2
+[-] idiom_q/2 > neg/1
+[+] neg/1 > udef_q/2
+[-] udef_q/2 > neg/1
+[+] neg/1 > _the_q/2
+[-] _the_q/2 > neg/1
+[+] neg/1 > def_explicit_q/2
+[-] def_explicit_q/2 > neg/1
+[+] neg/1 > def_implicit_q/2
+[-] def_implicit_q/2 > neg/1
+[+] neg/1 > _this_q_dem/2
+[-] _this_q_dem/2 > neg/1
+[+] neg/1 > _these_q_dem/2
+[-] _these_q_dem/2 > neg/1
+[+] neg/1 > _that_q_dem/2
+[-] _that_q_dem/2 > neg/1
+[+] _some_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > _some_q/1
+[+] _some_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > _some_q/1
+[+] _some_q/1 > _want_v_1/1
+[-] _want_v_1/1 > _some_q/1
+[+] _some_q/1 > _have_v_to/1
+[-] _have_v_to/1 > _some_q/1
+[+] _some_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _some_q/2
+[+] _some_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _some_q/2
+[+] _some_q/2 > _want_v_1/1
+[-] _want_v_1/1 > _some_q/2
+[+] _some_q/2 > _have_v_to/1
+[-] _have_v_to/1 > _some_q/2
+[+] _a_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > _a_q/1
+[+] _a_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > _a_q/1
+[+] _a_q/1 > _want_v_1/1
+[-] _want_v_1/1 > _a_q/1
+[+] _a_q/1 > _have_v_to/1
+[-] _have_v_to/1 > _a_q/1
+[+] _a_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _a_q/2
+[+] _a_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _a_q/2
+[+] _a_q/2 > _want_v_1/1
+[-] _want_v_1/1 > _a_q/2
+[+] _a_q/2 > _have_v_to/1
+[-] _have_v_to/1 > _a_q/2
+[+] _any_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > _any_q/1
+[+] _any_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > _any_q/1
+[+] _any_q/1 > _want_v_1/1
+[-] _want_v_1/1 > _any_q/1
+[+] _any_q/1 > _have_v_to/1
+[-] _have_v_to/1 > _any_q/1
+[+] _any_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _any_q/2
+[+] _any_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _any_q/2
+[+] _any_q/2 > _want_v_1/1
+[-] _want_v_1/1 > _any_q/2
+[+] _any_q/2 > _have_v_to/1
+[-] _have_v_to/1 > _any_q/2
+[+] _another_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > _another_q/1
+[+] _another_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > _another_q/1
+[+] _another_q/1 > _want_v_1/1
+[-] _want_v_1/1 > _another_q/1
+[+] _another_q/1 > _have_v_to/1
+[-] _have_v_to/1 > _another_q/1
+[+] _another_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _another_q/2
+[+] _another_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _another_q/2
+[+] _another_q/2 > _want_v_1/1
+[-] _want_v_1/1 > _another_q/2
+[+] _another_q/2 > _have_v_to/1
+[-] _have_v_to/1 > _another_q/2
+[+] which_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > which_q/1
+[+] which_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > which_q/1
+[+] which_q/1 > _want_v_1/1
+[-] _want_v_1/1 > which_q/1
+[+] which_q/1 > _have_v_to/1
+[-] _have_v_to/1 > which_q/1
+[+] which_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > which_q/2
+[+] which_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > which_q/2
+[+] which_q/2 > _want_v_1/1
+[-] _want_v_1/1 > which_q/2
+[+] which_q/2 > _have_v_to/1
+[-] _have_v_to/1 > which_q/2
+[+] free_relative_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > free_relative_q/1
+[+] free_relative_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > free_relative_q/1
+[+] free_relative_q/1 > _want_v_1/1
+[-] _want_v_1/1 > free_relative_q/1
+[+] free_relative_q/1 > _have_v_to/1
+[-] _have_v_to/1 > free_relative_q/1
+[+] free_relative_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > free_relative_q/2
+[+] free_relative_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > free_relative_q/2
+[+] free_relative_q/2 > _want_v_1/1
+[-] _want_v_1/1 > free_relative_q/2
+[+] free_relative_q/2 > _have_v_to/1
+[-] _have_v_to/1 > free_relative_q/2
+[+] idiom_q/1 > _can_v_modal/1
+[-] _can_v_modal/1 > idiom_q/1
+[+] idiom_q/1 > _could_v_modal/1
+[-] _could_v_modal/1 > idiom_q/1
+[+] idiom_q/1 > _want_v_1/1
+[-] _want_v_1/1 > idiom_q/1
+[+] idiom_q/1 > _have_v_to/1
+[-] _have_v_to/1 > idiom_q/1
+[+] idiom_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > idiom_q/2
+[+] idiom_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > idiom_q/2
+[+] idiom_q/2 > _want_v_1/1
+[-] _want_v_1/1 > idiom_q/2
+[+] idiom_q/2 > _have_v_to/1
+[-] _have_v_to/1 > idiom_q/2
+[+] udef_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > udef_q/2
+[+] udef_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > udef_q/2
+[+] udef_q/2 > _want_v_1/1
+[-] _want_v_1/1 > udef_q/2
+[+] udef_q/2 > _have_v_to/1
+[-] _have_v_to/1 > udef_q/2
+[+] _the_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _the_q/2
+[+] _the_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _the_q/2
+[+] _the_q/2 > _want_v_1/1
+[-] _want_v_1/1 > _the_q/2
+[+] _the_q/2 > _have_v_to/1
+[-] _have_v_to/1 > _the_q/2
+[+] def_explicit_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _want_v_1/1
+[-] _want_v_1/1 > def_explicit_q/2
+[+] def_explicit_q/2 > _have_v_to/1
+[-] _have_v_to/1 > def_explicit_q/2
+[+] def_implicit_q/2 > _can_v_modal/1
+[-] _can_v_modal/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _could_v_modal/1
+[-] _could_v_modal/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _want_v_1/1
+[-] _want_v_1/1 > def_implicit_q/2
+[+] def_implicit_q/2 > _have_v_to/1
+[-] _have_v_to/1 > def_implicit_q/2
+[+] _this_q_dem/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _want_v_1/1
+[-] _want_v_1/1 > _this_q_dem/2
+[+] _this_q_dem/2 > _have_v_to/1
+[-] _have_v_to/1 > _this_q_dem/2
+[+] _these_q_dem/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _want_v_1/1
+[-] _want_v_1/1 > _these_q_dem/2
+[+] _these_q_dem/2 > _have_v_to/1
+[-] _have_v_to/1 > _these_q_dem/2
+[+] _that_q_dem/2 > _can_v_modal/1
+[-] _can_v_modal/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _could_v_modal/1
+[-] _could_v_modal/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _want_v_1/1
+[-] _want_v_1/1 > _that_q_dem/2
+[+] _that_q_dem/2 > _have_v_to/1
+[-] _have_v_to/1 > _that_q_dem/2
+[+] udef_q/2 > proper_q/1
+[-] proper_q/1 > udef_q/2
+[+] udef_q/2 > pronoun_q/1
+[-] pronoun_q/1 > udef_q/2
+[+] udef_q/2 > number_q/1
+[-] number_q/1 > udef_q/2
+[+] _the_q/2 > proper_q/1
+[-] proper_q/1 > _the_q/2
+[+] _the_q/2 > pronoun_q/1
+[-] pronoun_q/1 > _the_q/2
+[+] _the_q/2 > number_q/1
+[-] number_q/1 > _the_q/2
+[+] def_explicit_q/2 > proper_q/1
+[-] proper_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > pronoun_q/1
+[-] pronoun_q/1 > def_explicit_q/2
+[+] def_explicit_q/2 > number_q/1
+[-] number_q/1 > def_explicit_q/2
+[+] def_implicit_q/2 > proper_q/1
+[-] proper_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > pronoun_q/1
+[-] pronoun_q/1 > def_implicit_q/2
+[+] def_implicit_q/2 > number_q/1
+[-] number_q/1 > def_implicit_q/2
+[+] _this_q_dem/2 > proper_q/1
+[-] proper_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > pronoun_q/1
+[-] pronoun_q/1 > _this_q_dem/2
+[+] _this_q_dem/2 > number_q/1
+[-] number_q/1 > _this_q_dem/2
+[+] _these_q_dem/2 > proper_q/1
+[-] proper_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > pronoun_q/1
+[-] pronoun_q/1 > _these_q_dem/2
+[+] _these_q_dem/2 > number_q/1
+[-] number_q/1 > _these_q_dem/2
+[+] _that_q_dem/2 > proper_q/1
+[-] proper_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > pronoun_q/1
+[-] pronoun_q/1 > _that_q_dem/2
+[+] _that_q_dem/2 > number_q/1
+[-] number_q/1 > _that_q_dem/2
+[+] _some_q/1 > proper_q/1
+[-] proper_q/1 > _some_q/1
+[+] _some_q/1 > pronoun_q/1
+[-] pronoun_q/1 > _some_q/1
+[+] _some_q/1 > number_q/1
+[-] number_q/1 > _some_q/1
+[+] _some_q/2 > proper_q/1
+[-] proper_q/1 > _some_q/2
+[+] _some_q/2 > pronoun_q/1
+[-] pronoun_q/1 > _some_q/2
+[+] _some_q/2 > number_q/1
+[-] number_q/1 > _some_q/2
+[+] _a_q/1 > proper_q/1
+[-] proper_q/1 > _a_q/1
+[+] _a_q/1 > pronoun_q/1
+[-] pronoun_q/1 > _a_q/1
+[+] _a_q/1 > number_q/1
+[-] number_q/1 > _a_q/1
+[+] _a_q/2 > proper_q/1
+[-] proper_q/1 > _a_q/2
+[+] _a_q/2 > pronoun_q/1
+[-] pronoun_q/1 > _a_q/2
+[+] _a_q/2 > number_q/1
+[-] number_q/1 > _a_q/2
+[+] _any_q/1 > proper_q/1
+[-] proper_q/1 > _any_q/1
+[+] _any_q/1 > pronoun_q/1
+[-] pronoun_q/1 > _any_q/1
+[+] _any_q/1 > number_q/1
+[-] number_q/1 > _any_q/1
+[+] _any_q/2 > proper_q/1
+[-] proper_q/1 > _any_q/2
+[+] _any_q/2 > pronoun_q/1
+[-] pronoun_q/1 > _any_q/2
+[+] _any_q/2 > number_q/1
+[-] number_q/1 > _any_q/2
+[+] _another_q/1 > proper_q/1
+[-] proper_q/1 > _another_q/1
+[+] _another_q/1 > pronoun_q/1
+[-] pronoun_q/1 > _another_q/1
+[+] _another_q/1 > number_q/1
+[-] number_q/1 > _another_q/1
+[+] _another_q/2 > proper_q/1
+[-] proper_q/1 > _another_q/2
+[+] _another_q/2 > pronoun_q/1
+[-] pronoun_q/1 > _another_q/2
+[+] _another_q/2 > number_q/1
+[-] number_q/1 > _another_q/2
+[+] which_q/1 > proper_q/1
+[-] proper_q/1 > which_q/1
+[+] which_q/1 > pronoun_q/1
+[-] pronoun_q/1 > which_q/1
+[+] which_q/1 > number_q/1
+[-] number_q/1 > which_q/1
+[+] which_q/2 > proper_q/1
+[-] proper_q/1 > which_q/2
+[+] which_q/2 > pronoun_q/1
+[-] pronoun_q/1 > which_q/2
+[+] which_q/2 > number_q/1
+[-] number_q/1 > which_q/2
+[+] free_relative_q/1 > proper_q/1
+[-] proper_q/1 > free_relative_q/1
+[+] free_relative_q/1 > pronoun_q/1
+[-] pronoun_q/1 > free_relative_q/1
+[+] free_relative_q/1 > number_q/1
+[-] number_q/1 > free_relative_q/1
+[+] free_relative_q/2 > proper_q/1
+[-] proper_q/1 > free_relative_q/2
+[+] free_relative_q/2 > pronoun_q/1
+[-] pronoun_q/1 > free_relative_q/2
+[+] free_relative_q/2 > number_q/1
+[-] number_q/1 > free_relative_q/2
+[+] idiom_q/1 > proper_q/1
+[-] proper_q/1 > idiom_q/1
+[+] idiom_q/1 > pronoun_q/1
+[-] pronoun_q/1 > idiom_q/1
+[+] idiom_q/1 > number_q/1
+[-] number_q/1 > idiom_q/1
+[+] idiom_q/2 > proper_q/1
+[-] proper_q/1 > idiom_q/2
+[+] idiom_q/2 > pronoun_q/1
+[-] pronoun_q/1 > idiom_q/2
+[+] idiom_q/2 > number_q/1
+[-] number_q/1 > idiom_q/2
+* = imp_m/1
+* = prpstn_m/1
+* = prop-or-ques_m/1
+* = int_m/1
+* = basic_imp_m/1
+* = nominalization/1
+* = _then_a_1/1
+* = proper_q/2
+* = pronoun_q/2
+* = number_q/2
+implicit_conj/1 = implicit_conj/2
 implicit_conj/1 = _some_q/1
 implicit_conj/1 = _a_q/1
 implicit_conj/1 = _any_q/1
@@ -891,252 +863,252 @@ implicit_conj/1 = _another_q/1
 implicit_conj/1 = which_q/1
 implicit_conj/1 = free_relative_q/1
 implicit_conj/1 = idiom_q/1
-implicit_conj/1 = udef_q/1
-implicit_conj/1 = _the_q/1
-implicit_conj/1 = def_explicit_q/1
-implicit_conj/1 = def_implicit_q/1
-implicit_conj/1 = _this_q_dem/1
-implicit_conj/1 = _these_q_dem/1
-implicit_conj/1 = _that_q_dem/1
-_some_q/0 = _a_q/0
-_some_q/0 = _any_q/0
-_some_q/0 = _another_q/0
-_some_q/0 = which_q/0
-_some_q/0 = free_relative_q/0
-_some_q/0 = idiom_q/0
-_some_q/0 = _some_q/1
-_some_q/0 = _a_q/1
-_some_q/0 = _any_q/1
-_some_q/0 = _another_q/1
-_some_q/0 = which_q/1
-_some_q/0 = free_relative_q/1
-_some_q/0 = idiom_q/1
-_some_q/0 = udef_q/1
-_some_q/0 = _the_q/1
-_some_q/0 = def_explicit_q/1
-_some_q/0 = def_implicit_q/1
-_some_q/0 = _this_q_dem/1
-_some_q/0 = _these_q_dem/1
-_some_q/0 = _that_q_dem/1
-_a_q/0 = _any_q/0
-_a_q/0 = _another_q/0
-_a_q/0 = which_q/0
-_a_q/0 = free_relative_q/0
-_a_q/0 = idiom_q/0
-_a_q/0 = _some_q/1
-_a_q/0 = _a_q/1
-_a_q/0 = _any_q/1
-_a_q/0 = _another_q/1
-_a_q/0 = which_q/1
-_a_q/0 = free_relative_q/1
-_a_q/0 = idiom_q/1
-_a_q/0 = udef_q/1
-_a_q/0 = _the_q/1
-_a_q/0 = def_explicit_q/1
-_a_q/0 = def_implicit_q/1
-_a_q/0 = _this_q_dem/1
-_a_q/0 = _these_q_dem/1
-_a_q/0 = _that_q_dem/1
-_any_q/0 = _another_q/0
-_any_q/0 = which_q/0
-_any_q/0 = free_relative_q/0
-_any_q/0 = idiom_q/0
-_any_q/0 = _some_q/1
-_any_q/0 = _a_q/1
-_any_q/0 = _any_q/1
-_any_q/0 = _another_q/1
-_any_q/0 = which_q/1
-_any_q/0 = free_relative_q/1
-_any_q/0 = idiom_q/1
-_any_q/0 = udef_q/1
-_any_q/0 = _the_q/1
-_any_q/0 = def_explicit_q/1
-_any_q/0 = def_implicit_q/1
-_any_q/0 = _this_q_dem/1
-_any_q/0 = _these_q_dem/1
-_any_q/0 = _that_q_dem/1
-_another_q/0 = which_q/0
-_another_q/0 = free_relative_q/0
-_another_q/0 = idiom_q/0
-_another_q/0 = _some_q/1
-_another_q/0 = _a_q/1
-_another_q/0 = _any_q/1
-_another_q/0 = _another_q/1
-_another_q/0 = which_q/1
-_another_q/0 = free_relative_q/1
-_another_q/0 = idiom_q/1
-_another_q/0 = udef_q/1
-_another_q/0 = _the_q/1
-_another_q/0 = def_explicit_q/1
-_another_q/0 = def_implicit_q/1
-_another_q/0 = _this_q_dem/1
-_another_q/0 = _these_q_dem/1
-_another_q/0 = _that_q_dem/1
-which_q/0 = free_relative_q/0
-which_q/0 = idiom_q/0
-which_q/0 = _some_q/1
-which_q/0 = _a_q/1
-which_q/0 = _any_q/1
-which_q/0 = _another_q/1
-which_q/0 = which_q/1
-which_q/0 = free_relative_q/1
-which_q/0 = idiom_q/1
-which_q/0 = udef_q/1
-which_q/0 = _the_q/1
-which_q/0 = def_explicit_q/1
-which_q/0 = def_implicit_q/1
-which_q/0 = _this_q_dem/1
-which_q/0 = _these_q_dem/1
-which_q/0 = _that_q_dem/1
-free_relative_q/0 = idiom_q/0
-free_relative_q/0 = _some_q/1
-free_relative_q/0 = _a_q/1
-free_relative_q/0 = _any_q/1
-free_relative_q/0 = _another_q/1
-free_relative_q/0 = which_q/1
-free_relative_q/0 = free_relative_q/1
-free_relative_q/0 = idiom_q/1
-free_relative_q/0 = udef_q/1
-free_relative_q/0 = _the_q/1
-free_relative_q/0 = def_explicit_q/1
-free_relative_q/0 = def_implicit_q/1
-free_relative_q/0 = _this_q_dem/1
-free_relative_q/0 = _these_q_dem/1
-free_relative_q/0 = _that_q_dem/1
-idiom_q/0 = _some_q/1
-idiom_q/0 = _a_q/1
-idiom_q/0 = _any_q/1
-idiom_q/0 = _another_q/1
-idiom_q/0 = which_q/1
-idiom_q/0 = free_relative_q/1
-idiom_q/0 = idiom_q/1
-idiom_q/0 = udef_q/1
-idiom_q/0 = _the_q/1
-idiom_q/0 = def_explicit_q/1
-idiom_q/0 = def_implicit_q/1
-idiom_q/0 = _this_q_dem/1
-idiom_q/0 = _these_q_dem/1
-idiom_q/0 = _that_q_dem/1
+implicit_conj/1 = _some_q/2
+implicit_conj/1 = _a_q/2
+implicit_conj/1 = _any_q/2
+implicit_conj/1 = _another_q/2
+implicit_conj/1 = which_q/2
+implicit_conj/1 = free_relative_q/2
+implicit_conj/1 = idiom_q/2
+implicit_conj/1 = udef_q/2
+implicit_conj/1 = _the_q/2
+implicit_conj/1 = def_explicit_q/2
+implicit_conj/1 = def_implicit_q/2
+implicit_conj/1 = _this_q_dem/2
+implicit_conj/1 = _these_q_dem/2
+implicit_conj/1 = _that_q_dem/2
+implicit_conj/2 = _some_q/1
+implicit_conj/2 = _a_q/1
+implicit_conj/2 = _any_q/1
+implicit_conj/2 = _another_q/1
+implicit_conj/2 = which_q/1
+implicit_conj/2 = free_relative_q/1
+implicit_conj/2 = idiom_q/1
+implicit_conj/2 = _some_q/2
+implicit_conj/2 = _a_q/2
+implicit_conj/2 = _any_q/2
+implicit_conj/2 = _another_q/2
+implicit_conj/2 = which_q/2
+implicit_conj/2 = free_relative_q/2
+implicit_conj/2 = idiom_q/2
+implicit_conj/2 = udef_q/2
+implicit_conj/2 = _the_q/2
+implicit_conj/2 = def_explicit_q/2
+implicit_conj/2 = def_implicit_q/2
+implicit_conj/2 = _this_q_dem/2
+implicit_conj/2 = _these_q_dem/2
+implicit_conj/2 = _that_q_dem/2
 _some_q/1 = _a_q/1
 _some_q/1 = _any_q/1
 _some_q/1 = _another_q/1
 _some_q/1 = which_q/1
 _some_q/1 = free_relative_q/1
 _some_q/1 = idiom_q/1
-_some_q/1 = udef_q/1
-_some_q/1 = _the_q/1
-_some_q/1 = def_explicit_q/1
-_some_q/1 = def_implicit_q/1
-_some_q/1 = _this_q_dem/1
-_some_q/1 = _these_q_dem/1
-_some_q/1 = _that_q_dem/1
+_some_q/1 = _some_q/2
+_some_q/1 = _a_q/2
+_some_q/1 = _any_q/2
+_some_q/1 = _another_q/2
+_some_q/1 = which_q/2
+_some_q/1 = free_relative_q/2
+_some_q/1 = idiom_q/2
+_some_q/1 = udef_q/2
+_some_q/1 = _the_q/2
+_some_q/1 = def_explicit_q/2
+_some_q/1 = def_implicit_q/2
+_some_q/1 = _this_q_dem/2
+_some_q/1 = _these_q_dem/2
+_some_q/1 = _that_q_dem/2
 _a_q/1 = _any_q/1
 _a_q/1 = _another_q/1
 _a_q/1 = which_q/1
 _a_q/1 = free_relative_q/1
 _a_q/1 = idiom_q/1
-_a_q/1 = udef_q/1
-_a_q/1 = _the_q/1
-_a_q/1 = def_explicit_q/1
-_a_q/1 = def_implicit_q/1
-_a_q/1 = _this_q_dem/1
-_a_q/1 = _these_q_dem/1
-_a_q/1 = _that_q_dem/1
+_a_q/1 = _some_q/2
+_a_q/1 = _a_q/2
+_a_q/1 = _any_q/2
+_a_q/1 = _another_q/2
+_a_q/1 = which_q/2
+_a_q/1 = free_relative_q/2
+_a_q/1 = idiom_q/2
+_a_q/1 = udef_q/2
+_a_q/1 = _the_q/2
+_a_q/1 = def_explicit_q/2
+_a_q/1 = def_implicit_q/2
+_a_q/1 = _this_q_dem/2
+_a_q/1 = _these_q_dem/2
+_a_q/1 = _that_q_dem/2
 _any_q/1 = _another_q/1
 _any_q/1 = which_q/1
 _any_q/1 = free_relative_q/1
 _any_q/1 = idiom_q/1
-_any_q/1 = udef_q/1
-_any_q/1 = _the_q/1
-_any_q/1 = def_explicit_q/1
-_any_q/1 = def_implicit_q/1
-_any_q/1 = _this_q_dem/1
-_any_q/1 = _these_q_dem/1
-_any_q/1 = _that_q_dem/1
+_any_q/1 = _some_q/2
+_any_q/1 = _a_q/2
+_any_q/1 = _any_q/2
+_any_q/1 = _another_q/2
+_any_q/1 = which_q/2
+_any_q/1 = free_relative_q/2
+_any_q/1 = idiom_q/2
+_any_q/1 = udef_q/2
+_any_q/1 = _the_q/2
+_any_q/1 = def_explicit_q/2
+_any_q/1 = def_implicit_q/2
+_any_q/1 = _this_q_dem/2
+_any_q/1 = _these_q_dem/2
+_any_q/1 = _that_q_dem/2
 _another_q/1 = which_q/1
 _another_q/1 = free_relative_q/1
 _another_q/1 = idiom_q/1
-_another_q/1 = udef_q/1
-_another_q/1 = _the_q/1
-_another_q/1 = def_explicit_q/1
-_another_q/1 = def_implicit_q/1
-_another_q/1 = _this_q_dem/1
-_another_q/1 = _these_q_dem/1
-_another_q/1 = _that_q_dem/1
+_another_q/1 = _some_q/2
+_another_q/1 = _a_q/2
+_another_q/1 = _any_q/2
+_another_q/1 = _another_q/2
+_another_q/1 = which_q/2
+_another_q/1 = free_relative_q/2
+_another_q/1 = idiom_q/2
+_another_q/1 = udef_q/2
+_another_q/1 = _the_q/2
+_another_q/1 = def_explicit_q/2
+_another_q/1 = def_implicit_q/2
+_another_q/1 = _this_q_dem/2
+_another_q/1 = _these_q_dem/2
+_another_q/1 = _that_q_dem/2
 which_q/1 = free_relative_q/1
 which_q/1 = idiom_q/1
-which_q/1 = udef_q/1
-which_q/1 = _the_q/1
-which_q/1 = def_explicit_q/1
-which_q/1 = def_implicit_q/1
-which_q/1 = _this_q_dem/1
-which_q/1 = _these_q_dem/1
-which_q/1 = _that_q_dem/1
+which_q/1 = _some_q/2
+which_q/1 = _a_q/2
+which_q/1 = _any_q/2
+which_q/1 = _another_q/2
+which_q/1 = which_q/2
+which_q/1 = free_relative_q/2
+which_q/1 = idiom_q/2
+which_q/1 = udef_q/2
+which_q/1 = _the_q/2
+which_q/1 = def_explicit_q/2
+which_q/1 = def_implicit_q/2
+which_q/1 = _this_q_dem/2
+which_q/1 = _these_q_dem/2
+which_q/1 = _that_q_dem/2
 free_relative_q/1 = idiom_q/1
-free_relative_q/1 = udef_q/1
-free_relative_q/1 = _the_q/1
-free_relative_q/1 = def_explicit_q/1
-free_relative_q/1 = def_implicit_q/1
-free_relative_q/1 = _this_q_dem/1
-free_relative_q/1 = _these_q_dem/1
-free_relative_q/1 = _that_q_dem/1
-idiom_q/1 = udef_q/1
-idiom_q/1 = _the_q/1
-idiom_q/1 = def_explicit_q/1
-idiom_q/1 = def_implicit_q/1
-idiom_q/1 = _this_q_dem/1
-idiom_q/1 = _these_q_dem/1
-idiom_q/1 = _that_q_dem/1
-udef_q/1 = _the_q/1
-udef_q/1 = def_explicit_q/1
-udef_q/1 = def_implicit_q/1
-udef_q/1 = _this_q_dem/1
-udef_q/1 = _these_q_dem/1
-udef_q/1 = _that_q_dem/1
-_the_q/1 = def_explicit_q/1
-_the_q/1 = def_implicit_q/1
-_the_q/1 = _this_q_dem/1
-_the_q/1 = _these_q_dem/1
-_the_q/1 = _that_q_dem/1
-def_explicit_q/1 = def_implicit_q/1
-def_explicit_q/1 = _this_q_dem/1
-def_explicit_q/1 = _these_q_dem/1
-def_explicit_q/1 = _that_q_dem/1
-def_implicit_q/1 = _this_q_dem/1
-def_implicit_q/1 = _these_q_dem/1
-def_implicit_q/1 = _that_q_dem/1
-_this_q_dem/1 = _these_q_dem/1
-_this_q_dem/1 = _that_q_dem/1
-_these_q_dem/1 = _that_q_dem/1
-_and_c/0 = _and_c/1
-_and_c/0 = _some_q/0
-_and_c/0 = _a_q/0
-_and_c/0 = _any_q/0
-_and_c/0 = _another_q/0
-_and_c/0 = which_q/0
-_and_c/0 = free_relative_q/0
-_and_c/0 = idiom_q/0
-_and_c/0 = _some_q/1
-_and_c/0 = _a_q/1
-_and_c/0 = _any_q/1
-_and_c/0 = _another_q/1
-_and_c/0 = which_q/1
-_and_c/0 = free_relative_q/1
-_and_c/0 = idiom_q/1
-_and_c/0 = udef_q/1
-_and_c/0 = _the_q/1
-_and_c/0 = def_explicit_q/1
-_and_c/0 = def_implicit_q/1
-_and_c/0 = _this_q_dem/1
-_and_c/0 = _these_q_dem/1
-_and_c/0 = _that_q_dem/1
-_and_c/1 = _some_q/0
-_and_c/1 = _a_q/0
-_and_c/1 = _any_q/0
-_and_c/1 = _another_q/0
-_and_c/1 = which_q/0
-_and_c/1 = free_relative_q/0
-_and_c/1 = idiom_q/0
+free_relative_q/1 = _some_q/2
+free_relative_q/1 = _a_q/2
+free_relative_q/1 = _any_q/2
+free_relative_q/1 = _another_q/2
+free_relative_q/1 = which_q/2
+free_relative_q/1 = free_relative_q/2
+free_relative_q/1 = idiom_q/2
+free_relative_q/1 = udef_q/2
+free_relative_q/1 = _the_q/2
+free_relative_q/1 = def_explicit_q/2
+free_relative_q/1 = def_implicit_q/2
+free_relative_q/1 = _this_q_dem/2
+free_relative_q/1 = _these_q_dem/2
+free_relative_q/1 = _that_q_dem/2
+idiom_q/1 = _some_q/2
+idiom_q/1 = _a_q/2
+idiom_q/1 = _any_q/2
+idiom_q/1 = _another_q/2
+idiom_q/1 = which_q/2
+idiom_q/1 = free_relative_q/2
+idiom_q/1 = idiom_q/2
+idiom_q/1 = udef_q/2
+idiom_q/1 = _the_q/2
+idiom_q/1 = def_explicit_q/2
+idiom_q/1 = def_implicit_q/2
+idiom_q/1 = _this_q_dem/2
+idiom_q/1 = _these_q_dem/2
+idiom_q/1 = _that_q_dem/2
+_some_q/2 = _a_q/2
+_some_q/2 = _any_q/2
+_some_q/2 = _another_q/2
+_some_q/2 = which_q/2
+_some_q/2 = free_relative_q/2
+_some_q/2 = idiom_q/2
+_some_q/2 = udef_q/2
+_some_q/2 = _the_q/2
+_some_q/2 = def_explicit_q/2
+_some_q/2 = def_implicit_q/2
+_some_q/2 = _this_q_dem/2
+_some_q/2 = _these_q_dem/2
+_some_q/2 = _that_q_dem/2
+_a_q/2 = _any_q/2
+_a_q/2 = _another_q/2
+_a_q/2 = which_q/2
+_a_q/2 = free_relative_q/2
+_a_q/2 = idiom_q/2
+_a_q/2 = udef_q/2
+_a_q/2 = _the_q/2
+_a_q/2 = def_explicit_q/2
+_a_q/2 = def_implicit_q/2
+_a_q/2 = _this_q_dem/2
+_a_q/2 = _these_q_dem/2
+_a_q/2 = _that_q_dem/2
+_any_q/2 = _another_q/2
+_any_q/2 = which_q/2
+_any_q/2 = free_relative_q/2
+_any_q/2 = idiom_q/2
+_any_q/2 = udef_q/2
+_any_q/2 = _the_q/2
+_any_q/2 = def_explicit_q/2
+_any_q/2 = def_implicit_q/2
+_any_q/2 = _this_q_dem/2
+_any_q/2 = _these_q_dem/2
+_any_q/2 = _that_q_dem/2
+_another_q/2 = which_q/2
+_another_q/2 = free_relative_q/2
+_another_q/2 = idiom_q/2
+_another_q/2 = udef_q/2
+_another_q/2 = _the_q/2
+_another_q/2 = def_explicit_q/2
+_another_q/2 = def_implicit_q/2
+_another_q/2 = _this_q_dem/2
+_another_q/2 = _these_q_dem/2
+_another_q/2 = _that_q_dem/2
+which_q/2 = free_relative_q/2
+which_q/2 = idiom_q/2
+which_q/2 = udef_q/2
+which_q/2 = _the_q/2
+which_q/2 = def_explicit_q/2
+which_q/2 = def_implicit_q/2
+which_q/2 = _this_q_dem/2
+which_q/2 = _these_q_dem/2
+which_q/2 = _that_q_dem/2
+free_relative_q/2 = idiom_q/2
+free_relative_q/2 = udef_q/2
+free_relative_q/2 = _the_q/2
+free_relative_q/2 = def_explicit_q/2
+free_relative_q/2 = def_implicit_q/2
+free_relative_q/2 = _this_q_dem/2
+free_relative_q/2 = _these_q_dem/2
+free_relative_q/2 = _that_q_dem/2
+idiom_q/2 = udef_q/2
+idiom_q/2 = _the_q/2
+idiom_q/2 = def_explicit_q/2
+idiom_q/2 = def_implicit_q/2
+idiom_q/2 = _this_q_dem/2
+idiom_q/2 = _these_q_dem/2
+idiom_q/2 = _that_q_dem/2
+udef_q/2 = _the_q/2
+udef_q/2 = def_explicit_q/2
+udef_q/2 = def_implicit_q/2
+udef_q/2 = _this_q_dem/2
+udef_q/2 = _these_q_dem/2
+udef_q/2 = _that_q_dem/2
+_the_q/2 = def_explicit_q/2
+_the_q/2 = def_implicit_q/2
+_the_q/2 = _this_q_dem/2
+_the_q/2 = _these_q_dem/2
+_the_q/2 = _that_q_dem/2
+def_explicit_q/2 = def_implicit_q/2
+def_explicit_q/2 = _this_q_dem/2
+def_explicit_q/2 = _these_q_dem/2
+def_explicit_q/2 = _that_q_dem/2
+def_implicit_q/2 = _this_q_dem/2
+def_implicit_q/2 = _these_q_dem/2
+def_implicit_q/2 = _that_q_dem/2
+_this_q_dem/2 = _these_q_dem/2
+_this_q_dem/2 = _that_q_dem/2
+_these_q_dem/2 = _that_q_dem/2
+_and_c/1 = _and_c/2
 _and_c/1 = _some_q/1
 _and_c/1 = _a_q/1
 _and_c/1 = _any_q/1
@@ -1144,252 +1116,252 @@ _and_c/1 = _another_q/1
 _and_c/1 = which_q/1
 _and_c/1 = free_relative_q/1
 _and_c/1 = idiom_q/1
-_and_c/1 = udef_q/1
-_and_c/1 = _the_q/1
-_and_c/1 = def_explicit_q/1
-_and_c/1 = def_implicit_q/1
-_and_c/1 = _this_q_dem/1
-_and_c/1 = _these_q_dem/1
-_and_c/1 = _that_q_dem/1
-_some_q/0 = _a_q/0
-_some_q/0 = _any_q/0
-_some_q/0 = _another_q/0
-_some_q/0 = which_q/0
-_some_q/0 = free_relative_q/0
-_some_q/0 = idiom_q/0
-_some_q/0 = _some_q/1
-_some_q/0 = _a_q/1
-_some_q/0 = _any_q/1
-_some_q/0 = _another_q/1
-_some_q/0 = which_q/1
-_some_q/0 = free_relative_q/1
-_some_q/0 = idiom_q/1
-_some_q/0 = udef_q/1
-_some_q/0 = _the_q/1
-_some_q/0 = def_explicit_q/1
-_some_q/0 = def_implicit_q/1
-_some_q/0 = _this_q_dem/1
-_some_q/0 = _these_q_dem/1
-_some_q/0 = _that_q_dem/1
-_a_q/0 = _any_q/0
-_a_q/0 = _another_q/0
-_a_q/0 = which_q/0
-_a_q/0 = free_relative_q/0
-_a_q/0 = idiom_q/0
-_a_q/0 = _some_q/1
-_a_q/0 = _a_q/1
-_a_q/0 = _any_q/1
-_a_q/0 = _another_q/1
-_a_q/0 = which_q/1
-_a_q/0 = free_relative_q/1
-_a_q/0 = idiom_q/1
-_a_q/0 = udef_q/1
-_a_q/0 = _the_q/1
-_a_q/0 = def_explicit_q/1
-_a_q/0 = def_implicit_q/1
-_a_q/0 = _this_q_dem/1
-_a_q/0 = _these_q_dem/1
-_a_q/0 = _that_q_dem/1
-_any_q/0 = _another_q/0
-_any_q/0 = which_q/0
-_any_q/0 = free_relative_q/0
-_any_q/0 = idiom_q/0
-_any_q/0 = _some_q/1
-_any_q/0 = _a_q/1
-_any_q/0 = _any_q/1
-_any_q/0 = _another_q/1
-_any_q/0 = which_q/1
-_any_q/0 = free_relative_q/1
-_any_q/0 = idiom_q/1
-_any_q/0 = udef_q/1
-_any_q/0 = _the_q/1
-_any_q/0 = def_explicit_q/1
-_any_q/0 = def_implicit_q/1
-_any_q/0 = _this_q_dem/1
-_any_q/0 = _these_q_dem/1
-_any_q/0 = _that_q_dem/1
-_another_q/0 = which_q/0
-_another_q/0 = free_relative_q/0
-_another_q/0 = idiom_q/0
-_another_q/0 = _some_q/1
-_another_q/0 = _a_q/1
-_another_q/0 = _any_q/1
-_another_q/0 = _another_q/1
-_another_q/0 = which_q/1
-_another_q/0 = free_relative_q/1
-_another_q/0 = idiom_q/1
-_another_q/0 = udef_q/1
-_another_q/0 = _the_q/1
-_another_q/0 = def_explicit_q/1
-_another_q/0 = def_implicit_q/1
-_another_q/0 = _this_q_dem/1
-_another_q/0 = _these_q_dem/1
-_another_q/0 = _that_q_dem/1
-which_q/0 = free_relative_q/0
-which_q/0 = idiom_q/0
-which_q/0 = _some_q/1
-which_q/0 = _a_q/1
-which_q/0 = _any_q/1
-which_q/0 = _another_q/1
-which_q/0 = which_q/1
-which_q/0 = free_relative_q/1
-which_q/0 = idiom_q/1
-which_q/0 = udef_q/1
-which_q/0 = _the_q/1
-which_q/0 = def_explicit_q/1
-which_q/0 = def_implicit_q/1
-which_q/0 = _this_q_dem/1
-which_q/0 = _these_q_dem/1
-which_q/0 = _that_q_dem/1
-free_relative_q/0 = idiom_q/0
-free_relative_q/0 = _some_q/1
-free_relative_q/0 = _a_q/1
-free_relative_q/0 = _any_q/1
-free_relative_q/0 = _another_q/1
-free_relative_q/0 = which_q/1
-free_relative_q/0 = free_relative_q/1
-free_relative_q/0 = idiom_q/1
-free_relative_q/0 = udef_q/1
-free_relative_q/0 = _the_q/1
-free_relative_q/0 = def_explicit_q/1
-free_relative_q/0 = def_implicit_q/1
-free_relative_q/0 = _this_q_dem/1
-free_relative_q/0 = _these_q_dem/1
-free_relative_q/0 = _that_q_dem/1
-idiom_q/0 = _some_q/1
-idiom_q/0 = _a_q/1
-idiom_q/0 = _any_q/1
-idiom_q/0 = _another_q/1
-idiom_q/0 = which_q/1
-idiom_q/0 = free_relative_q/1
-idiom_q/0 = idiom_q/1
-idiom_q/0 = udef_q/1
-idiom_q/0 = _the_q/1
-idiom_q/0 = def_explicit_q/1
-idiom_q/0 = def_implicit_q/1
-idiom_q/0 = _this_q_dem/1
-idiom_q/0 = _these_q_dem/1
-idiom_q/0 = _that_q_dem/1
+_and_c/1 = _some_q/2
+_and_c/1 = _a_q/2
+_and_c/1 = _any_q/2
+_and_c/1 = _another_q/2
+_and_c/1 = which_q/2
+_and_c/1 = free_relative_q/2
+_and_c/1 = idiom_q/2
+_and_c/1 = udef_q/2
+_and_c/1 = _the_q/2
+_and_c/1 = def_explicit_q/2
+_and_c/1 = def_implicit_q/2
+_and_c/1 = _this_q_dem/2
+_and_c/1 = _these_q_dem/2
+_and_c/1 = _that_q_dem/2
+_and_c/2 = _some_q/1
+_and_c/2 = _a_q/1
+_and_c/2 = _any_q/1
+_and_c/2 = _another_q/1
+_and_c/2 = which_q/1
+_and_c/2 = free_relative_q/1
+_and_c/2 = idiom_q/1
+_and_c/2 = _some_q/2
+_and_c/2 = _a_q/2
+_and_c/2 = _any_q/2
+_and_c/2 = _another_q/2
+_and_c/2 = which_q/2
+_and_c/2 = free_relative_q/2
+_and_c/2 = idiom_q/2
+_and_c/2 = udef_q/2
+_and_c/2 = _the_q/2
+_and_c/2 = def_explicit_q/2
+_and_c/2 = def_implicit_q/2
+_and_c/2 = _this_q_dem/2
+_and_c/2 = _these_q_dem/2
+_and_c/2 = _that_q_dem/2
 _some_q/1 = _a_q/1
 _some_q/1 = _any_q/1
 _some_q/1 = _another_q/1
 _some_q/1 = which_q/1
 _some_q/1 = free_relative_q/1
 _some_q/1 = idiom_q/1
-_some_q/1 = udef_q/1
-_some_q/1 = _the_q/1
-_some_q/1 = def_explicit_q/1
-_some_q/1 = def_implicit_q/1
-_some_q/1 = _this_q_dem/1
-_some_q/1 = _these_q_dem/1
-_some_q/1 = _that_q_dem/1
+_some_q/1 = _some_q/2
+_some_q/1 = _a_q/2
+_some_q/1 = _any_q/2
+_some_q/1 = _another_q/2
+_some_q/1 = which_q/2
+_some_q/1 = free_relative_q/2
+_some_q/1 = idiom_q/2
+_some_q/1 = udef_q/2
+_some_q/1 = _the_q/2
+_some_q/1 = def_explicit_q/2
+_some_q/1 = def_implicit_q/2
+_some_q/1 = _this_q_dem/2
+_some_q/1 = _these_q_dem/2
+_some_q/1 = _that_q_dem/2
 _a_q/1 = _any_q/1
 _a_q/1 = _another_q/1
 _a_q/1 = which_q/1
 _a_q/1 = free_relative_q/1
 _a_q/1 = idiom_q/1
-_a_q/1 = udef_q/1
-_a_q/1 = _the_q/1
-_a_q/1 = def_explicit_q/1
-_a_q/1 = def_implicit_q/1
-_a_q/1 = _this_q_dem/1
-_a_q/1 = _these_q_dem/1
-_a_q/1 = _that_q_dem/1
+_a_q/1 = _some_q/2
+_a_q/1 = _a_q/2
+_a_q/1 = _any_q/2
+_a_q/1 = _another_q/2
+_a_q/1 = which_q/2
+_a_q/1 = free_relative_q/2
+_a_q/1 = idiom_q/2
+_a_q/1 = udef_q/2
+_a_q/1 = _the_q/2
+_a_q/1 = def_explicit_q/2
+_a_q/1 = def_implicit_q/2
+_a_q/1 = _this_q_dem/2
+_a_q/1 = _these_q_dem/2
+_a_q/1 = _that_q_dem/2
 _any_q/1 = _another_q/1
 _any_q/1 = which_q/1
 _any_q/1 = free_relative_q/1
 _any_q/1 = idiom_q/1
-_any_q/1 = udef_q/1
-_any_q/1 = _the_q/1
-_any_q/1 = def_explicit_q/1
-_any_q/1 = def_implicit_q/1
-_any_q/1 = _this_q_dem/1
-_any_q/1 = _these_q_dem/1
-_any_q/1 = _that_q_dem/1
+_any_q/1 = _some_q/2
+_any_q/1 = _a_q/2
+_any_q/1 = _any_q/2
+_any_q/1 = _another_q/2
+_any_q/1 = which_q/2
+_any_q/1 = free_relative_q/2
+_any_q/1 = idiom_q/2
+_any_q/1 = udef_q/2
+_any_q/1 = _the_q/2
+_any_q/1 = def_explicit_q/2
+_any_q/1 = def_implicit_q/2
+_any_q/1 = _this_q_dem/2
+_any_q/1 = _these_q_dem/2
+_any_q/1 = _that_q_dem/2
 _another_q/1 = which_q/1
 _another_q/1 = free_relative_q/1
 _another_q/1 = idiom_q/1
-_another_q/1 = udef_q/1
-_another_q/1 = _the_q/1
-_another_q/1 = def_explicit_q/1
-_another_q/1 = def_implicit_q/1
-_another_q/1 = _this_q_dem/1
-_another_q/1 = _these_q_dem/1
-_another_q/1 = _that_q_dem/1
+_another_q/1 = _some_q/2
+_another_q/1 = _a_q/2
+_another_q/1 = _any_q/2
+_another_q/1 = _another_q/2
+_another_q/1 = which_q/2
+_another_q/1 = free_relative_q/2
+_another_q/1 = idiom_q/2
+_another_q/1 = udef_q/2
+_another_q/1 = _the_q/2
+_another_q/1 = def_explicit_q/2
+_another_q/1 = def_implicit_q/2
+_another_q/1 = _this_q_dem/2
+_another_q/1 = _these_q_dem/2
+_another_q/1 = _that_q_dem/2
 which_q/1 = free_relative_q/1
 which_q/1 = idiom_q/1
-which_q/1 = udef_q/1
-which_q/1 = _the_q/1
-which_q/1 = def_explicit_q/1
-which_q/1 = def_implicit_q/1
-which_q/1 = _this_q_dem/1
-which_q/1 = _these_q_dem/1
-which_q/1 = _that_q_dem/1
+which_q/1 = _some_q/2
+which_q/1 = _a_q/2
+which_q/1 = _any_q/2
+which_q/1 = _another_q/2
+which_q/1 = which_q/2
+which_q/1 = free_relative_q/2
+which_q/1 = idiom_q/2
+which_q/1 = udef_q/2
+which_q/1 = _the_q/2
+which_q/1 = def_explicit_q/2
+which_q/1 = def_implicit_q/2
+which_q/1 = _this_q_dem/2
+which_q/1 = _these_q_dem/2
+which_q/1 = _that_q_dem/2
 free_relative_q/1 = idiom_q/1
-free_relative_q/1 = udef_q/1
-free_relative_q/1 = _the_q/1
-free_relative_q/1 = def_explicit_q/1
-free_relative_q/1 = def_implicit_q/1
-free_relative_q/1 = _this_q_dem/1
-free_relative_q/1 = _these_q_dem/1
-free_relative_q/1 = _that_q_dem/1
-idiom_q/1 = udef_q/1
-idiom_q/1 = _the_q/1
-idiom_q/1 = def_explicit_q/1
-idiom_q/1 = def_implicit_q/1
-idiom_q/1 = _this_q_dem/1
-idiom_q/1 = _these_q_dem/1
-idiom_q/1 = _that_q_dem/1
-udef_q/1 = _the_q/1
-udef_q/1 = def_explicit_q/1
-udef_q/1 = def_implicit_q/1
-udef_q/1 = _this_q_dem/1
-udef_q/1 = _these_q_dem/1
-udef_q/1 = _that_q_dem/1
-_the_q/1 = def_explicit_q/1
-_the_q/1 = def_implicit_q/1
-_the_q/1 = _this_q_dem/1
-_the_q/1 = _these_q_dem/1
-_the_q/1 = _that_q_dem/1
-def_explicit_q/1 = def_implicit_q/1
-def_explicit_q/1 = _this_q_dem/1
-def_explicit_q/1 = _these_q_dem/1
-def_explicit_q/1 = _that_q_dem/1
-def_implicit_q/1 = _this_q_dem/1
-def_implicit_q/1 = _these_q_dem/1
-def_implicit_q/1 = _that_q_dem/1
-_this_q_dem/1 = _these_q_dem/1
-_this_q_dem/1 = _that_q_dem/1
-_these_q_dem/1 = _that_q_dem/1
-_but_c/0 = _but_c/1
-_but_c/0 = _some_q/0
-_but_c/0 = _a_q/0
-_but_c/0 = _any_q/0
-_but_c/0 = _another_q/0
-_but_c/0 = which_q/0
-_but_c/0 = free_relative_q/0
-_but_c/0 = idiom_q/0
-_but_c/0 = _some_q/1
-_but_c/0 = _a_q/1
-_but_c/0 = _any_q/1
-_but_c/0 = _another_q/1
-_but_c/0 = which_q/1
-_but_c/0 = free_relative_q/1
-_but_c/0 = idiom_q/1
-_but_c/0 = udef_q/1
-_but_c/0 = _the_q/1
-_but_c/0 = def_explicit_q/1
-_but_c/0 = def_implicit_q/1
-_but_c/0 = _this_q_dem/1
-_but_c/0 = _these_q_dem/1
-_but_c/0 = _that_q_dem/1
-_but_c/1 = _some_q/0
-_but_c/1 = _a_q/0
-_but_c/1 = _any_q/0
-_but_c/1 = _another_q/0
-_but_c/1 = which_q/0
-_but_c/1 = free_relative_q/0
-_but_c/1 = idiom_q/0
+free_relative_q/1 = _some_q/2
+free_relative_q/1 = _a_q/2
+free_relative_q/1 = _any_q/2
+free_relative_q/1 = _another_q/2
+free_relative_q/1 = which_q/2
+free_relative_q/1 = free_relative_q/2
+free_relative_q/1 = idiom_q/2
+free_relative_q/1 = udef_q/2
+free_relative_q/1 = _the_q/2
+free_relative_q/1 = def_explicit_q/2
+free_relative_q/1 = def_implicit_q/2
+free_relative_q/1 = _this_q_dem/2
+free_relative_q/1 = _these_q_dem/2
+free_relative_q/1 = _that_q_dem/2
+idiom_q/1 = _some_q/2
+idiom_q/1 = _a_q/2
+idiom_q/1 = _any_q/2
+idiom_q/1 = _another_q/2
+idiom_q/1 = which_q/2
+idiom_q/1 = free_relative_q/2
+idiom_q/1 = idiom_q/2
+idiom_q/1 = udef_q/2
+idiom_q/1 = _the_q/2
+idiom_q/1 = def_explicit_q/2
+idiom_q/1 = def_implicit_q/2
+idiom_q/1 = _this_q_dem/2
+idiom_q/1 = _these_q_dem/2
+idiom_q/1 = _that_q_dem/2
+_some_q/2 = _a_q/2
+_some_q/2 = _any_q/2
+_some_q/2 = _another_q/2
+_some_q/2 = which_q/2
+_some_q/2 = free_relative_q/2
+_some_q/2 = idiom_q/2
+_some_q/2 = udef_q/2
+_some_q/2 = _the_q/2
+_some_q/2 = def_explicit_q/2
+_some_q/2 = def_implicit_q/2
+_some_q/2 = _this_q_dem/2
+_some_q/2 = _these_q_dem/2
+_some_q/2 = _that_q_dem/2
+_a_q/2 = _any_q/2
+_a_q/2 = _another_q/2
+_a_q/2 = which_q/2
+_a_q/2 = free_relative_q/2
+_a_q/2 = idiom_q/2
+_a_q/2 = udef_q/2
+_a_q/2 = _the_q/2
+_a_q/2 = def_explicit_q/2
+_a_q/2 = def_implicit_q/2
+_a_q/2 = _this_q_dem/2
+_a_q/2 = _these_q_dem/2
+_a_q/2 = _that_q_dem/2
+_any_q/2 = _another_q/2
+_any_q/2 = which_q/2
+_any_q/2 = free_relative_q/2
+_any_q/2 = idiom_q/2
+_any_q/2 = udef_q/2
+_any_q/2 = _the_q/2
+_any_q/2 = def_explicit_q/2
+_any_q/2 = def_implicit_q/2
+_any_q/2 = _this_q_dem/2
+_any_q/2 = _these_q_dem/2
+_any_q/2 = _that_q_dem/2
+_another_q/2 = which_q/2
+_another_q/2 = free_relative_q/2
+_another_q/2 = idiom_q/2
+_another_q/2 = udef_q/2
+_another_q/2 = _the_q/2
+_another_q/2 = def_explicit_q/2
+_another_q/2 = def_implicit_q/2
+_another_q/2 = _this_q_dem/2
+_another_q/2 = _these_q_dem/2
+_another_q/2 = _that_q_dem/2
+which_q/2 = free_relative_q/2
+which_q/2 = idiom_q/2
+which_q/2 = udef_q/2
+which_q/2 = _the_q/2
+which_q/2 = def_explicit_q/2
+which_q/2 = def_implicit_q/2
+which_q/2 = _this_q_dem/2
+which_q/2 = _these_q_dem/2
+which_q/2 = _that_q_dem/2
+free_relative_q/2 = idiom_q/2
+free_relative_q/2 = udef_q/2
+free_relative_q/2 = _the_q/2
+free_relative_q/2 = def_explicit_q/2
+free_relative_q/2 = def_implicit_q/2
+free_relative_q/2 = _this_q_dem/2
+free_relative_q/2 = _these_q_dem/2
+free_relative_q/2 = _that_q_dem/2
+idiom_q/2 = udef_q/2
+idiom_q/2 = _the_q/2
+idiom_q/2 = def_explicit_q/2
+idiom_q/2 = def_implicit_q/2
+idiom_q/2 = _this_q_dem/2
+idiom_q/2 = _these_q_dem/2
+idiom_q/2 = _that_q_dem/2
+udef_q/2 = _the_q/2
+udef_q/2 = def_explicit_q/2
+udef_q/2 = def_implicit_q/2
+udef_q/2 = _this_q_dem/2
+udef_q/2 = _these_q_dem/2
+udef_q/2 = _that_q_dem/2
+_the_q/2 = def_explicit_q/2
+_the_q/2 = def_implicit_q/2
+_the_q/2 = _this_q_dem/2
+_the_q/2 = _these_q_dem/2
+_the_q/2 = _that_q_dem/2
+def_explicit_q/2 = def_implicit_q/2
+def_explicit_q/2 = _this_q_dem/2
+def_explicit_q/2 = _these_q_dem/2
+def_explicit_q/2 = _that_q_dem/2
+def_implicit_q/2 = _this_q_dem/2
+def_implicit_q/2 = _these_q_dem/2
+def_implicit_q/2 = _that_q_dem/2
+_this_q_dem/2 = _these_q_dem/2
+_this_q_dem/2 = _that_q_dem/2
+_these_q_dem/2 = _that_q_dem/2
+_but_c/1 = _but_c/2
 _but_c/1 = _some_q/1
 _but_c/1 = _a_q/1
 _but_c/1 = _any_q/1
@@ -1397,252 +1369,252 @@ _but_c/1 = _another_q/1
 _but_c/1 = which_q/1
 _but_c/1 = free_relative_q/1
 _but_c/1 = idiom_q/1
-_but_c/1 = udef_q/1
-_but_c/1 = _the_q/1
-_but_c/1 = def_explicit_q/1
-_but_c/1 = def_implicit_q/1
-_but_c/1 = _this_q_dem/1
-_but_c/1 = _these_q_dem/1
-_but_c/1 = _that_q_dem/1
-_some_q/0 = _a_q/0
-_some_q/0 = _any_q/0
-_some_q/0 = _another_q/0
-_some_q/0 = which_q/0
-_some_q/0 = free_relative_q/0
-_some_q/0 = idiom_q/0
-_some_q/0 = _some_q/1
-_some_q/0 = _a_q/1
-_some_q/0 = _any_q/1
-_some_q/0 = _another_q/1
-_some_q/0 = which_q/1
-_some_q/0 = free_relative_q/1
-_some_q/0 = idiom_q/1
-_some_q/0 = udef_q/1
-_some_q/0 = _the_q/1
-_some_q/0 = def_explicit_q/1
-_some_q/0 = def_implicit_q/1
-_some_q/0 = _this_q_dem/1
-_some_q/0 = _these_q_dem/1
-_some_q/0 = _that_q_dem/1
-_a_q/0 = _any_q/0
-_a_q/0 = _another_q/0
-_a_q/0 = which_q/0
-_a_q/0 = free_relative_q/0
-_a_q/0 = idiom_q/0
-_a_q/0 = _some_q/1
-_a_q/0 = _a_q/1
-_a_q/0 = _any_q/1
-_a_q/0 = _another_q/1
-_a_q/0 = which_q/1
-_a_q/0 = free_relative_q/1
-_a_q/0 = idiom_q/1
-_a_q/0 = udef_q/1
-_a_q/0 = _the_q/1
-_a_q/0 = def_explicit_q/1
-_a_q/0 = def_implicit_q/1
-_a_q/0 = _this_q_dem/1
-_a_q/0 = _these_q_dem/1
-_a_q/0 = _that_q_dem/1
-_any_q/0 = _another_q/0
-_any_q/0 = which_q/0
-_any_q/0 = free_relative_q/0
-_any_q/0 = idiom_q/0
-_any_q/0 = _some_q/1
-_any_q/0 = _a_q/1
-_any_q/0 = _any_q/1
-_any_q/0 = _another_q/1
-_any_q/0 = which_q/1
-_any_q/0 = free_relative_q/1
-_any_q/0 = idiom_q/1
-_any_q/0 = udef_q/1
-_any_q/0 = _the_q/1
-_any_q/0 = def_explicit_q/1
-_any_q/0 = def_implicit_q/1
-_any_q/0 = _this_q_dem/1
-_any_q/0 = _these_q_dem/1
-_any_q/0 = _that_q_dem/1
-_another_q/0 = which_q/0
-_another_q/0 = free_relative_q/0
-_another_q/0 = idiom_q/0
-_another_q/0 = _some_q/1
-_another_q/0 = _a_q/1
-_another_q/0 = _any_q/1
-_another_q/0 = _another_q/1
-_another_q/0 = which_q/1
-_another_q/0 = free_relative_q/1
-_another_q/0 = idiom_q/1
-_another_q/0 = udef_q/1
-_another_q/0 = _the_q/1
-_another_q/0 = def_explicit_q/1
-_another_q/0 = def_implicit_q/1
-_another_q/0 = _this_q_dem/1
-_another_q/0 = _these_q_dem/1
-_another_q/0 = _that_q_dem/1
-which_q/0 = free_relative_q/0
-which_q/0 = idiom_q/0
-which_q/0 = _some_q/1
-which_q/0 = _a_q/1
-which_q/0 = _any_q/1
-which_q/0 = _another_q/1
-which_q/0 = which_q/1
-which_q/0 = free_relative_q/1
-which_q/0 = idiom_q/1
-which_q/0 = udef_q/1
-which_q/0 = _the_q/1
-which_q/0 = def_explicit_q/1
-which_q/0 = def_implicit_q/1
-which_q/0 = _this_q_dem/1
-which_q/0 = _these_q_dem/1
-which_q/0 = _that_q_dem/1
-free_relative_q/0 = idiom_q/0
-free_relative_q/0 = _some_q/1
-free_relative_q/0 = _a_q/1
-free_relative_q/0 = _any_q/1
-free_relative_q/0 = _another_q/1
-free_relative_q/0 = which_q/1
-free_relative_q/0 = free_relative_q/1
-free_relative_q/0 = idiom_q/1
-free_relative_q/0 = udef_q/1
-free_relative_q/0 = _the_q/1
-free_relative_q/0 = def_explicit_q/1
-free_relative_q/0 = def_implicit_q/1
-free_relative_q/0 = _this_q_dem/1
-free_relative_q/0 = _these_q_dem/1
-free_relative_q/0 = _that_q_dem/1
-idiom_q/0 = _some_q/1
-idiom_q/0 = _a_q/1
-idiom_q/0 = _any_q/1
-idiom_q/0 = _another_q/1
-idiom_q/0 = which_q/1
-idiom_q/0 = free_relative_q/1
-idiom_q/0 = idiom_q/1
-idiom_q/0 = udef_q/1
-idiom_q/0 = _the_q/1
-idiom_q/0 = def_explicit_q/1
-idiom_q/0 = def_implicit_q/1
-idiom_q/0 = _this_q_dem/1
-idiom_q/0 = _these_q_dem/1
-idiom_q/0 = _that_q_dem/1
+_but_c/1 = _some_q/2
+_but_c/1 = _a_q/2
+_but_c/1 = _any_q/2
+_but_c/1 = _another_q/2
+_but_c/1 = which_q/2
+_but_c/1 = free_relative_q/2
+_but_c/1 = idiom_q/2
+_but_c/1 = udef_q/2
+_but_c/1 = _the_q/2
+_but_c/1 = def_explicit_q/2
+_but_c/1 = def_implicit_q/2
+_but_c/1 = _this_q_dem/2
+_but_c/1 = _these_q_dem/2
+_but_c/1 = _that_q_dem/2
+_but_c/2 = _some_q/1
+_but_c/2 = _a_q/1
+_but_c/2 = _any_q/1
+_but_c/2 = _another_q/1
+_but_c/2 = which_q/1
+_but_c/2 = free_relative_q/1
+_but_c/2 = idiom_q/1
+_but_c/2 = _some_q/2
+_but_c/2 = _a_q/2
+_but_c/2 = _any_q/2
+_but_c/2 = _another_q/2
+_but_c/2 = which_q/2
+_but_c/2 = free_relative_q/2
+_but_c/2 = idiom_q/2
+_but_c/2 = udef_q/2
+_but_c/2 = _the_q/2
+_but_c/2 = def_explicit_q/2
+_but_c/2 = def_implicit_q/2
+_but_c/2 = _this_q_dem/2
+_but_c/2 = _these_q_dem/2
+_but_c/2 = _that_q_dem/2
 _some_q/1 = _a_q/1
 _some_q/1 = _any_q/1
 _some_q/1 = _another_q/1
 _some_q/1 = which_q/1
 _some_q/1 = free_relative_q/1
 _some_q/1 = idiom_q/1
-_some_q/1 = udef_q/1
-_some_q/1 = _the_q/1
-_some_q/1 = def_explicit_q/1
-_some_q/1 = def_implicit_q/1
-_some_q/1 = _this_q_dem/1
-_some_q/1 = _these_q_dem/1
-_some_q/1 = _that_q_dem/1
+_some_q/1 = _some_q/2
+_some_q/1 = _a_q/2
+_some_q/1 = _any_q/2
+_some_q/1 = _another_q/2
+_some_q/1 = which_q/2
+_some_q/1 = free_relative_q/2
+_some_q/1 = idiom_q/2
+_some_q/1 = udef_q/2
+_some_q/1 = _the_q/2
+_some_q/1 = def_explicit_q/2
+_some_q/1 = def_implicit_q/2
+_some_q/1 = _this_q_dem/2
+_some_q/1 = _these_q_dem/2
+_some_q/1 = _that_q_dem/2
 _a_q/1 = _any_q/1
 _a_q/1 = _another_q/1
 _a_q/1 = which_q/1
 _a_q/1 = free_relative_q/1
 _a_q/1 = idiom_q/1
-_a_q/1 = udef_q/1
-_a_q/1 = _the_q/1
-_a_q/1 = def_explicit_q/1
-_a_q/1 = def_implicit_q/1
-_a_q/1 = _this_q_dem/1
-_a_q/1 = _these_q_dem/1
-_a_q/1 = _that_q_dem/1
+_a_q/1 = _some_q/2
+_a_q/1 = _a_q/2
+_a_q/1 = _any_q/2
+_a_q/1 = _another_q/2
+_a_q/1 = which_q/2
+_a_q/1 = free_relative_q/2
+_a_q/1 = idiom_q/2
+_a_q/1 = udef_q/2
+_a_q/1 = _the_q/2
+_a_q/1 = def_explicit_q/2
+_a_q/1 = def_implicit_q/2
+_a_q/1 = _this_q_dem/2
+_a_q/1 = _these_q_dem/2
+_a_q/1 = _that_q_dem/2
 _any_q/1 = _another_q/1
 _any_q/1 = which_q/1
 _any_q/1 = free_relative_q/1
 _any_q/1 = idiom_q/1
-_any_q/1 = udef_q/1
-_any_q/1 = _the_q/1
-_any_q/1 = def_explicit_q/1
-_any_q/1 = def_implicit_q/1
-_any_q/1 = _this_q_dem/1
-_any_q/1 = _these_q_dem/1
-_any_q/1 = _that_q_dem/1
+_any_q/1 = _some_q/2
+_any_q/1 = _a_q/2
+_any_q/1 = _any_q/2
+_any_q/1 = _another_q/2
+_any_q/1 = which_q/2
+_any_q/1 = free_relative_q/2
+_any_q/1 = idiom_q/2
+_any_q/1 = udef_q/2
+_any_q/1 = _the_q/2
+_any_q/1 = def_explicit_q/2
+_any_q/1 = def_implicit_q/2
+_any_q/1 = _this_q_dem/2
+_any_q/1 = _these_q_dem/2
+_any_q/1 = _that_q_dem/2
 _another_q/1 = which_q/1
 _another_q/1 = free_relative_q/1
 _another_q/1 = idiom_q/1
-_another_q/1 = udef_q/1
-_another_q/1 = _the_q/1
-_another_q/1 = def_explicit_q/1
-_another_q/1 = def_implicit_q/1
-_another_q/1 = _this_q_dem/1
-_another_q/1 = _these_q_dem/1
-_another_q/1 = _that_q_dem/1
+_another_q/1 = _some_q/2
+_another_q/1 = _a_q/2
+_another_q/1 = _any_q/2
+_another_q/1 = _another_q/2
+_another_q/1 = which_q/2
+_another_q/1 = free_relative_q/2
+_another_q/1 = idiom_q/2
+_another_q/1 = udef_q/2
+_another_q/1 = _the_q/2
+_another_q/1 = def_explicit_q/2
+_another_q/1 = def_implicit_q/2
+_another_q/1 = _this_q_dem/2
+_another_q/1 = _these_q_dem/2
+_another_q/1 = _that_q_dem/2
 which_q/1 = free_relative_q/1
 which_q/1 = idiom_q/1
-which_q/1 = udef_q/1
-which_q/1 = _the_q/1
-which_q/1 = def_explicit_q/1
-which_q/1 = def_implicit_q/1
-which_q/1 = _this_q_dem/1
-which_q/1 = _these_q_dem/1
-which_q/1 = _that_q_dem/1
+which_q/1 = _some_q/2
+which_q/1 = _a_q/2
+which_q/1 = _any_q/2
+which_q/1 = _another_q/2
+which_q/1 = which_q/2
+which_q/1 = free_relative_q/2
+which_q/1 = idiom_q/2
+which_q/1 = udef_q/2
+which_q/1 = _the_q/2
+which_q/1 = def_explicit_q/2
+which_q/1 = def_implicit_q/2
+which_q/1 = _this_q_dem/2
+which_q/1 = _these_q_dem/2
+which_q/1 = _that_q_dem/2
 free_relative_q/1 = idiom_q/1
-free_relative_q/1 = udef_q/1
-free_relative_q/1 = _the_q/1
-free_relative_q/1 = def_explicit_q/1
-free_relative_q/1 = def_implicit_q/1
-free_relative_q/1 = _this_q_dem/1
-free_relative_q/1 = _these_q_dem/1
-free_relative_q/1 = _that_q_dem/1
-idiom_q/1 = udef_q/1
-idiom_q/1 = _the_q/1
-idiom_q/1 = def_explicit_q/1
-idiom_q/1 = def_implicit_q/1
-idiom_q/1 = _this_q_dem/1
-idiom_q/1 = _these_q_dem/1
-idiom_q/1 = _that_q_dem/1
-udef_q/1 = _the_q/1
-udef_q/1 = def_explicit_q/1
-udef_q/1 = def_implicit_q/1
-udef_q/1 = _this_q_dem/1
-udef_q/1 = _these_q_dem/1
-udef_q/1 = _that_q_dem/1
-_the_q/1 = def_explicit_q/1
-_the_q/1 = def_implicit_q/1
-_the_q/1 = _this_q_dem/1
-_the_q/1 = _these_q_dem/1
-_the_q/1 = _that_q_dem/1
-def_explicit_q/1 = def_implicit_q/1
-def_explicit_q/1 = _this_q_dem/1
-def_explicit_q/1 = _these_q_dem/1
-def_explicit_q/1 = _that_q_dem/1
-def_implicit_q/1 = _this_q_dem/1
-def_implicit_q/1 = _these_q_dem/1
-def_implicit_q/1 = _that_q_dem/1
-_this_q_dem/1 = _these_q_dem/1
-_this_q_dem/1 = _that_q_dem/1
-_these_q_dem/1 = _that_q_dem/1
-_or_c/0 = _or_c/1
-_or_c/0 = _some_q/0
-_or_c/0 = _a_q/0
-_or_c/0 = _any_q/0
-_or_c/0 = _another_q/0
-_or_c/0 = which_q/0
-_or_c/0 = free_relative_q/0
-_or_c/0 = idiom_q/0
-_or_c/0 = _some_q/1
-_or_c/0 = _a_q/1
-_or_c/0 = _any_q/1
-_or_c/0 = _another_q/1
-_or_c/0 = which_q/1
-_or_c/0 = free_relative_q/1
-_or_c/0 = idiom_q/1
-_or_c/0 = udef_q/1
-_or_c/0 = _the_q/1
-_or_c/0 = def_explicit_q/1
-_or_c/0 = def_implicit_q/1
-_or_c/0 = _this_q_dem/1
-_or_c/0 = _these_q_dem/1
-_or_c/0 = _that_q_dem/1
-_or_c/1 = _some_q/0
-_or_c/1 = _a_q/0
-_or_c/1 = _any_q/0
-_or_c/1 = _another_q/0
-_or_c/1 = which_q/0
-_or_c/1 = free_relative_q/0
-_or_c/1 = idiom_q/0
+free_relative_q/1 = _some_q/2
+free_relative_q/1 = _a_q/2
+free_relative_q/1 = _any_q/2
+free_relative_q/1 = _another_q/2
+free_relative_q/1 = which_q/2
+free_relative_q/1 = free_relative_q/2
+free_relative_q/1 = idiom_q/2
+free_relative_q/1 = udef_q/2
+free_relative_q/1 = _the_q/2
+free_relative_q/1 = def_explicit_q/2
+free_relative_q/1 = def_implicit_q/2
+free_relative_q/1 = _this_q_dem/2
+free_relative_q/1 = _these_q_dem/2
+free_relative_q/1 = _that_q_dem/2
+idiom_q/1 = _some_q/2
+idiom_q/1 = _a_q/2
+idiom_q/1 = _any_q/2
+idiom_q/1 = _another_q/2
+idiom_q/1 = which_q/2
+idiom_q/1 = free_relative_q/2
+idiom_q/1 = idiom_q/2
+idiom_q/1 = udef_q/2
+idiom_q/1 = _the_q/2
+idiom_q/1 = def_explicit_q/2
+idiom_q/1 = def_implicit_q/2
+idiom_q/1 = _this_q_dem/2
+idiom_q/1 = _these_q_dem/2
+idiom_q/1 = _that_q_dem/2
+_some_q/2 = _a_q/2
+_some_q/2 = _any_q/2
+_some_q/2 = _another_q/2
+_some_q/2 = which_q/2
+_some_q/2 = free_relative_q/2
+_some_q/2 = idiom_q/2
+_some_q/2 = udef_q/2
+_some_q/2 = _the_q/2
+_some_q/2 = def_explicit_q/2
+_some_q/2 = def_implicit_q/2
+_some_q/2 = _this_q_dem/2
+_some_q/2 = _these_q_dem/2
+_some_q/2 = _that_q_dem/2
+_a_q/2 = _any_q/2
+_a_q/2 = _another_q/2
+_a_q/2 = which_q/2
+_a_q/2 = free_relative_q/2
+_a_q/2 = idiom_q/2
+_a_q/2 = udef_q/2
+_a_q/2 = _the_q/2
+_a_q/2 = def_explicit_q/2
+_a_q/2 = def_implicit_q/2
+_a_q/2 = _this_q_dem/2
+_a_q/2 = _these_q_dem/2
+_a_q/2 = _that_q_dem/2
+_any_q/2 = _another_q/2
+_any_q/2 = which_q/2
+_any_q/2 = free_relative_q/2
+_any_q/2 = idiom_q/2
+_any_q/2 = udef_q/2
+_any_q/2 = _the_q/2
+_any_q/2 = def_explicit_q/2
+_any_q/2 = def_implicit_q/2
+_any_q/2 = _this_q_dem/2
+_any_q/2 = _these_q_dem/2
+_any_q/2 = _that_q_dem/2
+_another_q/2 = which_q/2
+_another_q/2 = free_relative_q/2
+_another_q/2 = idiom_q/2
+_another_q/2 = udef_q/2
+_another_q/2 = _the_q/2
+_another_q/2 = def_explicit_q/2
+_another_q/2 = def_implicit_q/2
+_another_q/2 = _this_q_dem/2
+_another_q/2 = _these_q_dem/2
+_another_q/2 = _that_q_dem/2
+which_q/2 = free_relative_q/2
+which_q/2 = idiom_q/2
+which_q/2 = udef_q/2
+which_q/2 = _the_q/2
+which_q/2 = def_explicit_q/2
+which_q/2 = def_implicit_q/2
+which_q/2 = _this_q_dem/2
+which_q/2 = _these_q_dem/2
+which_q/2 = _that_q_dem/2
+free_relative_q/2 = idiom_q/2
+free_relative_q/2 = udef_q/2
+free_relative_q/2 = _the_q/2
+free_relative_q/2 = def_explicit_q/2
+free_relative_q/2 = def_implicit_q/2
+free_relative_q/2 = _this_q_dem/2
+free_relative_q/2 = _these_q_dem/2
+free_relative_q/2 = _that_q_dem/2
+idiom_q/2 = udef_q/2
+idiom_q/2 = _the_q/2
+idiom_q/2 = def_explicit_q/2
+idiom_q/2 = def_implicit_q/2
+idiom_q/2 = _this_q_dem/2
+idiom_q/2 = _these_q_dem/2
+idiom_q/2 = _that_q_dem/2
+udef_q/2 = _the_q/2
+udef_q/2 = def_explicit_q/2
+udef_q/2 = def_implicit_q/2
+udef_q/2 = _this_q_dem/2
+udef_q/2 = _these_q_dem/2
+udef_q/2 = _that_q_dem/2
+_the_q/2 = def_explicit_q/2
+_the_q/2 = def_implicit_q/2
+_the_q/2 = _this_q_dem/2
+_the_q/2 = _these_q_dem/2
+_the_q/2 = _that_q_dem/2
+def_explicit_q/2 = def_implicit_q/2
+def_explicit_q/2 = _this_q_dem/2
+def_explicit_q/2 = _these_q_dem/2
+def_explicit_q/2 = _that_q_dem/2
+def_implicit_q/2 = _this_q_dem/2
+def_implicit_q/2 = _these_q_dem/2
+def_implicit_q/2 = _that_q_dem/2
+_this_q_dem/2 = _these_q_dem/2
+_this_q_dem/2 = _that_q_dem/2
+_these_q_dem/2 = _that_q_dem/2
+_or_c/1 = _or_c/2
 _or_c/1 = _some_q/1
 _or_c/1 = _a_q/1
 _or_c/1 = _any_q/1
@@ -1650,220 +1622,248 @@ _or_c/1 = _another_q/1
 _or_c/1 = which_q/1
 _or_c/1 = free_relative_q/1
 _or_c/1 = idiom_q/1
-_or_c/1 = udef_q/1
-_or_c/1 = _the_q/1
-_or_c/1 = def_explicit_q/1
-_or_c/1 = def_implicit_q/1
-_or_c/1 = _this_q_dem/1
-_or_c/1 = _these_q_dem/1
-_or_c/1 = _that_q_dem/1
-_some_q/0 = _a_q/0
-_some_q/0 = _any_q/0
-_some_q/0 = _another_q/0
-_some_q/0 = which_q/0
-_some_q/0 = free_relative_q/0
-_some_q/0 = idiom_q/0
-_some_q/0 = _some_q/1
-_some_q/0 = _a_q/1
-_some_q/0 = _any_q/1
-_some_q/0 = _another_q/1
-_some_q/0 = which_q/1
-_some_q/0 = free_relative_q/1
-_some_q/0 = idiom_q/1
-_some_q/0 = udef_q/1
-_some_q/0 = _the_q/1
-_some_q/0 = def_explicit_q/1
-_some_q/0 = def_implicit_q/1
-_some_q/0 = _this_q_dem/1
-_some_q/0 = _these_q_dem/1
-_some_q/0 = _that_q_dem/1
-_a_q/0 = _any_q/0
-_a_q/0 = _another_q/0
-_a_q/0 = which_q/0
-_a_q/0 = free_relative_q/0
-_a_q/0 = idiom_q/0
-_a_q/0 = _some_q/1
-_a_q/0 = _a_q/1
-_a_q/0 = _any_q/1
-_a_q/0 = _another_q/1
-_a_q/0 = which_q/1
-_a_q/0 = free_relative_q/1
-_a_q/0 = idiom_q/1
-_a_q/0 = udef_q/1
-_a_q/0 = _the_q/1
-_a_q/0 = def_explicit_q/1
-_a_q/0 = def_implicit_q/1
-_a_q/0 = _this_q_dem/1
-_a_q/0 = _these_q_dem/1
-_a_q/0 = _that_q_dem/1
-_any_q/0 = _another_q/0
-_any_q/0 = which_q/0
-_any_q/0 = free_relative_q/0
-_any_q/0 = idiom_q/0
-_any_q/0 = _some_q/1
-_any_q/0 = _a_q/1
-_any_q/0 = _any_q/1
-_any_q/0 = _another_q/1
-_any_q/0 = which_q/1
-_any_q/0 = free_relative_q/1
-_any_q/0 = idiom_q/1
-_any_q/0 = udef_q/1
-_any_q/0 = _the_q/1
-_any_q/0 = def_explicit_q/1
-_any_q/0 = def_implicit_q/1
-_any_q/0 = _this_q_dem/1
-_any_q/0 = _these_q_dem/1
-_any_q/0 = _that_q_dem/1
-_another_q/0 = which_q/0
-_another_q/0 = free_relative_q/0
-_another_q/0 = idiom_q/0
-_another_q/0 = _some_q/1
-_another_q/0 = _a_q/1
-_another_q/0 = _any_q/1
-_another_q/0 = _another_q/1
-_another_q/0 = which_q/1
-_another_q/0 = free_relative_q/1
-_another_q/0 = idiom_q/1
-_another_q/0 = udef_q/1
-_another_q/0 = _the_q/1
-_another_q/0 = def_explicit_q/1
-_another_q/0 = def_implicit_q/1
-_another_q/0 = _this_q_dem/1
-_another_q/0 = _these_q_dem/1
-_another_q/0 = _that_q_dem/1
-which_q/0 = free_relative_q/0
-which_q/0 = idiom_q/0
-which_q/0 = _some_q/1
-which_q/0 = _a_q/1
-which_q/0 = _any_q/1
-which_q/0 = _another_q/1
-which_q/0 = which_q/1
-which_q/0 = free_relative_q/1
-which_q/0 = idiom_q/1
-which_q/0 = udef_q/1
-which_q/0 = _the_q/1
-which_q/0 = def_explicit_q/1
-which_q/0 = def_implicit_q/1
-which_q/0 = _this_q_dem/1
-which_q/0 = _these_q_dem/1
-which_q/0 = _that_q_dem/1
-free_relative_q/0 = idiom_q/0
-free_relative_q/0 = _some_q/1
-free_relative_q/0 = _a_q/1
-free_relative_q/0 = _any_q/1
-free_relative_q/0 = _another_q/1
-free_relative_q/0 = which_q/1
-free_relative_q/0 = free_relative_q/1
-free_relative_q/0 = idiom_q/1
-free_relative_q/0 = udef_q/1
-free_relative_q/0 = _the_q/1
-free_relative_q/0 = def_explicit_q/1
-free_relative_q/0 = def_implicit_q/1
-free_relative_q/0 = _this_q_dem/1
-free_relative_q/0 = _these_q_dem/1
-free_relative_q/0 = _that_q_dem/1
-idiom_q/0 = _some_q/1
-idiom_q/0 = _a_q/1
-idiom_q/0 = _any_q/1
-idiom_q/0 = _another_q/1
-idiom_q/0 = which_q/1
-idiom_q/0 = free_relative_q/1
-idiom_q/0 = idiom_q/1
-idiom_q/0 = udef_q/1
-idiom_q/0 = _the_q/1
-idiom_q/0 = def_explicit_q/1
-idiom_q/0 = def_implicit_q/1
-idiom_q/0 = _this_q_dem/1
-idiom_q/0 = _these_q_dem/1
-idiom_q/0 = _that_q_dem/1
+_or_c/1 = _some_q/2
+_or_c/1 = _a_q/2
+_or_c/1 = _any_q/2
+_or_c/1 = _another_q/2
+_or_c/1 = which_q/2
+_or_c/1 = free_relative_q/2
+_or_c/1 = idiom_q/2
+_or_c/1 = udef_q/2
+_or_c/1 = _the_q/2
+_or_c/1 = def_explicit_q/2
+_or_c/1 = def_implicit_q/2
+_or_c/1 = _this_q_dem/2
+_or_c/1 = _these_q_dem/2
+_or_c/1 = _that_q_dem/2
+_or_c/2 = _some_q/1
+_or_c/2 = _a_q/1
+_or_c/2 = _any_q/1
+_or_c/2 = _another_q/1
+_or_c/2 = which_q/1
+_or_c/2 = free_relative_q/1
+_or_c/2 = idiom_q/1
+_or_c/2 = _some_q/2
+_or_c/2 = _a_q/2
+_or_c/2 = _any_q/2
+_or_c/2 = _another_q/2
+_or_c/2 = which_q/2
+_or_c/2 = free_relative_q/2
+_or_c/2 = idiom_q/2
+_or_c/2 = udef_q/2
+_or_c/2 = _the_q/2
+_or_c/2 = def_explicit_q/2
+_or_c/2 = def_implicit_q/2
+_or_c/2 = _this_q_dem/2
+_or_c/2 = _these_q_dem/2
+_or_c/2 = _that_q_dem/2
 _some_q/1 = _a_q/1
 _some_q/1 = _any_q/1
 _some_q/1 = _another_q/1
 _some_q/1 = which_q/1
 _some_q/1 = free_relative_q/1
 _some_q/1 = idiom_q/1
-_some_q/1 = udef_q/1
-_some_q/1 = _the_q/1
-_some_q/1 = def_explicit_q/1
-_some_q/1 = def_implicit_q/1
-_some_q/1 = _this_q_dem/1
-_some_q/1 = _these_q_dem/1
-_some_q/1 = _that_q_dem/1
+_some_q/1 = _some_q/2
+_some_q/1 = _a_q/2
+_some_q/1 = _any_q/2
+_some_q/1 = _another_q/2
+_some_q/1 = which_q/2
+_some_q/1 = free_relative_q/2
+_some_q/1 = idiom_q/2
+_some_q/1 = udef_q/2
+_some_q/1 = _the_q/2
+_some_q/1 = def_explicit_q/2
+_some_q/1 = def_implicit_q/2
+_some_q/1 = _this_q_dem/2
+_some_q/1 = _these_q_dem/2
+_some_q/1 = _that_q_dem/2
 _a_q/1 = _any_q/1
 _a_q/1 = _another_q/1
 _a_q/1 = which_q/1
 _a_q/1 = free_relative_q/1
 _a_q/1 = idiom_q/1
-_a_q/1 = udef_q/1
-_a_q/1 = _the_q/1
-_a_q/1 = def_explicit_q/1
-_a_q/1 = def_implicit_q/1
-_a_q/1 = _this_q_dem/1
-_a_q/1 = _these_q_dem/1
-_a_q/1 = _that_q_dem/1
+_a_q/1 = _some_q/2
+_a_q/1 = _a_q/2
+_a_q/1 = _any_q/2
+_a_q/1 = _another_q/2
+_a_q/1 = which_q/2
+_a_q/1 = free_relative_q/2
+_a_q/1 = idiom_q/2
+_a_q/1 = udef_q/2
+_a_q/1 = _the_q/2
+_a_q/1 = def_explicit_q/2
+_a_q/1 = def_implicit_q/2
+_a_q/1 = _this_q_dem/2
+_a_q/1 = _these_q_dem/2
+_a_q/1 = _that_q_dem/2
 _any_q/1 = _another_q/1
 _any_q/1 = which_q/1
 _any_q/1 = free_relative_q/1
 _any_q/1 = idiom_q/1
-_any_q/1 = udef_q/1
-_any_q/1 = _the_q/1
-_any_q/1 = def_explicit_q/1
-_any_q/1 = def_implicit_q/1
-_any_q/1 = _this_q_dem/1
-_any_q/1 = _these_q_dem/1
-_any_q/1 = _that_q_dem/1
+_any_q/1 = _some_q/2
+_any_q/1 = _a_q/2
+_any_q/1 = _any_q/2
+_any_q/1 = _another_q/2
+_any_q/1 = which_q/2
+_any_q/1 = free_relative_q/2
+_any_q/1 = idiom_q/2
+_any_q/1 = udef_q/2
+_any_q/1 = _the_q/2
+_any_q/1 = def_explicit_q/2
+_any_q/1 = def_implicit_q/2
+_any_q/1 = _this_q_dem/2
+_any_q/1 = _these_q_dem/2
+_any_q/1 = _that_q_dem/2
 _another_q/1 = which_q/1
 _another_q/1 = free_relative_q/1
 _another_q/1 = idiom_q/1
-_another_q/1 = udef_q/1
-_another_q/1 = _the_q/1
-_another_q/1 = def_explicit_q/1
-_another_q/1 = def_implicit_q/1
-_another_q/1 = _this_q_dem/1
-_another_q/1 = _these_q_dem/1
-_another_q/1 = _that_q_dem/1
+_another_q/1 = _some_q/2
+_another_q/1 = _a_q/2
+_another_q/1 = _any_q/2
+_another_q/1 = _another_q/2
+_another_q/1 = which_q/2
+_another_q/1 = free_relative_q/2
+_another_q/1 = idiom_q/2
+_another_q/1 = udef_q/2
+_another_q/1 = _the_q/2
+_another_q/1 = def_explicit_q/2
+_another_q/1 = def_implicit_q/2
+_another_q/1 = _this_q_dem/2
+_another_q/1 = _these_q_dem/2
+_another_q/1 = _that_q_dem/2
 which_q/1 = free_relative_q/1
 which_q/1 = idiom_q/1
-which_q/1 = udef_q/1
-which_q/1 = _the_q/1
-which_q/1 = def_explicit_q/1
-which_q/1 = def_implicit_q/1
-which_q/1 = _this_q_dem/1
-which_q/1 = _these_q_dem/1
-which_q/1 = _that_q_dem/1
+which_q/1 = _some_q/2
+which_q/1 = _a_q/2
+which_q/1 = _any_q/2
+which_q/1 = _another_q/2
+which_q/1 = which_q/2
+which_q/1 = free_relative_q/2
+which_q/1 = idiom_q/2
+which_q/1 = udef_q/2
+which_q/1 = _the_q/2
+which_q/1 = def_explicit_q/2
+which_q/1 = def_implicit_q/2
+which_q/1 = _this_q_dem/2
+which_q/1 = _these_q_dem/2
+which_q/1 = _that_q_dem/2
 free_relative_q/1 = idiom_q/1
-free_relative_q/1 = udef_q/1
-free_relative_q/1 = _the_q/1
-free_relative_q/1 = def_explicit_q/1
-free_relative_q/1 = def_implicit_q/1
-free_relative_q/1 = _this_q_dem/1
-free_relative_q/1 = _these_q_dem/1
-free_relative_q/1 = _that_q_dem/1
-idiom_q/1 = udef_q/1
-idiom_q/1 = _the_q/1
-idiom_q/1 = def_explicit_q/1
-idiom_q/1 = def_implicit_q/1
-idiom_q/1 = _this_q_dem/1
-idiom_q/1 = _these_q_dem/1
-idiom_q/1 = _that_q_dem/1
-udef_q/1 = _the_q/1
-udef_q/1 = def_explicit_q/1
-udef_q/1 = def_implicit_q/1
-udef_q/1 = _this_q_dem/1
-udef_q/1 = _these_q_dem/1
-udef_q/1 = _that_q_dem/1
-_the_q/1 = def_explicit_q/1
-_the_q/1 = def_implicit_q/1
-_the_q/1 = _this_q_dem/1
-_the_q/1 = _these_q_dem/1
-_the_q/1 = _that_q_dem/1
-def_explicit_q/1 = def_implicit_q/1
-def_explicit_q/1 = _this_q_dem/1
-def_explicit_q/1 = _these_q_dem/1
-def_explicit_q/1 = _that_q_dem/1
-def_implicit_q/1 = _this_q_dem/1
-def_implicit_q/1 = _these_q_dem/1
-def_implicit_q/1 = _that_q_dem/1
-_this_q_dem/1 = _these_q_dem/1
-_this_q_dem/1 = _that_q_dem/1
-_these_q_dem/1 = _that_q_dem/1
+free_relative_q/1 = _some_q/2
+free_relative_q/1 = _a_q/2
+free_relative_q/1 = _any_q/2
+free_relative_q/1 = _another_q/2
+free_relative_q/1 = which_q/2
+free_relative_q/1 = free_relative_q/2
+free_relative_q/1 = idiom_q/2
+free_relative_q/1 = udef_q/2
+free_relative_q/1 = _the_q/2
+free_relative_q/1 = def_explicit_q/2
+free_relative_q/1 = def_implicit_q/2
+free_relative_q/1 = _this_q_dem/2
+free_relative_q/1 = _these_q_dem/2
+free_relative_q/1 = _that_q_dem/2
+idiom_q/1 = _some_q/2
+idiom_q/1 = _a_q/2
+idiom_q/1 = _any_q/2
+idiom_q/1 = _another_q/2
+idiom_q/1 = which_q/2
+idiom_q/1 = free_relative_q/2
+idiom_q/1 = idiom_q/2
+idiom_q/1 = udef_q/2
+idiom_q/1 = _the_q/2
+idiom_q/1 = def_explicit_q/2
+idiom_q/1 = def_implicit_q/2
+idiom_q/1 = _this_q_dem/2
+idiom_q/1 = _these_q_dem/2
+idiom_q/1 = _that_q_dem/2
+_some_q/2 = _a_q/2
+_some_q/2 = _any_q/2
+_some_q/2 = _another_q/2
+_some_q/2 = which_q/2
+_some_q/2 = free_relative_q/2
+_some_q/2 = idiom_q/2
+_some_q/2 = udef_q/2
+_some_q/2 = _the_q/2
+_some_q/2 = def_explicit_q/2
+_some_q/2 = def_implicit_q/2
+_some_q/2 = _this_q_dem/2
+_some_q/2 = _these_q_dem/2
+_some_q/2 = _that_q_dem/2
+_a_q/2 = _any_q/2
+_a_q/2 = _another_q/2
+_a_q/2 = which_q/2
+_a_q/2 = free_relative_q/2
+_a_q/2 = idiom_q/2
+_a_q/2 = udef_q/2
+_a_q/2 = _the_q/2
+_a_q/2 = def_explicit_q/2
+_a_q/2 = def_implicit_q/2
+_a_q/2 = _this_q_dem/2
+_a_q/2 = _these_q_dem/2
+_a_q/2 = _that_q_dem/2
+_any_q/2 = _another_q/2
+_any_q/2 = which_q/2
+_any_q/2 = free_relative_q/2
+_any_q/2 = idiom_q/2
+_any_q/2 = udef_q/2
+_any_q/2 = _the_q/2
+_any_q/2 = def_explicit_q/2
+_any_q/2 = def_implicit_q/2
+_any_q/2 = _this_q_dem/2
+_any_q/2 = _these_q_dem/2
+_any_q/2 = _that_q_dem/2
+_another_q/2 = which_q/2
+_another_q/2 = free_relative_q/2
+_another_q/2 = idiom_q/2
+_another_q/2 = udef_q/2
+_another_q/2 = _the_q/2
+_another_q/2 = def_explicit_q/2
+_another_q/2 = def_implicit_q/2
+_another_q/2 = _this_q_dem/2
+_another_q/2 = _these_q_dem/2
+_another_q/2 = _that_q_dem/2
+which_q/2 = free_relative_q/2
+which_q/2 = idiom_q/2
+which_q/2 = udef_q/2
+which_q/2 = _the_q/2
+which_q/2 = def_explicit_q/2
+which_q/2 = def_implicit_q/2
+which_q/2 = _this_q_dem/2
+which_q/2 = _these_q_dem/2
+which_q/2 = _that_q_dem/2
+free_relative_q/2 = idiom_q/2
+free_relative_q/2 = udef_q/2
+free_relative_q/2 = _the_q/2
+free_relative_q/2 = def_explicit_q/2
+free_relative_q/2 = def_implicit_q/2
+free_relative_q/2 = _this_q_dem/2
+free_relative_q/2 = _these_q_dem/2
+free_relative_q/2 = _that_q_dem/2
+idiom_q/2 = udef_q/2
+idiom_q/2 = _the_q/2
+idiom_q/2 = def_explicit_q/2
+idiom_q/2 = def_implicit_q/2
+idiom_q/2 = _this_q_dem/2
+idiom_q/2 = _these_q_dem/2
+idiom_q/2 = _that_q_dem/2
+udef_q/2 = _the_q/2
+udef_q/2 = def_explicit_q/2
+udef_q/2 = def_implicit_q/2
+udef_q/2 = _this_q_dem/2
+udef_q/2 = _these_q_dem/2
+udef_q/2 = _that_q_dem/2
+_the_q/2 = def_explicit_q/2
+_the_q/2 = def_implicit_q/2
+_the_q/2 = _this_q_dem/2
+_the_q/2 = _these_q_dem/2
+_the_q/2 = _that_q_dem/2
+def_explicit_q/2 = def_implicit_q/2
+def_explicit_q/2 = _this_q_dem/2
+def_explicit_q/2 = _these_q_dem/2
+def_explicit_q/2 = _that_q_dem/2
+def_implicit_q/2 = _this_q_dem/2
+def_implicit_q/2 = _these_q_dem/2
+def_implicit_q/2 = _that_q_dem/2
+_this_q_dem/2 = _these_q_dem/2
+_this_q_dem/2 = _that_q_dem/2
+_these_q_dem/2 = _that_q_dem/2
