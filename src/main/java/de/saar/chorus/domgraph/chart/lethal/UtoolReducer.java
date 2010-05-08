@@ -49,9 +49,12 @@ public class UtoolReducer {
         RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(weakening, equivalence, annotator);
         FTA fta = rnfc.reduce(chart, graph, labels);
         RegularTreeLanguage<RankedSymbol> rtl = new RegularTreeLanguage(fta);
+        long count = 0;
         for (Tree t : rtl) {
-            System.out.println(t);
+            count ++;
         }
+
+        System.out.println("found " + count + " readings after reduction");
     }
 
     public static void loadRewriteSystem(String filename, RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) throws Exception {

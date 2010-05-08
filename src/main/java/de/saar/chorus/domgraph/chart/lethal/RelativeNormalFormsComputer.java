@@ -43,14 +43,13 @@ public class RelativeNormalFormsComputer {
         FTA preImage = ctt.computePreImage(chartFta);
         stopwatch.report("pre", "Computed");
 
+        if(DEBUG) System.err.println("Computing difference automaton ...");
+        stopwatch.start("diff");
+        FTA reduced = differenceSpecialized(chartFta, preImage);
+        stopwatch.report("diff", "Computed");
+        if(DEBUG) System.err.println("difference automaton: " + reduced);
+
         /*
-        FTA pre1 = reduceTopDown(preImage);
-        System.err.println("reduced pre-image fta has " + pre1.getRules().size() + " rules");
-
-        FTA reduced = determinizeBU(pre1);
-         * 
-         */
-
         if(DEBUG) System.err.println("Computing complement and intersection ...");
         stopwatch.start("complement");
         FTA a = complement(preImage);
@@ -59,6 +58,9 @@ public class RelativeNormalFormsComputer {
         stopwatch.start("intersect");
         FTA reduced = intersectionTD(chartFta, a);
         stopwatch.report("intersect", "Computed intersection");
+
+         *
+         */
 
         return reduced;
     }
