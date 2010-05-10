@@ -140,7 +140,11 @@ public class RewriteSystemToTransducer {
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
         for (Rule rule : weakening.getAllRules()) {
-            if( !symbolArities.containsKey(rule.f1) || !symbolArities.containsKey(rule.f2)) {
+            if (!symbolArities.containsKey(rule.f1)) {
+                continue;
+            }
+
+            if (!symbolArities.containsKey(rule.f2)) {
                 continue;
             }
 

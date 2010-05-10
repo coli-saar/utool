@@ -71,7 +71,6 @@ void WeakeningRule(): {
 }{
     "[" ann=Annotation() "]" f1=<ID>.image "/" n1=Number() ">" f2=<ID>.image "/" n2=Number() {
         weakening.addRule(f1,n1,f2,n2,ann);
-        //System.err.println(ann + ":" + f1 + n1 + " - " + f2 + n2);
     }
 }
 
