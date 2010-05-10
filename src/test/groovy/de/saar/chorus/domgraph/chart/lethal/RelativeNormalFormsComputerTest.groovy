@@ -15,6 +15,7 @@ import de.uni_muenster.cs.sev.lethal.languages.*;
 import de.uni_muenster.cs.sev.lethal.tree.common.*;
 import de.uni_muenster.cs.sev.lethal.treeautomata.common.FTA
 
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTAOps;
 
 /**
  *
@@ -40,7 +41,7 @@ class RelativeNormalFormsComputerTest {
         RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(weakening, equivalence, ann);
         FTA fta = rnfc.reduce(chart, graph, labels);
 
-        System.out.println(fta);
+        System.out.println("\n\n\nreduced fta: " + GenFTAOps.reduceFull(fta));
 
         ChartToFTATest.assertTreeSetEquality(new RegularTreeLanguage(fta),
             ["every_x(man_w1,a_y(woman_w2,loves_z))"]);
