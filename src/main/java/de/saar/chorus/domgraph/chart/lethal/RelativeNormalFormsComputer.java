@@ -58,15 +58,19 @@ public class RelativeNormalFormsComputer {
 
         if( verbose ) {
             System.out.println("\n\nPre-image of chart under ctt:\n" + preImage);
+            System.out.println("\n\nPre-image of chart under ctt (reduced):\n" + reduceFull(preImage));
         }
 
         if(DEBUG) System.err.println("Computing difference automaton ...");
         stopwatch.start("diff");
-        FTA reduced = differenceSpecialized(chartFta, preImage);
+        FTA diff = differenceSpecialized(chartFta, preImage);
         stopwatch.report("diff", "Computed");
 
+        FTA reduced = reduceFull(diff);
+
         if( verbose ) {
-            System.out.println("\n\nDifference automaton:\n" + reduced);
+            System.out.println("\n\nDifference automaton:\n" + diff);
+            System.out.println("\n\nDifference automaton, reduced:\n" + reduceFull(diff));
         }
 
         return reduced;
