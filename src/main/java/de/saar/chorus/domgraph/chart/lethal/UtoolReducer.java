@@ -31,10 +31,28 @@ import java.io.IOException;
 public class UtoolReducer {
 
     public static void main(String[] args) throws Exception {
+        boolean verbose = false;
+        String usrFilename = null;
+        String rulesFilename = null;
+
+        // parse command-line
+        if( args.length == 3 ) {
+            verbose = args[0].equals("--verbose");
+            usrFilename = args[1];
+            rulesFilename = args[2];
+        } else if( args.length == 2 ) {
+            usrFilename = args[0];
+            rulesFilename = args[1];
+        } else {
+            System.out.println("Usage: UtoolReducer [--verbose] <usrFilename> <rulesFilename>");
+            System.exit(1);
+        }
+
+
         // read USR and convert it to domgraph
         DomGraph graph = new DomGraph();
         NodeLabels labels = new NodeLabels();
-        load(args[0], graph, labels);
+        load(usrFilename, graph, labels);
 
         // solve USR
         Chart chart = solve(labels, graph);
@@ -43,10 +61,11 @@ public class UtoolReducer {
         RewriteSystem weakening = new RewriteSystem();
         RewriteSystem equivalence = new RewriteSystem();
         Annotator annotator = new Annotator();
-        loadRewriteSystem( args[1], weakening, equivalence, annotator);
+        loadRewriteSystem( rulesFilename, weakening, equivalence, annotator);
 
         // convert USR to FTA and reduce it
         RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(weakening, equivalence, annotator);
+        rnfc.setVerbose(verbose);
         FTA fta = rnfc.reduce(chart, graph, labels);
         RegularTreeLanguage<RankedSymbol> rtl = new RegularTreeLanguage(fta);
         long count = 0;

@@ -20,11 +20,16 @@ import static de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTAOps.*;
  */
 public class RelativeNormalFormsComputer {
     private static final boolean DEBUG=true;
+    private boolean verbose = false;
     private RewriteSystemToTransducer rstt;
     private static final Stopwatch stopwatch = new Stopwatch();
 
     public RelativeNormalFormsComputer(RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) {
         rstt = new RewriteSystemToTransducer(weakening, equivalence, annotator);
+    }
+
+    public void setVerbose(boolean v) {
+        verbose = v;
     }
 
     public FTA reduce(Chart chart, DomGraph graph, NodeLabels labels) {
@@ -33,25 +38,36 @@ public class RelativeNormalFormsComputer {
         EasyFTA chartFta = ChartToFTA.convert(chart, graph, labels);
         stopwatch.report("fta", "Converted");
 
-//        System.err.println("chart fta: " + chartFta);
+        if( verbose ) {
+            System.out.println("Chart FTA:\n" + chartFta);
+        }
 
         if(DEBUG) System.err.println("Computing ctt ...");
         stopwatch.start("ctt");
         ContextTreeTransducer<RankedSymbol,RankedSymbol,State> ctt = rstt.convert(graph, labels);
         stopwatch.report("ctt", "CTT computed");
 
-//        System.err.println("ctt: " + ctt);
+        if(verbose) {
+            System.out.println("\n\nContext tree transducer:\n" + ctt);
+        }
 
         if(DEBUG) System.err.println("Computing pre-image ...");
         stopwatch.start("pre");
         FTA preImage = ctt.computePreImage(chartFta);
         stopwatch.report("pre", "Computed");
 
+        if( verbose ) {
+            System.out.println("\n\nPre-image of chart under ctt:\n" + preImage);
+        }
+
         if(DEBUG) System.err.println("Computing difference automaton ...");
         stopwatch.start("diff");
         FTA reduced = differenceSpecialized(chartFta, preImage);
         stopwatch.report("diff", "Computed");
-//        if(DEBUG) System.err.println("difference automaton: " + reduced);
+
+        if( verbose ) {
+            System.out.println("\n\nDifference automaton:\n" + reduced);
+        }
 
         return reduced;
     }
