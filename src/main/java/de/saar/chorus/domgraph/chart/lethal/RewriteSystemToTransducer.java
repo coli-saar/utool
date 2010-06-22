@@ -105,13 +105,14 @@ public class RewriteSystemToTransducer {
 
                 Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rf, rhsArgs);
 
-                // for each annotation rule ann(a',f,i) = a, add rule for these
+                // if a can be the i-th annotation below a' for label f, then add rule
                 State neutralAnnotationState = annotationStates.get(annotator.getNeutralAnnotation());
                 for (String childAnnotation : annotator.getAllAnnotations()) {
                     for (int i = 0; i < f.getArity(); i++) {
                         Set<String> possibleParentAnnotations = annotator.getParentAnnotations(childAnnotation, label, i);
 
                         if (possibleParentAnnotations == null) {
+                            // if a cannot be the i-th child of any a' for label f, then add transition to neutral annotation
                             ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotation, variables), neutralAnnotationState, rhs);
                         } else {
                             for (String parentAnnotation : possibleParentAnnotations) {
@@ -120,27 +121,6 @@ public class RewriteSystemToTransducer {
                         }
                     }
                 }
-
-                /*
-
-
-                for (String destAnnotation : annotator.getAllAnnotations()) {
-                State parentState = annotationStates.get(destAnnotation);
-                List<String> childAnnotations = annotator.getChildAnnotations(destAnnotation, label);
-
-                if (childAnnotations != null) {
-                for (int annPos = 0; annPos < f.getArity(); annPos++) {
-                ret.addRule(makeLhsWithOneAnnotationState(f, annPos, childAnnotations.get(annPos), variables), parentState, rhs);
-                }
-                }
-                }
-
-                // add annotation rules for null annotations: ann(0,f,i) = 0 for all f and i
-                for (int annPos = 0; annPos < f.getArity(); annPos++) {
-                ret.addRule(makeLhsWithOneAnnotationState(f, annPos, annotator.getNeutralAnnotation(), variables), neutralAnnotationState, rhs);
-                }
-                 *
-                 */
             }
         }
 
