@@ -211,32 +211,4 @@ public class RewriteSystemToTransducer {
     private static BiSymbol<RankedSymbol, Variable> ri(RankedSymbol s) {
         return new InnerSymbol<RankedSymbol, Variable>(s);
     }
-
-    private Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> buildType3Lhs(RankedSymbol f, List<Variable> variables, Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs) {
-        List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsSub = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
-
-        for (Variable v : variables) {
-            if (v == null) {
-                lhsSub.add(lhs);
-            } else {
-                lhsSub.add(tf.makeTreeFromSymbol(lsv(qbar, v)));
-            }
-        }
-
-        return tf.makeTreeFromSymbol(li(f), lhsSub);
-    }
-
-    private Tree<BiSymbol<RankedSymbol, Variable>> buildType3Rhs(RankedSymbol f, List<Variable> variables, Tree<BiSymbol<RankedSymbol, Variable>> rhs) {
-        List<Tree<BiSymbol<RankedSymbol, Variable>>> rhsSub = new ArrayList<Tree<BiSymbol<RankedSymbol, Variable>>>();
-
-        for (Variable v : variables) {
-            if (v == null) {
-                rhsSub.add(rhs);
-            } else {
-                rhsSub.add(tf.makeTreeFromSymbol(rv(v)));
-            }
-        }
-
-        return tf.makeTreeFromSymbol(ri(f), rhsSub);
-    }
 }
