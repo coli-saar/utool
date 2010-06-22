@@ -33,8 +33,8 @@ class RelativeNormalFormsComputerTest {
 	assert ChartSolver.solve(preprocessed, chart) == true;
 
         RewritingSystemParser parser = new RewritingSystemParser();
-        RewriteSystem weakening = new RewriteSystem();
-        RewriteSystem equivalence = new RewriteSystem();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
         Annotator ann = new Annotator();
         parser.read(new StringReader(RewritingSystemParserTest.testRewriting), weakening, equivalence, ann);
 

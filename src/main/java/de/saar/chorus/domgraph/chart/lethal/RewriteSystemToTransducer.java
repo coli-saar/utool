@@ -139,6 +139,7 @@ public class RewriteSystemToTransducer {
         }
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
+        /*  -- adapt to new rules
         for (Rule rule : weakening.getAllRules()) {
             if (!symbolArities.containsKey(rule.f1)) {
                 continue;
@@ -190,6 +191,8 @@ public class RewriteSystemToTransducer {
                 }
             }
         }
+         * 
+         */
 
         return ret;
     }

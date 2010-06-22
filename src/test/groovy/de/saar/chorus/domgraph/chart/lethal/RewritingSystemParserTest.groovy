@@ -15,10 +15,11 @@ class RewritingSystemParserTest {
     @Test
     public void testParsing() throws Exception {
         RewritingSystemParser parser = new RewritingSystemParser();
-        RewriteSystem weakening = new RewriteSystem();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
         Annotator ann = new Annotator();
 
-        parser.read(new StringReader(testRewriting), weakening, null, ann);
+        parser.read(new StringReader(testRewriting), weakening, equivalence, ann);
         System.out.println("weak=" + weakening);
         System.out.println("ann=" + ann);
     }
@@ -26,11 +27,11 @@ class RewritingSystemParserTest {
     public static String testRewriting = """
 
 // weakening rules
-[+] a/2 > every/2
-[-] every/2 > a/2
+[+] a(X, every(Y,Z)) -> every(Y, a(X,Z))
+[-] every(Y, a(X,Z)) -> a(X, every(Y,Z))
 
 // equivalence rules
-* = pron_rel/2
+pron_rel(X, *[Y]) = *[pron_rel(X,Y)]
 
 // annotator
 start annotation: +

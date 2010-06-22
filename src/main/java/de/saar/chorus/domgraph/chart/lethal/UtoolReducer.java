@@ -58,8 +58,8 @@ public class UtoolReducer {
         Chart chart = solve(labels, graph);
 
         // obtain rewrite systems
-        RewriteSystem weakening = new RewriteSystem();
-        RewriteSystem equivalence = new RewriteSystem();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
         Annotator annotator = new Annotator();
         loadRewriteSystem( rulesFilename, weakening, equivalence, annotator);
 

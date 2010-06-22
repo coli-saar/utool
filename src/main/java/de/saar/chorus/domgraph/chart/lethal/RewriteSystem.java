@@ -5,6 +5,7 @@
 
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.chorus.term.Term;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,15 @@ import java.util.List;
  */
 public class RewriteSystem {
     private List<Rule> rules;
+    private boolean ordered;
 
-    public RewriteSystem() {
+    public RewriteSystem(boolean ordered) {
         rules = new ArrayList<Rule>();
+        this.ordered = ordered;
     }
 
-    public void addRule(String f1, int n1, String f2, int n2, String annotation) {
-        rules.add(new Rule(f1,n1,f2,n2,annotation));
+    public void addRule(Term lhs, Term rhs, String annotation) {
+        rules.add(new Rule(lhs, rhs, annotation, ordered));
     }
 
     public List<Rule> getAllRules() {
@@ -35,21 +38,22 @@ public class RewriteSystem {
 
 
     public static class Rule {
-        public String f1, f2;
-        public int n1, n2;
+        public Term lhs, rhs;
         public String annotation;
+        public boolean ordered;
 
-        public Rule(String f1, int n1, String f2, int n2, String annotation) {
-            this.f1 = f1;
-            this.f2 = f2;
-            this.n1 = n1;
-            this.n2 = n2;
+
+        public Rule(Term lhs, Term rhs, String annotation, boolean ordered) {
+            this.lhs = lhs;
+            this.rhs = rhs;
             this.annotation = annotation;
+            this.ordered = ordered;
         }
+
 
         @Override
         public String toString() {
-            return f1 + "/" + n1 + " > " + f2 + "/" + n2 + " [" + annotation + "]";
+            return lhs + (ordered?" -> ":" = ") + rhs + " [" + annotation + "]";
         }
 
 

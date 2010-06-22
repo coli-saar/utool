@@ -61,9 +61,12 @@ public class RelativeNormalFormsComputer {
             System.out.println("\n\nPre-image of chart under ctt (reduced):\n" + reduceFull(preImage));
         }
 
+        FTA preduced = reduceFull(preImage);
+
         if(DEBUG) System.err.println("Computing difference automaton ...");
         stopwatch.start("diff");
-        FTA diff = differenceSpecialized(chartFta, preImage);
+//        FTA diff = differenceSpecialized(chartFta, preImage);
+        FTA diff = differenceSpecialized(chartFta, preduced);
         stopwatch.report("diff", "Computed");
 
         FTA reduced = reduceFull(diff);
