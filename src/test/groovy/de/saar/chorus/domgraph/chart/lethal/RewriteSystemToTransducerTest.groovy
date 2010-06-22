@@ -20,8 +20,8 @@ class RewriteSystemToTransducerTest {
     @Test
     public void testParsing() throws Exception {
         RewritingSystemParser parser = new RewritingSystemParser();
-        RewriteSystem weakening = new RewriteSystem();
-        RewriteSystem equivalence = new RewriteSystem();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
         Annotator ann = new Annotator();
 
         DomGraph graph = new DomGraph();

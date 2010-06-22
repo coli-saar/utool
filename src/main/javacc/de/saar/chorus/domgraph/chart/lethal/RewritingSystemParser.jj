@@ -12,6 +12,7 @@ package de.saar.chorus.domgraph.chart.lethal;
 import java.io.*;
 import java.util.*;
 import de.saar.chorus.domgraph.chart.*;
+import de.saar.chorus.term.*;
 
 public class RewritingSystemParser {
     private  RewriteSystem weakening, equivalence;
@@ -25,6 +26,7 @@ public class RewritingSystemParser {
     	ReInit(reader);
 
         this.weakening = weakening;
+        this.equivalence = equivalence;
         this.annotator = annotator;
 	Input();
 
@@ -50,9 +52,11 @@ TOKEN :
 {
     <STARTANN  : "start annotation">
  |  <NEUTRALANN : "neutral annotation">
+ |  <ARROW: "->">
+ |  <WILDCARD: "*">
  |  <NUMBER : (["0"-"9"])+>
- |  <ID   : ["a"-"z", "A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
- //|  <OTHER: ["A"-"Z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ |  <VARIABLE : ["A"-"Z"] (["a"-"z", "A"-"Z", "_", "0"-"9", "-"])*>
+ |  <ID   : ["a"-"z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
  | <LINE_END_COMMENT: "//" (~["\n"])* >
 
 }
@@ -66,30 +70,19 @@ void Input() : {
 
 void WeakeningRule(): {
     String ann;
-    String f1,f2;
-    int n1,n2;
+    Term lhs, rhs;
 }{
-    "[" ann=Annotation() "]" f1=<ID>.image "/" n1=Number() ">" f2=<ID>.image "/" n2=Number() {
-        weakening.addRule(f1,n1,f2,n2,ann);
+    "[" ann=Annotation() "]" lhs=term() <ARROW> rhs=term() {
+        weakening.addRule(lhs, rhs, ann);
     }
 }
 
-int Number(): {
-    String x;
-}{
-    x=<NUMBER>.image  { return Integer.parseInt(x); }
-}
 
 void EquivalenceRule(): {
-    String f1,f2;
-    int n1,n2;
+    Term lhs, rhs;
 }{
-    (f1=<ID>.image "/" n1=Number() "=" f2=<ID>.image "/" n2=Number()) {
-       // System.err.println(f1 + n1 + " = " + f2 + n2);
-    }
-
-    | ("*" "=" f1=<ID>.image "/" n1=Number()) {
-       // System.err.println(f1 + n1 + " = wildcard");
+    lhs=term() "=" rhs=term() {
+        equivalence.addRule(lhs, rhs, null);
     }
 }
 
@@ -113,3 +106,44 @@ String Annotation(): {
         return x;
     }
 }
+
+
+Term term() :
+{
+	Token label;
+	List<Term> subterms = new ArrayList<Term>();
+	Term subterm;
+}
+{
+	label = <ID> "("
+               (subterm = term() { subterms.add(subterm); })
+               ("," subterm = term() { subterms.add(subterm); })*
+        	 ")" {
+		return new Compound(label.image, subterms);
+	}
+
+	| label = <ID> "(" ")" { return new Compound(label.image, subterms); }
+
+  | label = <ID> {
+	  return new Constant(label.image);
+  }
+
+  | label = <VARIABLE> {
+  	  return new Variable(label.image);
+  }
+
+  | label = <WILDCARD> "[" subterm=term() "]" {
+    return new WildcardTerm(subterm);
+  }
+}
+
+
+
+/*
+
+int Number(): {
+    String x;
+}{
+    x=<NUMBER>.image  { return Integer.parseInt(x); }
+}
+*/
