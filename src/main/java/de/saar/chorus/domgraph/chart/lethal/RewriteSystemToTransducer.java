@@ -240,22 +240,3 @@ public class RewriteSystemToTransducer {
         return tf.makeTreeFromSymbol(ri(f), rhsSub);
     }
 }
-/*
- *
-
-
-
-List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsArgs = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
-
-for (int i = 0; i < f.getArity(); i++) {
-Variable var = variables.get(i);
-State childState = (i == annPos) ? annotationStates.get(childAnnotations.get(i)) : qbar;
-
-BiSymbol<RankedSymbol, Pair<State, Variable>> larg = new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(childState, var));
-lhsArgs.add(tf.makeTreeFromSymbol(larg));
-}
-
-ret.addRule(tf.makeTreeFromSymbol(lf, lhsArgs), parentState, rhs);
-
- *
- */
