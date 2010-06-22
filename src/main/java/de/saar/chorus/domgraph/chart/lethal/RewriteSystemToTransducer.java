@@ -10,7 +10,6 @@ import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.term.Compound;
 import de.saar.chorus.term.Constant;
-import de.saar.chorus.term.Substitution;
 import de.saar.chorus.term.Term;
 import de.uni_muenster.cs.sev.lethal.factories.TreeFactory;
 import de.uni_muenster.cs.sev.lethal.states.State;
@@ -28,15 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
  * @author koller
  */
 public class RewriteSystemToTransducer {
-//    private Map<String, Integer> symbolArities;
-//    private ListMultimap<String, String> symbolNodes;
-//    private RewriteSystemSpecializer specializer;
+
     private Map<String, State> annotationStates;
     private RewriteSystem weakening, equivalence;
     private Annotator annotator;
@@ -50,11 +48,6 @@ public class RewriteSystemToTransducer {
         this.equivalence = equivalence;
         this.annotator = annotator;
 
-
-
-//        symbolArities = new HashMap<String, Integer>();
-//        symbolNodes = ArrayListMultimap.create();
-
         qbar = sb.convert("qbar");
         annotationStates = new HashMap<String, State>();
         for (String ann : annotator.getAllAnnotations()) {
@@ -66,16 +59,13 @@ public class RewriteSystemToTransducer {
         ContextTreeTransducer<RankedSymbol, RankedSymbol, State> ret = new ContextTreeTransducer<RankedSymbol, RankedSymbol, State>();
         RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels);
 
-        // prepare data structures
-//        collectSymbols(graph, labels);
-
         // set final and neutral state
         ret.addFinalState(annotationStates.get(annotator.getStartAnnotation()));
         ret.setNeutralState(qbar);
 
         // type 1 rules: f(qbar:1,...,qbar:n) -> qbar, f(1,...,n)
         for (String label : specializer.getAllLabels()) {
-            for( RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
+            for (RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
                 BiSymbol<RankedSymbol, Variable> rf = new InnerSymbol<RankedSymbol, Variable>(f);
 
@@ -97,9 +87,8 @@ public class RewriteSystemToTransducer {
         }
 
         // type 2 rules: f(qbar:1,...,q_a:i,...,qbar:n) -> q_a', f(1,...,n)
-        // TODO - process null annotations correctly
         for (String label : specializer.getAllLabels()) {
-            for( RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
+            for (RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
                 BiSymbol<RankedSymbol, Variable> rf = new InnerSymbol<RankedSymbol, Variable>(f);
 
@@ -116,27 +105,42 @@ public class RewriteSystemToTransducer {
 
                 Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rf, rhsArgs);
 
-                // now go through known annotation rules for f
-                for (String destAnnotation : annotator.getAllAnnotations()) {
-                    State parentState = annotationStates.get(destAnnotation);
-                    List<String> childAnnotations = annotator.getChildAnnotations(destAnnotation, label);
+                // for each annotation rule ann(a',f,i) = a, add rule for these
+                State neutralAnnotationState = annotationStates.get(annotator.getNeutralAnnotation());
+                for (String childAnnotation : annotator.getAllAnnotations()) {
+                    for (int i = 0; i < f.getArity(); i++) {
+                        Set<String> possibleParentAnnotations = annotator.getParentAnnotations(childAnnotation, label, i);
 
-                    if (childAnnotations != null) {
-                        for (int annPos = 0; annPos < f.getArity(); annPos++) {
-                            List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsArgs = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
-
-                            for (int i = 0; i < f.getArity(); i++) {
-                                Variable var = variables.get(i);
-                                State childState = (i == annPos) ? annotationStates.get(childAnnotations.get(i)) : qbar;
-
-                                BiSymbol<RankedSymbol, Pair<State, Variable>> larg = new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(childState, var));
-                                lhsArgs.add(tf.makeTreeFromSymbol(larg));
+                        if (possibleParentAnnotations == null) {
+                            ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotation, variables), neutralAnnotationState, rhs);
+                        } else {
+                            for (String parentAnnotation : possibleParentAnnotations) {
+                                ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotation, variables), annotationStates.get(parentAnnotation), rhs);
                             }
-
-                            ret.addRule(tf.makeTreeFromSymbol(lf, lhsArgs), parentState, rhs);
                         }
                     }
                 }
+
+                /*
+
+
+                for (String destAnnotation : annotator.getAllAnnotations()) {
+                State parentState = annotationStates.get(destAnnotation);
+                List<String> childAnnotations = annotator.getChildAnnotations(destAnnotation, label);
+
+                if (childAnnotations != null) {
+                for (int annPos = 0; annPos < f.getArity(); annPos++) {
+                ret.addRule(makeLhsWithOneAnnotationState(f, annPos, childAnnotations.get(annPos), variables), parentState, rhs);
+                }
+                }
+                }
+
+                // add annotation rules for null annotations: ann(0,f,i) = 0 for all f and i
+                for (int annPos = 0; annPos < f.getArity(); annPos++) {
+                ret.addRule(makeLhsWithOneAnnotationState(f, annPos, annotator.getNeutralAnnotation(), variables), neutralAnnotationState, rhs);
+                }
+                 *
+                 */
             }
         }
 
@@ -153,77 +157,37 @@ public class RewriteSystemToTransducer {
             ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
         }
 
-
-        /*
-
-            int nextVariable = 1;
-
-
-
-
-
-
-            List<Variable> variables1 = new ArrayList<Variable>();
-            List<Variable> variables2 = new ArrayList<Variable>();
-            Variable footVariable;
-
-            for (int i = 1; i <= symbolArities.get(rule.f1); i++) {
-                if (i == rule.n1) {
-                    variables1.add(null);
-                } else {
-                    variables1.add(new NamedVariable(Integer.toString(nextVariable), nextVariable - 1));
-                    nextVariable++;
-                }
-            }
-
-            for (int i = 1; i <= symbolArities.get(rule.f2); i++) {
-                if (i == rule.n2) {
-                    variables2.add(null);
-                } else {
-                    variables2.add(new NamedVariable(Integer.toString(nextVariable), nextVariable - 1));
-                    nextVariable++;
-                }
-            }
-
-            footVariable = new NamedVariable(Integer.toString(nextVariable), nextVariable - 1);
-
-            for (String node1 : symbolNodes.get(rule.f1)) {
-                RankedSymbol f1 = makeRankedSymbolForLabel(rule.f1, node1);
-
-                for (String node2 : symbolNodes.get(rule.f2)) {
-                    RankedSymbol f2 = makeRankedSymbolForLabel(rule.f2, node2);
-
-                    Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = tf.makeTreeFromSymbol(lsv(qbar, footVariable));
-                    Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rv(footVariable));
-
-                    lhs = buildType3Lhs(f1, variables1, buildType3Lhs(f2, variables2, lhs));
-                    rhs = buildType3Rhs(f2, variables2, buildType3Rhs(f1, variables1, rhs));
-
-                    ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
-
-                }
-            }
-        }
-         * 
-         */
-
         return ret;
     }
 
+    private Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> makeLhsWithOneAnnotationState(RankedSymbol f, int childPosition, String childAnnotation, List<Variable> variables) {
+        BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
+        List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsArgs = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
+
+        for (int i = 0; i < f.getArity(); i++) {
+            Variable var = variables.get(i);
+            State childState = (i == childPosition) ? annotationStates.get(childAnnotation) : qbar;
+
+            BiSymbol<RankedSymbol, Pair<State, Variable>> larg = new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(childState, var));
+            lhsArgs.add(tf.makeTreeFromSymbol(larg));
+        }
+
+        return tf.makeTreeFromSymbol(lf, lhsArgs);
+    }
 
     private Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> convertLhs(Term lhs, Map<de.saar.chorus.term.Variable, Variable> variableMap) {
-        if( lhs instanceof de.saar.chorus.term.Variable ) {
+        if (lhs instanceof de.saar.chorus.term.Variable) {
             Variable v = new NamedVariable(Integer.toString(nextVariable), nextVariable - 1);
             nextVariable++;
+
             variableMap.put((de.saar.chorus.term.Variable) lhs, v);
             return tf.makeTreeFromSymbol(lsv(qbar, v));
-        } else if( lhs instanceof Constant ) {
+        } else if (lhs instanceof Constant) {
             return tf.makeTreeFromSymbol(li(new StdNamedRankedSymbol(((Constant) lhs).getName(), 0)));
-        } else if( lhs instanceof Compound) {
+        } else if (lhs instanceof Compound) {
             Compound c = (Compound) lhs;
             List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> sub = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
-
-            for( Term t : c.getSubterms()) {
+            for (Term t : c.getSubterms()) {
                 sub.add(convertLhs(t, variableMap));
             }
 
@@ -234,15 +198,15 @@ public class RewriteSystemToTransducer {
     }
 
     private Tree<BiSymbol<RankedSymbol, Variable>> convertRhs(Term rhs, Map<de.saar.chorus.term.Variable, Variable> variableMap) {
-        if( rhs instanceof de.saar.chorus.term.Variable ) {
+        if (rhs instanceof de.saar.chorus.term.Variable) {
             return tf.makeTreeFromSymbol(rv(variableMap.get((de.saar.chorus.term.Variable) rhs)));
-        } else if( rhs instanceof Constant ) {
+        } else if (rhs instanceof Constant) {
             return tf.makeTreeFromSymbol(ri(new StdNamedRankedSymbol(((Constant) rhs).getName(), 0)));
-        } else if( rhs instanceof Compound) {
+        } else if (rhs instanceof Compound) {
             Compound c = (Compound) rhs;
             List<Tree<BiSymbol<RankedSymbol, Variable>>> sub = new ArrayList<Tree<BiSymbol<RankedSymbol, Variable>>>();
 
-            for( Term t : c.getSubterms()) {
+            for (Term t : c.getSubterms()) {
                 sub.add(convertRhs(t, variableMap));
             }
 
@@ -251,27 +215,6 @@ public class RewriteSystemToTransducer {
             throw new UnsupportedOperationException("Encountered illegal term type: " + rhs);
         }
     }
-
-    /*
-    private void collectSymbols(DomGraph graph, NodeLabels labels) {
-        symbolArities.clear();
-        symbolNodes.clear();
-
-        for (String node : graph.getAllNodes()) {
-            String label = labels.getLabel(node);
-
-            if (label != null) {
-                symbolArities.put(label, graph.outdeg(node, EdgeType.TREE));
-                symbolNodes.put(label, node);
-            }
-        }
-    }
-
-    private RankedSymbol makeRankedSymbolForLabel(String label, String node) {
-        return new StdNamedRankedSymbol(label + "_" + node, symbolArities.get(label));
-    }
-     * 
-     */
 
     private static BiSymbol<RankedSymbol, Pair<State, Variable>> lsv(State s, Variable v) {
         return new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(s, v));
@@ -316,23 +259,23 @@ public class RewriteSystemToTransducer {
 
         return tf.makeTreeFromSymbol(ri(f), rhsSub);
     }
-
 }
-
-
-
 /*
  *
- *             if (!symbolArities.containsKey(rule.f1)) {
-                continue;
-            }
-
-            if (!symbolArities.containsKey(rule.f2)) {
-                continue;
-            }
 
 
- *
- *
+
+List<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>> lhsArgs = new ArrayList<Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>>>();
+
+for (int i = 0; i < f.getArity(); i++) {
+Variable var = variables.get(i);
+State childState = (i == annPos) ? annotationStates.get(childAnnotations.get(i)) : qbar;
+
+BiSymbol<RankedSymbol, Pair<State, Variable>> larg = new LeafSymbol<RankedSymbol, Pair<State, Variable>>(new Pair(childState, var));
+lhsArgs.add(tf.makeTreeFromSymbol(larg));
+}
+
+ret.addRule(tf.makeTreeFromSymbol(lf, lhsArgs), parentState, rhs);
+
  *
  */
