@@ -30,6 +30,13 @@ public class RewriteSystem {
         return rules;
     }
 
+    public boolean isOrdered() {
+        return ordered;
+    }
+
+
+    
+
 
     @Override
     public String toString() {
