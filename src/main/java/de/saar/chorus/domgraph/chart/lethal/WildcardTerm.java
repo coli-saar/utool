@@ -22,6 +22,12 @@ public class WildcardTerm extends Term {
         this.sub = sub;
     }
 
+    public Term getSubterm() {
+        return sub;
+    }
+
+
+
     @Override
     public Type getType() {
         return null;
