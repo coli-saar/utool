@@ -20,27 +20,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
  * @author koller
  */
 public class RewriteSystemSpecializer {
-
-    private DomGraph graph;
-    private NodeLabels labels;
     private ListMultimap<String, String> symbolNodes;
     private Map<String, Integer> symbolArities;
     private ListMultimap<String, StdNamedRankedSymbol> labelToRankedSymbol;
 
     public RewriteSystemSpecializer(DomGraph graph, NodeLabels labels) {
-        this.graph = graph;
-        this.labels = labels;
-
         symbolNodes = ArrayListMultimap.create();
         symbolArities = new HashMap<String, Integer>();
         labelToRankedSymbol = ArrayListMultimap.create();
@@ -127,7 +119,7 @@ public class RewriteSystemSpecializer {
                 for( int i = 0; i < arity; i++ ) {
                     Term lhs = specializeWildcards(rule.lhs, f, arity, i, variables);
                     Term rhs = specializeWildcards(rule.rhs, f, arity, i, variables);
-                    ret.add(new Rule(lhs, rhs, rule.annotation, rule.ordered));
+                    ret.add(new Rule(lhs, rhs, rule.annotation, rule.oriented));
                 }
             }
         }

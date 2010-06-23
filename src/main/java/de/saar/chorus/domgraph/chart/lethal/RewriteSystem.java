@@ -15,15 +15,15 @@ import java.util.List;
  */
 public class RewriteSystem {
     private List<Rule> rules;
-    private boolean ordered;
+    private boolean oriented;
 
-    public RewriteSystem(boolean ordered) {
+    public RewriteSystem(boolean oriented) {
         rules = new ArrayList<Rule>();
-        this.ordered = ordered;
+        this.oriented = oriented;
     }
 
     public void addRule(Term lhs, Term rhs, String annotation) {
-        rules.add(new Rule(lhs, rhs, annotation, ordered));
+        rules.add(new Rule(lhs, rhs, annotation, oriented));
     }
 
     public List<Rule> getAllRules() {
@@ -31,7 +31,7 @@ public class RewriteSystem {
     }
 
     public boolean isOrdered() {
-        return ordered;
+        return oriented;
     }
 
 
@@ -47,20 +47,20 @@ public class RewriteSystem {
     public static class Rule {
         public Term lhs, rhs;
         public String annotation;
-        public boolean ordered;
+        public boolean oriented;
 
 
-        public Rule(Term lhs, Term rhs, String annotation, boolean ordered) {
+        public Rule(Term lhs, Term rhs, String annotation, boolean oriented) {
             this.lhs = lhs;
             this.rhs = rhs;
             this.annotation = annotation;
-            this.ordered = ordered;
+            this.oriented = oriented;
         }
 
 
         @Override
         public String toString() {
-            return lhs + (ordered?" -> ":" = ") + rhs + " [" + annotation + "]";
+            return lhs + (oriented?" -> ":" = ") + rhs + " [" + annotation + "]";
         }
 
         @Override
@@ -81,7 +81,7 @@ public class RewriteSystem {
             if ((this.annotation == null) ? (other.annotation != null) : !this.annotation.equals(other.annotation)) {
                 return false;
             }
-            if (this.ordered != other.ordered) {
+            if (this.oriented != other.oriented) {
                 return false;
             }
             return true;
