@@ -63,6 +63,37 @@ public class RewriteSystem {
             return lhs + (ordered?" -> ":" = ") + rhs + " [" + annotation + "]";
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Rule other = (Rule) obj;
+            if (this.lhs != other.lhs && (this.lhs == null || !this.lhs.equals(other.lhs))) {
+                return false;
+            }
+            if (this.rhs != other.rhs && (this.rhs == null || !this.rhs.equals(other.rhs))) {
+                return false;
+            }
+            if ((this.annotation == null) ? (other.annotation != null) : !this.annotation.equals(other.annotation)) {
+                return false;
+            }
+            if (this.ordered != other.ordered) {
+                return false;
+            }
+            return true;
+        }
 
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            return hash;
+        }
+
+
+        
     }
 }
