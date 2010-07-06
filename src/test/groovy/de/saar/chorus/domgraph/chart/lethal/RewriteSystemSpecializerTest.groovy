@@ -67,7 +67,7 @@ class RewriteSystemSpecializerTest {
         parser.read(new StringReader(rule), weakening, equivalence, ann);
 
         Rule ret = equivalence.getAllRules().get(0);
-        ret.ordered = true;
+        ret.oriented = true;
 
         return ret;
     }
