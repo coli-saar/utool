@@ -57,8 +57,9 @@ class RewriteSystemSpecializerTest {
         RewriteSystem sWeakening = specializer.specialize(weakening);
         assert sWeakening.getAllRules().contains(parseWeakeningRule("[+] every_y(X, every_x(Y,Z)) -> every_x(Y, every_y(X,Z))")) : sWeakening.getAllRules();
         assert sWeakening.getAllRules().contains(parseWeakeningRule("[+] every_x(X, every_y(Y,Z)) -> every_y(Y, every_x(X,Z))")) : sWeakening.getAllRules();
-        assert ! sWeakening.getAllRules().contains(parseWeakeningRule("[+] every_x(X, every_x(Y,Z)) -> every_x(Y, every_x(X,Z))")) : sWeakening.getAllRules();
-        assert ! sWeakening.getAllRules().contains(parseWeakeningRule("[+] every_y(X, every_y(Y,Z)) -> every_y(Y, every_y(X,Z))")) : sWeakening.getAllRules();
+        assert sWeakening.getAllRules().size() == 2 : sWeakening.getAllRules();
+        
+        // in particular, every_x(X, every_x(Y,Z)) -> every_x(Y, every_x(X,Z)) and identity rules are not part of the specialized system
     }
 
     @Test

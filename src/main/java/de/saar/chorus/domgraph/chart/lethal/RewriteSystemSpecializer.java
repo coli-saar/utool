@@ -87,10 +87,12 @@ public class RewriteSystemSpecializer {
 
                 for (Term lhs : lhss) {
                     for (Term rhs : rhss) {
-                        if (termOrder.compare(lhs, rhs) <= 0) {
-                            specialized.addRule(lhs, rhs, rule.annotation);
-                        } else {
-                            specialized.addRule(rhs, lhs, rule.annotation);
+                        if (! isEqualUpToVariables(lhs, rhs) ) {
+                            if (termOrder.compare(lhs, rhs) <= 0) {
+                                specialized.addRule(lhs, rhs, rule.annotation);
+                            } else {
+                                specialized.addRule(rhs, lhs, rule.annotation);
+                            }
                         }
                     }
                 }
@@ -98,6 +100,39 @@ public class RewriteSystemSpecializer {
         }
 
         return specialized;
+    }
+
+    private boolean isEqualUpToVariables(Term lhs, Term rhs) {
+        if( lhs.getClass() != rhs.getClass() ) {
+            return false;
+        }
+
+        if( lhs instanceof Variable ) {
+            return true;
+        } else if( lhs instanceof Constant ) {
+            return ((Constant) lhs).getName().equals(((Constant) rhs).getName());
+        } else if( lhs instanceof Compound ) {
+            Compound cl = (Compound) lhs;
+            Compound cr = (Compound) rhs;
+
+            if( ! cl.getLabel().equals(cr.getLabel()) ) {
+                return false;
+            }
+
+            if( cl.getSubterms().size() != cr.getSubterms().size() ) {
+                return false;
+            }
+
+            for( int i = 0; i < cl.getSubterms().size(); i++ ) {
+                if( ! isEqualUpToVariables(cl.getSubterms().get(i), cr.getSubterms().get(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public RewriteSystem specialize(RewriteSystem trs) {
@@ -199,8 +234,11 @@ public class RewriteSystemSpecializer {
             ret.add(term);
             return ret;
         } else if (term instanceof Constant) {
-            for (String s : symbolNodes.get(((Constant) term).getName())) {
-                ret.add(new Constant(s));
+            String n = ((Constant) term).getName();
+            for (String node : symbolNodes.get(n) ) {
+                if (!usedNodesForLabel.get(n).contains(node)) {
+                    ret.add(new Constant(node));
+                }
             }
             return ret;
         } else if (term instanceof Compound) {
