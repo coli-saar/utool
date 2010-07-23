@@ -5,7 +5,9 @@
 package de.saar.chorus.domgraph.chart.lethal;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.SetMultimap;
 import de.saar.basic.CartesianIterator;
 import de.saar.chorus.domgraph.chart.lethal.RewriteSystem.Rule;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -28,6 +30,7 @@ import java.util.Map;
  * @author koller
  */
 public class RewriteSystemSpecializer {
+
     private ListMultimap<String, String> symbolNodes;
     private Map<String, Integer> symbolArities;
     private ListMultimap<String, StdNamedRankedSymbol> labelToRankedSymbol;
@@ -71,13 +74,16 @@ public class RewriteSystemSpecializer {
 
     public RewriteSystem specialize(RewriteSystem trs, Comparator<Term> termOrder) {
         RewriteSystem specialized = new RewriteSystem(true);
+        SetMultimap<String, String> usedNodesForLabels = HashMultimap.create();
 
         for (Rule unspecializedRule : trs.getAllRules()) {
             List<Rule> wildcardEliminatedRules = specializeWildcards(unspecializedRule);
 
             for (Rule rule : wildcardEliminatedRules) {
-                List<Term> lhss = specialize(rule.lhs);
-                List<Term> rhss = specialize(rule.rhs);
+                usedNodesForLabels.clear();
+                List<Term> lhss = specialize(rule.lhs, usedNodesForLabels);
+                usedNodesForLabels.clear();
+                List<Term> rhss = specialize(rule.rhs, usedNodesForLabels);
 
                 for (Term lhs : lhss) {
                     for (Term rhs : rhss) {
@@ -105,18 +111,18 @@ public class RewriteSystemSpecializer {
     private List<Rule> specializeWildcards(Rule rule) {
         List<Rule> ret = new ArrayList<Rule>();
 
-        if( ! containsWildcard(rule.lhs) ) {
+        if (!containsWildcard(rule.lhs)) {
             ret.add(rule);
         } else {
-            for( String f : labelToRankedSymbol.keySet() ) {
+            for (String f : labelToRankedSymbol.keySet()) {
                 List<Variable> variables = new ArrayList<Variable>();
                 int arity = symbolArities.get(f);
 
-                for( int i = 0; i < arity; i++ ) {
-                    variables.add(new Variable("WW" + (i+1)));
+                for (int i = 0; i < arity; i++) {
+                    variables.add(new Variable("WW" + (i + 1)));
                 }
 
-                for( int i = 0; i < arity; i++ ) {
+                for (int i = 0; i < arity; i++) {
                     Term lhs = specializeWildcards(rule.lhs, f, arity, i, variables);
                     Term rhs = specializeWildcards(rule.rhs, f, arity, i, variables);
                     ret.add(new Rule(lhs, rhs, rule.annotation, rule.oriented));
@@ -134,7 +140,7 @@ public class RewriteSystemSpecializer {
             return false;
         } else if (term instanceof Compound) {
             for (Term sub : ((Compound) term).getSubterms()) {
-                if( containsWildcard(sub)) {
+                if (containsWildcard(sub)) {
                     return true;
                 }
             }
@@ -165,8 +171,8 @@ public class RewriteSystemSpecializer {
             Term sub = ((WildcardTerm) term).getSubterm();
             List<Term> subterms = new ArrayList<Term>();
 
-            for( int i = 0; i < arity; i++ ) {
-                if( i == wildcardChildPos ) {
+            for (int i = 0; i < arity; i++) {
+                if (i == wildcardChildPos) {
                     subterms.add(sub);
                 } else {
                     subterms.add(variables.get(i));
@@ -180,12 +186,13 @@ public class RewriteSystemSpecializer {
     }
 
     private static class DummyComparator implements Comparator<Term> {
+
         public int compare(Term o1, Term o2) {
             return 0;
         }
     }
 
-    private List<Term> specialize(Term term) {
+    private List<Term> specialize(Term term, SetMultimap<String, String> usedNodesForLabel) {
         List<Term> ret = new ArrayList<Term>();
 
         if (term instanceof Variable) {
@@ -198,18 +205,25 @@ public class RewriteSystemSpecializer {
             return ret;
         } else if (term instanceof Compound) {
             Compound c = (Compound) term;
-            List<List<Term>> specializedSubterms = new ArrayList<List<Term>>();
 
-            for (Term sub : c.getSubterms()) {
-                specializedSubterms.add(specialize(sub));
-            }
+            for (String node : symbolNodes.get(c.getLabel())) {
+                if (!usedNodesForLabel.get(c.getLabel()).contains(node)) {
+                    List<List<Term>> specializedSubterms = new ArrayList<List<Term>>();
 
-            for (String s : symbolNodes.get(c.getLabel())) {
-                CartesianIterator<Term> it = new CartesianIterator<Term>(specializedSubterms);
+                    usedNodesForLabel.put(c.getLabel(), node);
 
-                while (it.hasNext()) {
-                    List<Term> subterms = it.next();
-                    ret.add(new Compound(s, subterms));
+                    for (Term sub : c.getSubterms()) {
+                        specializedSubterms.add(specialize(sub, usedNodesForLabel));
+                    }
+
+                    CartesianIterator<Term> it = new CartesianIterator<Term>(specializedSubterms);
+
+                    while (it.hasNext()) {
+                        List<Term> subterms = it.next();
+                        ret.add(new Compound(node, subterms));
+                    }
+
+                    usedNodesForLabel.remove(c.getLabel(), node);
                 }
             }
 
