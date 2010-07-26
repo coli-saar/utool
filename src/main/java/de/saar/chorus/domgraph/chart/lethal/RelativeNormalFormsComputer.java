@@ -35,7 +35,7 @@ public class RelativeNormalFormsComputer {
     public FTA reduce(Chart chart, DomGraph graph, NodeLabels labels) {
         if(DEBUG) System.err.println("Converting chart to FTA ...");
         stopwatch.start("fta");
-        EasyFTA chartFta = ChartToFTA.convert(chart, graph, labels);
+        EasyFTA chartFta = ChartToLethal.convertToFta(chart, graph, labels);
         stopwatch.report("fta", "Converted");
 
         if( verbose ) {

@@ -23,6 +23,7 @@ import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTA;
 import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTAOps.StdStateBuilder;
 import de.uni_muenster.cs.sev.lethal.utils.StateBuilder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -30,12 +31,12 @@ import java.util.Set;
  *
  * @author koller
  */
-public class ChartToFTA {
+public class ChartToLethal {
 
     private static final StdStateBuilder<String> ssb = new StdStateBuilder<String>();
     private static TreeFactory tf = TreeFactory.getTreeFactory();
 
-    public static EasyFTA convert(RegularTreeGrammar<SubgraphNonterminal> chart, DomGraph graph, NodeLabels labels) {
+    public static GenRTG<RankedSymbol,State> convertToRtg(RegularTreeGrammar<SubgraphNonterminal> chart, DomGraph graph, NodeLabels labels) {
         if (chart.getToplevelSubgraphs().size() != 1) {
             throw new UnsupportedOperationException("Cannot convert chart with multiple start symbols!");
         }
@@ -54,8 +55,12 @@ public class ChartToFTA {
             }
         }
 
-//        System.out.println("rtg=" + ret);
+        return ret;
 
+    }
+
+    public static EasyFTA convertToFta(RegularTreeGrammar<SubgraphNonterminal> chart, DomGraph graph, NodeLabels labels) {
+        GenRTG<RankedSymbol, State> ret = convertToRtg(chart, graph, labels);
         return new EasyFTA(ret, new TrivialConverter());
     }
 
@@ -86,8 +91,10 @@ public class ChartToFTA {
 
     private static State makeState(Set<String> subgraph, DomGraph graph) {
         StringBuffer ret = new StringBuffer("q");
+        List<String> sortedSubgraphs = new ArrayList<String>(subgraph);
+        Collections.sort(sortedSubgraphs);
 
-        for (String s : subgraph) {
+        for (String s : sortedSubgraphs) {
             if (graph.isRoot(s)) {
                 ret.append("_" + s);
             }
