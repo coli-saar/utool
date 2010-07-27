@@ -82,6 +82,13 @@ public class ChartToLethal {
         Map<PairState<State, String>, List<String>> nodesInFragment = new HashMap<PairState<State, String>, List<String>>();
         final List<GenFTARule<RankedSymbol, PairState<State, String>>> rules = fta.getRulesInBottomUpOrder();
 
+        Set<String> allNodesExceptHoles = new HashSet<String>(graph.getAllNodes());
+        for( String node : graph.getAllNodes() ) {
+            if( graph.isHole(node)) {
+                allNodesExceptHoles.remove(node);
+            }
+        }
+
         for (GenFTARule<RankedSymbol, PairState<State, String>> rule : rules) {
             String node = extractNode(rule.getSymbol());
 
@@ -109,7 +116,7 @@ public class ChartToLethal {
                     split.addWcc(holes.get(i), nontermsForHoles.get(i));
                 }
 
-                String decoration = (subgraph.equals(graph.getAllNodes())) ? CHART_ROOT_DECORATION : rule.getDestState().getSecond();
+                String decoration = (subgraph.containsAll(allNodesExceptHoles)) ? CHART_ROOT_DECORATION : rule.getDestState().getSecond();
                 DecoratedNonterminal<SubgraphNonterminal, String> nt = new DecoratedNonterminal<SubgraphNonterminal, String>(new SubgraphNonterminal(subgraph), decoration);
                 ret.addSplit(nt, split);
 

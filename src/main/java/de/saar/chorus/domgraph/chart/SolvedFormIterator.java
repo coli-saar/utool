@@ -35,30 +35,26 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  *
  */
 public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iterator<SolvedFormSpec> {
-	private ConcreteRegularTreeGrammar<E> chart;
-	private Agenda agenda;
-	private Stack<EnumerationStackEntry> stack;
 
+    private ConcreteRegularTreeGrammar<E> chart;
+    private Agenda agenda;
+    private Stack<EnumerationStackEntry> stack;
     private Set<String> roots;
     private String rootForThisFragset;
-
     // the solved form which will be returned by the next call
     // to next()
-	private SolvedFormSpec nextSolvedForm;
-
+    private SolvedFormSpec nextSolvedForm;
     // a cached list of solved forms for get(int)
-	private List<SolvedFormSpec> solvedForms;
+    private List<SolvedFormSpec> solvedForms;
     // the iterator used for computing the solved forms
     private SolvedFormIterator<E> iteratorForGet;
-
     private boolean chartIsEmpty, returnedSfForEmptyChart;
-
 
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
-	public SolvedFormIterator(ConcreteRegularTreeGrammar<E> ch, DomGraph graph) {
-        this(ch,graph,true);
-	}
+    public SolvedFormIterator(ConcreteRegularTreeGrammar<E> ch, DomGraph graph) {
+        this(ch, graph, true);
+    }
 
     private SolvedFormIterator(ConcreteRegularTreeGrammar<E> ch, DomGraph graph, boolean makeIteratorForGet) {
         chart = ch;
@@ -66,216 +62,203 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         stack = new Stack<EnumerationStackEntry>();
         solvedForms = new ArrayList<SolvedFormSpec>();
 
-        if( chart.getToplevelSubgraphs().isEmpty() ) {
-        	// If the chart has no top-level subgraph, we will generate a single (empty)
-        	// solved form.  (If such a chart comes from a solvable graph, the graph must
-        	// have been empty.)
-        	chartIsEmpty = true;
-        	returnedSfForEmptyChart = false;
+        if (chart.getToplevelSubgraphs().isEmpty()) {
+            // If the chart has no top-level subgraph, we will generate a single (empty)
+            // solved form.  (If such a chart comes from a solvable graph, the graph must
+            // have been empty.)
+            chartIsEmpty = true;
+            returnedSfForEmptyChart = false;
         } else {
 
-        	if( makeIteratorForGet ) {
-        		iteratorForGet = new SolvedFormIterator<E>(ch, graph, false);
-        	} else {
-        		iteratorForGet = null;
-        	}
+            if (makeIteratorForGet) {
+                iteratorForGet = new SolvedFormIterator<E>(ch, graph, false);
+            } else {
+                iteratorForGet = null;
+            }
 
-        	roots = graph.getAllRoots();
+            roots = graph.getAllRoots();
 
 
-        	for( E fragset : chart.getToplevelSubgraphs() ) {
-        		//if( (fragset.size() > 0) ) { // TODO - must I??
-        			agenda.add(new AgendaEntry(null, fragset));
-        		//}
-        	}
+            for (E fragset : chart.getToplevelSubgraphs()) {
+                //if( (fragset.size() > 0) ) { // TODO - must I??
+                agenda.add(new AgendaEntry(null, fragset));
+                //}
+            }
 
-        	//Null-Element on Stack
-        	stack.push( new EnumerationStackEntry(null, new ArrayList<Split<E>>(), null));
+            //Null-Element on Stack
+            stack.push(new EnumerationStackEntry(null, new ArrayList<Split<E>>(), null));
 
-        	updateNextSolvedForm();
+            updateNextSolvedForm();
         }
     }
 
-
-
     private void updateNextSolvedForm() {
-		if( isFinished() ) {
-			nextSolvedForm = null;
-		} else {
-			findNextSolvedForm();
+        if (isFinished()) {
+            nextSolvedForm = null;
+        } else {
+            findNextSolvedForm();
 
-			if( representsSolvedForm() ) {
-				nextSolvedForm = extractSolvedFormSpec();
-			} else {
-				nextSolvedForm = null;
-			}
-		}
-	}
+            if (representsSolvedForm()) {
+                nextSolvedForm = extractSolvedFormSpec();
+            } else {
+                nextSolvedForm = null;
+            }
+        }
+    }
 
-	private boolean representsSolvedForm(){
-		return (agenda.isEmpty() && stack.size() > 0 );
-	}
+    private boolean representsSolvedForm() {
+        return (agenda.isEmpty() && stack.size() > 0);
+    }
 
+    private boolean isFinished() {
+        return (agenda.isEmpty() && stack.isEmpty());
+    }
 
-	private boolean isFinished(){
-		return (agenda.isEmpty() && stack.isEmpty() );
-	}
+    private SolvedFormSpec extractSolvedFormSpec() {
+        SolvedFormSpec toReturn = new SolvedFormSpec();
 
+        for (EnumerationStackEntry ese : stack) {
+            toReturn.addAllDomEdges(ese.getEdgeAccu());
 
-	private SolvedFormSpec extractSolvedFormSpec() {
-		SolvedFormSpec toReturn = new SolvedFormSpec();
+            if (ese.getCurrentSplit() != null) {
+                toReturn.addSubstitution(ese.getCurrentSplit().getSubstitution());
+            }
+        }
 
-		for( EnumerationStackEntry ese : stack) {
-			toReturn.addAllDomEdges(ese.getEdgeAccu());
+        return toReturn;
+    }
 
-			if( ese.getCurrentSplit() != null ) {
-				toReturn.addSubstitution(ese.getCurrentSplit().getSubstitution());
-			}
-		}
+    private void findNextSolvedForm() {
+        if (!isFinished()) {
+            do {
+                step();
+            } while (!agenda.isEmpty());
 
-		return toReturn;
-	}
+            if (isFinished()) {
+                agenda.clear();
+            }
+        }
+    }
 
+    private void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
+        Split<E> split = ese.getCurrentSplit();
 
-	private void findNextSolvedForm() {
-		if( !isFinished() ) {
-			do {
-				step();
-			} while(!agenda.isEmpty());
+        // iterate over all dominators
+        for (String node : split.getAllDominators()) {
+            List<E> wccs = split.getWccs(node);
+            for (int i = 0; i < wccs.size(); i++) {
+                E wcc = wccs.get(i);
+                addFragsetToAgendaAndAccu(wcc, node, ese);
+            }
+        }
 
-			if( isFinished() ) {
-				agenda.clear();
-			}
-		}
-	}
+    }
 
-
-	private void addSplitToAgendaAndAccu(EnumerationStackEntry ese) {
-		Split<E> split = ese.getCurrentSplit();
-
-		// iterate over all dominators
-		for( String node : split.getAllDominators() ) {
-			List<E> wccs = split.getWccs(node);
-			for( int i = 0; i < wccs.size(); i++ ) {
-				E wcc = wccs.get(i);
-				addFragsetToAgendaAndAccu(wcc, node, ese);
-			}
-		}
-
-	}
-
-	private void addFragsetToAgendaAndAccu(E fragSet, String dominator, EnumerationStackEntry ese) {
+    private void addFragsetToAgendaAndAccu(E fragSet, String dominator, EnumerationStackEntry ese) {
         //if( fragSet.isSingleton(roots) ) {
-	    if( chart.isSingleton(fragSet)) {
+        if (chart.isSingleton(fragSet)) {
             // singleton fragsets: add directly to ese's domedge list
             //DomEdge newEdge = new DomEdge(dominator, fragSet.getRootIfSingleton());
-	        DomEdge newEdge = new DomEdge(dominator, chart.getRootForSingleton(fragSet));
+            DomEdge newEdge = new DomEdge(dominator, chart.getRootForSingleton(fragSet));
             ese.addDomEdge(newEdge);
         } else {
             // larger fragsets: add to agenda
-            AgendaEntry newEntry = new AgendaEntry(dominator,fragSet);
+            AgendaEntry newEntry = new AgendaEntry(dominator, fragSet);
             agenda.add(newEntry);
         }
     }
 
-
-
     private void step() {
-		EnumerationStackEntry top = stack.peek();
-		AgendaEntry agTop;
-		E topFragset;
-		String topNode;
+        EnumerationStackEntry top = stack.peek();
+        AgendaEntry agTop;
+        E topFragset;
+        String topNode;
 
-		// 1. Apply (Up) as long as possible
-		if ( agenda.isEmpty() ) {
-			while( top.isAtLastSplit() ) {
-				stack.pop();
-				if (stack.isEmpty() ) {
+        // 1. Apply (Up) as long as possible
+        if (agenda.isEmpty()) {
+            while (top.isAtLastSplit()) {
+                stack.pop();
+                if (stack.isEmpty()) {
                     return;
                 } else {
                     top = stack.peek();
                 }
-			}
-		}
+            }
+        }
 
-		// 2. Apply (Step) or (Down) as appropriate.
-		// Singleton fragments are put directly into the accu, rather
-		// than the agenda (i.e. simulation of Singleton).
-		if( agenda.isEmpty() ) {
-			// (Step)
-			top.clearAccu();
-			top.nextSplit();
+        // 2. Apply (Step) or (Down) as appropriate.
+        // Singleton fragments are put directly into the accu, rather
+        // than the agenda (i.e. simulation of Singleton).
+        if (agenda.isEmpty()) {
+            // (Step)
+            top.clearAccu();
+            top.nextSplit();
 
-			if ( top.getDominator() != null ) {
+            if (top.getDominator() != null) {
                 DomEdge newEdge =
-                    new DomEdge(top.getDominator(), top.getCurrentSplit().getRootFragment());
-				top.addDomEdge(newEdge);
-			}
+                        new DomEdge(top.getDominator(), top.getCurrentSplit().getRootFragment());
+                top.addDomEdge(newEdge);
+            }
 
-			if(! top.getAgendaCopy().isEmpty() ) {
-				agenda.addAll(top.getAgendaCopy());
-			}
+            if (!top.getAgendaCopy().isEmpty()) {
+                agenda.addAll(top.getAgendaCopy());
+            }
 
-			addSplitToAgendaAndAccu( top );
-		} else {
+            addSplitToAgendaAndAccu(top);
+        } else {
             // (Down)
-			agTop = agenda.pop();
-			topNode = agTop.getDominator();
-			topFragset = agTop.getFragmentSet();
+            agTop = agenda.pop();
+            topNode = agTop.getDominator();
+            topFragset = agTop.getFragmentSet();
 
-			//if( !topFragset.isSingleton(roots) ) {
-			if( ! chart.isSingleton(topFragset) ) {
-				// if topFragset is a singleton, then it was a wcc of the entire graph
-				// that only contained a single fragment; hence we don't need to do anything here
-				List<Split<E>> sv = chart.getSplitsFor(topFragset);
+            //if( !topFragset.isSingleton(roots) ) {
+            if (!chart.isSingleton(topFragset)) {
+                // if topFragset is a singleton, then it was a wcc of the entire graph
+                // that only contained a single fragment; hence we don't need to do anything here
+                List<Split<E>> sv = chart.getSplitsFor(topFragset);
 
-				EnumerationStackEntry newTop =
-					new EnumerationStackEntry(topNode, sv, agenda);
+                EnumerationStackEntry newTop =
+                        new EnumerationStackEntry(topNode, sv, agenda);
 
-				if( topNode != null ) {
-					DomEdge newEdge =
-						new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
-					newTop.addDomEdge( newEdge );
-				}
+                if (topNode != null) {
+                    DomEdge newEdge =
+                            new DomEdge(topNode, newTop.getCurrentSplit().getRootFragment());
+                    newTop.addDomEdge(newEdge);
+                }
 
-				stack.push(newTop);
-				addSplitToAgendaAndAccu( newTop );
-			}
-		}
-	}
-
-
-
+                stack.push(newTop);
+                addSplitToAgendaAndAccu(newTop);
+            }
+        }
+    }
 
     /**** convenience methods for implementing Iterator ****/
-
-
     public boolean hasNext() {
-    	if( chartIsEmpty ) {
-    		return !returnedSfForEmptyChart;
-    	} else {
-    		return nextSolvedForm != null;
-    	}
+        if (chartIsEmpty) {
+            return !returnedSfForEmptyChart;
+        } else {
+            return nextSolvedForm != null;
+        }
     }
 
     public SolvedFormSpec next() {
-    	if( chartIsEmpty ) {
-    		if( returnedSfForEmptyChart ) {
-    			return null;
-    		} else {
-    			returnedSfForEmptyChart = true;
-    			return new SolvedFormSpec();
-    		}
-    	}
+        if (chartIsEmpty) {
+            if (returnedSfForEmptyChart) {
+                return null;
+            } else {
+                returnedSfForEmptyChart = true;
+                return new SolvedFormSpec();
+            }
+        }
 
-    	SolvedFormSpec ret = nextSolvedForm;
+        SolvedFormSpec ret = nextSolvedForm;
 
-    	if( ret != null ) {
-    		updateNextSolvedForm();
-    		return ret;
-    	} else {
-    		return null;
-    	}
+        if (ret != null) {
+            updateNextSolvedForm();
+            return ret;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -288,8 +271,8 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
      * @return the solved form
      */
     public SolvedFormSpec getSolvedForm(int sf) {
-        for( int i = solvedForms.size(); i <= sf; i++ ) {
-            if( !iteratorForGet.hasNext() ) {
+        for (int i = solvedForms.size(); i <= sf; i++) {
+            if (!iteratorForGet.hasNext()) {
                 return null;
             } else {
                 solvedForms.add(iteratorForGet.next());
@@ -299,21 +282,17 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         return solvedForms.get(sf);
     }
 
-
-
-
     public void remove() {
         throw new UnsupportedOperationException();
     }
 
     public ConcreteRegularTreeGrammar<E> getChart() {
-    	return chart;
+        return chart;
     }
 
-
     /**** classes for the agenda and the enumeration stack ****/
-
     private class EnumerationStackEntry {
+
         private final String dominator;
         private final List<DomEdge> edgeAccu;
         private Split currentSplit;
@@ -327,11 +306,11 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
             splits = spl;
             agendaCopy = new Agenda();
 
-            if( agenda != null ) {
+            if (agenda != null) {
                 agendaCopy.addAll(agenda);
             }
 
-            if( (spl != null) && (! spl.isEmpty() )  ) {
+            if ((spl != null) && (!spl.isEmpty())) {
 
                 splitIterator = splits.iterator();
                 currentSplit = splitIterator.next();
@@ -348,10 +327,10 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         }
 
         public boolean isAtLastSplit() {
-            if( splitIterator == null ) {
+            if (splitIterator == null) {
                 return true;
             }
-            return ( (! splitIterator.hasNext()) || currentSplit.equals(lastElement));
+            return ((!splitIterator.hasNext()) || currentSplit.equals(lastElement));
         }
 
         public void addDomEdge(DomEdge edge) {
@@ -361,7 +340,6 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         public void clearAccu() {
             edgeAccu.clear();
         }
-
 
         /**
          * @return Returns the dominator.
@@ -377,14 +355,12 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
             return edgeAccu;
         }
 
-
         /**
          * @return Returns the currentSplit.
          */
         public Split getCurrentSplit() {
             return currentSplit;
         }
-
 
         /**
          * @return Returns the agendaCopy.
@@ -393,15 +369,14 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
             return agendaCopy;
         }
 
-
         @Override
         public String toString() {
             StringBuilder ret = new StringBuilder();
 
             ret.append("<ESE dom=" + dominator + ", accu=" + edgeAccu);
             ret.append(", agendacopy=" + agendaCopy + ", splits=");
-            for( Split split : splits ) {
-                if( split == currentSplit ) {
+            for (Split split : splits) {
+                if (split == currentSplit) {
                     ret.append(split.toString().toUpperCase());
                 } else {
                     ret.append(split);
@@ -413,11 +388,8 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         }
     }
 
-
-
-
-
     private class AgendaEntry {
+
         String dominator;
         E fragmentSet;
 
@@ -425,7 +397,6 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
             dominator = source;
             fragmentSet = target;
         }
-
 
         public String getDominator() {
             return dominator;
@@ -437,18 +408,15 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
 
         @Override
         public String toString() {
-            return "<Ag dom="+dominator+", fs=" + fragmentSet + ">";
+            return "<Ag dom=" + dominator + ", fs=" + fragmentSet + ">";
         }
     }
 
-
-
     private class Agenda extends Stack<AgendaEntry> {
 
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 7426236767126350134L;
+        /**
+         *
+         */
+        private static final long serialVersionUID = 7426236767126350134L;
     }
-
 }

@@ -43,6 +43,15 @@ public class RewriteSystem {
         return rules.toString();
     }
 
+    public String toPrettyString() {
+        StringBuffer buf = new StringBuffer();
+
+        for( Rule rule : rules ) {
+            buf.append(rule.toString() + "\n");
+        }
+
+        return buf.toString();
+    }
 
     public static class Rule {
         public Term lhs, rhs;
@@ -60,7 +69,7 @@ public class RewriteSystem {
 
         @Override
         public String toString() {
-            return lhs + (oriented?" -> ":" = ") + rhs + " [" + annotation + "]";
+            return "[" + annotation + "] " + lhs + (oriented?" -> ":" = ") + rhs;
         }
 
         @Override

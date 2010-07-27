@@ -141,6 +141,8 @@ public class RewriteSystemToTransducer {
         for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
             RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
 
+            System.err.println("\n\nSpecialized rewrite system:\n\n" + specializedWeakening.toPrettyString());
+
             for (Rule rule : specializedWeakening.getAllRules()) {
                 Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
 
