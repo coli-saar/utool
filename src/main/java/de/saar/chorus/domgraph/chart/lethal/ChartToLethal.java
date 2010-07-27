@@ -4,6 +4,7 @@
  */
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
@@ -63,6 +64,8 @@ public class ChartToLethal {
         GenRTG<RankedSymbol, State> ret = convertToRtg(chart, graph, labels);
         return new EasyFTA(ret, new TrivialConverter());
     }
+
+//    public RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>> convertFtaToChart()
 
     private static Tree<BiSymbol<RankedSymbol, State>> convertSplit(String node, Split<SubgraphNonterminal> split, DomGraph graph, NodeLabels labels) {
         List<SubgraphNonterminal> wccs = split.getWccs(node);
