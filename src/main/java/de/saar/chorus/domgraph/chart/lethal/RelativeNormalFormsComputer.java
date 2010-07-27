@@ -45,7 +45,6 @@ public class RelativeNormalFormsComputer {
     }
 
     public FTA reduce(Chart chart, DomGraph graph, NodeLabels labels) {
-        if(DEBUG) System.err.println("Converting chart to FTA ...");
         stopwatch.start("fta");
         EasyFTA chartFta = ChartToLethal.convertToFta(chart, graph, labels);
         stopwatch.report("fta", "Converted");
@@ -54,7 +53,6 @@ public class RelativeNormalFormsComputer {
             System.out.println("Chart FTA:\n" + chartFta);
         }
 
-        if(DEBUG) System.err.println("Computing ctt ...");
         stopwatch.start("ctt");
         ContextTreeTransducer<RankedSymbol,RankedSymbol,State> ctt = rstt.convert(graph, labels);
         stopwatch.report("ctt", "CTT computed, " + ctt.getRules().size() + " rules");
@@ -63,10 +61,9 @@ public class RelativeNormalFormsComputer {
             System.out.println("\n\nContext tree transducer:\n" + ctt);
         }
 
-        if(DEBUG) System.err.println("Computing pre-image ...");
-        stopwatch.start("pre");
+        stopwatch.start("pre-image");
         FTA preImage = ctt.computePreImage(chartFta);
-        stopwatch.report("pre", "Computed");
+        stopwatch.report("pre-image", "pre-image computed, " + preImage.getRules().size() + " rules");
 
         if( verbose ) {
             System.out.println("\n\nPre-image of chart under ctt:\n" + preImage);
@@ -75,9 +72,7 @@ public class RelativeNormalFormsComputer {
 
         FTA preduced = reduceFull(preImage);
 
-        if(DEBUG) System.err.println("Computing difference automaton ...");
         stopwatch.start("diff");
-//        FTA diff = differenceSpecialized(chartFta, preImage);
         FTA diff = differenceSpecialized(chartFta, preduced);
         stopwatch.report("diff", "Computed");
 

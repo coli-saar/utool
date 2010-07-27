@@ -26,6 +26,7 @@ public class Stopwatch {
     }
 
     public void start(String key) {
+        System.err.print("Computing " + key + " ... ");
         startTimes.put(key, System.currentTimeMillis());
     }
 
