@@ -16,6 +16,14 @@ import de.uni_muenster.cs.sev.lethal.tree.common.*;
 import de.uni_muenster.cs.sev.lethal.treeautomata.common.FTAProperties;
 import de.uni_muenster.cs.sev.lethal.grammars.generic.GenRTG;
 import de.uni_muenster.cs.sev.lethal.states.NamedState;
+import de.uni_muenster.cs.sev.lethal.treeautomata.common.FTA
+import de.uni_muenster.cs.sev.lethal.symbol.common.RankedSymbol;
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.*
+import de.uni_muenster.cs.sev.lethal.states.State;
+import de.saar.chorus.contexttransducer.PairState;
+
+import de.saar.testingtools.*;
+
 
 /**
  *
@@ -100,6 +108,47 @@ class ChartToFTATest {
 
         assert lang(fta).size() == 132 : "L(fta) has " + lang(fta).size() + " trees";
         assert fta.getRules().any { it.getDestState().toString().equals("q_h35_h39_h44") };
+    }
+
+    @Test
+    public void testBackConversion() {
+       DomGraph graph = new DomGraph();
+        NodeLabels labels = new NodeLabels();
+
+        TestingTools.decodeDomcon("[label(x f(x3 x2)) label(x3 a) label(x2 g(x1)) label(y h(y2 y3)) label(y3 c) label(z d) dom(x1 z) dom(y2 z)]", graph, labels);
+
+
+        Chart chart = new Chart();
+        DomGraph preprocessed = graph.preprocess();
+	assert ChartSolver.solve(preprocessed, chart) == true;
+
+        RewritingSystemParser parser = new RewritingSystemParser();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
+        Annotator ann = new Annotator();
+        parser.read(new StringReader(RewritingSystemParserTest.testRewriting), weakening, equivalence, ann);
+
+        RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(ann);
+        GenFTA<RankedSymbol, PairState<State, String>> fta = rnfc.reduce(chart, graph, labels);
+
+        // no rewriting at all => output fta should have same language
+        assertTreeSetEquality(new RegularTreeLanguage(fta),
+            ["f_x(a_x3,g_x2(h_y(d_z,c_y3)))", "h_y(f_x(a_x3,g_x2(d_z)),c_y3)"]);
+
+        System.err.println("before conversion: " + fta);
+
+        RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>> outChart = ChartToLethal.convertFtaToChart(fta, graph);
+        System.err.println("reconverted chart: " + outChart);
+
+        SolvedFormIterator sfi = new SolvedFormIterator<DecoratedNonterminal<SubgraphNonterminal,String>>(outChart, graph);
+        List sfs = TestingTools.collectIteratorValues(sfi);
+
+        List goldSfs = [ [[["x1", "y"], ["y2", "z"]], [:]],   [[["y2", "x"], ["x1","z"]], [:]] ];
+
+        assert TestingTools.solvedFormsEqual(sfs, goldSfs) : "[" + id + "] sfs = " + sfs;
+
+        BigInteger count = outChart.countSolvedForms();
+        assert count.equals(new BigInteger(2)) : "found " + count + " solved forms, expected 2";
     }
 
      private static Set lang(EasyFTA fta) throws Exception {

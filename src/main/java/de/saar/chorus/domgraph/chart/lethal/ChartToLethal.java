@@ -4,6 +4,8 @@
  */
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.chorus.contexttransducer.PairState;
+import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.Split;
@@ -22,11 +24,18 @@ import de.uni_muenster.cs.sev.lethal.symbol.standard.StdNamedRankedSymbol;
 import de.uni_muenster.cs.sev.lethal.tree.common.Tree;
 import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTA;
 import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTAOps.StdStateBuilder;
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTA;
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTARule;
 import de.uni_muenster.cs.sev.lethal.utils.StateBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -36,8 +45,10 @@ public class ChartToLethal {
 
     private static final StdStateBuilder<String> ssb = new StdStateBuilder<String>();
     private static TreeFactory tf = TreeFactory.getTreeFactory();
+    private static Pattern nodeNameExtractorPattern = Pattern.compile(".*_([^_]+)");
+    private static final String CHART_ROOT_DECORATION = "root";
 
-    public static GenRTG<RankedSymbol,State> convertToRtg(RegularTreeGrammar<SubgraphNonterminal> chart, DomGraph graph, NodeLabels labels) {
+    public static GenRTG<RankedSymbol, State> convertToRtg(RegularTreeGrammar<SubgraphNonterminal> chart, DomGraph graph, NodeLabels labels) {
         if (chart.getToplevelSubgraphs().size() != 1) {
             throw new UnsupportedOperationException("Cannot convert chart with multiple start symbols!");
         }
@@ -65,7 +76,77 @@ public class ChartToLethal {
         return new EasyFTA(ret, new TrivialConverter());
     }
 
-//    public RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>> convertFtaToChart()
+    public static RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> convertFtaToChart(GenFTA<RankedSymbol, PairState<State, String>> fta, DomGraph graph) {
+        ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> ret = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>();
+        Map<PairState<State, String>, List<DecoratedNonterminal<SubgraphNonterminal, String>>> statesToNontermLists = new HashMap<PairState<State, String>, List<DecoratedNonterminal<SubgraphNonterminal, String>>>();
+        Map<PairState<State, String>, List<String>> nodesInFragment = new HashMap<PairState<State, String>, List<String>>();
+        final List<GenFTARule<RankedSymbol, PairState<State, String>>> rules = fta.getRulesInBottomUpOrder();
+
+        for (GenFTARule<RankedSymbol, PairState<State, String>> rule : rules) {
+            String node = extractNode(rule.getSymbol());
+
+            if (graph.isRoot(node)) {
+                Split<DecoratedNonterminal<SubgraphNonterminal, String>> split = new Split<DecoratedNonterminal<SubgraphNonterminal, String>>(node);
+                List<String> holes = graph.getHoles(node);
+                List<DecoratedNonterminal<SubgraphNonterminal, String>> nontermsForHoles = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
+                Set<String> subgraph = new HashSet<String>();
+
+                subgraph.add(node);
+
+                for (PairState<State, String> childState : rule.getSrcStates()) {
+                    nontermsForHoles.addAll(statesToNontermLists.get(childState));
+
+                    subgraph.addAll(nodesInFragment.get(childState));
+
+                    for( DecoratedNonterminal<SubgraphNonterminal,String> nt : statesToNontermLists.get(childState)) {
+                        subgraph.addAll(nt.getNodes());
+                    }
+                }
+
+                assert holes.size() == nontermsForHoles.size();
+
+                for (int i = 0; i < holes.size(); i++) {
+                    split.addWcc(holes.get(i), nontermsForHoles.get(i));
+                }
+
+                String decoration = (subgraph.equals(graph.getAllNodes())) ? CHART_ROOT_DECORATION : rule.getDestState().getSecond();
+                DecoratedNonterminal<SubgraphNonterminal, String> nt = new DecoratedNonterminal<SubgraphNonterminal, String>(new SubgraphNonterminal(subgraph), decoration);
+                ret.addSplit(nt, split);
+
+                List<DecoratedNonterminal<SubgraphNonterminal, String>> ntt = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
+                ntt.add(nt);
+                statesToNontermLists.put(rule.getDestState(), ntt);
+                nodesInFragment.put(rule.getDestState(), new ArrayList<String>());
+
+                // NB: holes are never added to fragments. Perhaps this is not a problem.
+            } else {
+                List<DecoratedNonterminal<SubgraphNonterminal, String>> nonterminals = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
+                List<String> nodesHere = new ArrayList<String>();
+
+                // this code only works because the fta is bottom-up deterministic inside fragments
+
+                nodesHere.add(node);
+
+                for (PairState<State, String> childState : rule.getSrcStates()) {
+                    nonterminals.addAll(statesToNontermLists.get(childState));
+                    nodesHere.addAll(nodesInFragment.get(childState));
+                }
+
+                statesToNontermLists.put(rule.getDestState(), nonterminals);
+                nodesInFragment.put(rule.getDestState(), nodesHere);
+            }
+        }
+
+        Set<String> toplevelSubgraph = new HashSet<String>(graph.getAllNodes());
+        for (String node : graph.getAllNodes()) {
+            if (graph.isHole(node)) {
+                toplevelSubgraph.remove(node);
+            }
+        }
+        ret.addToplevelSubgraph(new DecoratedNonterminal<SubgraphNonterminal, String>(new SubgraphNonterminal(toplevelSubgraph), CHART_ROOT_DECORATION));
+
+        return ret;
+    }
 
     private static Tree<BiSymbol<RankedSymbol, State>> convertSplit(String node, Split<SubgraphNonterminal> split, DomGraph graph, NodeLabels labels) {
         List<SubgraphNonterminal> wccs = split.getWccs(node);
@@ -104,6 +185,16 @@ public class ChartToLethal {
         }
 
         return ssb.convert(ret.toString());
+    }
+
+    private static String extractNode(RankedSymbol symbol) {
+        Matcher m = nodeNameExtractorPattern.matcher(symbol.toString());
+
+        if (!m.matches()) {
+            throw new RuntimeException("Couldn't extract node from symbol " + symbol);
+        } else {
+            return m.group(1);
+        }
     }
 
     private static class TrivialConverter extends StateBuilder<Object> {
