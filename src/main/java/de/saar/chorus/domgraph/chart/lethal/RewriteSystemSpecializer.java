@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -34,12 +35,14 @@ public class RewriteSystemSpecializer {
     private ListMultimap<String, String> symbolNodes;
     private Map<String, Integer> symbolArities;
     private ListMultimap<String, StdNamedRankedSymbol> labelToRankedSymbol;
+    private Set<String> allAnnotations;
 
-    public RewriteSystemSpecializer(DomGraph graph, NodeLabels labels) {
+    public RewriteSystemSpecializer(DomGraph graph, NodeLabels labels, Annotator annotator) {
         symbolNodes = ArrayListMultimap.create();
         symbolArities = new HashMap<String, Integer>();
         labelToRankedSymbol = ArrayListMultimap.create();
         collectSymbols(graph, labels);
+        allAnnotations = annotator.getAllAnnotations();
     }
 
     private void collectSymbols(DomGraph graph, NodeLabels labels) {
@@ -87,11 +90,11 @@ public class RewriteSystemSpecializer {
 
                 for (Term lhs : lhss) {
                     for (Term rhs : rhss) {
-                        if (! isEqualUpToVariables(lhs, rhs) ) {
+                        if (!isEqualUpToVariables(lhs, rhs)) {
                             if (termOrder.compare(lhs, rhs) <= 0) {
-                                specialized.addRule(lhs, rhs, rule.annotation);
+                                addRule(specialized, lhs, rhs, rule.annotation);
                             } else {
-                                specialized.addRule(rhs, lhs, rule.annotation);
+                                addRule(specialized, rhs, lhs, rule.annotation);
                             }
                         }
                     }
@@ -102,29 +105,41 @@ public class RewriteSystemSpecializer {
         return specialized;
     }
 
+    private void addRule(RewriteSystem specialized, Term lhs, Term rhs, String annotation) {
+        if (annotation != null) {
+            specialized.addRule(lhs, rhs, annotation);
+        } else {
+            for (String ann : allAnnotations) {
+                specialized.addRule(lhs, rhs, ann);
+            }
+        }
+
+
+    }
+
     private boolean isEqualUpToVariables(Term lhs, Term rhs) {
-        if( lhs.getClass() != rhs.getClass() ) {
+        if (lhs.getClass() != rhs.getClass()) {
             return false;
         }
 
-        if( lhs instanceof Variable ) {
+        if (lhs instanceof Variable) {
             return true;
-        } else if( lhs instanceof Constant ) {
+        } else if (lhs instanceof Constant) {
             return ((Constant) lhs).getName().equals(((Constant) rhs).getName());
-        } else if( lhs instanceof Compound ) {
+        } else if (lhs instanceof Compound) {
             Compound cl = (Compound) lhs;
             Compound cr = (Compound) rhs;
 
-            if( ! cl.getLabel().equals(cr.getLabel()) ) {
+            if (!cl.getLabel().equals(cr.getLabel())) {
                 return false;
             }
 
-            if( cl.getSubterms().size() != cr.getSubterms().size() ) {
+            if (cl.getSubterms().size() != cr.getSubterms().size()) {
                 return false;
             }
 
-            for( int i = 0; i < cl.getSubterms().size(); i++ ) {
-                if( ! isEqualUpToVariables(cl.getSubterms().get(i), cr.getSubterms().get(i))) {
+            for (int i = 0; i < cl.getSubterms().size(); i++) {
+                if (!isEqualUpToVariables(cl.getSubterms().get(i), cr.getSubterms().get(i))) {
                     return false;
                 }
             }
@@ -220,13 +235,6 @@ public class RewriteSystemSpecializer {
         }
     }
 
-    private static class DummyComparator implements Comparator<Term> {
-
-        public int compare(Term o1, Term o2) {
-            return 0;
-        }
-    }
-
     private List<Term> specialize(Term term, SetMultimap<String, String> usedNodesForLabel) {
         List<Term> ret = new ArrayList<Term>();
 
@@ -235,7 +243,7 @@ public class RewriteSystemSpecializer {
             return ret;
         } else if (term instanceof Constant) {
             String n = ((Constant) term).getName();
-            for (String node : symbolNodes.get(n) ) {
+            for (String node : symbolNodes.get(n)) {
                 if (!usedNodesForLabel.get(n).contains(node)) {
                     ret.add(new Constant(node));
                 }

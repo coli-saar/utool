@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 
 /**
  *
@@ -64,7 +65,11 @@ public class UtoolReducer {
         loadRewriteSystem( rulesFilename, weakening, equivalence, annotator);
 
         // convert USR to FTA and reduce it
-        RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(weakening, equivalence, annotator);
+        RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(annotator);
+
+        rnfc.addRewriteSystem(weakening);
+        rnfc.addRewriteSystem(equivalence, new EquivalenceRulesComparator(new HashSet<String>()));
+        
         rnfc.setVerbose(verbose);
         FTA fta = rnfc.reduce(chart, graph, labels);
         RegularTreeLanguage<RankedSymbol> rtl = new RegularTreeLanguage(fta);

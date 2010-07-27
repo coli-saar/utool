@@ -38,7 +38,8 @@ class RelativeNormalFormsComputerTest {
         Annotator ann = new Annotator();
         parser.read(new StringReader(RewritingSystemParserTest.testRewriting), weakening, equivalence, ann);
 
-        RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(weakening, equivalence, ann);
+        RelativeNormalFormsComputer rnfc = new RelativeNormalFormsComputer(ann);
+        rnfc.addRewriteSystem(weakening);
         FTA fta = rnfc.reduce(chart, graph, labels);
 
         System.out.println("\n\n\nreduced fta: " + GenFTAOps.reduceFull(fta));

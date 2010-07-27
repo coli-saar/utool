@@ -29,7 +29,8 @@ class RewriteSystemToTransducerTest {
         TestingTools.decodeDomcon(domgraph, graph, labels);
 
         parser.read(new StringReader(RewritingSystemParserTest.testRewriting), weakening, equivalence, ann);
-        RewriteSystemToTransducer converter = new RewriteSystemToTransducer(weakening, equivalence, ann);
+        RewriteSystemToTransducer converter = new RewriteSystemToTransducer(ann);
+        converter.addRewriteSystem(weakening);
         ContextTreeTransducer<RankedSymbol,RankedSymbol,State> ctt = converter.convert(graph,labels);
 
         // some type 2 rules
@@ -52,7 +53,8 @@ class RewriteSystemToTransducerTest {
         TestingTools.decodeDomcon(domgraph, graph, labels);
 
         parser.read(new StringReader(testRewritingCrazyAnnotations), weakening, equivalence, ann);
-        RewriteSystemToTransducer converter = new RewriteSystemToTransducer(weakening, equivalence, ann);
+        RewriteSystemToTransducer converter = new RewriteSystemToTransducer(ann);
+        converter.addRewriteSystem(weakening);
         ContextTreeTransducer<RankedSymbol,RankedSymbol,State> ctt = converter.convert(graph,labels);
 
 
