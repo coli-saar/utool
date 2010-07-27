@@ -63,8 +63,13 @@ class RewriteSystemToTransducerTest {
 
         
         // some type 2 rules
-        assert ctt.getRules().contains(parseRule("every_x(q_+:1,qbar:2) -> q_-, every_x(1,2)"));
-        assert ctt.getRules().contains(parseRule("a_y(q_-:1,qbar:2) -> q_0, a_y(1,2)"));
+        assert ctt.getRules().contains(parseRule("every_x(q_+:1,qbar:2) -> q_-, every_x(1,2)")); // this is simply annotation rule 3
+        assert ctt.getRules().contains(parseRule("a_y(q_+:1,qbar:2) -> q_+, a_y(1,2)"));         // rule 1
+
+
+        assert ctt.getRules().contains(parseRule("a_y(q_0:1,qbar:2) -> q_-, a_y(1,2)")); // these are rules for undefined transitions for "a"
+        assert ctt.getRules().contains(parseRule("a_y(q_0:1,qbar:2) -> q_0, a_y(1,2)"));
+        assert ! ctt.getRules().contains(parseRule("a_y(q_0:1,qbar:2) -> q_+, a_y(1,2)")); // this should be blocked because there is a rule for +:a
     }
 
     private static Rule parseRule(String x) {

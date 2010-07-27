@@ -100,6 +100,7 @@ public class RewriteSystemToTransducer {
         }
 
         // type 2 rules: f(qbar:1,...,q_a:i,...,qbar:n) -> q_a', f(1,...,n)
+        // if there is no annotator rule for f and a', then pretend it's a':f(0,...,0) where 0 is neutral state
         for (String label : specializer.getAllLabels()) {
             for (RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
@@ -118,6 +119,26 @@ public class RewriteSystemToTransducer {
 
                 Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rf, rhsArgs);
 
+                // iterate over all annotations for this label and build appropriate transducer rules
+                for( String parentAnnotation: annotator.getAllAnnotations() ) {
+                    List<String> childAnnotations = annotator.getChildAnnotations(parentAnnotation, label);
+
+                    // if there is no annotation rule for this label and annotation, then pretend it's a:f(0,...,0)
+                    if( childAnnotations == null ) {
+                        childAnnotations = new ArrayList<String>();
+                        for( int i = 0; i < f.getArity(); i++ ) {
+                            childAnnotations.add(annotator.getNeutralAnnotation());
+                        }
+                    }
+
+                    for( int i = 0; i < f.getArity(); i++ ) {
+                        ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotations.get(i), variables), annotationStates.get(parentAnnotation), rhs);
+                    }
+                }
+
+
+
+/*
                 // if a can be the i-th annotation below a' for label f, then add rule
                 State neutralAnnotationState = annotationStates.get(annotator.getNeutralAnnotation());
                 for (String childAnnotation : annotator.getAllAnnotations()) {
@@ -134,6 +155,8 @@ public class RewriteSystemToTransducer {
                         }
                     }
                 }
+ * 
+ */
             }
         }
 
@@ -141,7 +164,7 @@ public class RewriteSystemToTransducer {
         for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
             RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
 
-            System.err.println("\n\nSpecialized rewrite system:\n\n" + specializedWeakening.toPrettyString());
+//            System.err.println("\n\nSpecialized rewrite system:\n\n" + specializedWeakening.toPrettyString());
 
             for (Rule rule : specializedWeakening.getAllRules()) {
                 Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
