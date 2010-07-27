@@ -24,6 +24,7 @@ import de.uni_muenster.cs.sev.lethal.tree.common.Tree;
 import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTAOps.StdStateBuilder;
 import de.uni_muenster.cs.sev.lethal.utils.Pair;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,16 +37,18 @@ import java.util.Set;
 public class RewriteSystemToTransducer {
 
     private Map<String, State> annotationStates;
-    private RewriteSystem weakening, equivalence;
+    private List<Pair<RewriteSystem, Comparator<Term>>> rewriteSystems;
+//    private RewriteSystem weakening, equivalence;
     private Annotator annotator;
     private State qbar;
     private int nextVariable;
     private static final StdStateBuilder<String> sb = new StdStateBuilder<String>();
     private static TreeFactory tf = TreeFactory.getTreeFactory();
 
-    public RewriteSystemToTransducer(RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) {
-        this.weakening = weakening;
-        this.equivalence = equivalence;
+    public RewriteSystemToTransducer(Annotator annotator) {
+//        this.weakening = weakening;
+//        this.equivalence = equivalence;
+        rewriteSystems = new ArrayList<Pair<RewriteSystem, Comparator<Term>>>();
         this.annotator = annotator;
 
         qbar = sb.convert("qbar");
@@ -55,9 +58,19 @@ public class RewriteSystemToTransducer {
         }
     }
 
+    public void addRewriteSystem(RewriteSystem trs, Comparator<Term> comparator) {
+        rewriteSystems.add(new Pair<RewriteSystem, Comparator<Term>>(trs, comparator));
+    }
+
+
+
+    public void addRewriteSystem(RewriteSystem trs) {
+        addRewriteSystem(trs, new DummyComparator());
+    }
+
     public ContextTreeTransducer<RankedSymbol, RankedSymbol, State> convert(DomGraph graph, NodeLabels labels) {
         ContextTreeTransducer<RankedSymbol, RankedSymbol, State> ret = new ContextTreeTransducer<RankedSymbol, RankedSymbol, State>();
-        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels);
+        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, annotator);
 
         // set final and neutral state
         ret.addFinalState(annotationStates.get(annotator.getStartAnnotation()));
@@ -125,16 +138,18 @@ public class RewriteSystemToTransducer {
         }
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
-        RewriteSystem specializedWeakening = specializer.specialize(weakening);
+        for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
+            RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
 
-        for (Rule rule : specializedWeakening.getAllRules()) {
-            Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
+            for (Rule rule : specializedWeakening.getAllRules()) {
+                Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
 
-            nextVariable = 1;
-            Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = convertLhs(rule.lhs, variableMap);
-            Tree<BiSymbol<RankedSymbol, Variable>> rhs = convertRhs(rule.rhs, variableMap);
+                nextVariable = 1;
+                Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = convertLhs(rule.lhs, variableMap);
+                Tree<BiSymbol<RankedSymbol, Variable>> rhs = convertRhs(rule.rhs, variableMap);
 
-            ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
+                ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
+            }
         }
 
         return ret;

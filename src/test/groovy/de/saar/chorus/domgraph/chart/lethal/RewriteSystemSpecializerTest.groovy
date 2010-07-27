@@ -32,7 +32,7 @@ class RewriteSystemSpecializerTest {
         NodeLabels labels = new NodeLabels();
         TestingTools.decodeDomcon(RewriteSystemToTransducerTest.domgraph, graph, labels);
 
-        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels);
+        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, ann);
         
         RewriteSystem sWeakening = specializer.specialize(weakening);
         assert sWeakening.getAllRules().contains(parseWeakeningRule("[+] a_y(X, every_x(Y,Z)) -> every_x(Y, a_y(X,Z))")) : sWeakening.getAllRules();
@@ -52,7 +52,7 @@ class RewriteSystemSpecializerTest {
         NodeLabels labels = new NodeLabels();
         TestingTools.decodeDomcon(domgraphWithDuplicates, graph, labels);
 
-        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels);
+        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, ann);
 
         RewriteSystem sWeakening = specializer.specialize(weakening);
         assert sWeakening.getAllRules().contains(parseWeakeningRule("[+] every_y(X, every_x(Y,Z)) -> every_x(Y, every_y(X,Z))")) : sWeakening.getAllRules();
@@ -76,10 +76,30 @@ class RewriteSystemSpecializerTest {
         NodeLabels labels = new NodeLabels();
         TestingTools.decodeDomcon(domgraphWithWildcard, graph, labels);
 
-        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels);
+        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, ann);
 
         RewriteSystem sEquivalence = specializer.specialize(equivalence, new DummyComparator());
-        assert sEquivalence.getAllRules().contains(parseEquivalenceRule("pron_rel_x(X, every_y(WW1, Y)) = every_y(WW1, pron_rel_x(X,Y))")) : sEquivalence.getAllRules();
+        assert sEquivalence.getAllRules().contains(parseWeakeningRule("[0] pron_rel_x(X, every_y(WW1, Y)) -> every_y(WW1, pron_rel_x(X,Y))")) : sEquivalence.getAllRules();
+    }
+
+    @Test
+    public void testAllAnnotationsInstantiated() throws Exception {
+        RewritingSystemParser parser = new RewritingSystemParser();
+        RewriteSystem weakening = new RewriteSystem(true);
+        RewriteSystem equivalence = new RewriteSystem(false);
+        Annotator ann = new Annotator();
+
+        parser.read(new StringReader(RewritingSystemParserTest.testRewriting), weakening, equivalence, ann);
+
+
+        DomGraph graph = new DomGraph();
+        NodeLabels labels = new NodeLabels();
+        TestingTools.decodeDomcon(domgraphWithWildcard, graph, labels);
+
+        RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, ann);
+
+        RewriteSystem sEquivalence = specializer.specialize(equivalence, new EquivalenceRulesComparator());
+        assert sEquivalence.getAllRules().every { it.annotation != null };
     }
 
     private static Rule parseEquivalenceRule(String rule) {
