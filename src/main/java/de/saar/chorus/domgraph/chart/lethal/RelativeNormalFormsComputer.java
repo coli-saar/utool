@@ -5,6 +5,7 @@
 package de.saar.chorus.domgraph.chart.lethal;
 
 import de.saar.chorus.contexttransducer.ContextTreeTransducer;
+import de.saar.chorus.contexttransducer.PairState;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
@@ -13,8 +14,11 @@ import de.uni_muenster.cs.sev.lethal.states.State;
 import de.uni_muenster.cs.sev.lethal.symbol.common.RankedSymbol;
 import de.uni_muenster.cs.sev.lethal.treeautomata.common.FTA;
 import de.uni_muenster.cs.sev.lethal.treeautomata.easy.EasyFTA;
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTA;
+import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTARule;
 import static de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTAOps.*;
 import java.util.Comparator;
+import java.util.Set;
 
 /**
  *
@@ -62,7 +66,7 @@ public class RelativeNormalFormsComputer {
         }
 
         stopwatch.start("pre-image");
-        FTA preImage = ctt.computePreImage(chartFta);
+        FTA<RankedSymbol, PairState<State,String>, GenFTARule<RankedSymbol, PairState<State,String>>> preImage = ctt.computePreImage(chartFta);
         stopwatch.report("pre-image", "pre-image computed, " + preImage.getRules().size() + " rules");
 
         if( verbose ) {
@@ -70,13 +74,13 @@ public class RelativeNormalFormsComputer {
             System.out.println("\n\nPre-image of chart under ctt (reduced):\n" + reduceFull(preImage));
         }
 
-        FTA preduced = reduceFull(preImage);
+        GenFTA<RankedSymbol,PairState<State,String>> preduced = reduceFull(preImage);
 
         stopwatch.start("diff");
-        FTA diff = differenceSpecialized(chartFta, preduced);
+        GenFTA<RankedSymbol, PairState<State, String>> diff = differenceSpecialized(chartFta, preduced);
         stopwatch.report("diff", "Computed");
 
-        FTA reduced = reduceFull(diff);
+        GenFTA<RankedSymbol, PairState<State, String>> reduced = reduceFull(diff);
 
         if( verbose ) {
             System.out.println("\n\nDifference automaton:\n" + diff);
