@@ -82,6 +82,9 @@ public class ChartToLethal {
         Map<PairState<State, String>, List<String>> nodesInFragment = new HashMap<PairState<State, String>, List<String>>();
         final List<GenFTARule<RankedSymbol, PairState<State, String>>> rules = fta.getRulesInBottomUpOrder();
 
+        // Compute the set of all nodes except for the holes. A nonterminal of the output RTG is
+        // the start symbol if it contains all non-holes. This is because we can't see the holes
+        // in this method.
         Set<String> allNodesExceptHoles = new HashSet<String>(graph.getAllNodes());
         for( String node : graph.getAllNodes() ) {
             if( graph.isHole(node)) {
@@ -125,7 +128,7 @@ public class ChartToLethal {
                 statesToNontermLists.put(rule.getDestState(), ntt);
                 nodesInFragment.put(rule.getDestState(), new ArrayList<String>());
 
-                // NB: holes are never added to fragments. Perhaps this is not a problem.
+                // NB: holes are never added to fragments
             } else {
                 List<DecoratedNonterminal<SubgraphNonterminal, String>> nonterminals = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
                 List<String> nodesHere = new ArrayList<String>();
