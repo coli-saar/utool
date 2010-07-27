@@ -7,6 +7,9 @@ package de.saar.chorus.domgraph.chart.lethal;
 import de.saar.chorus.contexttransducer.ContextTreeTransducer;
 import de.saar.chorus.contexttransducer.PairState;
 import de.saar.chorus.domgraph.chart.Chart;
+import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
+import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.term.Term;
@@ -48,7 +51,7 @@ public class RelativeNormalFormsComputer {
         verbose = v;
     }
 
-    public FTA reduce(Chart chart, DomGraph graph, NodeLabels labels) {
+    public GenFTA<RankedSymbol, PairState<State, String>> reduce(Chart chart, DomGraph graph, NodeLabels labels) {
         stopwatch.start("fta");
         EasyFTA chartFta = ChartToLethal.convertToFta(chart, graph, labels);
         stopwatch.report("fta", "Converted");
@@ -88,5 +91,10 @@ public class RelativeNormalFormsComputer {
         }
 
         return reduced;
+    }
+
+    public RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>> reduceToChart(Chart chart, DomGraph graph, NodeLabels labels) {
+        GenFTA<RankedSymbol, PairState<State, String>> fta = reduce(chart, graph, labels);
+        return ChartToLethal.convertFtaToChart(fta, graph);
     }
 }
