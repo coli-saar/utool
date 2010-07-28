@@ -4,7 +4,6 @@
  * Copyright (c) 2006 Alexander Koller
  *  
  */
-
 package de.saar.chorus.domgraph.utool.server;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.saar.chorus.domgraph.graph.NodeType;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 
-
 /**
  * The Utool main program for accessing the Domgraph functionality
  * in server mode. Utool ("Underspecification Tool") is the
@@ -45,27 +43,25 @@ import de.saar.chorus.domgraph.utool.AbstractOptions;
  * @author Alexander Koller
  *
  */
-
 public class ConnectionManager {
+
     private static Logger logger;
-    
-    public static enum State { RUNNING, STOPPED };
+
+    public static enum State {
+
+        RUNNING, STOPPED
+    };
     private static State state = State.STOPPED;
     private static ServerSocket ssock = null;
-    
-    private static RewriteSystemsCache rsCache = new RewriteSystemsCache();
 
-    
     public static interface StateChangeListener {
-    	public void stateChanged(State newState);
+
+        public void stateChanged(State newState);
     }
     private static List<StateChangeListener> listeners =
-    	new ArrayList<StateChangeListener>();
-    
-    private static List<ServerThread> threads = 
-    	new ArrayList<ServerThread>();
-    
-    
+            new ArrayList<StateChangeListener>();
+    private static List<ServerThread> threads =
+            new ArrayList<ServerThread>();
 
     /**
      * Starts the Utool Server. This method opens a socket on the port
@@ -89,63 +85,63 @@ public class ConnectionManager {
      * "port", "hasOptionLogging", "getLogWriter", and "hasOptionWarmup" options.
      * @throws IOException
      */
-    public static void startServer(AbstractOptions cmdlineOptions) throws IOException { 
+    public static void startServer(AbstractOptions cmdlineOptions) throws IOException {
         int port;
-        
-        try {
-        	synchronized (ConnectionManager.class) {
-        		state = State.RUNNING;
-        		notifyListeners();
-        		
-        		logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
-            	port = cmdlineOptions.getPort();
-
-
-            	// warm up if requested
-            	// TODO - make this interruptible; right now the server can't
-            	// be shut down until the warmup is done.
-            	if( cmdlineOptions.hasOptionWarmup() ) {
-            		warmup();
-            	}
-
-
-            	// open server socket
-            	ssock = new ServerSocket(port);
-            	logger.log("Listening on port " + port + "...");
-        	}
-        } catch(IOException e) {
-        	// if an I/O exception occurs, kill all threads and shut down
-        	// the server
-        	stopServer();
-        	throw e;
-        } 
 
         try {
-        	while( true ) {
-        		// accept one connection
-        		logger.log("Waiting for connection ... ");
-        		Socket sock = ssock.accept();
-        		logger.log("accepted connection from " + sock);
+            synchronized (ConnectionManager.class) {
+                state = State.RUNNING;
+                notifyListeners();
 
-        		synchronized (ConnectionManager.class) {
-        			ServerThread thread = new ServerThread(sock, logger, rsCache);
-        			thread.start();
-        			threads.add(thread);
-        		}
-        	}
-        } catch(IOException e) {
-        	// If an unexpected I/O exception occurs here, then shut down
+                logger = new Logger(cmdlineOptions.hasOptionLogging(), cmdlineOptions.getLogWriter());
+                port = cmdlineOptions.getPort();
+
+
+                // warm up if requested
+                // TODO - make this interruptible; right now the server can't
+                // be shut down until the warmup is done.
+                if (cmdlineOptions.hasOptionWarmup()) {
+                    warmup();
+                }
+
+
+                // open server socket
+                ssock = new ServerSocket(port);
+                logger.log("Listening on port " + port + "...");
+            }
+        } catch (IOException e) {
+            // if an I/O exception occurs, kill all threads and shut down
+            // the server
+            stopServer();
+            throw e;
+        }
+
+        try {
+            while (true) {
+                // accept one connection
+                logger.log("Waiting for connection ... ");
+                Socket sock = ssock.accept();
+                logger.log("accepted connection from " + sock);
+
+                synchronized (ConnectionManager.class) {
+                    ServerThread thread = new ServerThread(sock, logger);
+                    thread.start();
+                    threads.add(thread);
+                }
+            }
+        } catch (IOException e) {
+            // If an unexpected I/O exception occurs here, then shut down
             // the server and report it. However, if this was an exception
             // in the accept() call above which was caused by the stopServer()
             // method below (= the state is now STOPPED), then just ignore
             // the error.
-            if( state == State.RUNNING ) {
+            if (state == State.RUNNING) {
                 stopServer();
                 throw e;
             }
-        } 
+        }
     }
-    
+
     /**
      * Stops a running Utool Server. This will terminate the server
      * thread and all client-specific threads, and will shut down
@@ -158,65 +154,65 @@ public class ConnectionManager {
      * 
      */
     @SuppressWarnings("deprecation")
-	public static void stopServer() {
-    	synchronized (ConnectionManager.class) {
-    		if( state == State.RUNNING ) {
+    public static void stopServer() {
+        synchronized (ConnectionManager.class) {
+            if (state == State.RUNNING) {
                 state = State.STOPPED;
-                
-    			if( ssock != null ) {
-    				// We have to be this brutal, as the blocking accept()
-    				// call in startServer() won't let us interrupt it.
-    				// At this point, accept() will throw an I/O exception,
-    				// and stopServer() will be called a second time; but
-    				// as we have the lock in this thread, we will change the
-    				// state to STOPPED before the original server thread
-    				// gets here, and so it will just do nothing.
-    				try {
-						ssock.close();
-						
-		    			ssock = null;
-					} catch (IOException e) {
-						// At this point, we really don't care.
-					}
-    			}
-    			
-    			for( ServerThread thread : threads ) {
-    				if( thread.getState() != Thread.State.TERMINATED ) {
+
+                if (ssock != null) {
+                    // We have to be this brutal, as the blocking accept()
+                    // call in startServer() won't let us interrupt it.
+                    // At this point, accept() will throw an I/O exception,
+                    // and stopServer() will be called a second time; but
+                    // as we have the lock in this thread, we will change the
+                    // state to STOPPED before the original server thread
+                    // gets here, and so it will just do nothing.
+                    try {
+                        ssock.close();
+
+                        ssock = null;
+                    } catch (IOException e) {
+                        // At this point, we really don't care.
+                    }
+                }
+
+                for (ServerThread thread : threads) {
+                    if (thread.getState() != Thread.State.TERMINATED) {
                         try {
                             thread.closeSocket();
-                        } catch(IOException e) {
+                        } catch (IOException e) {
                             // At this point, we really don't care.
                         }
-                        
-                        
-    					// We can get away with using the stop method here, because
-    					// there are no objects that are visible from more than one
-    					// server thread, and thus thread-safety is not such a big
-    					// concern here. It might still be nice to replace this
-    					// by a call to interrupt, but then we might have to
-    					// distribute wait() calls throughout the rest of the
-    					// Domgraph code to have something that _can_ be interrupted
-    					// in a fine-grained way, and would that be much better? - AK
-    					thread.stop();
-    				}
-    			}
 
-    			threads.clear();
 
-    			notifyListeners();
-    		}
-		}
+                        // We can get away with using the stop method here, because
+                        // there are no objects that are visible from more than one
+                        // server thread, and thus thread-safety is not such a big
+                        // concern here. It might still be nice to replace this
+                        // by a call to interrupt, but then we might have to
+                        // distribute wait() calls throughout the rest of the
+                        // Domgraph code to have something that _can_ be interrupted
+                        // in a fine-grained way, and would that be much better? - AK
+                        thread.stop();
+                    }
+                }
+
+                threads.clear();
+
+                notifyListeners();
+            }
+        }
     }
-    
+
     /**
      * Returns the current state of the server (RUNNING or STOPPED).
      * 
      * @return the state
      */
     public static State getState() {
-    	return state;
+        return state;
     }
-    
+
     /**
      * Adds a state change listener to this server. The listener's
      * <code>stateChanged</code> method will be called each time the
@@ -225,19 +221,18 @@ public class ConnectionManager {
      * @param listener a listener
      */
     public static void addListener(StateChangeListener listener) {
-    	listeners.add(listener);
+        listeners.add(listener);
     }
-    
+
     public static void removeListener(StateChangeListener listener) {
-    	listeners.remove(listener);
+        listeners.remove(listener);
     }
-    
-    
+
     private static void notifyListeners() {
-    	for( StateChangeListener listener : listeners ) {
-    		listener.stateChanged(state);
-    	}
-	}
+        for (StateChangeListener listener : listeners) {
+            listener.stateChanged(state);
+        }
+    }
 
     /**
      * Warms up the server after it has been started. This exercises the
@@ -251,32 +246,31 @@ public class ConnectionManager {
      * 
      */
     private static void warmup() {
-    	try {
-    		final int PASSES = 2;
-    		DomGraph graph = new DomGraph();
-    		NodeLabels labels = new NodeLabels();
-    		makeWarmupGraph(graph, labels);
+        try {
+            final int PASSES = 2;
+            DomGraph graph = new DomGraph();
+            NodeLabels labels = new NodeLabels();
+            makeWarmupGraph(graph, labels);
 
-    		System.err.println("Warming up the server (" + PASSES + " passes) ... ");
+            System.err.println("Warming up the server (" + PASSES + " passes) ... ");
 
-    		for( int i = 0; i < PASSES; i++ ) {
-    			Chart chart = new Chart(labels);
-    			System.err.println("  - pass " + (i+1));
+            for (int i = 0; i < PASSES; i++) {
+                Chart chart = new Chart(labels);
+                System.err.println("  - pass " + (i + 1));
 
-    			ChartSolver.solve(graph, chart);
-    			SolvedFormIterator it = new SolvedFormIterator(chart,graph);
-    			while( it.hasNext() ) {
-    				it.next();
-    			}
-    		}
+                ChartSolver.solve(graph, chart);
+                SolvedFormIterator it = new SolvedFormIterator(chart, graph);
+                while (it.hasNext()) {
+                    it.next();
+                }
+            }
 
 
-    		System.err.println("Utool is now warmed up.");
-    	} catch(SolverNotApplicableException e) {
-    		// solver will be happy with warmup graph, no need to handle this exception
-    	}
+            System.err.println("Utool is now warmed up.");
+        } catch (SolverNotApplicableException e) {
+            // solver will be happy with warmup graph, no need to handle this exception
+        }
     }
-
 
     /**
      * Generates the chain of length 12.
@@ -412,6 +406,4 @@ public class ConnectionManager {
         graph.addEdge("xl12", "y11", new EdgeData(EdgeType.DOMINANCE));
         graph.addEdge("xr12", "y12", new EdgeData(EdgeType.DOMINANCE));
     }
-    
-
 }

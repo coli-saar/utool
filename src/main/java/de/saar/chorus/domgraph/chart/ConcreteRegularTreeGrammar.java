@@ -86,6 +86,24 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
         return ret;
     }
 
+    public static <E> ConcreteRegularTreeGrammar<E> makeExplicit(RegularTreeGrammar<E> rtg) {
+        ConcreteRegularTreeGrammar<E> ret = new ConcreteRegularTreeGrammar<E>();
+
+        for( E nt : rtg.getAllNonterminals() ) {
+            for( Split<E> split : rtg.getSplitsFor(nt)) {
+                ret.addSplit(nt, split);
+            }
+        }
+
+        for( E nt : rtg.getToplevelSubgraphs() ) {
+            ret.addToplevelSubgraph(nt);
+        }
+
+        ret.recomputeSingletons();
+        
+        return ret;
+    }
+
     public String getLabelForSplit(Split<E> split) {
 		return split.getRootFragment();
 	}
