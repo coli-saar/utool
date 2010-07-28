@@ -159,5 +159,11 @@ abstract public class RewritingRtg<E> extends RegularTreeGrammar<E> {
         }
     }
 
+    @Override
+    public int size() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
 
 }

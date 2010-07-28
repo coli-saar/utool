@@ -21,24 +21,18 @@ import de.saar.basic.XmlEncodingWriter;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
-import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
-import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
-import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
-import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
-import de.saar.chorus.domgraph.equivalence.rtg.EliminatingRtg;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
-import de.saar.chorus.domgraph.weakest.InverseRewriteSystem;
-import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.Ubench;
 
 class ServerThread extends Thread {
@@ -47,13 +41,12 @@ class ServerThread extends Thread {
 	private final Logger logger;
 	private final Socket socket;
 	private XmlParser parser;
-	private RewriteSystemsCache rsCache;
 
 
 	ServerThread(Socket socket, Logger logger, RewriteSystemsCache rsCache) throws IOException {
 		this.logger = logger;
 		this.socket = socket;
-		this.rsCache = rsCache;
+//		this.rsCache = rsCache;
 
 		out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent: "), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -61,7 +54,7 @@ class ServerThread extends Thread {
 
 	@Override
 	public void run() {
-		parser = new XmlParser(logger, rsCache.getPreviousEquationSystem(), rsCache.getPreviousRewriteSystem(), rsCache.getPreviousAnnotator());
+		parser = new XmlParser(logger);
 		AbstractOptions options = null;
 
 		try {
@@ -72,15 +65,6 @@ class ServerThread extends Thread {
 
 				socket.close();
 				return;
-			}
-			
-			if( options.hasOptionEliminateEquivalence() ) {
-				rsCache.setPreviousEquationSystem(options.getEquations());
-			}
-			
-			if( options.hasOptionWeakestReadings() || options.hasOptionStrongestReadings() ) {
-				rsCache.setPreviousRewriteSystem(options.getRewriteSystem());
-				rsCache.setPreviousAnnotator(options.getAnnotator());
 			}
 
 			processCommand(options);
@@ -181,8 +165,7 @@ class ServerThread extends Thread {
 			// compute chart
 			long start_solver = System.nanoTime();
 			Chart chart = new Chart(options.getLabels());
-			ConcreteRegularTreeGrammar reducedChart;
-			RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = null;
+			RegularTreeGrammar reducedChart;
 			boolean solvable = false;
 
 			try {
@@ -195,37 +178,12 @@ class ServerThread extends Thread {
 
 			long end_solver = System.nanoTime();
 			long time_solver = (end_solver - start_solver)/1000000L;
-			
-			if( options.hasOptionEliminateEquivalence() || options.hasOptionWeakestReadings() || options.hasOptionStrongestReadings() ) {
-				if( analyzer == null ) {
-					analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-					analyzer.analyze();
-				}
-			}
-			
-			if( options.hasOptionEliminateEquivalence() ) {
-				EliminatingRtg filter = new EliminatingRtg(graph, options.getLabels(), options.getEquations(), analyzer);
-				reducedChart = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-				filter.intersect((Chart) chart, reducedChart);
-			} else {
-				reducedChart = chart;
-			}
-			
-			if( options.hasOptionWeakestReadings() ) {
-				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator(), options.getEquations());
-				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-				filter.intersect(reducedChart, out);
-				reducedChart = out;
-			} else if( options.hasOptionStrongestReadings() ) {
-				WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, new InverseRewriteSystem(options.getRewriteSystem()), options.getAnnotator(), options.getEquations());
-				ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-				filter.intersect(reducedChart, out);
-			}
-
-			if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() || options.hasOptionStrongestReadings() ) {
-				reducedChart.cleanup();
-			}
-
+                        
+                        if( options.hasOptionComputeRnfs() ) {
+                            reducedChart = options.getRnfComputer().reduceToChart(chart, graph, options.getLabels());
+                        } else {
+                            reducedChart = chart;
+                        }
 			
 			if( options.getOperation() == Operation.solvable ) {
 				// Operation = solvable

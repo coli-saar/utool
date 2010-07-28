@@ -21,7 +21,6 @@ import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTA;
 import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTARule;
 import static de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTAOps.*;
 import java.util.Comparator;
-import java.util.Set;
 
 /**
  *

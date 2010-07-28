@@ -164,4 +164,6 @@ abstract public class RegularTreeGrammar<E> {
 			return ret;
 		}
 	}
+
+        abstract public int size();
 }
