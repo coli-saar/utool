@@ -247,8 +247,8 @@ class JDomGraphMenu extends JMenuBar {
 		
         utoolMenu.addSeparator();
 
-        makeMenuItem(utoolMenu, "Load equation system...", "loadeqs");
-        autoreduce = makeCheckboxMenuItem(utoolMenu, null, "Reduce chart automatically", "autoreduce");
+        makeMenuItem(utoolMenu, "Load filtering rule system...", "loadeqs");
+        autoreduce = makeCheckboxMenuItem(utoolMenu, null, "Filter chart automatically", "autoreduce");
         autoreduce.setSelected(Ubench.getInstance().reduceAutomatically);
 		autoreduce.setEnabled(Ubench.getInstance().isRelativeNormalFormsComputerLoaded());
 

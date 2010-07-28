@@ -273,7 +273,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
      */
     void refreshTitle() {
         if (reduced) {
-            setTitle("Chart of " + graphName + " (reduced)");
+            setTitle("Chart of " + graphName + " (filtered)");
         } else if (modified) {
             setTitle("Chart of " + graphName + " (modified)");
         } else {
@@ -362,8 +362,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
                     if (longestSplit == null) {
                         longestSplit = nextSplit;
                     } else {
-                        if (nextSplit.length()
-                                > longestSplit.length()) {
+                        if (nextSplit.length() > longestSplit.length()) {
                             longestSplit = nextSplit;
                         }
                     }
@@ -402,16 +401,18 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
      */
     private String corSplit(Split<GraphBasedNonterminal> split, Set<String> roots) {
         StringBuffer ret = new StringBuffer("<" + split.getRootFragment());
-        Map<String, List<Set<String>>> map = new HashMap<String, List<Set<String>>>();
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
 
         for (String hole : split.getAllDominators()) {
-            List<Set<String>> x = new ArrayList<Set<String>>();
+            List<String> x = new ArrayList<String>();
             map.put(hole, x);
 
             for (GraphBasedNonterminal wcc : split.getWccs(hole)) {
-                GraphBasedNonterminal copy = new SubgraphNonterminal(wcc.getNodes());
-                copy.getNodes().retainAll(roots);
-                x.add(copy.getNodes());
+                x.add(wcc.toString(roots));
+
+//                GraphBasedNonterminal copy = new SubgraphNonterminal(wcc.getNodes());
+//                copy.getNodes().retainAll(roots);
+//                x.add(copy.getNodes());
             }
         }
 
@@ -679,64 +680,52 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
          * Retrieving the value of a field.
          */
         public Object getValueAt(int rowIndex, int columnIndex) {
+            switch (columnIndex) {
+                case 0: // subgraph
+                    GraphBasedNonterminal sub = subgraphs.get(rowIndex);
+//                    Set<String> toShow = sub.getNodes();
 
-            if (columnIndex == 0) {
-                // a subgraph
-                GraphBasedNonterminal sub = subgraphs.get(rowIndex);
-                Set<String> toShow = sub.getNodes();
-                if (splitNumbers.get(rowIndex) == 1) {
-                    // subgraphs are only shown
-                    // for the first of its splits
-                    if (rowIndex == currentrow
-                            && columnIndex == currentcolumn) {
-                        // a marked subgraph
-                        return FormatManager.getHTMLforMarkedSubgraph(toShow);
+                    if (splitNumbers.get(rowIndex) == 1) {
+                        // subgraphs are only shown
+                        // for the first of its splits
+                        if (rowIndex == currentrow && columnIndex == currentcolumn) {
+                            // a marked subgraph
+                            return FormatManager.getHTMLforMarkedSubgraph(sub.toString());
+                        }
+
+                        return sub.toString();
+                    } else {
+                        // as subgraph not to show.
+                        return "";
                     }
-                    // a subgraph that is not marked
-		/*		try {
 
-                    return toShow.toString() + "<b>" +
-                    ((QuantifierMarkedNonterminal) sub).getPreviousQuantifier() + "</b>";
-                    } catch( ClassCastException e) {
-                    //	System.err.println("noe" + toShow);
-                    return toShow;
-                    }*/
+                case 1: // split index
+                    int splitnumber = splitNumbers.get(rowIndex);
 
-
-                    return toShow;
-
-                } else {
-                    // as subgraph not to show.
-                    return "";
-                }
-
-
-            } else if (columnIndex == 2) {
-                // a split
-                Split<GraphBasedNonterminal> next = orderedSplits.get(rowIndex);
-
-                if (next != null) {
-                    if (rowIndex == currentrow
-                            && currentcolumn >= 1) {
-                        // a marked split
-                        return FormatManager.getHTMLforMarkedSplit(next, subgraphs.get(rowIndex).getNodes());
+                    if (splitnumber == 0) {
+                        return null;
+                    } else {
+                        return splitnumber;
                     }
-                    // a split not marked
-                    return nameToSplit.get(next);
-                } else {
-                    // and empty row
-                    return " ";
-                }
-            } else if (columnIndex == 1) {
-                // the number of a split (relative to the splits in its subgraph)
-                Integer splitnumber = splitNumbers.get(rowIndex);
-                if (splitnumber == 0) {
+
+                case 2: // split
+                    Split<GraphBasedNonterminal> split = orderedSplits.get(rowIndex);
+
+                    if (split != null) {
+                        if (rowIndex == currentrow && currentcolumn >= 1) {
+                            // a marked split
+                            return FormatManager.getHTMLforMarkedSplit(split, subgraphs.get(rowIndex).getNodes());
+                        } else {
+                            return nameToSplit.get(split);
+                        }
+                    } else {
+                        // and empty row
+                        return " ";
+                    }
+
+                default:
                     return null;
-                } else {
-                    return splitnumber;
-                }
             }
-            return null;
         }
 
         @Override
@@ -1002,39 +991,39 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
         }
         if (!reduced) {
 //            try {
-                Chart toElim = (Chart) chartcopy.clone();
-                RegularTreeGrammar elim = rnfc.reduceToChart(chartcopy, dg, labels);
+            Chart toElim = (Chart) chartcopy.clone();
+            RegularTreeGrammar elim = rnfc.reduceToChart(chartcopy, dg, labels);
 
 //                chart.clear();
-                chart = elim;
-                reduced = true;
+            chart = elim;
+            reduced = true;
 
 
-                /*
+            /*
 
-                //IndividualRedundancyElimination elim;
+            //IndividualRedundancyElimination elim;
 
-                //elim = new IndividualRedundancyElimination(
-                //		((DomGraph) dg.clone()).preprocess(), labels,
-                //		eqs);
-                RtgRedundancyElimination elim = new RtgRedundancyElimination(((DomGraph) dg.clone()).preprocess(),
-                        labels, eqs);
+            //elim = new IndividualRedundancyElimination(
+            //		((DomGraph) dg.clone()).preprocess(), labels,
+            //		eqs);
+            RtgRedundancyElimination elim = new RtgRedundancyElimination(((DomGraph) dg.clone()).preprocess(),
+            labels, eqs);
 
-                ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>();
-                elim.eliminate(toElim, (ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>) out); //TA
-                reduced = true;
-                eqsname = eqsn;
+            ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>();
+            elim.eliminate(toElim, (ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>) out); //TA
+            reduced = true;
+            eqsname = eqsn;
 
 
-                chart.clear();
-                chart = (ConcreteRegularTreeGrammar<GraphBasedNonterminal>) out;
+            chart.clear();
+            chart = (ConcreteRegularTreeGrammar<GraphBasedNonterminal>) out;
 
-                 *
-                 */
+             *
+             */
 
-                if (statusbar != null) {
-                    refreshTitleAndStatus();
-                }
+            if (statusbar != null) {
+                refreshTitleAndStatus();
+            }
 
 
 
@@ -1087,7 +1076,7 @@ public class ChartViewer extends JFrame implements ListSelectionListener {
 
             chartmenu.addSeparator();
 
-            elred = new JMenuItem("Reduce chart...");
+            elred = new JMenuItem("Filter chart...");
             elred.setActionCommand("elred");
             elred.addActionListener(lis);
             elred.setMnemonic(KeyEvent.VK_R);

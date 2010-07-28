@@ -36,13 +36,13 @@ public class DecoratedNonterminal<E extends GraphBasedNonterminal, DecorationTyp
 
 	@Override
 	public String toString() {
-		return "<" + base.toString() + "," + decoration + ">";
+		return base.toString() + "/" + decoration;
 	}
 
 
 	
 	public String toString(Set<String> roots) {
-		return "<" + base.toString(roots) + "," + decoration.toString() + ">";
+		return base.toString(roots) + "/" + decoration.toString();
 	}
 
 
