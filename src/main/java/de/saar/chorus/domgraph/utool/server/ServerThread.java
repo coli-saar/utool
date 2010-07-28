@@ -43,10 +43,9 @@ class ServerThread extends Thread {
 	private XmlParser parser;
 
 
-	ServerThread(Socket socket, Logger logger, RewriteSystemsCache rsCache) throws IOException {
+	ServerThread(Socket socket, Logger logger) throws IOException {
 		this.logger = logger;
 		this.socket = socket;
-//		this.rsCache = rsCache;
 
 		out = new PrintWriter(new LoggingWriter(new OutputStreamWriter(socket.getOutputStream()), logger, "Sent: "), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
