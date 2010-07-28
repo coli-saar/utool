@@ -14,22 +14,19 @@ import de.saar.chorus.domgraph.UserProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartPresenter;
 import de.saar.chorus.domgraph.chart.ChartSolver;
-import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.OneSplitSource;
-import de.saar.chorus.domgraph.chart.RtgFreeFragmentAnalyzer;
+import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
 import de.saar.chorus.domgraph.chart.SubgraphNonterminal;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.codec.MultiOutputCodec;
-import de.saar.chorus.domgraph.equivalence.rtg.EliminatingRtg;
 import de.saar.chorus.domgraph.graph.DomGraph;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
 import de.saar.chorus.domgraph.utool.server.ConnectionManager;
-import de.saar.chorus.domgraph.weakest.WeakestReadingsRtg;
 import de.saar.chorus.ubench.MacIntegration;
 import de.saar.chorus.ubench.Ubench;
 
@@ -96,9 +93,8 @@ public class Utool {
 					}
 				}
 
-				if( options.hasOptionEliminateEquivalence() ) {
-					System.err.println("I will eliminate equivalences (" + options.getEquations().size()
-							+ " equations).");
+				if( options.hasOptionComputeRnfs() ) {
+					System.err.println("I will filter redundancy and weakest readings.");
 				}
 			}
 		}
@@ -208,8 +204,8 @@ public class Utool {
 
 			// compute chart
 			long start_solver = System.currentTimeMillis();
-			ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> chart = new Chart(options.getLabels());
-			RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = null;
+			RegularTreeGrammar<? extends GraphBasedNonterminal> chart = new Chart(options.getLabels());
+//			RtgFreeFragmentAnalyzer<SubgraphNonterminal> analyzer = null;
 			boolean solvable = false;
 
 			try {
@@ -234,50 +230,11 @@ public class Utool {
 					System.err.println("it is solvable.");
 					printChartStatistics(chart, time_solver, options.hasOptionDumpChart(), graph);
 				}
-				
-				if( options.hasOptionEliminateEquivalence() ) {
-					long start_elimination = System.currentTimeMillis();
-					
-					if( analyzer == null ) {
-						analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-						analyzer.analyze();
-					}
-					
-					EliminatingRtg filter = new EliminatingRtg(graph, options.getLabels(), options.getEquations(), analyzer);
-					ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-					filter.intersect((Chart) chart, out);
-					chart = out;
-					
-					long end_elimination = System.currentTimeMillis();
-					if( options.hasOptionStatistics() ) {
-						System.err.println("Time spent on redundancy elimination: " + (end_elimination-start_elimination) + " ms.");
-					}
-				}
-				
-				if( options.hasOptionWeakestReadings() ) {
-					long start_elimination = System.currentTimeMillis();
-					
-					if( analyzer == null ) {
-						analyzer = new RtgFreeFragmentAnalyzer<SubgraphNonterminal>((Chart) chart);
-						analyzer.analyze();
-					}
-					
-					WeakestReadingsRtg filter = new WeakestReadingsRtg(graph, options.getLabels(), analyzer, options.getRewriteSystem(), options.getAnnotator(), options.getEquations());
-					ConcreteRegularTreeGrammar out = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal,String>>();
-					filter.intersect(chart, out);
-					chart = out;
-					
-					long end_elimination = System.currentTimeMillis();
-					if( options.hasOptionStatistics() ) {
-						System.err.println("Time spent on computing weakest readings: " + (end_elimination-start_elimination) + " ms.");
-					}
-				}
-				
-				if( options.hasOptionWeakestReadings() || options.hasOptionEliminateEquivalence() ) {
-					chart.cleanup();
-				}
 
-				// TODO runtime prediction (see ticket #11)
+                                if( options.hasOptionComputeRnfs() ) {
+                                    RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> reduced = options.getRnfComputer().reduceToChart((Chart) chart, graph, options.getLabels());
+                                    chart = reduced;
+                                }
 
 				if( options.getOperation() == Operation.solve ) {
 					try {
@@ -452,7 +409,7 @@ public class Utool {
 		}
 	}
 
-	private static void printChartStatistics(ConcreteRegularTreeGrammar<? extends GraphBasedNonterminal> chart, long time, boolean dumpChart, DomGraph compactGraph) {
+	private static void printChartStatistics(RegularTreeGrammar<? extends GraphBasedNonterminal> chart, long time, boolean dumpChart, DomGraph compactGraph) {
 		System.err.println("Splits in chart: " + chart.size());
 		if( dumpChart ) {
 			// System.err.println(chart);

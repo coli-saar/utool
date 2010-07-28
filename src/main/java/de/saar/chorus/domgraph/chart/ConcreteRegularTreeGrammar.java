@@ -409,6 +409,7 @@ public class ConcreteRegularTreeGrammar<E> extends RegularTreeGrammar<E> impleme
      *
      * @return the number of splits
      */
+    @Override
     public int size() {
         return this.size;
     }

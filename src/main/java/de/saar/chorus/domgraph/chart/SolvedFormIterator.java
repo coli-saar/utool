@@ -36,7 +36,7 @@ import de.saar.chorus.domgraph.graph.DomGraph;
  */
 public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iterator<SolvedFormSpec> {
 
-    private ConcreteRegularTreeGrammar<E> chart;
+    private RegularTreeGrammar<E> chart;
     private Agenda agenda;
     private Stack<EnumerationStackEntry> stack;
     private Set<String> roots;
@@ -52,11 +52,11 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
 
     // I need the graph in order to determine the fragments: I need to
     // know the roots of singleton fragsets to create the dom edge.
-    public SolvedFormIterator(ConcreteRegularTreeGrammar<E> ch, DomGraph graph) {
+    public SolvedFormIterator(RegularTreeGrammar<E> ch, DomGraph graph) {
         this(ch, graph, true);
     }
 
-    private SolvedFormIterator(ConcreteRegularTreeGrammar<E> ch, DomGraph graph, boolean makeIteratorForGet) {
+    private SolvedFormIterator(RegularTreeGrammar<E> ch, DomGraph graph, boolean makeIteratorForGet) {
         chart = ch;
         agenda = new Agenda();
         stack = new Stack<EnumerationStackEntry>();
@@ -286,7 +286,7 @@ public class SolvedFormIterator<E extends GraphBasedNonterminal> implements Iter
         throw new UnsupportedOperationException();
     }
 
-    public ConcreteRegularTreeGrammar<E> getChart() {
+    public RegularTreeGrammar<E> getChart() {
         return chart;
     }
 
