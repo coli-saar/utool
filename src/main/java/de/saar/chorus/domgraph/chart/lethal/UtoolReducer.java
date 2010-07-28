@@ -18,12 +18,13 @@ import de.saar.chorus.domgraph.graph.NodeLabels;
 import de.uni_muenster.cs.sev.lethal.languages.RegularTreeLanguage;
 import de.uni_muenster.cs.sev.lethal.symbol.common.RankedSymbol;
 import de.uni_muenster.cs.sev.lethal.tree.common.Tree;
-import de.uni_muenster.cs.sev.lethal.treeautomata.common.FTA;
+import de.uni_muenster.cs.sev.lethal.treeautomata.common.AbstractFTA;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  *
@@ -71,10 +72,15 @@ public class UtoolReducer {
         rnfc.addRewriteSystem(equivalence, new EquivalenceRulesComparator(new HashSet<String>()));
         
         rnfc.setVerbose(verbose);
-        FTA fta = rnfc.reduce(chart, graph, labels);
+        AbstractFTA fta = rnfc.reduce(chart, graph, labels);
         RegularTreeLanguage<RankedSymbol> rtl = new RegularTreeLanguage(fta);
         long count = 0;
         for (Tree t : rtl) {
+//            System.out.println("\nresult tree #" + (count+1) + ": " + t);
+//            Map states = fta.annotateTreeWithStates(t);
+//            for( Object x : states.keySet()) {
+//                System.out.println("    -> " + x + ": " + states.get(x) );
+//            }
             count ++;
         }
 
