@@ -91,7 +91,8 @@ public class RewriteSystemSpecializer {
                 for (Term lhs : lhss) {
                     for (Term rhs : rhss) {
                         if (!isEqualUpToVariables(lhs, rhs)) {
-                            if (termOrder.compare(lhs, rhs) <= 0) {
+                            // larger term with respect to comparator becomes LHS
+                            if (termOrder.compare(lhs, rhs) >= 0) {
                                 addRule(specialized, lhs, rhs, rule.annotation);
                             } else {
                                 addRule(specialized, rhs, lhs, rule.annotation);
