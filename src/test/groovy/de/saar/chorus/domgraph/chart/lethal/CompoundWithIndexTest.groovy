@@ -90,5 +90,14 @@ class CompoundWithIndexTest {
         CompoundWithIndex.collectAllIndices(t, s);
         assert s.equals(new HashSet(["1", "foo2"]));
     }
+
+    @Test
+    public void testCollectIndices2() {
+        Term t = RewritingSystemParser.parseTerm("f#1(g(X, *[a#foo2()]))");
+        Set s = new HashSet();
+
+        CompoundWithIndex.collectAllIndices(t, s);
+        assert s.equals(new HashSet(["1", "foo2"]));
+    }
 }
 
