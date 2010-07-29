@@ -33,7 +33,11 @@ public class RewritingSystemParser {
 //	    return grammar;
     }
 
-
+    public static Term parseTerm(String s) throws Exception {
+        RewritingSystemParser p = new RewritingSystemParser();
+        p.ReInit(new StringReader(s));
+        return p.term();
+    }
 }
 PARSER_END(RewritingSystemParser)
 
@@ -110,7 +114,7 @@ String Annotation(): {
 
 Term term() :
 {
-	Token label;
+	Token label, index;
 	List<Term> subterms = new ArrayList<Term>();
 	Term subterm;
 }
@@ -123,6 +127,15 @@ Term term() :
 	}
 
 	| label = <ID> "(" ")" { return new Compound(label.image, subterms); }
+
+        | LOOKAHEAD(5) label = <ID> "#" index=idOrNumber() "("
+               (subterm = term() { subterms.add(subterm); })
+               ("," subterm = term() { subterms.add(subterm); })*
+        	 ")" {
+		return new CompoundWithIndex(label.image, subterms, index.image);
+	}
+
+	| label = <ID> "#" index=idOrNumber() "(" ")" { return new CompoundWithIndex(label.image, subterms, index.image); }
 
   | label = <ID> {
 	  return new Constant(label.image);
@@ -137,6 +150,12 @@ Term term() :
   }
 }
 
+Token idOrNumber() : {
+  Token ret;
+}{
+    ret = <ID> { return ret; }
+    | ret = <NUMBER> { return ret; }
+}
 
 
 /*
