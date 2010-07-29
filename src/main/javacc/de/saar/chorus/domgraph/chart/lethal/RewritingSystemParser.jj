@@ -75,18 +75,26 @@ void Input() : {
 void WeakeningRule(): {
     String ann;
     Term lhs, rhs;
+    Term lhsI, rhsI;
+    Map m1 = new HashMap(), m2 = new HashMap(), m3 = new HashMap();
 }{
     "[" ann=Annotation() "]" lhs=term() <ARROW> rhs=term() {
-        weakening.addRule(lhs, rhs, ann);
+        lhsI = CompoundWithIndex.assignIndicesToTerm(lhs, m1, m2);
+        rhsI = CompoundWithIndex.assignIndicesToTerm(rhs, m3, m1);
+        weakening.addRule(lhsI, rhsI, ann);
     }
 }
 
 
 void EquivalenceRule(): {
     Term lhs, rhs;
+    Term lhsI, rhsI;
+    Map m1 = new HashMap(), m2 = new HashMap(), m3 = new HashMap();
 }{
     lhs=term() "=" rhs=term() {
-        equivalence.addRule(lhs, rhs, null);
+        lhsI = CompoundWithIndex.assignIndicesToTerm(lhs, m1, m2);
+        rhsI = CompoundWithIndex.assignIndicesToTerm(rhs, m3, m1);
+        equivalence.addRule(lhsI, rhsI, null);
     }
 }
 

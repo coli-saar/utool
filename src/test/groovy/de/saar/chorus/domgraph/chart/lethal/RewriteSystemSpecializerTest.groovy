@@ -137,7 +137,7 @@ class RewriteSystemSpecializerTest {
     public static String testRewritingDummy = """
 
 // weakening rules
-[+] every(X, every(Y,Z)) -> every(Y, every(X,Z))
+[+] every#1(X, every#2(Y,Z)) -> every#2(Y, every#1(X,Z))
 
 // annotator
 start annotation: +

@@ -236,14 +236,14 @@ class WeakestReadingsTest {
         [-] every(X,a(Y,Z)) -> a(Y, every(X,Z))
         [+] not(a(X,Y)) -> a(X, not(Y))
         [+] every(X, not(Y)) -> not(every(X,Y))
-        [-] every(every(X,Y),Z) -> every(X,every(Y,Z))
-        [+] every(X,every(Y,Z)) -> every(every(X,Y),Z)
+        [-] every#1(every#2(X,Y),Z) -> every#2(X,every#1(Y,Z))
+        [+] every#1(X,every#2(Y,Z)) -> every#2(every#1(X,Y),Z)
 
         // equivalence
-        a(X,a(Y,Z)) = a(Y,a(X,Z)) // 1-1
-        a(X,a(Y,Z)) = a(a(X,Y),Z) // 1-0
-        a(a(X,Y),Z) = a(a(X,Z),Y) // 0-0
-        every(X,every(Y,Z)) = every(Y,every(X,Z))
+        a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z)) // 1-1
+        a#1(X,a#2(Y,Z)) = a#2(a#1(X,Y),Z) // 1-0
+        a#1(a#2(X,Y),Z) = a#2(a#1(X,Z),Y) // 0-0
+        every#1(X,every#2(Y,Z)) = every#2(Y,every#1(X,Z))
 ''';
 
     public static String rewriteSystemFolNoEq = '''
@@ -262,8 +262,8 @@ class WeakestReadingsTest {
         [-] every(X,a(Y,Z)) -> a(Y, every(X,Z))
         [+] not(a(X,Y)) -> a(X, not(Y))
         [+] every(X, not(Y)) -> not(every(X,Y))
-        [-] every(every(X,Y),Z) -> every(X,every(Y,Z))
-        [+] every(X,every(Y,Z)) -> every(every(X,Y),Z)
+        [-] every#1(every#2(X,Y),Z) -> every#2(X,every#1(Y,Z))
+        [+] every#1(X,every#2(Y,Z)) -> every#2(every#1(X,Y),Z)
 ''';
 
 
@@ -279,10 +279,10 @@ class WeakestReadingsTest {
         -: not(+)
 
         // equivalence
-        a(X,a(Y,Z)) = a(Y,a(X,Z)) // 1-1
-        a(X,a(Y,Z)) = a(a(X,Y),Z) // 1-0
-        a(a(X,Y),Z) = a(a(X,Z),Y) // 0-0
-        every(X,every(Y,Z)) = every(Y,every(X,Z))
+        a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z)) // 1-1
+        a#1(X,a#2(Y,Z)) = a#2(a#1(X,Y),Z) // 1-0
+        a#1(a#2(X,Y),Z) = a#2(a#1(X,Z),Y) // 0-0
+        every#1(X,every#2(Y,Z)) = every#2(Y,every#1(X,Z))
 
         *[permute(P)] = permute(*[P])
 ''';

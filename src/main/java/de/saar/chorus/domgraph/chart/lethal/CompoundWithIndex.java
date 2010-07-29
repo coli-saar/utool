@@ -76,6 +76,9 @@ public class CompoundWithIndex extends Compound {
             }
 
             return new CompoundWithIndex(c.getLabel(), sub, index);
+        } else if( term instanceof WildcardTerm ) {
+            WildcardTerm w = (WildcardTerm) term;
+            return new WildcardTerm(_assignIndicesToTerm(w.getSubterm(), assignedIndices, previouslyAssignedIndices));
         } else {
             throw new UnsupportedOperationException("trying to assign indices to term " + term + " of unknown type " + term.getClass());
         }
@@ -98,6 +101,8 @@ public class CompoundWithIndex extends Compound {
             for( Term subterm : c.getSubterms() ) {
                 collectAllIndices(subterm, allIndices);
             }
+        } else if( term instanceof WildcardTerm ) {
+            collectAllIndices(((WildcardTerm) term).getSubterm(), allIndices);
         }
     }
 }
