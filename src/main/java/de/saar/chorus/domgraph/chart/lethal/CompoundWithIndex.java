@@ -84,7 +84,7 @@ public class CompoundWithIndex extends Compound {
         }
     }
 
-    public static void collectAllIndices(Term term, Set<String> allIndices) {
+    public static void collectAllIndices(Term term, Map<String,String> allIndices) {
         if( term instanceof CompoundWithIndex ) {
             CompoundWithIndex c = (CompoundWithIndex) term;
             List<Term> sub = new ArrayList<Term>();
@@ -93,7 +93,7 @@ public class CompoundWithIndex extends Compound {
                 collectAllIndices(subterm, allIndices);
             }
 
-            allIndices.add(c.getIndex());
+            allIndices.put(c.getIndex(), c.getLabel());
         } else if( term instanceof Compound ) {
             Compound c = (Compound) term;
             List<Term> sub = new ArrayList<Term>();
