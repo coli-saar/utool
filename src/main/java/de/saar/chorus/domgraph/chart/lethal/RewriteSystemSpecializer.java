@@ -20,8 +20,11 @@ import de.saar.chorus.term.Variable;
 import de.uni_muenster.cs.sev.lethal.symbol.standard.StdNamedRankedSymbol;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +86,32 @@ public class RewriteSystemSpecializer {
             List<Rule> wildcardEliminatedRules = specializeWildcards(unspecializedRule);
 
             for (Rule rule : wildcardEliminatedRules) {
+                Map<String,String> indicesWithLabels = new HashMap<String, String>();
+                CompoundWithIndex.collectAllIndices(rule.lhs, indicesWithLabels);
+
+                List<String> sortedIndices = new ArrayList<String>(indicesWithLabels.keySet());
+                Collections.sort(sortedIndices);
+
+                List<List<String>> matchingNodeNames = new ArrayList<List<String>>();
+                for( String index : sortedIndices ) {
+                    matchingNodeNames.add(symbolNodes.get(indicesWithLabels.get(index)));
+                }
+
+                Iterator<List<String>> it = new CartesianIterator<String>(matchingNodeNames);
+
+                while( it.hasNext() ) {
+                    List<String> nodenames = it.next();
+
+                    if( alldifferent(nodenames)) {
+                        // TODO: here we have a consistent choice of node names -- use these for specializing (perhaps build map from indices to node names first)
+
+
+                    }
+                }
+
+
+
+                // TODO: this goes up into the above loop
                 usedNodesForLabels.clear();
                 List<Term> lhss = specialize(rule.lhs, usedNodesForLabels);
                 usedNodesForLabels.clear();
@@ -104,6 +133,12 @@ public class RewriteSystemSpecializer {
         }
 
         return specialized;
+    }
+
+    private static boolean alldifferent(Collection<String> values) {
+        Set<String> x = new HashSet<String>(values);
+
+        return values.size() == x.size();
     }
 
     private void addRule(RewriteSystem specialized, Term lhs, Term rhs, String annotation) {
@@ -209,14 +244,14 @@ public class RewriteSystemSpecializer {
             return term;
         } else if (term instanceof Constant) {
             return term;
-        } else if (term instanceof Compound) {
+        } else if (term instanceof CompoundWithIndex) {
             List<Term> newSub = new ArrayList<Term>();
 
-            for (Term sub : ((Compound) term).getSubterms()) {
+            for (Term sub : ((CompoundWithIndex) term).getSubterms()) {
                 newSub.add(specializeWildcards(sub, f, arity, wildcardChildPos, variables));
             }
 
-            return new Compound(((Compound) term).getLabel(), newSub);
+            return new CompoundWithIndex(((Compound) term).getLabel(), newSub, ((CompoundWithIndex) term).getIndex());
         } else if (term instanceof WildcardTerm) {
             // I assume that a term can contain only one wildcard, therefore my subterm needs no further processing
             Term sub = ((WildcardTerm) term).getSubterm();
@@ -230,7 +265,7 @@ public class RewriteSystemSpecializer {
                 }
             }
 
-            return new Compound(f, subterms);
+            return new CompoundWithIndex(f, subterms, "_w");
         } else {
             throw new UnsupportedOperationException("Not yet implemented");
         }
