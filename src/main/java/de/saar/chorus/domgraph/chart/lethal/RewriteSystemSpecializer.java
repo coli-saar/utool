@@ -78,6 +78,10 @@ public class RewriteSystemSpecializer {
         return symbolNodes.keySet();
     }
 
+    public RewriteSystem specialize(RewriteSystem trs) {
+        return specialize(trs, new DummyComparator());
+    }
+
     public RewriteSystem specialize(RewriteSystem trs, Comparator<Term> termOrder) {
         RewriteSystem specialized = new RewriteSystem(true);
         SetMultimap<String, String> usedNodesForLabels = HashMultimap.create();
