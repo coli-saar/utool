@@ -13,7 +13,6 @@ import de.saar.chorus.term.Variable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -62,7 +61,7 @@ public class CompoundWithIndex extends Compound {
             String index = null;
 
             if( assignedIndices.containsKey(c.getLabel())) {
-                throw new UnsupportedOperationException("Trying to assign index to term " + c + ", but constructor " + c.getLabel() + " was already assigned an index.");
+                throw new UnsupportedOperationException("Symbol " + c.getLabel() + " occurs twice without index. Please mark one with an explicit index.");
             } else if( previouslyAssignedIndices.containsKey(c.getLabel())) {
                 index = previouslyAssignedIndices.get(c.getLabel());
             } else {
