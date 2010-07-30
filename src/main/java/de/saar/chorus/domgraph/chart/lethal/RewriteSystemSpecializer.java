@@ -103,36 +103,44 @@ public class RewriteSystemSpecializer {
                     List<String> nodenames = it.next();
 
                     if( alldifferent(nodenames)) {
-                        // TODO: here we have a consistent choice of node names -- use these for specializing (perhaps build map from indices to node names first)
+                        Map<String,String> indexToNodename = new HashMap<String, String>();
+                        for( int i = 0; i < sortedIndices.size(); i++ ) {
+                            indexToNodename.put(sortedIndices.get(i), nodenames.get(i));
+                        }
 
+                        Term lhs = specialize(rule.lhs, indexToNodename);
+                        Term rhs = specialize(rule.rhs, indexToNodename);
 
-                    }
-                }
-
-
-
-                // TODO: this goes up into the above loop
-                usedNodesForLabels.clear();
-                List<Term> lhss = specialize(rule.lhs, usedNodesForLabels);
-                usedNodesForLabels.clear();
-                List<Term> rhss = specialize(rule.rhs, usedNodesForLabels);
-
-                for (Term lhs : lhss) {
-                    for (Term rhs : rhss) {
-                        if (!isEqualUpToVariables(lhs, rhs)) {
-                            // larger term with respect to comparator becomes LHS
-                            if (termOrder.compare(lhs, rhs) >= 0) {
+                        if (termOrder.compare(lhs, rhs) >= 0) {
                                 addRule(specialized, lhs, rhs, rule.annotation);
                             } else {
                                 addRule(specialized, rhs, lhs, rule.annotation);
                             }
-                        }
+
                     }
                 }
             }
         }
 
         return specialized;
+    }
+
+    private Term specialize(Term term, Map<String,String> indexToNodename) {
+        if( term instanceof Constant || term instanceof Variable ) {
+            return term;
+        } else if( term instanceof CompoundWithIndex ) {
+            CompoundWithIndex c = (CompoundWithIndex) term;
+            List<Term> subSpecialized = new ArrayList<Term>();
+
+            for( Term sub : c.getSubterms() ) {
+                subSpecialized.add(specialize(sub, indexToNodename));
+            }
+
+            return new Compound(indexToNodename.get(c.getIndex()), subSpecialized);
+        } else {
+            // wildcard or compound
+            throw new UnsupportedOperationException("Trying to specialize subterm " + term + " of illegal type");
+        }
     }
 
     private static boolean alldifferent(Collection<String> values) {
@@ -148,49 +156,6 @@ public class RewriteSystemSpecializer {
             for (String ann : allAnnotations) {
                 specialized.addRule(lhs, rhs, ann);
             }
-        }
-
-
-    }
-
-    private boolean isEqualUpToVariables(Term lhs, Term rhs) {
-        if (lhs.getClass() != rhs.getClass()) {
-            return false;
-        }
-
-        if (lhs instanceof Variable) {
-            return true;
-        } else if (lhs instanceof Constant) {
-            return ((Constant) lhs).getName().equals(((Constant) rhs).getName());
-        } else if (lhs instanceof Compound) {
-            Compound cl = (Compound) lhs;
-            Compound cr = (Compound) rhs;
-
-            if (!cl.getLabel().equals(cr.getLabel())) {
-                return false;
-            }
-
-            if (cl.getSubterms().size() != cr.getSubterms().size()) {
-                return false;
-            }
-
-            for (int i = 0; i < cl.getSubterms().size(); i++) {
-                if (!isEqualUpToVariables(cl.getSubterms().get(i), cr.getSubterms().get(i))) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public RewriteSystem specialize(RewriteSystem trs) {
-        if (trs.isOrdered()) {
-            return specialize(trs, new DummyComparator());
-        } else {
-            throw new UnsupportedOperationException("Trying to specialize an unordered rewrite system without an explicit term ordering.");
         }
     }
 
@@ -268,50 +233,6 @@ public class RewriteSystemSpecializer {
             return new CompoundWithIndex(f, subterms, "_w");
         } else {
             throw new UnsupportedOperationException("Not yet implemented");
-        }
-    }
-
-    private List<Term> specialize(Term term, SetMultimap<String, String> usedNodesForLabel) {
-        List<Term> ret = new ArrayList<Term>();
-
-        if (term instanceof Variable) {
-            ret.add(term);
-            return ret;
-        } else if (term instanceof Constant) {
-            String n = ((Constant) term).getName();
-            for (String node : symbolNodes.get(n)) {
-                if (!usedNodesForLabel.get(n).contains(node)) {
-                    ret.add(new Constant(node));
-                }
-            }
-            return ret;
-        } else if (term instanceof Compound) {
-            Compound c = (Compound) term;
-
-            for (String node : symbolNodes.get(c.getLabel())) {
-                if (!usedNodesForLabel.get(c.getLabel()).contains(node)) {
-                    List<List<Term>> specializedSubterms = new ArrayList<List<Term>>();
-
-                    usedNodesForLabel.put(c.getLabel(), node);
-
-                    for (Term sub : c.getSubterms()) {
-                        specializedSubterms.add(specialize(sub, usedNodesForLabel));
-                    }
-
-                    CartesianIterator<Term> it = new CartesianIterator<Term>(specializedSubterms);
-
-                    while (it.hasNext()) {
-                        List<Term> subterms = it.next();
-                        ret.add(new Compound(node, subterms));
-                    }
-
-                    usedNodesForLabel.remove(c.getLabel(), node);
-                }
-            }
-
-            return ret;
-        } else {
-            throw new UnsupportedOperationException("Trying to specialize unsupported term: " + term);
         }
     }
 }
