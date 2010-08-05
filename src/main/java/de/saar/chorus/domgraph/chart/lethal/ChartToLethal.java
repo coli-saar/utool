@@ -4,6 +4,7 @@
  */
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.basic.CartesianIterator;
 import de.saar.chorus.contexttransducer.PairState;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.DecoratedNonterminal;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +80,7 @@ public class ChartToLethal {
 
     public static RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> convertFtaToChart(GenFTA<RankedSymbol, PairState<State, String>> fta, DomGraph graph) {
         ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> ret = new ConcreteRegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>>();
-        Map<PairState<State, String>, List<DecoratedNonterminal<SubgraphNonterminal, String>>> statesToNontermLists = new HashMap<PairState<State, String>, List<DecoratedNonterminal<SubgraphNonterminal, String>>>();
+        Map<PairState<State, String>, List<Set<DecoratedNonterminal<SubgraphNonterminal, String>>>> statesToNontermLists = new HashMap<PairState<State, String>, List<Set<DecoratedNonterminal<SubgraphNonterminal, String>>>>();
         Map<PairState<State, String>, List<String>> nodesInFragment = new HashMap<PairState<State, String>, List<String>>();
         final List<GenFTARule<RankedSymbol, PairState<State, String>>> rules = fta.getRulesInBottomUpOrder();
 
@@ -86,8 +88,8 @@ public class ChartToLethal {
         // the start symbol if it contains all non-holes. This is because we can't see the holes
         // in this method.
         Set<String> allNodesExceptHoles = new HashSet<String>(graph.getAllNodes());
-        for( String node : graph.getAllNodes() ) {
-            if( graph.isHole(node)) {
+        for (String node : graph.getAllNodes()) {
+            if (graph.isHole(node)) {
                 allNodesExceptHoles.remove(node);
             }
         }
@@ -96,51 +98,87 @@ public class ChartToLethal {
             String node = extractNode(rule.getSymbol());
 
             if (graph.isRoot(node)) {
-                Split<DecoratedNonterminal<SubgraphNonterminal, String>> split = new Split<DecoratedNonterminal<SubgraphNonterminal, String>>(node);
-                List<String> holes = graph.getHoles(node);
-                List<DecoratedNonterminal<SubgraphNonterminal, String>> nontermsForHoles = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
-                Set<String> subgraph = new HashSet<String>();
-
-                subgraph.add(node);
-
+                List<Set<DecoratedNonterminal<SubgraphNonterminal, String>>> allChildNontermSets = new ArrayList<Set<DecoratedNonterminal<SubgraphNonterminal, String>>>();
                 for (PairState<State, String> childState : rule.getSrcStates()) {
-                    nontermsForHoles.addAll(statesToNontermLists.get(childState));
+                    allChildNontermSets.addAll(statesToNontermLists.get(childState));
+                }
 
-                    subgraph.addAll(nodesInFragment.get(childState));
+                Iterator<List<DecoratedNonterminal<SubgraphNonterminal, String>>> holeNontermIterator = new CartesianIterator<DecoratedNonterminal<SubgraphNonterminal, String>>(allChildNontermSets);
 
-                    for( DecoratedNonterminal<SubgraphNonterminal,String> nt : statesToNontermLists.get(childState)) {
+                while (holeNontermIterator.hasNext()) {
+                    List<DecoratedNonterminal<SubgraphNonterminal, String>> nontermsForHoles = holeNontermIterator.next();
+                    Split<DecoratedNonterminal<SubgraphNonterminal, String>> split = new Split<DecoratedNonterminal<SubgraphNonterminal, String>>(node);
+                    List<String> holes = graph.getHoles(node);
+//                    List<DecoratedNonterminal<SubgraphNonterminal, String>> nontermsForHoles = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
+                    Set<String> subgraph = new HashSet<String>();
+
+                    subgraph.add(node);
+
+                    for (PairState<State, String> childState : rule.getSrcStates()) {
+//                        nontermsForHoles.addAll(statesToNontermLists.get(childState));
+
+                        subgraph.addAll(nodesInFragment.get(childState));
+
+//                        for (DecoratedNonterminal<SubgraphNonterminal, String> nt : statesToNontermLists.get(childState)) {
+//                            subgraph.addAll(nt.getNodes());
+//                        }
+                    }
+
+
+                    for( DecoratedNonterminal<SubgraphNonterminal,String> nt : nontermsForHoles ) {
                         subgraph.addAll(nt.getNodes());
                     }
+
+                    assert holes.size() == nontermsForHoles.size();
+
+                    for (int i = 0; i < holes.size(); i++) {
+                        split.addWcc(holes.get(i), nontermsForHoles.get(i));
+                    }
+
+                    String decoration = (subgraph.containsAll(allNodesExceptHoles)) ? CHART_ROOT_DECORATION : rule.getDestState().getSecond();
+                    DecoratedNonterminal<SubgraphNonterminal, String> nt = new DecoratedNonterminal<SubgraphNonterminal, String>(new SubgraphNonterminal(subgraph), decoration);
+                    ret.addSplit(nt, split);
+
+                    List<Set<DecoratedNonterminal<SubgraphNonterminal, String>>> ntt = new ArrayList<Set<DecoratedNonterminal<SubgraphNonterminal, String>>>();
+                    Set<DecoratedNonterminal<SubgraphNonterminal, String>> nts = new HashSet<DecoratedNonterminal<SubgraphNonterminal, String>>();
+                    nts.add(nt);
+                    ntt.add(nts);
+                    statesToNontermLists.put(rule.getDestState(), ntt);
+                    nodesInFragment.put(rule.getDestState(), new ArrayList<String>());
                 }
-
-                assert holes.size() == nontermsForHoles.size();
-
-                for (int i = 0; i < holes.size(); i++) {
-                    split.addWcc(holes.get(i), nontermsForHoles.get(i));
-                }
-
-                String decoration = (subgraph.containsAll(allNodesExceptHoles)) ? CHART_ROOT_DECORATION : rule.getDestState().getSecond();
-                DecoratedNonterminal<SubgraphNonterminal, String> nt = new DecoratedNonterminal<SubgraphNonterminal, String>(new SubgraphNonterminal(subgraph), decoration);
-                ret.addSplit(nt, split);
-
-                List<DecoratedNonterminal<SubgraphNonterminal, String>> ntt = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
-                ntt.add(nt);
-                statesToNontermLists.put(rule.getDestState(), ntt);
-                nodesInFragment.put(rule.getDestState(), new ArrayList<String>());
 
                 // NB: holes are never added to fragments
             } else {
-                List<DecoratedNonterminal<SubgraphNonterminal, String>> nonterminals = new ArrayList<DecoratedNonterminal<SubgraphNonterminal, String>>();
                 List<String> nodesHere = new ArrayList<String>();
+                List<Set<DecoratedNonterminal<SubgraphNonterminal, String>>> nonterminals = statesToNontermLists.get(rule.getDestState());
 
-                // this code only works because the fta is bottom-up deterministic inside fragments
+                int totalChildHoles = 0;
+                for (PairState<State, String> childState : rule.getSrcStates()) {
+                    totalChildHoles += statesToNontermLists.get(childState).size();
+                }
+
+                if (nonterminals == null) {
+                    nonterminals = new ArrayList<Set<DecoratedNonterminal<SubgraphNonterminal, String>>>();
+                    for (int i = 0; i < totalChildHoles; i++) {
+                        nonterminals.add(new HashSet<DecoratedNonterminal<SubgraphNonterminal, String>>());
+                    }
+                }
+
+                assert nonterminals.size() == totalChildHoles;
 
                 nodesHere.add(node);
 
+                int i = 0;
                 for (PairState<State, String> childState : rule.getSrcStates()) {
-                    nonterminals.addAll(statesToNontermLists.get(childState));
                     nodesHere.addAll(nodesInFragment.get(childState));
+
+                    for (Set<DecoratedNonterminal<SubgraphNonterminal, String>> childNontermSet : statesToNontermLists.get(childState)) {
+                        nonterminals.get(i).addAll(childNontermSet);
+                        i++;
+                    }
                 }
+
+                assert i == totalChildHoles;
 
                 statesToNontermLists.put(rule.getDestState(), nonterminals);
                 nodesInFragment.put(rule.getDestState(), nodesHere);
