@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 
 /**
  *
@@ -83,8 +82,11 @@ public class UtoolReducer {
 //            }
             count ++;
         }
-
+        
         System.out.println("found " + count + " readings after reduction");
+
+//        RegularTreeGrammar reducedChart = rnfc.reduceToChart(chart, graph, labels);
+//        System.out.println("in chart: found " + reducedChart.countSolvedForms() + " readings after reduction");
     }
 
     public static void loadRewriteSystem(String filename, RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) throws Exception {

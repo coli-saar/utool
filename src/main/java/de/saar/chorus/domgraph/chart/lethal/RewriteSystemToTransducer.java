@@ -28,7 +28,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -135,28 +134,6 @@ public class RewriteSystemToTransducer {
                         ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotations.get(i), variables), annotationStates.get(parentAnnotation), rhs);
                     }
                 }
-
-
-
-/*
-                // if a can be the i-th annotation below a' for label f, then add rule
-                State neutralAnnotationState = annotationStates.get(annotator.getNeutralAnnotation());
-                for (String childAnnotation : annotator.getAllAnnotations()) {
-                    for (int i = 0; i < f.getArity(); i++) {
-                        Set<String> possibleParentAnnotations = annotator.getParentAnnotations(childAnnotation, label, i);
-
-                        if (possibleParentAnnotations == null) {
-                            // if a cannot be the i-th child of any a' for label f, then add transition to neutral annotation
-                            ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotation, variables), neutralAnnotationState, rhs);
-                        } else {
-                            for (String parentAnnotation : possibleParentAnnotations) {
-                                ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotation, variables), annotationStates.get(parentAnnotation), rhs);
-                            }
-                        }
-                    }
-                }
- * 
- */
             }
         }
 
