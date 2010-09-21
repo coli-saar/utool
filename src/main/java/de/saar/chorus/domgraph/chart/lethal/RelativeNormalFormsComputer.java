@@ -25,6 +25,7 @@ import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTA;
 import de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTARule;
 import static de.uni_muenster.cs.sev.lethal.treeautomata.generic.GenFTAOps.*;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,8 @@ public class RelativeNormalFormsComputer {
     }
 
     public GenFTA<RankedSymbol, PairState<State, String>> reduce(Chart chart, DomGraph graph, NodeLabels labels) {
+        System.err.println("\n--- start reducing ---");
+
         stopwatch.start("fta");
         EasyFTA chartFta = ChartToLethal.convertToFta(chart, graph, labels);
         stopwatch.report("fta", "Converted");
@@ -104,6 +107,8 @@ public class RelativeNormalFormsComputer {
             System.out.println("\n\nDifference automaton:\n" + diff);
             System.out.println("\n\nDifference automaton, reduced:\n" + reduceFull(diff));
         }
+
+        System.err.println("--- done reducing ---");
 
         return reduced;
     }
@@ -165,6 +170,7 @@ public class RelativeNormalFormsComputer {
 
     public RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> reduceToChart(Chart chart, DomGraph graph, NodeLabels labels) {
         GenFTA<RankedSymbol, PairState<State, String>> fta = reduce(chart, graph, labels);
-        return ChartToLethal.convertFtaToChart(fta, graph);
+        RegularTreeGrammar<DecoratedNonterminal<SubgraphNonterminal, String>> ret = ChartToLethal.convertFtaToChart(fta, graph);
+        return ret;
     }
 }

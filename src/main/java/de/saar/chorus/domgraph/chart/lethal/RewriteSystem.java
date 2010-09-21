@@ -5,9 +5,13 @@
 
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.chorus.term.Compound;
+import de.saar.chorus.term.Constant;
 import de.saar.chorus.term.Term;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -57,13 +61,17 @@ public class RewriteSystem {
         public Term lhs, rhs;
         public String annotation;
         public boolean oriented;
-
+        private Set<String> labels;
 
         public Rule(Term lhs, Term rhs, String annotation, boolean oriented) {
             this.lhs = lhs;
             this.rhs = rhs;
             this.annotation = annotation;
             this.oriented = oriented;
+
+            labels = new HashSet<String>();
+            collectLabels(lhs);
+            collectLabels(rhs);
         }
 
 
@@ -102,7 +110,21 @@ public class RewriteSystem {
             return hash;
         }
 
+        public Set<String> getAllLabels() {
+            return labels;
+        }
 
+        private void collectLabels(Term term) {
+            if( term instanceof Constant ) {
+                labels.add(((Constant) term).getName());
+            } else if( term instanceof Compound ) { // or CompoundWithIndex
+                Compound c = (Compound) term;
+                labels.add(c.getLabel());
+                for( Term t : c.getSubterms() ) {
+                    collectLabels(t);
+                }
+            }
+        }
         
     }
 }

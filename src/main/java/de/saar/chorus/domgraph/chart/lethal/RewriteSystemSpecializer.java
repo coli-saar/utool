@@ -5,9 +5,7 @@
 package de.saar.chorus.domgraph.chart.lethal;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.SetMultimap;
 import de.saar.basic.CartesianIterator;
 import de.saar.chorus.domgraph.chart.lethal.RewriteSystem.Rule;
 import de.saar.chorus.domgraph.graph.DomGraph;
@@ -39,6 +37,7 @@ public class RewriteSystemSpecializer {
     private Map<String, Integer> symbolArities;
     private ListMultimap<String, StdNamedRankedSymbol> labelToRankedSymbol;
     private Set<String> allAnnotations;
+    private Set<String> allNodeLabels;
 
     public RewriteSystemSpecializer(DomGraph graph, NodeLabels labels, Annotator annotator) {
         symbolNodes = ArrayListMultimap.create();
@@ -46,6 +45,11 @@ public class RewriteSystemSpecializer {
         labelToRankedSymbol = ArrayListMultimap.create();
         collectSymbols(graph, labels);
         allAnnotations = annotator.getAllAnnotations();
+
+        allNodeLabels = new HashSet<String>();
+        for (String node : graph.getAllNodes()) {
+            allNodeLabels.add(labels.getLabel(node));
+        }
     }
 
     private void collectSymbols(DomGraph graph, NodeLabels labels) {
@@ -83,60 +87,69 @@ public class RewriteSystemSpecializer {
     }
 
     public RewriteSystem specialize(RewriteSystem trs, Comparator<Term> termOrder) {
+        int countApplicableRules = 0;
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.start("specialize");
+
         RewriteSystem specialized = new RewriteSystem(true);
-        SetMultimap<String, String> usedNodesForLabels = HashMultimap.create();
+//        SetMultimap<String, String> usedNodesForLabels = HashMultimap.create();
 
         for (Rule unspecializedRule : trs.getAllRules()) {
-            List<Rule> wildcardEliminatedRules = specializeWildcards(unspecializedRule);
+            if (isApplicableToDomgraph(unspecializedRule)) {
+                countApplicableRules++;
+                List<Rule> wildcardEliminatedRules = specializeWildcards(unspecializedRule);
 
-            for (Rule rule : wildcardEliminatedRules) {
-                Map<String,String> indicesWithLabels = new HashMap<String, String>();
-                CompoundWithIndex.collectAllIndices(rule.lhs, indicesWithLabels);
+                for (Rule rule : wildcardEliminatedRules) {
+                    Map<String, String> indicesWithLabels = new HashMap<String, String>();
+                    CompoundWithIndex.collectAllIndices(rule.lhs, indicesWithLabels);
 
-                List<String> sortedIndices = new ArrayList<String>(indicesWithLabels.keySet());
-                Collections.sort(sortedIndices);
+                    List<String> sortedIndices = new ArrayList<String>(indicesWithLabels.keySet());
+                    Collections.sort(sortedIndices);
 
-                List<List<String>> matchingNodeNames = new ArrayList<List<String>>();
-                for( String index : sortedIndices ) {
-                    matchingNodeNames.add(symbolNodes.get(indicesWithLabels.get(index)));
-                }
+                    List<List<String>> matchingNodeNames = new ArrayList<List<String>>();
+                    for (String index : sortedIndices) {
+                        matchingNodeNames.add(symbolNodes.get(indicesWithLabels.get(index)));
+                    }
 
-                Iterator<List<String>> it = new CartesianIterator<String>(matchingNodeNames);
+                    Iterator<List<String>> it = new CartesianIterator<String>(matchingNodeNames);
 
-                while( it.hasNext() ) {
-                    List<String> nodenames = it.next();
+                    while (it.hasNext()) {
+                        List<String> nodenames = it.next();
 
-                    if( alldifferent(nodenames)) {
-                        Map<String,String> indexToNodename = new HashMap<String, String>();
-                        for( int i = 0; i < sortedIndices.size(); i++ ) {
-                            indexToNodename.put(sortedIndices.get(i), nodenames.get(i));
-                        }
+                        if (alldifferent(nodenames)) {
+                            Map<String, String> indexToNodename = new HashMap<String, String>();
+                            for (int i = 0; i < sortedIndices.size(); i++) {
+                                indexToNodename.put(sortedIndices.get(i), nodenames.get(i));
+                            }
 
-                        Term lhs = specialize(rule.lhs, indexToNodename);
-                        Term rhs = specialize(rule.rhs, indexToNodename);
+                            Term lhs = specialize(rule.lhs, indexToNodename);
+                            Term rhs = specialize(rule.rhs, indexToNodename);
 
-                        if (termOrder.compare(lhs, rhs) >= 0) {
+                            if (termOrder.compare(lhs, rhs) >= 0) {
                                 addRule(specialized, lhs, rhs, rule.annotation);
                             } else {
                                 addRule(specialized, rhs, lhs, rule.annotation);
                             }
 
+                        }
                     }
                 }
             }
         }
 
+        stopwatch.report("specialize", countApplicableRules + " of " + trs.getAllRules().size() + " applicable");
+
         return specialized;
     }
 
-    private Term specialize(Term term, Map<String,String> indexToNodename) {
-        if( term instanceof Constant || term instanceof Variable ) {
+    private Term specialize(Term term, Map<String, String> indexToNodename) {
+        if (term instanceof Constant || term instanceof Variable) {
             return term;
-        } else if( term instanceof CompoundWithIndex ) {
+        } else if (term instanceof CompoundWithIndex) {
             CompoundWithIndex c = (CompoundWithIndex) term;
             List<Term> subSpecialized = new ArrayList<Term>();
 
-            for( Term sub : c.getSubterms() ) {
+            for (Term sub : c.getSubterms()) {
                 subSpecialized.add(specialize(sub, indexToNodename));
             }
 
@@ -238,5 +251,9 @@ public class RewriteSystemSpecializer {
         } else {
             throw new UnsupportedOperationException("Not yet implemented");
         }
+    }
+
+    private boolean isApplicableToDomgraph(Rule unspecializedRule) {
+        return allNodeLabels.containsAll(unspecializedRule.getAllLabels());
     }
 }

@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -42,23 +41,19 @@ import de.saar.chorus.domgraph.utool.AbstractOptions;
 import de.saar.chorus.domgraph.utool.AbstractOptionsParsingException;
 import de.saar.chorus.domgraph.utool.ExitCodes;
 import de.saar.chorus.domgraph.utool.AbstractOptions.Operation;
-import java.io.File;
-import java.io.FileReader;
-import java.util.HashSet;
 
 class XmlParser extends DefaultHandler {
 
     private CodecManager codecManager;
     private AbstractOptions options;
     private Logger logger;
-    private RelativeNormalFormsComputer previousRnfc;
+    private static RelativeNormalFormsComputer previousRnfc = null;
     private final static String EOF_MESSAGE = "successfully finished parsing one utool element";
 
     public XmlParser(Logger logger) {
         super();
 
         this.logger = logger;
-        this.previousRnfc = null;
 
         codecManager = new CodecManager();
         codecManager.setAllowExperimentalCodecs(UserProperties.allowExperimentalCodecs());
