@@ -26,6 +26,7 @@ import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
 import de.saar.chorus.domgraph.chart.SolverNotApplicableException;
+import de.saar.chorus.domgraph.chart.lethal.Stopwatch;
 import de.saar.chorus.domgraph.codec.CodecManager;
 import de.saar.chorus.domgraph.codec.MalformedDomgraphException;
 import de.saar.chorus.domgraph.graph.DomGraph;
