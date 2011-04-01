@@ -5,6 +5,8 @@
 
 package de.saar.chorus.domgraph.chart.lethal;
 
+import de.saar.basic.StringOrVariable;
+import de.saar.basic.tree.Tree;
 import de.saar.chorus.term.Substitution;
 import de.saar.chorus.term.Term;
 import de.saar.chorus.term.Type;
@@ -60,6 +62,11 @@ public class WildcardTerm extends Term {
 
     public String toString() {
         return "*[" + sub.toString() + "]";
+    }
+
+    @Override
+    protected void buildTerm(Tree<StringOrVariable> tree, String string) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
