@@ -467,7 +467,7 @@ public class Utool {
 		System.err.println("  --display-codecs, -d              Displays all input and output filters.");
 		System.err.println("  --display-statistics, -s          Displays runtime and other statistics.");
 		System.err.println("  --no-output, -n                   Do not display computed output.");
-		System.err.println("  --equivalences, -e <filename>     Eliminate equivalent readings.");
+		System.err.println("  --filter, -f <filename>           Filter by redundancy and weakest readings.");
 		System.err.println("  --weakest-readings, -w <filename> Compute weakest readings.");
 		System.err.println("  --version                         Display version and copyright information.");
 	}
