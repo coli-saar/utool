@@ -28,6 +28,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -35,6 +38,7 @@ import java.util.Map;
  */
 public class RewriteSystemToTransducer {
 
+    private static final Stopwatch stopwatch = new Stopwatch();
     private Map<String, State> annotationStates;
     private List<Pair<RewriteSystem, Comparator<Term>>> rewriteSystems;
 //    private RewriteSystem weakening, equivalence;
@@ -61,14 +65,12 @@ public class RewriteSystemToTransducer {
         rewriteSystems.add(new Pair<RewriteSystem, Comparator<Term>>(trs, comparator));
     }
 
-
-
     public void addRewriteSystem(RewriteSystem trs) {
         addRewriteSystem(trs, new DummyComparator());
     }
 
     public ContextTreeTransducer<RankedSymbol, RankedSymbol, State> convert(DomGraph graph, NodeLabels labels) {
-        ContextTreeTransducer<RankedSymbol, RankedSymbol, State> ret = new ContextTreeTransducer<RankedSymbol, RankedSymbol, State>();
+        final ContextTreeTransducer<RankedSymbol, RankedSymbol, State> ret = new ContextTreeTransducer<RankedSymbol, RankedSymbol, State>();
         RewriteSystemSpecializer specializer = new RewriteSystemSpecializer(graph, labels, annotator);
 
         // set final and neutral state
@@ -76,6 +78,7 @@ public class RewriteSystemToTransducer {
         ret.setNeutralState(qbar);
 
         // type 1 rules: f(qbar:1,...,qbar:n) -> qbar, f(1,...,n)
+        stopwatch.start("ctt type 1 rules");
         for (String label : specializer.getAllLabels()) {
             for (RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
@@ -97,9 +100,11 @@ public class RewriteSystemToTransducer {
                 ret.addRule(tf.makeTreeFromSymbol(lf, lhsArgs), qbar, tf.makeTreeFromSymbol(rf, rhsArgs));
             }
         }
+        stopwatch.report("ctt type 1 rules", "ctt type 1 rules");
 
         // type 2 rules: f(qbar:1,...,q_a:i,...,qbar:n) -> q_a', f(1,...,n)
         // if there is no annotator rule for f and a', then pretend it's a':f(0,...,0) where 0 is neutral state
+        stopwatch.start("ctt type 2 rules");
         for (String label : specializer.getAllLabels()) {
             for (RankedSymbol f : specializer.getSpecializedRankedSymbols(label)) {
                 BiSymbol<RankedSymbol, Pair<State, Variable>> lf = new InnerSymbol<RankedSymbol, Pair<State, Variable>>(f);
@@ -119,40 +124,74 @@ public class RewriteSystemToTransducer {
                 Tree<BiSymbol<RankedSymbol, Variable>> rhs = tf.makeTreeFromSymbol(rf, rhsArgs);
 
                 // iterate over all annotations for this label and build appropriate transducer rules
-                for( String parentAnnotation: annotator.getAllAnnotations() ) {
+                for (String parentAnnotation : annotator.getAllAnnotations()) {
                     List<String> childAnnotations = annotator.getChildAnnotations(parentAnnotation, label);
 
                     // if there is no annotation rule for this label and annotation, then pretend it's a:f(0,...,0)
-                    if( childAnnotations == null ) {
+                    if (childAnnotations == null) {
                         childAnnotations = new ArrayList<String>();
-                        for( int i = 0; i < f.getArity(); i++ ) {
+                        for (int i = 0; i < f.getArity(); i++) {
                             childAnnotations.add(annotator.getNeutralAnnotation());
                         }
                     }
 
-                    for( int i = 0; i < f.getArity(); i++ ) {
+                    for (int i = 0; i < f.getArity(); i++) {
                         ret.addRule(makeLhsWithOneAnnotationState(f, i, childAnnotations.get(i), variables), annotationStates.get(parentAnnotation), rhs);
                     }
                 }
             }
         }
+        stopwatch.report("ctt type 2 rules", "ctt type 2 rules");
 
         // type 3 rules: f(g(qbar:1,...,qbar:n)) -> q_a, g(f(1,...,n))
+        /*
+        stopwatch.start("ctt type 3 rules");
         for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
-            RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
+        RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
 
-//            System.err.println("\n\nSpecialized rewrite system:\n\n" + specializedWeakening.toPrettyString());
+        for (Rule rule : specializedWeakening.getAllRules()) {
+        Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
 
-            for (Rule rule : specializedWeakening.getAllRules()) {
-                Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
+        nextVariable = 1;
+        Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = convertLhs(rule.lhs, variableMap);
+        Tree<BiSymbol<RankedSymbol, Variable>> rhs = convertRhs(rule.rhs, variableMap);
 
-                nextVariable = 1;
-                Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = convertLhs(rule.lhs, variableMap);
-                Tree<BiSymbol<RankedSymbol, Variable>> rhs = convertRhs(rule.rhs, variableMap);
-
-                ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
-            }
+        ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
         }
+        }
+        stopwatch.report("ctt type 3 rules", "ctt type 3 rules");
+         * */
+
+        stopwatch.start("ctt type 3 rules");
+        try {
+            for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
+                RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
+
+                final ExecutorService pool = Executors.newFixedThreadPool(2);
+//                final ExecutorService pool = Executors.newSingleThreadExecutor();
+
+                for (final Rule rule : specializedWeakening.getAllRules()) {
+                    pool.execute(new Runnable() {
+
+                        public void run() {
+                            Map<de.saar.chorus.term.Variable, Variable> variableMap = new HashMap<de.saar.chorus.term.Variable, Variable>();
+
+                            nextVariable = 1;
+                            Tree<BiSymbol<RankedSymbol, Pair<State, Variable>>> lhs = convertLhs(rule.lhs, variableMap);
+                            Tree<BiSymbol<RankedSymbol, Variable>> rhs = convertRhs(rule.rhs, variableMap);
+
+                            synchronized (ret) {
+                                ret.addRule(lhs, annotationStates.get(rule.annotation), rhs);
+                            }
+                        }
+                    });
+                }
+                pool.shutdown();
+                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+            }
+        } catch (InterruptedException e) {
+        }
+        stopwatch.report("ctt type 3 rules", "ctt type 3 rules");
 
         return ret;
     }
