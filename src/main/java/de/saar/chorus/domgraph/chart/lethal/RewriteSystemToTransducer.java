@@ -163,13 +163,16 @@ public class RewriteSystemToTransducer {
          * */
 
         stopwatch.start("ctt type 3 rules");
+        int numThreads = 1;
+        if( System.getProperty("threads") != null ) {
+            numThreads = Integer.parseInt(System.getProperty("threads"));
+        }
+
         try {
             for (Pair<RewriteSystem, Comparator<Term>> trsWithComp : rewriteSystems) {
                 RewriteSystem specializedWeakening = specializer.specialize(trsWithComp.getFirst(), trsWithComp.getSecond());
 
-                final ExecutorService pool = Executors.newFixedThreadPool(2);
-//                final ExecutorService pool = Executors.newSingleThreadExecutor();
-
+                final ExecutorService pool = Executors.newFixedThreadPool(numThreads);
                 for (final Rule rule : specializedWeakening.getAllRules()) {
                     pool.execute(new Runnable() {
 
@@ -190,6 +193,9 @@ public class RewriteSystemToTransducer {
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
             }
         } catch (InterruptedException e) {
+        } catch (Exception e) {
+            System.err.println(e);
+            System.exit(1);
         }
         stopwatch.report("ctt type 3 rules", "ctt type 3 rules");
 
