@@ -183,11 +183,15 @@
     <repository>
       <id>ecl-repository</id>
       <name>Coli ECL Maven repository</name>
-      <url>scp://httpd.coli.uni-saarland.de/web/www.coli.uni-saarland.de/html/projects/ecl/maven2/releases</url>
+      <url>scpexe://httpd.coli.uni-saarland.de/web/www.coli.uni-saarland.de/html/projects/ecl/maven2/releases</url>
     </repository>
 
     <downloadUrl>http://www.coli.uni-saarland.de/projects/ecl/maven2/releases</downloadUrl>
   </distributionManagement>
 
+<scm>
+    <connection>scm:hg:file://${basedir}</connection>
+    <developerConnection>scm:hg:file://${basedir}</developerConnection>
+  </scm>
 
 </project>
