@@ -142,6 +142,16 @@
 	</executions>
       </plugin>
     </plugins>
+
+
+
+		<extensions>
+		  <extension>
+		    <groupId>org.apache.maven.wagon</groupId>
+		    <artifactId>wagon-ssh-external</artifactId>
+		    <version>1.0-beta-6</version>
+		  </extension>
+		</extensions>
   </build>
 
 
@@ -172,13 +182,6 @@
   </repositories>
 
 
-  <!--
-
-<scm>
-<developerConnection>scm:svn:https://kenai.com/svn/give-challenge~svn/trunk</developerConnection>
-</scm>
-  -->
-
   <distributionManagement>
     <repository>
       <id>ecl-repository</id>
@@ -189,7 +192,7 @@
     <downloadUrl>http://www.coli.uni-saarland.de/projects/ecl/maven2/releases</downloadUrl>
   </distributionManagement>
 
-<scm>
+  <scm>
     <connection>scm:hg:file://${basedir}</connection>
     <developerConnection>scm:hg:file://${basedir}</developerConnection>
   </scm>
