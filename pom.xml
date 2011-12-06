@@ -16,7 +16,7 @@
     <dependency>
         <groupId>de.saar.chorus</groupId>
         <artifactId>lethal</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </dependency>
     
     <dependency>
