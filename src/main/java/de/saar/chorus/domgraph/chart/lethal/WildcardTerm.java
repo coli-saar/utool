@@ -65,7 +65,12 @@ public class WildcardTerm extends Term {
     }
 
     @Override
-    protected void buildTerm(Tree<StringOrVariable> tree, String string) {
+    protected void buildTermWithVariables(Tree<StringOrVariable> tree, String parent) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void buildTerm(Tree<String> tree, String parent) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
