@@ -18,6 +18,7 @@ import java.net.Socket;
 import de.saar.basic.Logger;
 import de.saar.basic.LoggingWriter;
 import de.saar.basic.XmlEncodingWriter;
+import de.saar.basic.XmlEntities;
 import de.saar.chorus.domgraph.GlobalDomgraphProperties;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.ChartSolver;
@@ -346,7 +347,7 @@ class ServerThread extends Thread {
 	}
 
 	private static void sendError(PrintWriter out, int exitcode, String string) {
-		out.println("<error code='" + exitcode + "' explanation='" + string + "' />");
+		out.println("<error code='" + exitcode + "' explanation='" + XmlEntities.encode(string) + "' />");
 	}
 
 	private static String helpString(Operation op) {
