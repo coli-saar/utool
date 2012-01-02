@@ -1,9 +1,6 @@
 import socket
 from xml.etree import ElementTree as ET
 
-
-output_end_marker = "---"
-
 class UtoolConnection:
     def __init__(self, hostname, port):
         self.hostname = hostname
