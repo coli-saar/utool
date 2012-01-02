@@ -18,7 +18,7 @@ class UtoolConnection:
         self.f.write("<usr codec='" + inputcodec + "' string='" + domgraph + "' />\n")
         self.f.write("</utool>\n")
         self.f.flush()
-#        self.sock.shutdown(1)
+        self.sock.shutdown(1)
 
         result = self.f.read()
         element = ET.XML(result)
