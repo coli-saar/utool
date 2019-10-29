@@ -60,6 +60,13 @@ public class WildcardTerm extends Term {
         return "(* " + sub.toLispString() + ")";
     }
 
+    public de.up.ling.tree.Tree<StringOrVariable> toTreeWithVariables() {
+        // This method was introduced in basics after the last change to Utool,
+        // and is never called from within Utool, so we can just use a dummy implementation.
+
+        return null;
+    }
+
     public String toString() {
         return "*[" + sub.toString() + "]";
     }
