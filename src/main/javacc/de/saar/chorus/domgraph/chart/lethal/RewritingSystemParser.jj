@@ -1,0 +1,176 @@
+
+options {
+  JDK_VERSION = "1.5";
+    LOOKAHEAD = 2;
+  UNICODE_INPUT = true;
+STATIC = false;
+}
+
+PARSER_BEGIN(RewritingSystemParser)
+package de.saar.chorus.domgraph.chart.lethal;
+
+import java.io.*;
+import java.util.*;
+import de.saar.chorus.domgraph.chart.*;
+import de.saar.chorus.term.*;
+
+public class RewritingSystemParser {
+    private  RewriteSystem weakening, equivalence;
+    private Annotator annotator;
+
+    public RewritingSystemParser() {
+		this((Reader) null);
+    }
+
+    public void read(Reader reader, RewriteSystem weakening, RewriteSystem equivalence, Annotator annotator) throws Exception {
+    	ReInit(reader);
+
+        this.weakening = weakening;
+        this.equivalence = equivalence;
+        this.annotator = annotator;
+	Input();
+
+//	    return grammar;
+    }
+
+    public static Term parseTerm(String s) throws Exception {
+        RewritingSystemParser p = new RewritingSystemParser();
+        p.ReInit(new StringReader(s));
+        return p.term();
+    }
+}
+PARSER_END(RewritingSystemParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|	"\n"
+}
+
+
+
+
+TOKEN :
+{
+    <STARTANN  : "start annotation">
+ |  <NEUTRALANN : "neutral annotation">
+ |  <ARROW: "->">
+ |  <WILDCARD: "*">
+ |  <NUMBER : (["0"-"9"])+>
+ |  <VARIABLE : ["A"-"Z"] (["a"-"z", "A"-"Z", "_", "0"-"9", "-"])*>
+ |  <ID   : ["a"-"z", "_", "\'", "&", "+", "-"] (["a"-"z", "A"-"Z", "0"-"9", "_", "\'", "&", "+", "-"])*>
+ | <LINE_END_COMMENT: "//" (~["\n"])* >
+
+}
+
+void Input() : {
+}
+{
+    (<LINE_END_COMMENT> | WeakeningRule() | EquivalenceRule() | AnnotatorComponent())*
+}
+
+
+void WeakeningRule(): {
+    String ann;
+    Term lhs, rhs;
+    Term lhsI, rhsI;
+    Map m1 = new HashMap(), m2 = new HashMap(), m3 = new HashMap();
+}{
+    "[" ann=Annotation() "]" lhs=term() <ARROW> rhs=term() {
+        lhsI = CompoundWithIndex.assignIndicesToTerm(lhs, m1, m2);
+        rhsI = CompoundWithIndex.assignIndicesToTerm(rhs, m3, m1);
+        weakening.addRule(lhsI, rhsI, ann);
+    }
+}
+
+
+void EquivalenceRule(): {
+    Term lhs, rhs;
+    Term lhsI, rhsI;
+    Map m1 = new HashMap(), m2 = new HashMap(), m3 = new HashMap();
+}{
+    lhs=term() "=" rhs=term() {
+        lhsI = CompoundWithIndex.assignIndicesToTerm(lhs, m1, m2);
+        rhsI = CompoundWithIndex.assignIndicesToTerm(rhs, m3, m1);
+        equivalence.addRule(lhsI, rhsI, null);
+    }
+}
+
+
+void AnnotatorComponent(): {
+    String x,y,f;
+    List<String> childAnnotations = new ArrayList<String>();
+}{
+    <STARTANN> ":" x=Annotation() { annotator.setStartAnnotation(x); }
+    | <NEUTRALANN> ":" x=Annotation() { annotator.setNeutralAnnotation(x); }
+    | (x=Annotation() ":" f=<ID>.image "("
+        y=Annotation() { childAnnotations.add(y); } ("," y=Annotation() { childAnnotations.add(y); })* ")") {
+      annotator.addRule(x,f,childAnnotations);
+     }
+}
+
+String Annotation(): {
+    String x;
+}{
+    (x=<ID>.image | x=<NUMBER>.image ) { // | x=<OTHER>.image
+        return x;
+    }
+}
+
+
+Term term() :
+{
+	Token label, index;
+	List<Term> subterms = new ArrayList<Term>();
+	Term subterm;
+}
+{
+	label = <ID> "("
+               (subterm = term() { subterms.add(subterm); })
+               ("," subterm = term() { subterms.add(subterm); })*
+        	 ")" {
+		return new Compound(label.image, subterms);
+	}
+
+	| label = <ID> "(" ")" { return new Compound(label.image, subterms); }
+
+        | LOOKAHEAD(5) label = <ID> "#" index=idOrNumber() "("
+               (subterm = term() { subterms.add(subterm); })
+               ("," subterm = term() { subterms.add(subterm); })*
+        	 ")" {
+		return new CompoundWithIndex(label.image, subterms, index.image);
+	}
+
+	| label = <ID> "#" index=idOrNumber() "(" ")" { return new CompoundWithIndex(label.image, subterms, index.image); }
+
+  | label = <ID> {
+	  return new Constant(label.image);
+  }
+
+  | label = <VARIABLE> {
+  	  return new Variable(label.image);
+  }
+
+  | label = <WILDCARD> "[" subterm=term() "]" {
+    return new WildcardTerm(subterm);
+  }
+}
+
+Token idOrNumber() : {
+  Token ret;
+}{
+    ret = <ID> { return ret; }
+    | ret = <NUMBER> { return ret; }
+}
+
+
+/*
+
+int Number(): {
+    String x;
+}{
+    x=<NUMBER>.image  { return Integer.parseInt(x); }
+}
+*/
