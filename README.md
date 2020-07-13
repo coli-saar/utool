@@ -14,7 +14,7 @@ You can always download the most recent release of Utool from the [Releases page
 
 ## Compiling Utool
 
-To compile Utool, you will need a recent version of [Apache Maven](https://maven.apache.org/) and [Java JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html). Notice that Utool currently won't compile with more recent versions of Java.
+To compile Utool, you will need a recent version of [Apache Maven](https://maven.apache.org/) and [Java JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) or newer. Utool 3.3 has been tested in 2020 with Java 8 and 12.
 
 Clone Utool from Github and the compile as follows:
 
