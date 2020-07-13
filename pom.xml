@@ -73,6 +73,12 @@
       <artifactId>basics</artifactId>
       <version>[1.2.3,)</version>
     </dependency>
+
+    <dependency>
+    <groupId>org.madlonkay</groupId>
+    <artifactId>desktopsupport</artifactId>
+    <version>0.3.0</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -178,6 +184,15 @@
       <snapshots>
 	<enabled>true</enabled>
       </snapshots>
+    </repository>
+
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>bintray</name>
+      <url>https://jcenter.bintray.com</url>
     </repository>
   </repositories>
 
