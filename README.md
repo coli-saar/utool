@@ -39,5 +39,4 @@ You can open the GUI shown above as follows:
 java -jar target/utool.jar display
 ```
 
-Note that you need Java 8 (not higher) to *run* Utool too.
 
