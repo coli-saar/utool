@@ -147,6 +147,10 @@ class XmlParser extends DefaultHandler {
                     }
                 }
 
+                if( attributes.getValue("limit") != null ) {
+                    options.setLimit(Long.parseLong(attributes.getValue("limit")));
+                }
+
                 if ("true".equalsIgnoreCase(attributes.getValue("nochart"))) {
                     options.setOptionNochart(true);
                 }

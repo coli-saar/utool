@@ -209,7 +209,7 @@ class ServerThread extends Thread {
 					try {
 						long start_extraction = System.currentTimeMillis();
 						SolvedFormIterator it = new SolvedFormIterator(reducedChart,options.getGraph());
-						while( it.hasNext() ) {
+						while( it.hasNext() && count < options.getLimit() ) {
 							SolvedFormSpec domedges = it.next();
 							count++;
 

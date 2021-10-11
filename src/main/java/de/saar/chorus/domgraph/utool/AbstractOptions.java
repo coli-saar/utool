@@ -167,6 +167,7 @@ public class AbstractOptions {
     private boolean optionLogging;
     private String inputCodecOptions;
     private String outputCodecOptions;
+    private long limit;
 
     public AbstractOptions() {
         // some default values
@@ -182,6 +183,7 @@ public class AbstractOptions {
         setOptionNochart(false);
 
         port = 2802;
+        limit = Long.MAX_VALUE; // limit solved forms that are computed to this amount -- only implemented for server for now
         logWriter = null;
         optionLogging = false;
 
@@ -291,6 +293,14 @@ public class AbstractOptions {
 
     public void setRnfComputer(RelativeNormalFormsComputer rnfComputer) {
         this.rnfComputer = rnfComputer;
+    }
+
+    public long getLimit() {
+        return limit;
+    }
+
+    public void setLimit(long limit) {
+        this.limit = limit;
     }
 
     /*
