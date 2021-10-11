@@ -68,11 +68,12 @@
       <version>chorus</version>
     </dependency>
 
-    <dependency>
-      <groupId>de.saar.coli</groupId>
-      <artifactId>basics</artifactId>
-      <version>[1.2.3,)</version>
-    </dependency>
+
+      <dependency>
+          <groupId>com.github.coli-saar</groupId>
+          <artifactId>basics</artifactId>
+          <version>9b78dde236</version>
+      </dependency>
 
     <dependency>
     <groupId>org.madlonkay</groupId>
@@ -162,6 +163,11 @@
 
 
   <repositories>
+          <repository>
+              <id>jitpack.io</id>
+              <url>https://jitpack.io</url>
+          </repository>
+
     <repository>
       <id>external</id>
       <name>ECL external libraries</name>
