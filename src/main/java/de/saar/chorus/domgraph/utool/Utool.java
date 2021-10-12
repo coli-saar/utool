@@ -247,7 +247,7 @@ public class Utool {
 						long start_extraction = System.currentTimeMillis();
 						long count = 0;
 						SolvedFormIterator it = new SolvedFormIterator(chart, options.getGraph());
-						while( it.hasNext() ) {
+						while( it.hasNext() && count < options.getLimit() ) {
 							SolvedFormSpec domedges = it.next();
 							count++;
 

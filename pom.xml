@@ -72,7 +72,7 @@
       <dependency>
           <groupId>com.github.coli-saar</groupId>
           <artifactId>basics</artifactId>
-          <version>9b78dde236</version>
+          <version>9b78dde236</version> <!-- development snapshot of Oct 2021, older versions will probably work too -->
       </dependency>
 
     <dependency>

@@ -43,6 +43,7 @@ class CommandLineParser {
     private static final char OPTION_OUTPUT_CODEC_OPTIONS = (char) 5;
     private static final char OPTION_WARMUP = (char) 6;
     private static final char OPTION_NOCHART = (char) 7;
+    private static final char OPTION_LIMIT = (char) 8;
     private CodecManager codecManager;
     private ExampleManager exampleManager;
 
@@ -247,6 +248,10 @@ class CommandLineParser {
             ret.setOptionNochart(true);
         }
 
+        if (getopt.hasOption(OPTION_LIMIT)) {
+            ret.setLimit(Long.parseLong(getopt.getValue(OPTION_LIMIT)));
+        }
+
         if (getopt.hasOption('l')) {
             String val = getopt.getValue('l');
 
@@ -329,6 +334,8 @@ class CommandLineParser {
                 "Display help on options", null);
         getopt.addOption(OPTION_DUMP_CHART, "dump-chart", ConvenientGetopt.NO_ARGUMENT,
                 "Display the chart after solving", null);
+        getopt.addOption(OPTION_LIMIT, "limit", ConvenientGetopt.REQUIRED_ARGUMENT,
+                "Limit the number of solved forms that the 'solve' command computes", null);
 
         return getopt;
     }
