@@ -47,12 +47,11 @@ If you use Utool in your research, you can cite it as follows:
 ```
 @inproceedings{koller-thater-2005-evolution,
     title = "The Evolution of Dominance Constraint Solvers",
-    author = "Koller, Alexander  and
-      Thater, Stefan",
+    author = "Koller, Alexander and Thater, Stefan",
     booktitle = "Proceedings of Workshop on Software",
-   year = "2005",
+    year = "2005",
     address = "Ann Arbor, Michigan",
-   url = "https://aclanthology.org/W05-1105",
+    url = "https://aclanthology.org/W05-1105",
     pages = "65--76",
 }
 ```
@@ -65,8 +64,7 @@ elimination with Utool.
 ```
 @inproceedings{koller-thater-2010-computing,
     title = "Computing Weakest Readings",
-    author = "Koller, Alexander  and
-      Thater, Stefan",
+    author = "Koller, Alexander and Thater, Stefan",
     booktitle = "Proceedings of the 48th Annual Meeting of the Association for Computational Linguistics",
     year = "2010",
     address = "Uppsala, Sweden",
