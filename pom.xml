@@ -163,35 +163,16 @@
 
 
   <repositories>
-          <repository>
-              <id>jitpack.io</id>
-              <url>https://jitpack.io</url>
-          </repository>
-
     <repository>
-      <id>external</id>
-      <name>ECL external libraries</name>
-      <url>http://www.coli.uni-saarland.de/projects/ecl/maven2/external</url>
-      <releases>
-	<enabled>true</enabled>
-      </releases>
-      <snapshots>
-	<enabled>true</enabled>
-      </snapshots>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
 
     <repository>
-      <id>ecl-releases</id>
-      <name>ECL releases</name>
-      <url>http://www.coli.uni-saarland.de/projects/ecl/maven2/releases</url>
-      <releases>
-	<enabled>true</enabled>
-      </releases>
-      <snapshots>
-	<enabled>true</enabled>
-      </snapshots>
+      <id>External dependencies on Github</id>
+      <url>https://raw.github.com/coli-saar/utool/repository/</url>
     </repository>
-
+    
     <repository>
       <snapshots>
         <enabled>false</enabled>
