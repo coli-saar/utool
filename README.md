@@ -40,3 +40,37 @@ java -jar target/utool.jar display
 ```
 
 
+## Citing Utool
+
+If you use Utool in your research, you can cite it as follows:
+
+```
+@inproceedings{koller-thater-2005-evolution,
+    title = "The Evolution of Dominance Constraint Solvers",
+    author = "Koller, Alexander  and
+      Thater, Stefan",
+    booktitle = "Proceedings of Workshop on Software",
+   year = "2005",
+    address = "Ann Arbor, Michigan",
+   url = "https://aclanthology.org/W05-1105",
+    pages = "65--76",
+}
+```
+
+
+Our own most recent publication that uses Utool is this one. You can
+cite it if you are computing weakest readings or performing redundancy
+elimination with Utool.
+
+```
+@inproceedings{koller-thater-2010-computing,
+    title = "Computing Weakest Readings",
+    author = "Koller, Alexander  and
+      Thater, Stefan",
+    booktitle = "Proceedings of the 48th Annual Meeting of the Association for Computational Linguistics",
+    year = "2010",
+    address = "Uppsala, Sweden",
+    url = "https://aclanthology.org/P10-1004",
+    pages = "30--39",
+}
+```	
