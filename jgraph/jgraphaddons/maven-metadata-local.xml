@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>jgraph</groupId>
+  <artifactId>jgraphaddons</artifactId>
+  <versioning>
+    <release>chorus</release>
+    <versions>
+      <version>chorus</version>
+    </versions>
+    <lastUpdated>20211012051103</lastUpdated>
+  </versioning>
+</metadata>
