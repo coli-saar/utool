@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: jgraph:jgraph:5.8.3.1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/jgraph/jgraph/5.8.3.1/jgraph-5.8.3.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/jgraph/jgraph/5.8.3.1/jgraph-5.8.3.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/jgraph/jgraph/5.8.3.1/jgraph-5.8.3.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
