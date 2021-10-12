@@ -8,7 +8,7 @@
 
   <groupId>de.saar.chorus</groupId>
   <artifactId>utool</artifactId>
-  <version>3.4</version>
+  <version>3.4.1-SNAPSHOT</version>
   <name>Utool</name>
 
   <dependencies>
