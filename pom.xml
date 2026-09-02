@@ -29,7 +29,7 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>2.4.7</version>
+      <version>2.4.21</version>
       <scope>test</scope>
     </dependency>
 
@@ -52,9 +52,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.lowagie</groupId>
-      <artifactId>itext</artifactId>
-      <version>2.0.1</version>
+      <groupId>com.github.librepdf.openpdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>1.3.43</version>
     </dependency>
 
     <dependency>
@@ -74,6 +74,12 @@
           <groupId>com.github.coli-saar</groupId>
           <artifactId>basics</artifactId>
           <version>9b78dde236</version> <!-- development snapshot of Oct 2021, older versions will probably work too -->
+          <exclusions>
+              <exclusion>
+                  <groupId>com.lowagie</groupId>
+                  <artifactId>itext</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
 
     <dependency>

@@ -203,7 +203,7 @@ public class PDFCanvas implements Canvas {
 		
 		
 		document.setPageSize(new Rectangle(maxX + 10, maxY + 10));
-		height = document.getPageSize().height();
+		height = document.getPageSize().getHeight();
 		
 		
 		
