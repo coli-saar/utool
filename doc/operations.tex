@@ -555,7 +555,14 @@ used options.
 
 \subsection{Advanced options}
 
-\subsubsection{Redundancy Elimination} \label{sec:redund-elim}
+\subsubsection{Filtering redundancy and weakest readings} \label{sec:redund-elim}
+
+\paragraph{Note (updated for Utool 3.4).}
+This section describes the filtering interface and rule syntax used by
+Utool 3.4. Earlier versions of this manual documented the
+\verb?--equivalences? (\verb?-e?) option and an XML equation format.
+Utool 3.4 uses \verb?--filter? (\verb?-f?) and a term rewriting system
+instead.
 
 One classical challenge when working with scope ambiguities is that
 structurally different readings may be logically equivalent. This
@@ -591,86 +598,113 @@ these don't in fact take scope. But the basic problem of spurious
 ambiguity has haunted semanticists ever since Montague's Quantifier
 Raising analysis.
 
-Utool is able to efficiently eliminate spurious ambiguities to a
-limited degree. It implements the redundancy elimination algorithm
-described by \citeN{koller06}, which assumes that (logical)
-equivalence is approximated as equivalence with respect to a system of
-term equations. For efficiency reasons, Utool when run as a main
-programme won't eliminate splits from the chart. Instead, it won't
-even add eliminable splits to the chart in the first place. However,
-the distribution includes classes for running a redundancy elimination
-on the complete chart (see the
-\url{de.saar.chorus.domgraph.equivalence} package).
+Utool filters a dominance chart without first enumerating its solved
+forms. The filter computes relative normal forms with respect to two
+kinds of rules: unoriented equations identify equivalent readings,
+while oriented weakening rules select weaker readings. An annotator
+supplies the polarity or other contextual information used to choose
+weakening rules. Thus the current filter generalizes the older
+equivalence-only redundancy elimination described in \cite{koller06}.
+The annotated rewrite systems, relative normal forms, and their use
+for computing weakest readings are described in detail by
+\citeN{KollerThater2010Weakest}; the paper is available from the
+\href{https://aclanthology.org/P10-1004/}{ACL Anthology}.
 
-In order to make Utool eliminate equivalences in an invocation from
-the commandline, you must pass it the
-\verb?--equivalences <equivfile>? or \verb?-e <equivfile>?
-option. Here \verb?<equivfile>? is the name of a file which contains a
-specification of the equation system. In server mode, you pass an
-element \verb?<eliminate equations="..." />? as a child of the
-\verb?utool? element, where the value of the \verb?equations?
-attribute is the specification of the equation system.
+On the command line, pass the name of a rule file with
+\verb?--filter <rulefile>? or \verb?-f <rulefile>?. Filtering applies
+to both the \verb?solvable? and \verb?solve? commands. In particular,
+the reported solution count is the size of the filtered chart, and
+\verb?solve? enumerates the remaining solved forms.
 
-An equation system specification is an XML document of the following
-form:
+\paragraph{Rule-file syntax.}
+A rule file may contain annotator declarations, weakening rules, and
+equivalence rules. Lines beginning with \verb?//? are comments. The
+following is a complete small example:
 
 \begin{verbatim}
-<?xml version="1.0" ?>
-<equivalences style="(some name)">   
-  .....
-</equivalences>
+start annotation: +
+neutral annotation: 0
+
++: a(+,+)
+-: a(-,-)
+0: foo&bar(0)
+
+[+] a(X,every(Y,Z)) -> every(Y,a(X,Z))
+[-] every(Y,a(X,Z)) -> a(X,every(Y,Z))
+
+a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))
+pron_rel(X,*[Y]) = *[pron_rel(X,Y)]
 \end{verbatim}
 
-You may nest two kinds of elements below the root element:
+The \verb?start annotation? is assigned at the root, and the
+\verb?neutral annotation? is used where no polarity distinction is
+required. A declaration such as \verb?+: a(+,+)? specifies the
+annotations of the children of an \verb?a? node whose parent context
+has annotation \verb?+?. A weakening rule has the form
+\verb?[annotation] term -> term?; an equation has the form
+\verb?term = term?. Variables start with an uppercase letter. An
+explicit suffix such as \verb?#1? distinguishes multiple occurrences
+of the same symbol in one rule. The notation \verb?*[term]? is a
+wildcard context containing \verb?term?. Indices may be omitted when
+each symbol occurs at most once and Utool can assign them
+unambiguously.
+
+\paragraph{Server mode.}
+In server mode, put a \verb?filter? element inside the request and
+pass the complete contents of the rule file in its \verb?rules?
+attribute:
+
+\begin{verbatim}
+<utool cmd="solvable">
+  <usr codec="domcon-oz" string="..."/>
+  <filter rules="start annotation: +&#10;..."/>
+</utool>
+\end{verbatim}
+
+Because the rules are an XML attribute value, the usual XML escaping
+is required: in particular, write \verb?&amp;?, \verb?&lt;?, and
+\verb?&quot;? for ampersands, less-than signs, and quotation marks.
+Character references such as \verb?&#10;? may be used for line breaks.
+After a request has supplied rules, a later request to the same server
+process may use \verb?<filter/>? to reuse the most recently loaded
+rule system. Using \verb?<filter/>? before any rules have been loaded
+is an error.
+
+\paragraph{Relationship to the historical ERG files.}
+The repository contains two historical specifications that are useful
+for reconstructing ERG filtering rules, but neither file is accepted
+directly by the Utool 3.4 parser:
+
 \begin{itemize}
-\item \verb?equivalencegroup?: This element specifies a set of
-label-hole pairs that can all be permuted with each other. For
-instance, if you want to specify that existential quantifier in
-first-order logic can be permuted with each other, regardless of
-whether they are in each other's scopes or restrictions, you can use
-the following specification:
-\begin{verbatim}
-<equivalencegroup>
-  <quantifier label="exists" hole="0" />
-  <quantifier label="exists" hole="1" />
-</equivalencegroup>
-\end{verbatim}
+\raggedright
+\item The
+\href{https://github.com/coli-saar/utool/blob/master/src/main/resources/examples/erg-equivalences.xml}{old ERG equivalence file}
+is the XML input formerly used with \verb?-e?. It defines two groups
+of mutually permutable label-hole pairs and two labels that permute
+with everything.
 
-By contrast, universal quantifiers only permute with each other if
-they are plugged into each other's scope:
-\begin{verbatim}
-<equivalencegroup>
-  <quantifier label="every" hole="1" />
-</equivalencegroup>
-\end{verbatim}
-
-You may have as many \verb?equivalencegroup? elements as you
-like, and you may have as many entries in each \verb?equivalencegroup?
-as you like.
-
-\item \verb?permutesWithEverything?: This element expresses that a
-certain quantifier permutes with every other quantifier. For instance,
-you can state that a proper name as analysed by the ERG permutes with
-every other quantifier as follows:
-
-\begin{verbatim}
-<permutesWithEverything label="proper_q" hole="1" />
-\end{verbatim}
+\item The
+\href{https://github.com/coli-saar/utool/blob/master/testsuites/rewriting-10/rules}{larger historical rules file}
+combines equivalences with annotator and weakening rules. It uses an
+intermediate shorthand in which \verb?/? introduces a child position,
+\verb?=? states an equivalence, and \verb?>? states a weakening rule;
+for example, \verb?label/1 = other/2? and
+\verb?[+] label/1 > other/2?. Utool 3.4 instead requires the term
+syntax shown above.
 \end{itemize}
 
-The \verb?hole? attribute specifies the index of the child that is
-used in the permutation system, starting at 0 for the leftmost
-child. Notice that redundancy elimination is only defined for compact
-dominance graphs in \cite{koller06}. Utool automatically keeps track
-of the hole indices when it compactifies the input graph, so the
-compactification is transparent to the user. However, this translation
-step is not well-defined in the case of multiple holes below the same
-child of the labelled root.
-
-An example equivalence system, which is appropriate for the MRSs
-generated by the ERG, and which we used for the evaluation in
-\cite{koller06}, is part of the Utool distribution (in
-\url{examples/erg-equivalences.xml}). 
+The larger file is not a complete conversion of the old ERG XML. Its
+equivalence relation contains 12 of the XML file's 32 label-hole
+entries and covers 66 of the 436 pairwise equivalences implied by the
+two old groups. Twenty old entries, including \verb?every_q? and
+\verb?each_q?, are absent. The two old ``permutes with everything''
+entries for \verb?proper_q? and \verb?pronoun_q? are retained. The
+files also use different hole numbering: the XML starts at hole 0,
+while the shorthand rules start at position 1. A conversion intended
+to reproduce the old ERG reduction must therefore translate the
+syntax and restore or deliberately map the missing ERG predicates; a
+mechanical syntax conversion of the larger rules file alone is not
+sufficient.
 
 
 
@@ -732,12 +766,14 @@ information about the graph classification, chart size, and
 runtimes. All statistics information is written to standard error.}
 
 
-\optiondesc{\texttt{-\strut -equivalences <equivfile>} or
-\texttt{-e <equivfile>}}
-{specify an element of the form \texttt{<eliminate equations="..." />}
-as a child of the \texttt{utool} element}
+\optiondesc{\texttt{-\strut -filter <rulefile>} or
+\texttt{-f <rulefile>}}
+{specify an element of the form \texttt{<filter rules="..."/>}
+as a child of the \texttt{utool} element; after rules have been loaded,
+\texttt{<filter/>} reuses them}
 {\texttt{solvable}, \texttt{solve}}
-{Run a redundancy elimination algorithm on the chart (see  Section~\ref{sec:redund-elim}).} 
+{Filter redundancy and weakest readings from the chart (see
+Section~\ref{sec:redund-elim}).}
 
 \optiondesc{\texttt{-\strut -nochart}}
 {pass the attribute \texttt{nochart="true"} in the main \texttt{utool} element}
