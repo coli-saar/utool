@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Utool is a tool for working with scope underspecification in computational semantics.">
+  <title>Utool: The Swiss Army Knife of Underspecification</title>
+  <link rel="stylesheet" href="site-header.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="utool-site-header">
+    <a href="index.html"><img src="assets/utool.png" alt="Utool"></a>
+    <nav aria-label="Main navigation">
+      <a aria-current="page" href="index.html">Home</a>
+      <a href="https://github.com/coli-saar/utool/releases">Download</a>
+      <a href="manual/index.html">Manual</a>
+      <a href="api/index.html">API documentation</a>
+      <a href="https://github.com/coli-saar/utool">Source code</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Utool: The Swiss Army Knife of Underspecification</h1>
+
+    <p class="news"><strong>Project status:</strong> Utool is no longer under active development. The most recent release is Utool 3.4 and is available from the <a href="https://github.com/coli-saar/utool/releases">GitHub releases page</a>.</p>
+
+    <h2>Project description</h2>
+
+    <p>Utool is a tool that performs various tasks related to scope underspecification, a particular technique in computational semantics of natural language. It implements a solver for underspecified descriptions, converts between various underspecification formalisms, and performs a variety of helper jobs.</p>
+
+    <p>Utool is implemented in Java. It can be used as a command-line tool, via a GUI, or as a server. It is distributed under the <a href="https://github.com/coli-saar/utool/blob/master/rootfiles/COPYING">GPL</a>.</p>
+
+    <p>Utool was created within the CHORUS project at <a href="https://www.uni-saarland.de/">Saarland University</a>. The primary developers are Alexander Koller, Stefan Thater, and Michaela Regneri, with help by Marco Kuhlmann.</p>
+
+    <h2>How to get started</h2>
+
+    <p>Download a packaged version of Utool from the <a href="https://github.com/coli-saar/utool/releases">releases page</a>. The <a href="manual/index.html">manual</a> includes a tutorial and documents the command-line tool, server, graphical workbench, and supported codecs.</p>
+
+    <p>To build Utool from source, you will need Apache Maven and Java JDK 8 or newer:</p>
+
+    <pre><code>git clone https://github.com/coli-saar/utool.git
+cd utool
+mvn install assembly:single</code></pre>
+
+    <p>The build produces <code>target/utool-&lt;version&gt;-jar-with-dependencies.jar</code>. Run it with:</p>
+
+    <pre><code>java -jar target/utool-&lt;version&gt;-jar-with-dependencies.jar</code></pre>
+
+    <h2>Documentation</h2>
+
+    <p>The <a href="manual/index.html">Utool manual</a> describes the graphical workbench, command-line and server modes, input and output codecs, integration with other tools, and the technical background. The <a href="api/index.html">API documentation</a> covers the Java packages, classes, and methods. Both are rebuilt from the sources in this repository.</p>
+  </main>
+
+  <footer>
+    <p>Utool was developed in the CHORUS project at Saarland University.</p>
+  </footer>
+</body>
+</html>

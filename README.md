@@ -6,11 +6,21 @@ Utool is the Swiss Army Knife of Underspecification. It is a GUI and library wri
 
 ![Utool Screenshot](doc/ubench-screenshot.png)
 
-You can find [detailed documentation](http://www.coli.uni-saarland.de/projects/chorus/utool/page.php?id=manual) on the [Utool homepage](http://www.coli.uni-saarland.de/projects/chorus/utool).
+Visit the [Utool homepage](https://coli-saar.github.io/utool/) or read the [detailed manual](https://coli-saar.github.io/utool/manual/).
 
 Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University](https://www.lst.uni-saarland.de/). It is no longer under active development, but it is probably still the fastest solver for underspecified representations of scope ambiguities, and will still run fine today. If you have any questions or requests, please get in touch with [Alexander Koller](http://www.coli.uni-saarland.de/~koller/).
 
 You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases).
+
+## Website
+
+The homepage, HTML manual, and Javadocs are generated from the files in `website/`, the LaTeX manual sources in `doc/`, and the Java sources in `src/`. The `old-website/` backup is kept only as a historical reference and is not used by the build. With [Pandoc](https://pandoc.org/) and Maven installed, build the site locally with:
+
+```
+./scripts/build-website.sh
+```
+
+The generated site is written to `_site/`. Pushes to `master` that change the website or manual automatically rebuild and deploy the site with GitHub Pages.
 
 ## Compiling Utool
 

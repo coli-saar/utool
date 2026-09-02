@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="The Utool manual: tutorial, command reference, codecs, practical guidance, and build instructions.">
+  <title>$title$ — Version $version$</title>
+  <link rel="stylesheet" href="../site-header.css">
+  <link rel="stylesheet" href="../manual.css">
+</head>
+<body>
+  <header class="utool-site-header">
+    <a href="../index.html"><img src="../assets/utool.png" alt="Utool"></a>
+    <nav aria-label="Site navigation">
+      <a href="../index.html">Home</a>
+      <a href="https://github.com/coli-saar/utool/releases">Download</a>
+      <a aria-current="page" href="index.html">Manual</a>
+      <a href="../api/index.html">API documentation</a>
+      <a href="https://github.com/coli-saar/utool">Source code</a>
+    </nav>
+  </header>
+
+  <div class="manual-layout">
+    <aside>
+      <p class="manual-label">Manual · Version $version$</p>
+      <details open>
+        <summary>Contents</summary>
+        $table-of-contents$
+      </details>
+      <p class="source-note">Generated from the LaTeX sources in <a href="https://github.com/coli-saar/utool/tree/master/doc">the repository</a>.</p>
+    </aside>
+
+    <main class="manual-content">
+      <header class="title-block">
+        <h1>$title$</h1>
+        <p class="subtitle">$subtitle$</p>
+        <p class="authors">Version $version$ · $author$</p>
+      </header>
+      $body$
+    </main>
+  </div>
+</body>
+</html>

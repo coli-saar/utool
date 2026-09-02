@@ -1,0 +1,52 @@
+.utool-site-header {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 26px 0 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid #d7d7d7;
+  color: #222;
+  background: #fff;
+  font: 16px/1.55 Arial, Helvetica, sans-serif;
+}
+
+.utool-site-header img {
+  display: block;
+  width: 142px;
+  height: auto;
+}
+
+.utool-site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  font-size: .95rem;
+}
+
+.utool-site-header nav a {
+  color: #075c9c;
+  text-decoration: none;
+}
+
+.utool-site-header nav a:hover,
+.utool-site-header nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: auto;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 700px) {
+  .utool-site-header {
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  .utool-site-header nav {
+    flex-direction: column;
+    gap: 3px;
+    text-align: right;
+  }
+}
