@@ -1,0 +1,10 @@
+start annotation: +
+neutral annotation: 0
+
++: a(+,+)
+-: a(-,-)
+0: foo&bar(0)
+
+a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))
+a#1(X,a#2(Y,Z)) = a#2(a#1(X,Y),Z)
+a#1(a#2(X,Y),Z) = a#2(a#1(X,Z),Y)
