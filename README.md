@@ -12,16 +12,6 @@ Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University]
 
 You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases).
 
-## Website
-
-The homepage, HTML manual, and Javadocs are generated from the files in `website/`, the LaTeX manual sources in `doc/`, and the Java sources in `src/`. The `old-website/` backup is kept only as a historical reference and is not used by the build. With [Pandoc](https://pandoc.org/) and Maven installed, build the site locally with:
-
-```
-./scripts/build-website.sh
-```
-
-The generated site is written to `_site/`. Pushes to `master` that change the website or manual automatically rebuild and deploy the site with GitHub Pages.
-
 ## Compiling Utool
 
 To compile Utool, you will need a recent version of [Apache Maven](https://maven.apache.org/) and [Java JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) or newer. Utool 3.3 has been tested in 2020 with Java 8 and 12.
@@ -48,6 +38,17 @@ You can open the GUI shown above as follows:
 ```
 java -jar target/utool.jar display
 ```
+
+
+## Website
+
+The homepage, HTML manual, and Javadocs are generated from the files in `website/`, the LaTeX manual sources in `doc/`, and the Java sources in `src/`. The `old-website/` backup is kept only as a historical reference and is not used by the build. With [Pandoc](https://pandoc.org/) and Maven installed, build the site locally with:
+
+```
+./scripts/build-website.sh
+```
+
+The generated site is written to `_site/`. Pushes to `master` that change the website or manual automatically rebuild and deploy the site with GitHub Pages.
 
 
 ## Citing Utool
