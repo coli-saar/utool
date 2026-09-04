@@ -129,7 +129,7 @@ fn random_access_uses_the_same_solution_order() {
 }
 
 #[test]
-fn streamed_solutions_rewind_the_shared_arena() {
+fn streamed_solutions_reuse_one_stable_arena() {
     let graph = HncGraph::try_from(parse_chain("7").unwrap()).unwrap();
     let chart = solve(&graph).unwrap();
     let mut solutions = chart.solutions();
@@ -145,7 +145,7 @@ fn streamed_solutions_rewind_the_shared_arena() {
 }
 
 #[test]
-fn relative_advance_by_rebuilds_after_skipped_solutions() {
+fn relative_advance_by_updates_after_skipped_solutions() {
     let graph = HncGraph::try_from(parse_chain("6").unwrap()).unwrap();
     let chart = solve(&graph).unwrap();
     let expected = solution_terms(&chart);

@@ -76,6 +76,7 @@ fn chain_specification_is_a_length_not_a_filename() {
     assert!(statistics.contains("Time to build chart:"));
     assert!(statistics.contains("Enumerated 5 solved forms."));
     assert!(statistics.contains("Time to enumerate solutions:"));
+    assert!(statistics.contains("solutions/sec)"));
     assert!(
         statistics.contains("ns")
             || statistics.contains("µs")

@@ -177,15 +177,14 @@ fn solution_view(solution: &Solution) -> SolutionView {
     if let Some(root) = solution.root() {
         let mut stack = vec![root];
         while let Some(tree) = stack.pop() {
-            let node = solution.arena().get_label(tree);
+            let node = solution.node_id(tree);
             nodes.push(SolutionNodeView {
-                id: node.id.index(),
-                name: node.name.to_owned(),
-                label: node.label.to_owned(),
+                id: node.index(),
+                name: solution.node_name(tree).to_owned(),
+                label: solution.node_label(tree).to_owned(),
             });
             for child in solution.arena().get_children(tree) {
-                let child_node = solution.arena().get_label(*child);
-                edges.push((node.id.index(), child_node.id.index()));
+                edges.push((node.index(), solution.node_id(*child).index()));
                 stack.push(*child);
             }
         }

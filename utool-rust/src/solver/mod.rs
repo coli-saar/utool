@@ -1,7 +1,7 @@
 //! Split-based HNC dominance-graph solving.
 
 use num_bigint::BigUint;
-use packed_term_arena::tree::{Tree, TreeArena, TreeArenaCheckpoint};
+use packed_term_arena::tree::{Tree, TreeArena};
 use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use thiserror::Error;
@@ -81,18 +81,15 @@ impl Chart {
         self.count.clone()
     }
 
-    /// Stream solutions through one reusable tree arena.
+    /// Stream solutions through one stable arena whose fixed-arity edges are updated in place.
     pub fn solutions(&self) -> Solutions<'_> {
+        let (arena, handles, hole_slots) = initialize_solution_arena(self);
         Solutions {
             chart: self,
             inner: self.derivations(),
-            plugging: vec![None; self.graph.parsed().nodes().len()],
-            active: vec![0; self.graph.parsed().nodes().len()],
-            arena: TreeArena::new(),
-            frame_checkpoints: Vec::new(),
-            handles: vec![None; self.graph.parsed().nodes().len()],
-            allocated_nodes: Vec::new(),
-            frame_for_root: vec![None; self.graph.parsed().nodes().len()],
+            arena,
+            handles,
+            hole_slots,
             root: None,
             current: false,
             returned_empty: false,
@@ -144,6 +141,7 @@ impl Chart {
         if self.empty_solution {
             let arena = TreeArena::new();
             let retained = keep(&Solution {
+                chart: self,
                 arena: &arena,
                 root: None,
             });
@@ -226,29 +224,48 @@ fn copy_derivation(
     states[0].expect("a derivation has a root")
 }
 
-/// One node in a fully resolved solution.
+/// Compact identity of one node in a fully resolved solution.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct SolutionNode<'a> {
+pub struct SolutionNode {
     /// Original graph node identity.
     pub id: NodeId,
-    /// External node name.
-    pub name: &'a str,
-    /// Semantic label.
-    pub label: &'a str,
 }
 
 /// One fully resolved tree borrowing the iterator's reusable arena.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct Solution<'a> {
-    arena: &'a TreeArena<SolutionNode<'a>>,
+    chart: &'a Chart,
+    arena: &'a TreeArena<SolutionNode>,
     root: Option<Tree>,
 }
 
 impl Solution<'_> {
     /// Tree storage.
     #[must_use]
-    pub const fn arena(&self) -> &TreeArena<SolutionNode<'_>> {
+    pub const fn arena(&self) -> &TreeArena<SolutionNode> {
         self.arena
+    }
+
+    /// Original graph identity represented by an arena node.
+    #[must_use]
+    pub fn node_id(&self, tree: Tree) -> NodeId {
+        self.arena.get_label(tree).id
+    }
+
+    /// External name of an arena node.
+    #[must_use]
+    pub fn node_name(&self, tree: Tree) -> &str {
+        self.chart.graph.node(self.node_id(tree)).name()
+    }
+
+    /// Semantic label of an arena node.
+    #[must_use]
+    pub fn node_label(&self, tree: Tree) -> &str {
+        self.chart
+            .graph
+            .node(self.node_id(tree))
+            .label()
+            .expect("solution nodes are labeled")
     }
 
     /// Root handle; absent only for the empty graph's solution.
@@ -260,20 +277,19 @@ impl Solution<'_> {
     /// Canonical term using external node names to disambiguate equal labels.
     #[must_use]
     pub fn to_term(&self) -> String {
-        fn write(arena: &TreeArena<SolutionNode<'_>>, node: Tree, output: &mut String) {
-            let data = arena.get_label(node);
-            output.push_str(&data.label);
+        fn write(solution: &Solution<'_>, node: Tree, output: &mut String) {
+            output.push_str(solution.node_label(node));
             output.push('[');
-            output.push_str(&data.name);
+            output.push_str(solution.node_name(node));
             output.push(']');
-            let children = arena.get_children(node);
+            let children = solution.arena.get_children(node);
             if !children.is_empty() {
                 output.push('(');
                 for (index, child) in children.iter().enumerate() {
                     if index > 0 {
                         output.push(',');
                     }
-                    write(arena, *child, output);
+                    write(solution, *child, output);
                 }
                 output.push(')');
             }
@@ -283,7 +299,7 @@ impl Solution<'_> {
             return String::new();
         };
         let mut output = String::new();
-        write(self.arena, root, &mut output);
+        write(self, root, &mut output);
         output
     }
 
@@ -291,22 +307,16 @@ impl Solution<'_> {
     /// legacy `term-prolog` and `term-oz` output codecs.
     #[must_use]
     pub fn to_label_term(&self, separator: &str) -> String {
-        fn write(
-            arena: &TreeArena<SolutionNode<'_>>,
-            node: Tree,
-            separator: &str,
-            output: &mut String,
-        ) {
-            let data = arena.get_label(node);
-            output.push_str(&data.label);
-            let children = arena.get_children(node);
+        fn write(solution: &Solution<'_>, node: Tree, separator: &str, output: &mut String) {
+            output.push_str(solution.node_label(node));
+            let children = solution.arena.get_children(node);
             if !children.is_empty() {
                 output.push('(');
                 for (index, child) in children.iter().enumerate() {
                     if index > 0 {
                         output.push_str(separator);
                     }
-                    write(arena, *child, separator, output);
+                    write(solution, *child, separator, output);
                 }
                 output.push(')');
             }
@@ -315,22 +325,21 @@ impl Solution<'_> {
             return String::new();
         };
         let mut output = String::new();
-        write(self.arena, root, separator, &mut output);
+        write(self, root, separator, &mut output);
         output
     }
 }
 
 /// Streaming solution iterator backed by finite depth-first chart enumeration.
+///
+/// Every labeled graph node has one stable arena handle. Advancing changes only
+/// the child slots corresponding to hole substitutions and the current root.
 pub struct Solutions<'a> {
     chart: &'a Chart,
     inner: DfsLanguageIterator<'a>,
-    plugging: Vec<Option<NodeId>>,
-    active: Vec<u8>,
-    arena: TreeArena<SolutionNode<'a>>,
-    frame_checkpoints: Vec<Option<TreeArenaCheckpoint>>,
+    arena: TreeArena<SolutionNode>,
     handles: Vec<Option<Tree>>,
-    allocated_nodes: Vec<NodeId>,
-    frame_for_root: Vec<Option<usize>>,
+    hole_slots: Vec<Option<(Tree, usize)>>,
     root: Option<Tree>,
     current: bool,
     returned_empty: bool,
@@ -353,18 +362,14 @@ impl Solutions<'_> {
             self.current = false;
             return false;
         }
-        rebuild_solution(
+        update_solution(
             self.chart,
             self.inner.current().expect("advance produced a derivation"),
             self.inner.changed_from(),
             self.current,
-            &mut self.plugging,
-            &mut self.active,
             &mut self.arena,
-            &mut self.frame_checkpoints,
-            &mut self.handles,
-            &mut self.allocated_nodes,
-            &mut self.frame_for_root,
+            &self.handles,
+            &self.hole_slots,
             &mut self.root,
         );
         self.current = true;
@@ -385,10 +390,6 @@ impl Solutions<'_> {
             return false;
         }
         if n > 0 && self.current {
-            self.arena.clear();
-            self.frame_checkpoints.clear();
-            self.handles.fill(None);
-            self.allocated_nodes.clear();
             self.current = false;
         }
         for _ in 0..n {
@@ -404,6 +405,7 @@ impl Solutions<'_> {
     #[must_use]
     pub fn current(&self) -> Option<Solution<'_>> {
         self.current.then_some(Solution {
+            chart: self.chart,
             arena: &self.arena,
             root: self.root,
         })
@@ -837,145 +839,95 @@ fn split_dfs(
     true
 }
 
+fn initialize_solution_arena(
+    chart: &Chart,
+) -> (
+    TreeArena<SolutionNode>,
+    Vec<Option<Tree>>,
+    Vec<Option<(Tree, usize)>>,
+) {
+    let nodes = chart.graph.parsed().nodes();
+    let mut arena = TreeArena::new();
+    let mut handles = vec![None; nodes.len()];
+    let mut hole_slots = vec![None; nodes.len()];
+    if chart.empty_solution {
+        return (arena, handles, hole_slots);
+    }
+
+    let placeholder_id = nodes
+        .iter()
+        .enumerate()
+        .find(|(_, node)| !node.is_hole() && node.tree_children().is_empty())
+        .map(|(index, _)| NodeId::from_index(index))
+        .expect("a finite nonempty solution has a labeled leaf");
+    let placeholder = arena.add_node(SolutionNode { id: placeholder_id }, Vec::new());
+    handles[placeholder_id.index()] = Some(placeholder);
+
+    for (index, node) in nodes.iter().enumerate() {
+        let id = NodeId::from_index(index);
+        if !node.is_hole() && id != placeholder_id {
+            let children = vec![placeholder; node.tree_children().len()];
+            handles[index] = Some(arena.add_node(SolutionNode { id }, children));
+        }
+    }
+    for (parent_index, node) in nodes.iter().enumerate() {
+        if node.is_hole() {
+            continue;
+        }
+        let parent = handles[parent_index].expect("labeled nodes have arena handles");
+        for (child_index, &child) in node.tree_children().iter().enumerate() {
+            if nodes[child.index()].is_hole() {
+                debug_assert!(hole_slots[child.index()].is_none());
+                hole_slots[child.index()] = Some((parent, child_index));
+            } else {
+                arena.get_children_mut(parent)[child_index] =
+                    handles[child.index()].expect("labeled children have arena handles");
+            }
+        }
+    }
+    (arena, handles, hole_slots)
+}
+
 #[allow(clippy::too_many_arguments)]
-fn rebuild_solution<'a>(
-    chart: &'a Chart,
+fn update_solution(
+    chart: &Chart,
     derivation: DfsDerivation<'_>,
     changed_from: usize,
     had_current: bool,
-    plugging: &mut [Option<NodeId>],
-    active: &mut [u8],
-    arena: &mut TreeArena<SolutionNode<'a>>,
-    frame_checkpoints: &mut Vec<Option<TreeArenaCheckpoint>>,
-    handles: &mut [Option<Tree>],
-    allocated_nodes: &mut Vec<NodeId>,
-    frame_for_root: &mut [Option<usize>],
+    arena: &mut TreeArena<SolutionNode>,
+    handles: &[Option<Tree>],
+    hole_slots: &[Option<(Tree, usize)>],
     root: &mut Option<Tree>,
 ) {
-    if had_current {
-        let checkpoint = frame_checkpoints[changed_from]
-            .expect("every derivation frame has an arena checkpoint");
-        arena.rewind(checkpoint);
-        while allocated_nodes.len() > arena.len() {
-            let node = allocated_nodes.pop().unwrap();
-            handles[node.index()] = None;
-        }
-    }
-
-    plugging.fill(None);
-    collect_plugging(chart, derivation, plugging);
-    frame_for_root.fill(None);
-    if had_current {
-        frame_checkpoints.truncate(derivation.len());
-        frame_checkpoints.resize(derivation.len(), None);
-        for checkpoint in frame_checkpoints.iter_mut().skip(changed_from + 1) {
-            *checkpoint = None;
-        }
-    } else {
-        frame_checkpoints.clear();
-        frame_checkpoints.resize(derivation.len(), None);
-    }
-    for (frame, node) in derivation.nodes().enumerate() {
-        let split_root = chart.split_symbols[node.symbol.0 as usize].root;
-        assert!(
-            frame_for_root[split_root.index()].replace(frame).is_none(),
-            "a fragment root occurs once in a derivation"
-        );
-    }
-
-    let top_symbol = derivation.node(0).symbol;
-    let top = chart.split_symbols[top_symbol.0 as usize].root;
-    *root = Some(build_solution_node_reusing(
-        chart,
-        top,
-        plugging,
-        active,
-        arena,
-        frame_checkpoints,
-        handles,
-        allocated_nodes,
-        frame_for_root,
-    ));
-    debug_assert_eq!(allocated_nodes.len(), arena.len());
-}
-
-fn collect_plugging(chart: &Chart, derivation: DfsDerivation<'_>, plugging: &mut [Option<NodeId>]) {
-    for node in derivation.nodes() {
+    let first_changed = if had_current { changed_from } else { 0 };
+    for frame in first_changed..derivation.len() {
+        let node = derivation.node(frame);
         let split = &chart.split_symbols[node.symbol.0 as usize];
-        for &(hole, root) in &split.substitutions {
-            plugging[hole.index()] = Some(root);
+        for &(hole, replacement) in &split.substitutions {
+            set_hole_child(hole, replacement, arena, handles, hole_slots);
         }
         if let Some((parent, child_index)) = node.parent {
             let parent_symbol = derivation.node(parent).symbol;
             let dominator =
                 chart.split_symbols[parent_symbol.0 as usize].attachments[child_index].0;
-            plugging[dominator.index()] = Some(split.root);
+            set_hole_child(dominator, split.root, arena, handles, hole_slots);
         }
     }
+
+    let top_symbol = derivation.node(0).symbol;
+    let top = chart.split_symbols[top_symbol.0 as usize].root;
+    *root = handles[top.index()];
 }
 
 #[allow(clippy::too_many_arguments)]
-fn build_solution_node_reusing<'a>(
-    chart: &'a Chart,
-    mut node: NodeId,
-    plugging: &[Option<NodeId>],
-    active: &mut [u8],
-    arena: &mut TreeArena<SolutionNode<'a>>,
-    frame_checkpoints: &mut [Option<TreeArenaCheckpoint>],
-    handles: &mut [Option<Tree>],
-    allocated_nodes: &mut Vec<NodeId>,
-    frame_for_root: &[Option<usize>],
-) -> Tree {
-    while chart.graph.node(node).is_hole() {
-        node = plugging[node.index()].unwrap_or_else(|| {
-            panic!(
-                "solution leaves hole {} unplugged",
-                chart.graph.node(node).name()
-            )
-        });
-    }
-    if let Some(tree) = handles[node.index()] {
-        return tree;
-    }
-    if let Some(frame) = frame_for_root[node.index()] {
-        frame_checkpoints[frame].get_or_insert_with(|| arena.checkpoint());
-    }
-    assert_eq!(
-        active[node.index()],
-        0,
-        "solution derivation contains a cycle"
-    );
-    active[node.index()] = 1;
-    let children = chart
-        .graph
-        .node(node)
-        .tree_children()
-        .iter()
-        .map(|&child| {
-            build_solution_node_reusing(
-                chart,
-                child,
-                plugging,
-                active,
-                arena,
-                frame_checkpoints,
-                handles,
-                allocated_nodes,
-                frame_for_root,
-            )
-        })
-        .collect();
-    active[node.index()] = 0;
-    let original = chart.graph.node(node);
-    let tree = arena.add_node(
-        SolutionNode {
-            id: node,
-            name: original.name(),
-            label: original.label().expect("non-hole node must be labeled"),
-        },
-        children,
-    );
-    handles[node.index()] = Some(tree);
-    allocated_nodes.push(node);
-    tree
+fn set_hole_child(
+    hole: NodeId,
+    replacement: NodeId,
+    arena: &mut TreeArena<SolutionNode>,
+    handles: &[Option<Tree>],
+    hole_slots: &[Option<(Tree, usize)>],
+) {
+    let (parent, child_index) = hole_slots[hole.index()].expect("every hole has a tree parent");
+    arena.get_children_mut(parent)[child_index] =
+        handles[replacement.index()].expect("split roots are labeled");
 }

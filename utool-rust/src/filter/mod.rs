@@ -253,7 +253,7 @@ struct GroundTerm {
 fn solution_term(solution: &Solution) -> Option<GroundTerm> {
     fn convert(solution: &Solution, tree: packed_term_arena::tree::Tree) -> GroundTerm {
         GroundTerm {
-            label: solution.arena().get_label(tree).label.to_owned(),
+            label: solution.node_label(tree).to_owned(),
             children: solution
                 .arena()
                 .get_children(tree)

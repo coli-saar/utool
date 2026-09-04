@@ -283,14 +283,12 @@ fn solution_as_domcon(solution: &Solution) -> String {
     if let Some(root) = solution.root() {
         let mut stack = vec![root];
         while let Some(tree) = stack.pop() {
-            let node = solution.arena().get_label(tree);
-            let id = builder.ensure_node(node.name.to_owned());
+            let id = builder.ensure_node(solution.node_name(tree).to_owned());
             builder
-                .set_label(id, node.label.to_owned())
+                .set_label(id, solution.node_label(tree).to_owned())
                 .expect("a Solution has consistent labels");
             for child in solution.arena().get_children(tree) {
-                let child_node = solution.arena().get_label(*child);
-                let child_id = builder.ensure_node(child_node.name.to_owned());
+                let child_id = builder.ensure_node(solution.node_name(*child).to_owned());
                 builder.add_tree_edge(id, child_id);
                 stack.push(*child);
             }
@@ -479,10 +477,15 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         }
         let enumeration_duration = enumeration_started.elapsed();
         if opts.statistics {
+            let solutions_per_second = if enumeration_duration.is_zero() {
+                0.0
+            } else {
+                count as f64 / enumeration_duration.as_secs_f64()
+            };
             eprintln!("Enumerated {count} solved forms.");
             eprintln!(
-                "Time to enumerate solutions: {}",
-                format_duration(enumeration_duration)
+                "Time to enumerate solutions: {} ({solutions_per_second:.0} solutions/sec)",
+                format_duration(enumeration_duration),
             );
         }
     }
