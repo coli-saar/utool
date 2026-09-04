@@ -275,6 +275,10 @@ pub struct HncGraph {
     tree_parent: Vec<Option<NodeId>>,
     roots: Vec<NodeId>,
     holes: Vec<NodeId>,
+    dominance_in: Vec<Vec<(usize, NodeId)>>,
+    dominance_out: Vec<Vec<(usize, NodeId)>>,
+    fragment_of: Vec<usize>,
+    fragment_nodes: Vec<Vec<NodeId>>,
 }
 
 impl HncGraph {
@@ -312,6 +316,22 @@ impl HncGraph {
     #[must_use]
     pub fn node_id(&self, name: &str) -> Option<NodeId> {
         self.graph.node_id(name)
+    }
+
+    pub(crate) fn incoming_dominance(&self, node: NodeId) -> &[(usize, NodeId)] {
+        &self.dominance_in[node.index()]
+    }
+
+    pub(crate) fn outgoing_dominance(&self, node: NodeId) -> &[(usize, NodeId)] {
+        &self.dominance_out[node.index()]
+    }
+
+    pub(crate) fn fragment_of(&self, node: NodeId) -> usize {
+        self.fragment_of[node.index()]
+    }
+
+    pub(crate) fn fragment_nodes(&self, fragment: usize) -> &[NodeId] {
+        &self.fragment_nodes[fragment]
     }
 }
 
@@ -383,11 +403,36 @@ impl TryFrom<ParsedGraph> for HncGraph {
             return Err(GraphError::NotHypernormallyConnected);
         }
 
+        let mut dominance_in = vec![Vec::new(); graph.nodes.len()];
+        let mut dominance_out = vec![Vec::new(); graph.nodes.len()];
+        for (edge, &(source, target)) in graph.dominance_edges.iter().enumerate() {
+            dominance_out[source.index()].push((edge, target));
+            dominance_in[target.index()].push((edge, source));
+        }
+
+        let mut fragment_of = vec![usize::MAX; graph.nodes.len()];
+        let mut fragment_nodes = vec![Vec::new(); roots.len()];
+        for (fragment, &root) in roots.iter().enumerate() {
+            let mut stack = vec![root];
+            while let Some(node) = stack.pop() {
+                assert_eq!(fragment_of[node.index()], usize::MAX);
+                fragment_of[node.index()] = fragment;
+                fragment_nodes[fragment].push(node);
+                stack.extend(graph.node(node).tree_children.iter().copied());
+            }
+            fragment_nodes[fragment].sort_unstable();
+        }
+        assert!(fragment_of.iter().all(|fragment| *fragment != usize::MAX));
+
         Ok(Self {
             graph,
             tree_parent: parent,
             roots,
             holes,
+            dominance_in,
+            dominance_out,
+            fragment_of,
+            fragment_nodes,
         })
     }
 }
