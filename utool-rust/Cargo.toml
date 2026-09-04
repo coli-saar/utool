@@ -8,7 +8,7 @@ description = "Dominance graph solving and layout"
 
 [dependencies]
 num-bigint = "0.5.1"
-packed-term-arena = "0.1.0"
+packed-term-arena = "0.1.1"
 parol_runtime = "=5.0.2"
 rusty-alto = "=0.2.0"
 scnr2 = "=0.5.2"

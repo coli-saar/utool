@@ -835,9 +835,9 @@ checksum = "13c45bb4a6ae1280ec0803b1ef9d3455eb50f01efbbe1447ab020f1d54fba9d8"
 
 [[package]]
 name = "packed-term-arena"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbb8c67e9e25d5ee771c0e58b3339f203c3df61ab2349732d363ebe25a31a8cf"
+checksum = "e3ce02394e383e6e2431f66056ff45a465e48a7ec5f846ff5e0ff7568a4a065a"
 dependencies = [
  "lalrpop",
  "lalrpop-util",

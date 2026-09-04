@@ -15,7 +15,9 @@ fn filters_the_stronger_every_a_reading() {
     .unwrap();
     let filtered = filter_chart(&chart, &rules, || false).unwrap();
     assert_eq!(filtered.count_solutions().to_string(), "1");
-    assert_eq!(filtered.solutions().count(), 1);
+    let mut solutions = filtered.solutions();
+    assert!(solutions.advance());
+    assert!(!solutions.advance());
 }
 
 #[test]

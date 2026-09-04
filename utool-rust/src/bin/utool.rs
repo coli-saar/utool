@@ -418,7 +418,8 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         let mut count = 0_usize;
         let limit = opts.limit.unwrap_or(usize::MAX);
         if solve_output_codec.is_none() {
-            for _solution in chart.solutions().take(limit) {
+            let mut solutions = chart.solutions();
+            while count < limit && solutions.advance() {
                 count += 1;
             }
         } else {
@@ -435,7 +436,9 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
                     .write_all(b"[")
                     .map_err(|e| (e.to_string(), IO_ERROR))?;
             }
-            for solution in chart.solutions().take(limit) {
+            let mut solutions = chart.solutions();
+            while count < limit && solutions.advance() {
+                let solution = solutions.current().expect("advance produced a solution");
                 let rendered = match codec {
                     "domcon-oz" => solution_as_domcon(&solution),
                     "term-prolog" => solution.to_label_term(","),

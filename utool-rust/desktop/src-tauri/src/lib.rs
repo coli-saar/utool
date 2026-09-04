@@ -292,7 +292,10 @@ fn solution_at(
     let chart = charts
         .get(&chart_id)
         .ok_or("chart is no longer available")?;
-    Ok(chart.solutions().nth(index).as_ref().map(solution_view))
+    let mut solutions = chart.solutions();
+    Ok(solutions
+        .advance_by(index)
+        .then(|| solution_view(&solutions.current().unwrap())))
 }
 
 #[tauri::command]

@@ -271,10 +271,15 @@ pub fn filter_chart(
     system: &RewriteSystem,
     cancelled: impl Fn() -> bool + Copy,
 ) -> Result<Chart, FilterError> {
-    let language: HashSet<_> = chart
-        .solutions()
-        .filter_map(|solution| solution_term(&solution))
-        .collect();
+    let mut language = HashSet::new();
+    let mut solutions = chart.solutions();
+    while solutions.advance() {
+        if let Some(term) =
+            solution_term(&solutions.current().expect("advance produced a solution"))
+        {
+            language.insert(term);
+        }
+    }
     chart
         .select_solutions(
             |solution| {

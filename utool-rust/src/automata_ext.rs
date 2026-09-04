@@ -167,6 +167,7 @@ impl DfsLanguagePlan {
             pending: Vec::new(),
             agenda_head: EMPTY_AGENDA,
             frames: Vec::new(),
+            changed_from: 0,
             current: false,
             finished: false,
         }
@@ -180,6 +181,7 @@ pub struct DfsLanguageIterator<'a> {
     pending: Vec<PendingState>,
     agenda_head: u32,
     frames: Vec<DfsFrame>,
+    changed_from: usize,
     current: bool,
     finished: bool,
 }
@@ -214,11 +216,18 @@ impl<'a> DfsLanguageIterator<'a> {
         })
     }
 
+    /// First pre-order frame whose rule differs from the preceding derivation.
+    #[must_use]
+    pub const fn changed_from(&self) -> usize {
+        self.changed_from
+    }
+
     fn start_accepting_state(&mut self) -> bool {
         let Some(&state) = self.accepting.get(self.accepting_index) else {
             return false;
         };
         self.accepting_index += 1;
+        self.changed_from = 0;
         self.pending.clear();
         self.agenda_head = EMPTY_AGENDA;
         self.push_pending(state, NO_PARENT, 0);
@@ -258,6 +267,7 @@ impl<'a> DfsLanguageIterator<'a> {
         while let Some(frame_index) = self.frames.len().checked_sub(1) {
             let frame = &self.frames[frame_index];
             if frame.rule_index as usize + 1 < self.rules[frame.state.index()].len() {
+                self.changed_from = frame_index;
                 self.agenda_head = frame.agenda_before;
                 self.pending.truncate(frame.pending_checkpoint as usize);
                 self.frames[frame_index].rule_index += 1;
@@ -493,6 +503,25 @@ mod tests {
         builder.add_accepting(left);
         builder.add_accepting(right);
         assert_same_language(&builder.build());
+    }
+
+    #[test]
+    fn dfs_reports_the_deterministic_backtracking_frame() {
+        let mut builder = ExplicitBuilder::new();
+        let leaf = builder.new_state();
+        let root = builder.new_state();
+        builder.add_rule(Symbol(0), vec![], leaf);
+        builder.add_rule(Symbol(1), vec![], leaf);
+        builder.add_rule(Symbol(2), vec![leaf, leaf], root);
+        builder.add_accepting(root);
+        let automaton = builder.build();
+        let plan = DfsLanguagePlan::new(&automaton).unwrap();
+        let mut dfs = plan.iter();
+        let mut changed = Vec::new();
+        while dfs.advance() {
+            changed.push(dfs.changed_from());
+        }
+        assert_eq!(changed, [0, 2, 1, 2]);
     }
 
     #[test]
