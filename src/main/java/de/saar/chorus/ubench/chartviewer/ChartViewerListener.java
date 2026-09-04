@@ -11,7 +11,6 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import de.saar.basic.XMLFilter;
 import de.saar.chorus.domgraph.chart.ConcreteRegularTreeGrammar;
 import de.saar.chorus.domgraph.chart.GraphBasedNonterminal;
 import de.saar.chorus.domgraph.chart.RegularTreeGrammar;
@@ -184,8 +183,7 @@ public class ChartViewerListener implements ActionListener {
     }
 
     /**
-     * This loads a xml file and reads the content
-     * to a xml file.
+     * Loads filtering rules from a file.
      *
      * @param preliminary indicates whether or not to show the info message
      * @param eqs the equation system to fill
@@ -195,18 +193,17 @@ public class ChartViewerListener implements ActionListener {
         /** TODO Why would we ever want to display this warning dialog?? - AK **/
         if (preliminary) {
             JOptionPane.showMessageDialog(viewer,
-                    "You have to specify a xml file that contains your equation system"
+                    "You have to specify a filtering rule file"
                     + System.getProperty("line.separator")
                     + " before Utool can eliminate equivalences.",
-                    "Please load an equation system",
+                    "Please load filtering rules",
                     JOptionPane.INFORMATION_MESSAGE);
         }
 
 
         JFileChooser fc = new JFileChooser();
 
-        fc.setDialogTitle("Select the equation system");
-        fc.setFileFilter(new XMLFilter());
+        fc.setDialogTitle("Select the filtering rule file");
         fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
         int fcVal = fc.showOpenDialog(viewer);
 
@@ -235,7 +232,7 @@ public class ChartViewerListener implements ActionListener {
                         "The rule system cannot be parsed."
                         + System.getProperty("line.separator")
                         + "Either the input file is not readable, or it contains syntax errors.",
-                        "Error while loading equation system",
+                        "Error while loading filtering rules",
                         JOptionPane.ERROR_MESSAGE);
             }
 

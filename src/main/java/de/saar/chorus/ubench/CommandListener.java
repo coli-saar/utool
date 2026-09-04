@@ -42,7 +42,6 @@ import de.saar.basic.ExportUtilities;
 import de.saar.basic.GUIUtilities;
 import de.saar.basic.GenericFileFilter;
 import de.saar.basic.WaitingDialog;
-import de.saar.basic.XMLFilter;
 import de.saar.chorus.domgraph.chart.Chart;
 import de.saar.chorus.domgraph.chart.SolvedFormIterator;
 import de.saar.chorus.domgraph.chart.SolvedFormSpec;
@@ -999,8 +998,7 @@ class CommandListener implements ActionListener,
 
     private void loadRnfc() {
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Choose the equation system input file");
-        fc.setFileFilter(new XMLFilter());
+        fc.setDialogTitle("Choose the filtering rule file");
 
         fc.setCurrentDirectory(Ubench.getInstance().getLastPath());
 
@@ -1035,7 +1033,7 @@ class CommandListener implements ActionListener,
                         "The rule system cannot be parsed."
                         + System.getProperty("line.separator")
                         + "Either the input file is not readable, or it contains syntax errors.",
-                        "Error while loading equation system",
+                        "Error while loading filtering rules",
                         JOptionPane.ERROR_MESSAGE);
             }
 
