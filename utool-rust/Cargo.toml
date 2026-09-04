@@ -1,0 +1,29 @@
+[package]
+name = "utool"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.86"
+license = "MIT OR Apache-2.0"
+description = "Dominance graph solving and layout"
+
+[dependencies]
+num-bigint = "0.5.1"
+packed-term-arena = "0.1.0"
+parol_runtime = "=5.0.2"
+rusty-alto = "=0.2.0"
+scnr2 = "=0.5.2"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+
+[build-dependencies]
+parol = "=5.0.2"
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"

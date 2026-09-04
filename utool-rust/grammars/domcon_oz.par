@@ -1,0 +1,19 @@
+%start Input
+%title "Utool Domcon/Oz"
+%comment "Syntax of weakly normal dominance constraints in Oz notation"
+%grammar_type 'll(k)'
+%line_comment '%'
+
+%%
+
+Input: '[' { Atom } ']';
+
+Atom
+    : 'dom' '(' OzAtom OzAtom ')'
+    | 'label' '(' OzAtom OzAtom [ '(' OzAtom { OzAtom } ')' ] ')'
+    ;
+
+OzAtom
+    : /'(\\.|[^'])*'/
+    | /[a-z][a-zA-Z0-9_\u{0080}-\u{10ffff}]*/
+    ;
