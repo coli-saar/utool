@@ -180,8 +180,8 @@ fn solution_view(solution: &Solution) -> SolutionView {
             let node = solution.arena().get_label(tree);
             nodes.push(SolutionNodeView {
                 id: node.id.index(),
-                name: node.name.clone(),
-                label: node.label.clone(),
+                name: node.name.to_owned(),
+                label: node.label.to_owned(),
             });
             for child in solution.arena().get_children(tree) {
                 let child_node = solution.arena().get_label(*child);

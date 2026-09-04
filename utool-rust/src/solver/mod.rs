@@ -2,10 +2,11 @@
 
 use num_bigint::BigUint;
 use packed_term_arena::tree::{Tree, TreeArena};
-use rusty_alto::{Explicit, ExplicitBuilder, SortedLanguageIterator, StateId, Symbol};
+use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use thiserror::Error;
 
+use crate::automata_ext::{DfsDerivation, DfsLanguageIterator, DfsLanguagePlan};
 use crate::graph::{HncGraph, NodeId};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -48,6 +49,7 @@ pub struct ChartRule {
 /// Compact tree automaton whose rules are free-root splits.
 pub struct Chart {
     automaton: Explicit,
+    derivation_plan: DfsLanguagePlan,
     split_symbols: Vec<Split>,
     graph: HncGraph,
     count: BigUint,
@@ -83,9 +85,16 @@ impl Chart {
     pub fn solutions(&self) -> Solutions<'_> {
         Solutions {
             chart: self,
-            inner: self.automaton.sorted_language(),
+            inner: self.derivations(),
+            plugging: vec![None; self.graph.parsed().nodes().len()],
+            active: vec![0; self.graph.parsed().nodes().len()],
             returned_empty: false,
         }
+    }
+
+    /// Enumerate the chart's split derivations without materializing Solutions.
+    pub fn derivations(&self) -> DfsLanguageIterator<'_> {
+        self.derivation_plan.iter()
     }
 
     /// Rules of this chart in the same order as the automaton transitions.
@@ -122,13 +131,17 @@ impl Chart {
     /// interned into shared automaton states in the result.
     pub fn select_solutions(
         &self,
-        mut keep: impl FnMut(&Solution) -> bool,
+        mut keep: impl FnMut(&Solution<'_>) -> bool,
         cancelled: impl Fn() -> bool,
     ) -> Result<Self, SolveError> {
         if self.empty_solution {
             let retained = keep(&Solution::empty());
+            let automaton = ExplicitBuilder::new().build();
+            let derivation_plan = DfsLanguagePlan::new(&automaton)
+                .expect("an empty automaton has no productive cycles");
             return Ok(Self {
-                automaton: ExplicitBuilder::new().build(),
+                automaton,
+                derivation_plan,
                 split_symbols: Vec::new(),
                 graph: self.graph.clone(),
                 count: BigUint::from(u8::from(retained)),
@@ -139,25 +152,27 @@ impl Chart {
         let mut builder = ExplicitBuilder::new();
         let mut interned: HashMap<(Symbol, Vec<StateId>), StateId> = HashMap::new();
         let mut count = BigUint::from(0_u8);
-        let mut language = self.automaton.sorted_language();
-        while let Some(derivation) = language.next() {
+        let mut language = self.derivations();
+        let mut plugging = vec![None; self.graph.parsed().nodes().len()];
+        let mut active = vec![0; self.graph.parsed().nodes().len()];
+        while language.advance() {
             if cancelled() {
                 return Err(SolveError::Cancelled);
             }
-            let solution = materialize_solution(self, language.arena(), derivation.tree());
+            let derivation = language.current().expect("advance produced a derivation");
+            let solution = materialize_solution(self, derivation, &mut plugging, &mut active);
             if keep(&solution) {
-                let root = copy_derivation(
-                    language.arena(),
-                    derivation.tree(),
-                    &mut builder,
-                    &mut interned,
-                );
+                let root = copy_derivation(derivation, &mut builder, &mut interned);
                 builder.add_accepting(root);
                 count += BigUint::from(1_u8);
             }
         }
+        let automaton = builder.build();
+        let derivation_plan = DfsLanguagePlan::new(&automaton)
+            .expect("selected solver charts retain the acyclic state graph");
         Ok(Self {
-            automaton: builder.build(),
+            automaton,
+            derivation_plan,
             split_symbols: self.split_symbols.clone(),
             graph: self.graph.clone(),
             count,
@@ -167,46 +182,58 @@ impl Chart {
 }
 
 fn copy_derivation(
-    arena: &TreeArena<Symbol>,
-    tree: Tree,
+    derivation: DfsDerivation<'_>,
     builder: &mut ExplicitBuilder,
     interned: &mut HashMap<(Symbol, Vec<StateId>), StateId>,
 ) -> StateId {
-    let children = arena
-        .get_children(tree)
+    let nodes = derivation.nodes().collect::<Vec<_>>();
+    let mut child_states = nodes
         .iter()
-        .map(|child| copy_derivation(arena, *child, builder, interned))
+        .map(|node| vec![None; node.arity])
         .collect::<Vec<_>>();
-    let symbol = *arena.get_label(tree);
-    let key = (symbol, children.clone());
-    if let Some(&state) = interned.get(&key) {
-        return state;
+    let mut states = vec![None; nodes.len()];
+    for index in (0..nodes.len()).rev() {
+        let node = nodes[index];
+        let children = std::mem::take(&mut child_states[index])
+            .into_iter()
+            .map(|state| state.expect("children precede parents in reverse pre-order"))
+            .collect::<Vec<_>>();
+        let key = (node.symbol, children.clone());
+        let state = if let Some(&state) = interned.get(&key) {
+            state
+        } else {
+            let state = builder.new_state();
+            builder.add_rule(node.symbol, children, state);
+            interned.insert(key, state);
+            state
+        };
+        states[index] = Some(state);
+        if let Some((parent, child_index)) = node.parent {
+            child_states[parent][child_index] = Some(state);
+        }
     }
-    let state = builder.new_state();
-    builder.add_rule(symbol, children, state);
-    interned.insert(key, state);
-    state
+    states[0].expect("a derivation has a root")
 }
 
 /// One node in a fully resolved solution.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SolutionNode {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SolutionNode<'a> {
     /// Original graph node identity.
     pub id: NodeId,
     /// External node name.
-    pub name: String,
+    pub name: &'a str,
     /// Semantic label.
-    pub label: String,
+    pub label: &'a str,
 }
 
-/// One fully resolved, independently owned tree.
+/// One fully resolved tree borrowing immutable node text from its chart.
 #[derive(Debug)]
-pub struct Solution {
-    arena: TreeArena<SolutionNode>,
+pub struct Solution<'a> {
+    arena: TreeArena<SolutionNode<'a>>,
     root: Option<Tree>,
 }
 
-impl Solution {
+impl Solution<'_> {
     fn empty() -> Self {
         Self {
             arena: TreeArena::new(),
@@ -216,7 +243,7 @@ impl Solution {
 
     /// Tree storage.
     #[must_use]
-    pub const fn arena(&self) -> &TreeArena<SolutionNode> {
+    pub const fn arena(&self) -> &TreeArena<SolutionNode<'_>> {
         &self.arena
     }
 
@@ -229,7 +256,7 @@ impl Solution {
     /// Canonical term using external node names to disambiguate equal labels.
     #[must_use]
     pub fn to_term(&self) -> String {
-        fn write(arena: &TreeArena<SolutionNode>, node: Tree, output: &mut String) {
+        fn write(arena: &TreeArena<SolutionNode<'_>>, node: Tree, output: &mut String) {
             let data = arena.get_label(node);
             output.push_str(&data.label);
             output.push('[');
@@ -261,7 +288,7 @@ impl Solution {
     #[must_use]
     pub fn to_label_term(&self, separator: &str) -> String {
         fn write(
-            arena: &TreeArena<SolutionNode>,
+            arena: &TreeArena<SolutionNode<'_>>,
             node: Tree,
             separator: &str,
             output: &mut String,
@@ -289,15 +316,17 @@ impl Solution {
     }
 }
 
-/// Lazy solution iterator backed by `rusty-alto` language enumeration.
+/// Lazy solution iterator backed by finite depth-first chart enumeration.
 pub struct Solutions<'a> {
     chart: &'a Chart,
-    inner: SortedLanguageIterator<'a>,
+    inner: DfsLanguageIterator<'a>,
+    plugging: Vec<Option<NodeId>>,
+    active: Vec<u8>,
     returned_empty: bool,
 }
 
-impl Iterator for Solutions<'_> {
-    type Item = Solution;
+impl<'a> Iterator for Solutions<'a> {
+    type Item = Solution<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.chart.empty_solution {
@@ -307,12 +336,31 @@ impl Iterator for Solutions<'_> {
             self.returned_empty = true;
             return Some(Solution::empty());
         }
-        let derivation = self.inner.next()?;
-        Some(materialize_solution(
-            self.chart,
-            self.inner.arena(),
-            derivation.tree(),
-        ))
+        self.inner.advance().then(|| {
+            materialize_solution(
+                self.chart,
+                self.inner.current().expect("advance produced a derivation"),
+                &mut self.plugging,
+                &mut self.active,
+            )
+        })
+    }
+
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        if self.chart.empty_solution {
+            if n == 0 && !self.returned_empty {
+                self.returned_empty = true;
+                return Some(Solution::empty());
+            }
+            self.returned_empty = true;
+            return None;
+        }
+        for _ in 0..n {
+            if !self.inner.advance() {
+                return None;
+            }
+        }
+        self.next()
     }
 }
 
@@ -344,8 +392,12 @@ pub fn solve_with_cancellation(
         return Err(SolveError::Cancelled);
     }
     if graph.parsed().nodes().is_empty() {
+        let automaton = ExplicitBuilder::new().build();
+        let derivation_plan =
+            DfsLanguagePlan::new(&automaton).expect("an empty automaton has no productive cycles");
         return Ok(Chart {
-            automaton: ExplicitBuilder::new().build(),
+            automaton,
+            derivation_plan,
             split_symbols: Vec::new(),
             graph: graph.clone(),
             count: BigUint::from(1_u8),
@@ -365,8 +417,12 @@ pub fn solve_with_cancellation(
         compiler.builder.add_accepting(top_state);
     }
 
+    let automaton = compiler.builder.build();
+    let derivation_plan = DfsLanguagePlan::new(&automaton)
+        .expect("solver charts have an acyclic productive state graph");
     Ok(Chart {
-        automaton: compiler.builder.build(),
+        automaton,
+        derivation_plan,
         split_symbols: compiler.splits,
         graph: graph.clone(),
         count,
@@ -731,57 +787,60 @@ fn split_dfs(
     true
 }
 
-fn materialize_solution(
-    chart: &Chart,
-    derivation_arena: &TreeArena<Symbol>,
-    derivation_root: Tree,
-) -> Solution {
-    let mut plugging = HashMap::new();
-    collect_plugging(chart, derivation_arena, derivation_root, &mut plugging);
-    let top_symbol = *derivation_arena.get_label(derivation_root);
+fn materialize_solution<'a>(
+    chart: &'a Chart,
+    derivation: DfsDerivation<'_>,
+    plugging: &mut [Option<NodeId>],
+    active: &mut [u8],
+) -> Solution<'a> {
+    plugging.fill(None);
+    collect_plugging(chart, derivation, plugging);
+    let top_symbol = derivation.node(0).symbol;
     let top = chart.split_symbols[top_symbol.0 as usize].root;
     let mut arena = TreeArena::new();
-    let mut active = HashSet::new();
-    let root = build_solution_node(chart, top, &plugging, &mut arena, &mut active);
+    let root = build_solution_node(chart, top, &plugging, &mut arena, active);
     Solution {
         arena,
         root: Some(root),
     }
 }
 
-fn collect_plugging(
-    chart: &Chart,
-    arena: &TreeArena<Symbol>,
-    tree: Tree,
-    plugging: &mut HashMap<NodeId, NodeId>,
-) {
-    let symbol = *arena.get_label(tree);
-    let split = &chart.split_symbols[symbol.0 as usize];
-    plugging.extend(split.substitutions.iter().copied());
-    for ((dominator, _), child) in split.attachments.iter().zip(arena.get_children(tree)) {
-        let child_symbol = *arena.get_label(*child);
-        let child_root = chart.split_symbols[child_symbol.0 as usize].root;
-        plugging.insert(*dominator, child_root);
-        collect_plugging(chart, arena, *child, plugging);
+fn collect_plugging(chart: &Chart, derivation: DfsDerivation<'_>, plugging: &mut [Option<NodeId>]) {
+    for node in derivation.nodes() {
+        let split = &chart.split_symbols[node.symbol.0 as usize];
+        for &(hole, root) in &split.substitutions {
+            plugging[hole.index()] = Some(root);
+        }
+        if let Some((parent, child_index)) = node.parent {
+            let parent_symbol = derivation.node(parent).symbol;
+            let dominator =
+                chart.split_symbols[parent_symbol.0 as usize].attachments[child_index].0;
+            plugging[dominator.index()] = Some(split.root);
+        }
     }
 }
 
-fn build_solution_node(
-    chart: &Chart,
+fn build_solution_node<'a>(
+    chart: &'a Chart,
     mut node: NodeId,
-    plugging: &HashMap<NodeId, NodeId>,
-    arena: &mut TreeArena<SolutionNode>,
-    active: &mut HashSet<NodeId>,
+    plugging: &[Option<NodeId>],
+    arena: &mut TreeArena<SolutionNode<'a>>,
+    active: &mut [u8],
 ) -> Tree {
     while chart.graph.node(node).is_hole() {
-        node = *plugging.get(&node).unwrap_or_else(|| {
+        node = plugging[node.index()].unwrap_or_else(|| {
             panic!(
                 "solution leaves hole {} unplugged",
                 chart.graph.node(node).name()
             )
         });
     }
-    assert!(active.insert(node), "solution derivation contains a cycle");
+    assert_eq!(
+        active[node.index()],
+        0,
+        "solution derivation contains a cycle"
+    );
+    active[node.index()] = 1;
     let children = chart
         .graph
         .node(node)
@@ -789,16 +848,13 @@ fn build_solution_node(
         .iter()
         .map(|child| build_solution_node(chart, *child, plugging, arena, active))
         .collect();
-    active.remove(&node);
+    active[node.index()] = 0;
     let original = chart.graph.node(node);
     arena.add_node(
         SolutionNode {
             id: node,
-            name: original.name().to_owned(),
-            label: original
-                .label()
-                .expect("non-hole node must be labeled")
-                .to_owned(),
+            name: original.name(),
+            label: original.label().expect("non-hole node must be labeled"),
         },
         children,
     )

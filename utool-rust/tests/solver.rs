@@ -1,5 +1,5 @@
 use num_bigint::BigUint;
-use utool::{HncGraph, SolveError, parse_domcon_oz, solve, solve_with_cancellation};
+use utool::{HncGraph, SolveError, parse_chain, parse_domcon_oz, solve, solve_with_cancellation};
 
 fn solve_text(input: &str) -> utool::Chart {
     let parsed = parse_domcon_oz(input).unwrap();
@@ -88,4 +88,37 @@ fn chart_construction_can_be_cancelled() {
         solve_with_cancellation(&graph, || true),
         Err(SolveError::Cancelled)
     ));
+}
+
+#[test]
+fn dfs_and_sorted_enumerators_agree_on_chain_charts() {
+    for length in 1..=8 {
+        let graph = HncGraph::try_from(parse_chain(&length.to_string()).unwrap()).unwrap();
+        let chart = solve(&graph).unwrap();
+        let sorted_count = chart.automaton().sorted_language().count();
+        let mut dfs = chart.derivations();
+        let mut dfs_count = 0;
+        while dfs.advance() {
+            dfs_count += 1;
+        }
+        assert_eq!(dfs_count, sorted_count, "chain {length}");
+        assert_eq!(BigUint::from(dfs_count), chart.count_solutions());
+    }
+}
+
+#[test]
+fn random_access_uses_the_same_solution_order() {
+    let graph = HncGraph::try_from(parse_chain("5").unwrap()).unwrap();
+    let chart = solve(&graph).unwrap();
+    let expected = chart
+        .solutions()
+        .map(|solution| solution.to_term())
+        .collect::<Vec<_>>();
+    for &index in &[0, 1, 7, expected.len() - 1] {
+        assert_eq!(
+            chart.solutions().nth(index).unwrap().to_term(),
+            expected[index]
+        );
+    }
+    assert!(chart.solutions().nth(expected.len()).is_none());
 }
