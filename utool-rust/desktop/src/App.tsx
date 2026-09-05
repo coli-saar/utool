@@ -2,9 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GraphCanvas } from "./GraphCanvas";
-import type { ChartRule, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
+import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
 const ZOOMS = [25, 33, 50, 67, 75, 100, 125, 150];
@@ -39,28 +39,155 @@ function solutionGraph(solution: SolutionView): GraphView {
   };
 }
 
-function SplitRuleView({ rule }: { rule: ChartRule }) {
-  return <span className="split-rule">
-    <b>⟨{rule.root}</b>
-    {rule.attachments.map(([dominator, subgraph], index) => <span key={`${dominator}-${index}`}> {dominator} ↦ <i>[{subgraph.join(", ")}]</i></span>)}
-    {rule.substitutions.map(([hole, root], index) => <span key={`subst-${hole}-${index}`}> {hole} := {root}</span>)}
-    <b>⟩</b>
-  </span>;
+const CHART_PAGE_SIZE = 96;
+const CHART_CACHE_PAGES = 8;
+const CHART_ROW_ESTIMATE = 58;
+const CHART_OVERSCAN = 10;
+
+class RowHeightIndex {
+  private readonly corrections: Float32Array;
+  private readonly prefixes: Float64Array;
+
+  constructor(size: number) {
+    this.corrections = new Float32Array(size);
+    this.prefixes = new Float64Array(size + 1);
+  }
+
+  set(index: number, height: number): boolean {
+    const correction = height - CHART_ROW_ESTIMATE;
+    const delta = correction - this.corrections[index];
+    if (Math.abs(delta) < 1) return false;
+    this.corrections[index] = correction;
+    for (let cursor = index + 1; cursor < this.prefixes.length; cursor += cursor & -cursor) {
+      this.prefixes[cursor] += delta;
+    }
+    return true;
+  }
+
+  top(index: number): number {
+    let correction = 0;
+    for (let cursor = index; cursor > 0; cursor -= cursor & -cursor) {
+      correction += this.prefixes[cursor];
+    }
+    return index * CHART_ROW_ESTIMATE + correction;
+  }
+}
+
+function ChartRuleRow({ row, state, index, top, onHeight }: { row: ChartRule; state: ChartState; index: number; top: number; onHeight: (index: number, height: number) => void }) {
+  const element = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!element.current) return;
+    const observer = new ResizeObserver(([entry]) => onHeight(index, entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height));
+    observer.observe(element.current);
+    return () => observer.disconnect();
+  }, [index, onHeight]);
+  return <div ref={element} className={`chart-row${row.ordinal === 1 ? " chart-row-first" : ""}`} style={{ top }}>
+    {row.ordinal === 1 && <div className="chart-state-label">
+      <span>[{state.subgraph.join(", ")}]</span>
+      {state.variant !== null && <small>variant {state.variant}</small>}
+    </div>}
+    <div className="chart-rule-grid" aria-label={`Rule ${row.ordinal} of ${state.ruleCount}`}>
+      <span className="chart-rule-number">{row.ordinal}</span>
+      <span className="chart-fragment" aria-label="Top fragment">{row.fragment}</span>
+      <span className="chart-assignments" aria-label="Hole assignments">
+        {row.assignments.map(([hole, subgraph]) => <span key={hole}><b>{hole}</b><span aria-hidden="true"> ↦ </span><i>[{subgraph.join(", ")}]</i></span>)}
+      </span>
+    </div>
+  </div>;
 }
 
 function ChartRules({ chart }: { chart: ChartView }) {
-  const groups = new Map<string, ChartRule[]>();
-  chart.rules.forEach((rule) => {
-    const key = rule.subgraph.join("\u001f");
-    groups.set(key, [...(groups.get(key) ?? []), rule]);
-  });
-  return <div className="chart-table-wrap"><table className="chart-table">
-    <thead><tr><th>Subgraph</th><th>#</th><th>Split rule</th></tr></thead>
-    <tbody>{[...groups.values()].flatMap((rules) => rules.map((rule, index) => <tr key={`${rule.subgraph.join("-")}-${index}`}>
-      {index === 0 && <td rowSpan={rules.length}>[{rule.subgraph.join(", ")}]</td>}
-      <td>{index + 1}</td><td><SplitRuleView rule={rule} /></td>
-    </tr>))}</tbody>
-  </table>{chart.rules.length === 0 && <div className="empty-chart">The chart contains no productive split rules.</div>}</div>;
+  const viewport = useRef<HTMLDivElement | null>(null);
+  const alive = useRef(true);
+  const heights = useMemo(() => new RowHeightIndex(chart.displayRowCount), [chart.chartId, chart.displayRowCount]);
+  const pending = useRef(new Set<number>());
+  const [rows, setRows] = useState(new Map<number, ChartRule>());
+  const [states, setStates] = useState(new Map<number, ChartState>());
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(400);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [, setMeasurementVersion] = useState(0);
+
+  useEffect(() => () => { alive.current = false; }, []);
+
+  useEffect(() => {
+    setRows(new Map()); setStates(new Map()); pending.current.clear(); setScrollTop(0); setLoadError(null);
+    viewport.current?.scrollTo({ top: 0 });
+  }, [chart.chartId]);
+
+  useEffect(() => {
+    if (!viewport.current) return;
+    const observer = new ResizeObserver(([entry]) => setViewportHeight(entry.contentRect.height));
+    observer.observe(viewport.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const rowTop = useCallback((index: number) => {
+    return heights.top(index);
+  }, [heights]);
+  const rowAt = useCallback((offset: number) => {
+    let low = 0; let high = chart.displayRowCount;
+    while (low < high) { const middle = Math.floor((low + high) / 2); if (rowTop(middle + 1) <= offset) low = middle + 1; else high = middle; }
+    return low;
+  }, [chart.displayRowCount, rowTop]);
+  const first = Math.max(0, rowAt(scrollTop) - CHART_OVERSCAN);
+  const last = Math.min(chart.displayRowCount, rowAt(scrollTop + viewportHeight) + CHART_OVERSCAN + 1);
+
+  useEffect(() => {
+    const firstPage = Math.floor(first / CHART_PAGE_SIZE) * CHART_PAGE_SIZE;
+    for (let start = firstPage; start < last; start += CHART_PAGE_SIZE) {
+      if (rows.has(start) || pending.current.has(start)) continue;
+      pending.current.add(start);
+      void invoke<ChartRowPage>("chart_rows", { chartId: chart.chartId, start, count: CHART_PAGE_SIZE })
+        .then((page) => {
+          if (!alive.current) return;
+          setLoadError(null);
+          setStates((current) => {
+            const next = new Map(current);
+            page.states.forEach((definition) => next.set(definition.state, definition));
+            return next;
+          });
+          setRows((current) => {
+            const next = new Map(current);
+            page.rows.forEach((row, offset) => next.set(page.start + offset, row));
+            const centerPage = Math.floor(((first + last) / 2) / CHART_PAGE_SIZE);
+            const firstCachedPage = Math.max(0, centerPage - Math.floor(CHART_CACHE_PAGES / 2));
+            const lastCachedPage = firstCachedPage + CHART_CACHE_PAGES;
+            next.forEach((_row, index) => {
+              const pageIndex = Math.floor(index / CHART_PAGE_SIZE);
+              if (pageIndex < firstCachedPage || pageIndex >= lastCachedPage) next.delete(index);
+            });
+            return next;
+          });
+        })
+        .catch((reason) => { if (alive.current) setLoadError(String(reason)); })
+        .finally(() => pending.current.delete(start));
+    }
+  }, [chart.chartId, first, last, rows]);
+
+  useEffect(() => {
+    const retained = new Set(Array.from(rows.values(), (row) => row.state));
+    setStates((current) => new Map(Array.from(current).filter(([state]) => retained.has(state))));
+  }, [rows]);
+
+  const recordHeight = useCallback((index: number, height: number) => {
+    if (!heights.set(index, height)) return;
+    setMeasurementVersion((version) => version + 1);
+  }, [heights]);
+
+  if (chart.displayRowCount === 0) return <div className="empty-chart">The chart contains no productive split rules.</div>;
+  if (loadError) return <div className="empty-chart">Could not load chart rules: {loadError}</div>;
+  const rendered = [];
+  for (let index = first; index < last; index++) {
+    const row = rows.get(index);
+    const state = row && states.get(row.state);
+    rendered.push(row && state
+      ? <ChartRuleRow key={`${chart.chartId}-${index}`} row={row} state={state} index={index} top={rowTop(index)} onHeight={recordHeight} />
+      : <div key={`${chart.chartId}-${index}`} className="chart-row chart-row-loading" style={{ top: rowTop(index), height: CHART_ROW_ESTIMATE }}>Loading rule</div>);
+  }
+  return <div ref={viewport} className="chart-list" onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+    <div className="chart-list-space" style={{ height: rowTop(chart.displayRowCount) }}>{rendered}</div>
+  </div>;
 }
 
 export default function App() {
@@ -233,7 +360,7 @@ export default function App() {
     <section className="document">
       {!active && <div className="welcome"><h2>No graph open</h2><p>Choose File → Open… to open a dominance graph.</p></div>}
       {active?.kind === "graph" && <GraphCanvas key={active.key} graph={active.graph} zoom={active.zoom} onSvgReady={(element) => { svg.current = element; }} />}
-      {active?.kind === "chart" && <div className="chart-view"><div className="chart-header"><span><b>{active.chart.stateCount}</b> subgraphs · <b>{active.chart.splitCount}</b> split rules · <b>{active.chart.solutionCount}</b> Solutions</span><button className="primary" disabled={active.chart.solutionCount === "0"} onClick={showFirstSolution}>Show First Solution</button></div><ChartRules chart={active.chart} /></div>}
+      {active?.kind === "chart" && <div className="chart-view"><div className="chart-header"><span><b>{active.chart.stateCount}</b> states{active.chart.stateCount !== active.chart.subgraphCount && <> · <b>{active.chart.subgraphCount}</b> subgraphs</>} · <b>{active.chart.splitCount}</b> split rules · <b>{active.chart.solutionCount}</b> solutions</span><button className="primary" disabled={active.chart.solutionCount === "0"} onClick={showFirstSolution}>Show First Solution</button></div><ChartRules key={active.chart.chartId} chart={active.chart} /></div>}
       {active?.kind === "solution" && <><GraphCanvas key={active.key} graph={solutionGraph(active.solution)} zoom={active.zoom} onSvgReady={(element) => { svg.current = element; }} /><div className="solution-bar"><b>Solved form</b><button disabled={active.index === 0} onClick={() => showSolution(active.index - 1)}>←</button><input value={active.index + 1} onChange={(event) => { const value = Number(event.target.value); if (value > 0 && BigInt(value) <= BigInt(active.total)) void showSolution(value - 1); }} /><button disabled={BigInt(active.index + 1) >= BigInt(active.total)} onClick={() => showSolution(active.index + 1)}>→</button><span>of {active.total} (Graph: {active.sourceTitle})</span><code>{active.solution.term}</code></div></>}
     </section>
     <footer className="status-bar"><span className={status.running ? "busy" : ""}>{status.action}</span><time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : status.elapsedMs < 1000 ? `${status.elapsedMs.toFixed(1)} ms` : `${(status.elapsedMs / 1000).toFixed(3)} s`}</time></footer>

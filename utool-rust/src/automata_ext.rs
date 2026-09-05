@@ -16,7 +16,7 @@ struct DfsRule {
 
 /// One node of the current accepting derivation, in pre-order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct DfsDerivationNode {
+pub(crate) struct DfsDerivationNode {
     /// State recognized at this node.
     pub state: StateId,
     /// Transition symbol selected at this node.
@@ -31,7 +31,7 @@ pub struct DfsDerivationNode {
 ///
 /// The view is invalidated by the iterator's next call to [`advance`](DfsLanguageIterator::advance).
 #[derive(Clone, Copy, Debug)]
-pub struct DfsDerivation<'a> {
+pub(crate) struct DfsDerivation<'a> {
     frames: &'a [DfsFrame],
     rules: &'a [Vec<DfsRule>],
 }
@@ -57,6 +57,7 @@ impl DfsDerivation<'_> {
 
     /// Nodes in root-first, left-to-right pre-order.
     #[must_use]
+    #[cfg(test)]
     pub fn nodes(&self) -> impl ExactSizeIterator<Item = DfsDerivationNode> + '_ {
         (0..self.frames.len()).map(|index| self.node(index))
     }
@@ -66,17 +67,11 @@ impl DfsDerivation<'_> {
     pub const fn len(&self) -> usize {
         self.frames.len()
     }
-
-    /// Whether this derivation has no nodes.
-    #[must_use]
-    pub const fn is_empty(&self) -> bool {
-        self.frames.is_empty()
-    }
 }
 
 /// Why an automaton cannot use finite depth-first language enumeration.
 #[derive(Clone, Copy, Debug, Error, PartialEq, Eq)]
-pub enum DfsLanguageError {
+pub(crate) enum DfsLanguageError {
     /// A productive cycle is reachable from an accepting state, so the
     /// language may be infinite and Java-style finite backtracking is unsafe.
     #[error("productive cycle reachable through state {state:?}")]
@@ -119,7 +114,7 @@ struct DfsFrame {
 /// [`advance`](DfsLanguageIterator::advance), inspect
 /// [`current`](DfsLanguageIterator::current), then advance again. This lets the current
 /// derivation borrow the iterator's reusable stack without cloning a tree.
-pub struct DfsLanguagePlan {
+pub(crate) struct DfsLanguagePlan {
     rules: Vec<Vec<DfsRule>>,
     accepting: Vec<StateId>,
 }
@@ -184,7 +179,7 @@ impl DfsLanguagePlan {
     }
 }
 
-pub struct DfsLanguageIterator<'a> {
+pub(crate) struct DfsLanguageIterator<'a> {
     rules: &'a [Vec<DfsRule>],
     accepting: &'a [StateId],
     accepting_index: usize,

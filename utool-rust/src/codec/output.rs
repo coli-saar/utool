@@ -296,16 +296,15 @@ impl SolutionEncoder for DomconSolutionEncoder {
         output: &mut dyn Write,
     ) -> io::Result<()> {
         output.write_all(b"[")?;
-        if let Some(root) = solution.root() {
-            let mut first = true;
-            write_solution_node(solution, root, &mut first, output)?;
-            self.stack.clear();
-            self.stack.push(root);
-            while let Some(tree) = self.stack.pop() {
-                for &child in solution.arena().get_children(tree) {
-                    write_solution_node(solution, child, &mut first, output)?;
-                    self.stack.push(child);
-                }
+        let root = solution.root();
+        let mut first = true;
+        write_solution_node(solution, root, &mut first, output)?;
+        self.stack.clear();
+        self.stack.push(root);
+        while let Some(tree) = self.stack.pop() {
+            for &child in solution.arena().get_children(tree) {
+                write_solution_node(solution, child, &mut first, output)?;
+                self.stack.push(child);
             }
         }
         output.write_all(b"]\n")?;
@@ -384,9 +383,7 @@ impl SolutionEncoder for TermSolutionEncoder {
         if self.written {
             output.write_all(self.solution_separator)?;
         }
-        if let Some(root) = solution.root() {
-            write_label_term(solution, root, self.argument_separator, output)?;
-        }
+        write_label_term(solution, solution.root(), self.argument_separator, output)?;
         self.written = true;
         Ok(())
     }

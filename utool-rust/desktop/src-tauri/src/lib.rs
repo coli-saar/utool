@@ -11,18 +11,23 @@ use tauri::{
     menu::{MenuBuilder, SubmenuBuilder},
 };
 use utool::{
-    Chart, EdgeKind, HncGraph, InputCodec, LayoutOptions, OutputCodec, Point, RewriteSystem, Size,
-    Solution, filter_chart, layout_graph, solve_with_cancellation,
+    Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutOptions, OutputCodec, Point,
+    RewriteSystem, Size, Solution, filter_chart, layout_graph, solve_with_cancellation,
 };
 
 struct Document {
     graph: HncGraph,
 }
 
+struct StoredChart {
+    chart: Chart,
+    display: ChartDisplay,
+}
+
 #[derive(Default)]
 struct DocumentState {
     documents: Arc<Mutex<HashMap<u64, Document>>>,
-    charts: Arc<Mutex<HashMap<u64, Chart>>>,
+    charts: Arc<Mutex<HashMap<u64, StoredChart>>>,
     next_id: AtomicU64,
     generation: Arc<AtomicU64>,
 }
@@ -72,17 +77,36 @@ struct ChartView {
     chart_id: u64,
     solution_count: String,
     state_count: usize,
+    subgraph_count: usize,
     split_count: usize,
-    rules: Vec<ChartRuleView>,
+    display_row_count: usize,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ChartRuleView {
+    state: u32,
+    ordinal: usize,
+    fragment: String,
+    assignments: Vec<(String, Vec<String>)>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ChartStateView {
+    state: u32,
+    rule_count: usize,
     subgraph: Vec<String>,
-    root: String,
-    attachments: Vec<(String, Vec<String>)>,
-    substitutions: Vec<(String, String)>,
+    variant: Option<u32>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ChartRowPage {
+    start: usize,
+    total: usize,
+    states: Vec<ChartStateView>,
+    rows: Vec<ChartRuleView>,
 }
 
 #[derive(Serialize)]
@@ -170,19 +194,18 @@ fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
 fn solution_view(solution: &Solution) -> SolutionView {
     let mut nodes = Vec::new();
     let mut edges = Vec::new();
-    if let Some(root) = solution.root() {
-        let mut stack = vec![root];
-        while let Some(tree) = stack.pop() {
-            let node = solution.node_id(tree);
-            nodes.push(SolutionNodeView {
-                id: node.index(),
-                name: solution.node_name(tree).to_owned(),
-                label: solution.node_label(tree).to_owned(),
-            });
-            for child in solution.arena().get_children(tree) {
-                edges.push((node.index(), solution.node_id(*child).index()));
-                stack.push(*child);
-            }
+    let root = solution.root();
+    let mut stack = vec![root];
+    while let Some(tree) = stack.pop() {
+        let node = solution.node_id(tree);
+        nodes.push(SolutionNodeView {
+            id: node.index(),
+            name: solution.node_name(tree).to_owned(),
+            label: solution.node_label(tree).to_owned(),
+        });
+        for child in solution.arena().get_children(tree) {
+            edges.push((node.index(), solution.node_id(*child).index()));
+            stack.push(*child);
         }
     }
     SolutionView {
@@ -236,22 +259,11 @@ async fn build_chart(
         if generation.load(Ordering::SeqCst) != job {
             return Err("chart construction was cancelled".to_owned());
         }
-        let response = ChartView {
-            chart_id,
-            solution_count: chart.count_solutions().to_string(),
-            state_count: chart.state_count(),
-            split_count: chart.split_count(),
-            rules: chart
-                .rules()
-                .into_iter()
-                .map(|rule| ChartRuleView {
-                    subgraph: rule.subgraph,
-                    root: rule.root,
-                    attachments: rule.attachments,
-                    substitutions: rule.substitutions,
-                })
-                .collect(),
+        let stored = StoredChart {
+            display: ChartDisplay::new(&chart),
+            chart,
         };
+        let response = chart_view(chart_id, &stored);
         if !documents
             .lock()
             .map_err(|_| "document state is unavailable")?
@@ -262,7 +274,7 @@ async fn build_chart(
         charts
             .lock()
             .map_err(|_| "chart state is unavailable")?
-            .insert(chart_id, chart);
+            .insert(chart_id, stored);
         Ok(response)
     })
     .await
@@ -287,10 +299,13 @@ fn solution_at(
     let chart = charts
         .get(&chart_id)
         .ok_or("chart is no longer available")?;
-    let mut solutions = chart.solutions();
-    Ok(solutions
-        .advance_by(index)
-        .then(|| solution_view(&solutions.current().unwrap())))
+    let mut solutions = chart.chart.solutions();
+    for _ in 0..=index {
+        if !solutions.advance() {
+            return Ok(None);
+        }
+    }
+    Ok(Some(solution_view(&solutions.current().unwrap())))
 }
 
 #[tauri::command]
@@ -319,23 +334,59 @@ fn export_document(
     String::from_utf8(output).map_err(|error| error.to_string())
 }
 
-fn chart_view(chart_id: u64, chart: &Chart) -> ChartView {
+fn chart_view(chart_id: u64, stored: &StoredChart) -> ChartView {
+    let chart = &stored.chart;
     ChartView {
         chart_id,
         solution_count: chart.count_solutions().to_string(),
         state_count: chart.state_count(),
+        subgraph_count: stored.display.subgraph_count(),
         split_count: chart.split_count(),
-        rules: chart
-            .rules()
+        display_row_count: stored.display.row_count(),
+    }
+}
+
+#[tauri::command]
+fn chart_rows(
+    chart_id: u64,
+    start: usize,
+    count: usize,
+    state: tauri::State<'_, DocumentState>,
+) -> Result<ChartRowPage, String> {
+    const MAX_PAGE_SIZE: usize = 256;
+    let charts = state
+        .charts
+        .lock()
+        .map_err(|_| "chart state is unavailable")?;
+    let chart = charts
+        .get(&chart_id)
+        .ok_or("chart is no longer available")?;
+    let count = count.min(MAX_PAGE_SIZE);
+    let page = chart.display.rule_page(&chart.chart, start, count);
+    Ok(ChartRowPage {
+        start: page.start,
+        total: page.total,
+        states: page
+            .states
             .into_iter()
-            .map(|rule| ChartRuleView {
-                subgraph: rule.subgraph,
-                root: rule.root,
-                attachments: rule.attachments,
-                substitutions: rule.substitutions,
+            .map(|definition| ChartStateView {
+                state: definition.state,
+                rule_count: definition.rule_count,
+                subgraph: definition.subgraph,
+                variant: definition.variant,
             })
             .collect(),
-    }
+        rows: page
+            .rules
+            .into_iter()
+            .map(|rule| ChartRuleView {
+                state: rule.state,
+                ordinal: rule.ordinal,
+                fragment: rule.fragment,
+                assignments: rule.assignments,
+            })
+            .collect(),
+    })
 }
 
 #[tauri::command]
@@ -352,16 +403,20 @@ async fn filter_chart_command(
     tauri::async_runtime::spawn_blocking(move || {
         let guard = charts.lock().map_err(|_| "chart state is unavailable")?;
         let source = guard.get(&chart_id).ok_or("chart is no longer available")?;
-        let filtered = filter_chart(source, &system, || {
+        let filtered = filter_chart(&source.chart, &system, || {
             generation.load(Ordering::Relaxed) != job
         })
         .map_err(|error| error.to_string())?;
         drop(guard);
-        let response = chart_view(result_id, &filtered);
+        let stored = StoredChart {
+            display: ChartDisplay::new(&filtered),
+            chart: filtered,
+        };
+        let response = chart_view(result_id, &stored);
         charts
             .lock()
             .map_err(|_| "chart state is unavailable")?
-            .insert(result_id, filtered);
+            .insert(result_id, stored);
         Ok(response)
     })
     .await
@@ -378,6 +433,7 @@ pub fn run() {
             load_document,
             build_chart,
             cancel_chart,
+            chart_rows,
             solution_at,
             filter_chart_command,
             export_document

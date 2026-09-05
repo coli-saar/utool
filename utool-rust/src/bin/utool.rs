@@ -359,8 +359,15 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         eprintln!("Number of solved forms: {}\n", chart.count_solutions());
     }
     if opts.dump_chart {
-        for rule in chart.rules() {
-            eprintln!("[{}] => root {}", rule.subgraph.join(", "), rule.root);
+        let display = utool::ChartDisplay::new(&chart);
+        let page = display.rule_page(&chart, 0, display.row_count());
+        for rule in page.rules {
+            let state = page
+                .states
+                .iter()
+                .find(|state| state.state == rule.state)
+                .expect("every displayed rule defines its state");
+            eprintln!("[{}] => {}", state.subgraph.join(", "), rule.fragment);
         }
     }
     if op == Operation::Solve {

@@ -1,6 +1,8 @@
 use num_bigint::BigUint;
+use std::collections::HashSet;
 use utool::{
-    HncGraph, SolveError, is_solvable, parse_chain, parse_domcon_oz, solve, solve_with_cancellation,
+    ChartDisplay, HncGraph, SolveError, is_solvable, parse_chain, parse_domcon_oz, solve,
+    solve_with_cancellation,
 };
 
 fn solve_text(input: &str) -> utool::Chart {
@@ -25,9 +27,36 @@ fn solution_terms(chart: &utool::Chart) -> Vec<String> {
 
 fn solution_term_at(chart: &utool::Chart, index: usize) -> Option<String> {
     let mut solutions = chart.solutions();
-    solutions
-        .advance_by(index)
-        .then(|| solutions.current().unwrap().to_term())
+    for _ in 0..=index {
+        if !solutions.advance() {
+            return None;
+        }
+    }
+    Some(solutions.current().unwrap().to_term())
+}
+
+fn assert_complete_solution_tree(solution: &utool::Solution<'_>) {
+    let expected = solution
+        .graph()
+        .parsed()
+        .nodes()
+        .iter()
+        .filter(|node| !node.is_hole())
+        .map(|node| solution.graph().node_id(node.name()).unwrap())
+        .collect::<HashSet<_>>();
+    let mut visited = HashSet::new();
+    let mut stack = vec![solution.root()];
+    while let Some(tree) = stack.pop() {
+        let node = solution.node_id(tree);
+        assert!(visited.insert(node), "node {node:?} occurs more than once");
+        assert_eq!(
+            solution.arena().get_children(tree).len(),
+            solution.graph().node(node).tree_children().len(),
+            "arity changed for {node:?}"
+        );
+        stack.extend(solution.arena().get_children(tree).iter().copied());
+    }
+    assert_eq!(visited, expected);
 }
 
 #[test]
@@ -35,7 +64,7 @@ fn solves_a_single_fragment() {
     let chart = solve_text("[label(x f(y z)) label(y a) label(z b)]");
     assert_eq!(chart.count_solutions(), BigUint::from(1_u8));
     let terms = solution_terms(&chart);
-    assert_eq!(terms, ["f[x](a[y],b[z])"]);
+    assert_eq!(terms, ["f(a,b)"]);
 }
 
 #[test]
@@ -44,15 +73,16 @@ fn solves_compact_graph_into_split_automaton() {
     assert_eq!(chart.count_solutions(), BigUint::from(1_u8));
     assert!(chart.state_count() >= 3);
     assert!(chart.split_count() >= 3);
-    let rules = chart.rules();
+    let display = ChartDisplay::new(&chart);
+    let rules = display.rule_page(&chart, 0, display.row_count()).rules;
     assert_eq!(rules.len(), chart.split_count());
-    assert!(rules.iter().any(|rule| rule.root == "x"));
+    assert!(rules.iter().any(|rule| rule.fragment.starts_with("f(")));
     assert!(rules.iter().any(|rule| {
-        rule.attachments
+        rule.assignments
             .iter()
-            .any(|(dominator, child)| dominator == "x1" && child == &["y"])
+            .any(|(hole, child)| hole == "x1" && child == &["y"])
     }));
-    assert_eq!(solution_term_at(&chart, 0).unwrap(), "f[x](a[y],b[z])");
+    assert_eq!(solution_term_at(&chart, 0).unwrap(), "f(a,b)");
 }
 
 #[test]
@@ -62,16 +92,14 @@ fn ports_two_cross_edge_solutions() {
     assert_eq!(chart.count_solutions(), BigUint::from(2_u8));
     let mut terms = solution_terms(&chart);
     terms.sort();
-    assert_eq!(terms, ["f[x](g[y](a[z]))", "g[y](f[x](a[z]))"]);
+    assert_eq!(terms, ["f(g(a))", "g(f(a))"]);
 }
 
 #[test]
-fn empty_graph_has_one_empty_solution() {
-    let chart = solve_text("[]");
-    assert_eq!(chart.count_solutions(), BigUint::from(1_u8));
-    let mut solutions = chart.solutions();
-    assert!(solutions.advance());
-    assert_eq!(solutions.current().unwrap().root(), None);
+fn rejects_an_empty_graph() {
+    let graph = HncGraph::try_from(parse_domcon_oz("[]").unwrap()).unwrap();
+    assert!(matches!(solve(&graph), Err(SolveError::EmptyGraph)));
+    assert!(!is_solvable(&graph));
 }
 
 #[test]
@@ -127,7 +155,7 @@ fn ports_three_upper_fragments() {
     assert_eq!(chart.count_solutions(), BigUint::from(2_u8));
     let mut terms = solution_terms(&chart);
     terms.sort();
-    assert_eq!(terms, ["f[x](g[y](h[z](a[w])))", "h[z](g[y](f[x](a[w])))",]);
+    assert_eq!(terms, ["f(g(h(a)))", "h(g(f(a)))",]);
 }
 
 #[test]
@@ -141,23 +169,27 @@ fn chart_construction_can_be_cancelled() {
 }
 
 #[test]
-fn dfs_and_sorted_enumerators_agree_on_chain_charts() {
+fn solution_enumerator_and_automaton_agree_on_chain_charts() {
     for length in 1..=8 {
         let graph = HncGraph::try_from(parse_chain(&length.to_string()).unwrap()).unwrap();
         let chart = solve(&graph).unwrap();
-        let sorted_count = chart.automaton().sorted_language().count();
-        let mut dfs = chart.derivations();
-        let mut dfs_count = 0;
-        while dfs.advance() {
-            dfs_count += 1;
+        let sorted_count = chart
+            .fragment_automaton()
+            .automaton()
+            .sorted_language()
+            .count();
+        let mut solutions = chart.solutions();
+        let mut solution_count = 0;
+        while solutions.advance() {
+            solution_count += 1;
         }
-        assert_eq!(dfs_count, sorted_count, "chain {length}");
-        assert_eq!(BigUint::from(dfs_count), chart.count_solutions());
+        assert_eq!(solution_count, sorted_count, "chain {length}");
+        assert_eq!(BigUint::from(solution_count), chart.count_solutions());
     }
 }
 
 #[test]
-fn random_access_uses_the_same_solution_order() {
+fn restarting_and_advancing_preserves_solution_order() {
     let graph = HncGraph::try_from(parse_chain("5").unwrap()).unwrap();
     let chart = solve(&graph).unwrap();
     let expected = solution_terms(&chart);
@@ -176,6 +208,7 @@ fn streamed_solutions_reuse_one_stable_arena() {
     let mut count = 0_usize;
     while solutions.advance() {
         let solution = solutions.current().unwrap();
+        assert_complete_solution_tree(&solution);
         let arena_size = solution.arena().len();
         assert_eq!(*solution_size.get_or_insert(arena_size), arena_size);
         count += 1;
@@ -184,12 +217,39 @@ fn streamed_solutions_reuse_one_stable_arena() {
 }
 
 #[test]
-fn relative_advance_by_updates_after_skipped_solutions() {
-    let graph = HncGraph::try_from(parse_chain("6").unwrap()).unwrap();
+fn every_enumerated_chain_solution_is_one_complete_tree() {
+    for length in 1..=8 {
+        let graph = HncGraph::try_from(parse_chain(&length.to_string()).unwrap()).unwrap();
+        let chart = solve(&graph).unwrap();
+        let mut solutions = chart.solutions();
+        while solutions.advance() {
+            assert_complete_solution_tree(&solutions.current().unwrap());
+        }
+    }
+}
+
+#[test]
+fn chart_rows_are_stable_across_lazy_pages() {
+    let graph = HncGraph::try_from(parse_chain("8").unwrap()).unwrap();
     let chart = solve(&graph).unwrap();
-    let expected = solution_terms(&chart);
-    let mut solutions = chart.solutions();
-    assert!(solutions.advance());
-    assert!(solutions.advance_by(5));
-    assert_eq!(solutions.current().unwrap().to_term(), expected[6]);
+    let display = ChartDisplay::new(&chart);
+    let expected = display.rule_page(&chart, 0, display.row_count()).rules;
+    let mut paged = Vec::new();
+    for start in (0..display.row_count()).step_by(3) {
+        let page = display.rule_page(&chart, start, 3);
+        assert!(
+            page.states
+                .iter()
+                .all(|state| { page.rules.iter().any(|rule| rule.state == state.state) })
+        );
+        assert!(
+            page.rules
+                .iter()
+                .all(|rule| { page.states.iter().any(|state| state.state == rule.state) })
+        );
+        paged.extend(page.rules);
+    }
+    assert_eq!(paged, expected);
+    assert_eq!(expected.len(), display.row_count());
+    assert!(expected.iter().all(|row| !row.fragment.contains(": ")));
 }

@@ -41,13 +41,28 @@ export type ChartView = {
   chartId: number;
   solutionCount: string;
   stateCount: number;
+  subgraphCount: number;
   splitCount: number;
-  rules: ChartRule[];
+  displayRowCount: number;
 };
 
 export type ChartRule = {
+  state: number;
+  ordinal: number;
+  fragment: string;
+  assignments: Array<[string, string[]]>;
+};
+
+export type ChartState = {
+  state: number;
+  ruleCount: number;
   subgraph: string[];
-  root: string;
-  attachments: Array<[string, string[]]>;
-  substitutions: Array<[string, string]>;
+  variant: number | null;
+};
+
+export type ChartRowPage = {
+  start: number;
+  total: number;
+  states: ChartState[];
+  rows: ChartRule[];
 };

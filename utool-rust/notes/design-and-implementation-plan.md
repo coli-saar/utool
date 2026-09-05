@@ -3,6 +3,12 @@
 Status: implemented through the Phase 8 usable slice  
 Date: 2026-09-04
 
+The normative design for chart representation, chart visualization, lazy UI
+elaboration, and automaton-level filtering is consolidated in
+[`chart-design.md`](chart-design.md). Where the older overview below describes a
+node-level solution alphabet or the initial enumerative filter, the dedicated
+chart design records the intended replacement.
+
 ## 1. Scope and guiding decisions
 
 The Rust implementation should be a focused reimplementation of the parts of Utool that support its main use case. It should not begin as a line-by-line port of the Java program.
@@ -330,15 +336,15 @@ File opening is exposed through the native menu, with codec selection inferred
 from the filename extension. A persistent status bar records the runtime of the
 most recent action; the same action-timing mechanism is intended for filtering.
 
-Phases 6–8 now provide an initial end-to-end implementation. Filtering parses
-the legacy rewrite surface syntax, propagates annotations, and constructs a new
-finite `Chart` containing precisely the retained derivations. Because HNC
-charts are finite, this implementation currently computes relative normal
-forms by exact language enumeration and then recompacts accepted derivations;
-it does not yet implement the CTT/preimage optimization or context wildcards.
+Phases 6–8 now provide an end-to-end automaton implementation. Filtering parses
+the rewrite surface syntax, specializes constructor occurrences to graph nodes,
+expands the fragment chart into an ephemeral node automaton, computes the CTT
+preimage by the Java-style backward agenda, and performs a fused fragment-level
+difference. Context wildcards are specialized without enumerating chart trees.
+The result remains a compact `Chart`; filtering never enumerates solutions.
 The generic `automata_ext` seam contains language-preserving trim with state
-provenance, ready for extraction into `rusty-alto`; generic on-the-fly
-difference remains future optimization work.
+provenance, while the Utool-specific CTT and fused homomorphic difference stay
+in the filtering module.
 
 The desktop can filter a chart from the Solver menu or toolbar and opens the
 result as a separate chart tab. Chart handles ensure that solutions of original

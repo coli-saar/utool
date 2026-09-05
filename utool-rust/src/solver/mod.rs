@@ -2,8 +2,9 @@
 
 use num_bigint::BigUint;
 use packed_term_arena::tree::{Tree, TreeArena};
-use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol};
-use std::collections::HashMap;
+use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol, TopDownTa};
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use thiserror::Error;
 
 use crate::automata_ext::{DfsDerivation, DfsLanguageIterator, DfsLanguagePlan};
@@ -120,64 +121,211 @@ impl Subgraph {
 }
 
 #[derive(Clone, Debug)]
-struct Split {
-    subgraph: SubgraphId,
-    root: NodeId,
-    attachments: Vec<(NodeId, SubgraphId)>,
-    substitutions: Vec<(NodeId, NodeId)>,
-}
-
-#[derive(Clone, Copy, Debug)]
-struct SubgraphId(u32);
-
-#[derive(Clone, Debug)]
 struct SplitCandidate {
     root: NodeId,
     attachments: Vec<(NodeId, Subgraph)>,
     substitutions: Vec<(NodeId, NodeId)>,
 }
 
+fn build_fragment(
+    graph: &HncGraph,
+    root: NodeId,
+    substitutions: &[(NodeId, NodeId)],
+    arena: &mut TreeArena<FragmentNode>,
+) -> (Tree, Vec<NodeId>) {
+    fn build(
+        graph: &HncGraph,
+        node: NodeId,
+        substitutions: &HashMap<NodeId, NodeId>,
+        arena: &mut TreeArena<FragmentNode>,
+        sockets: &mut Vec<NodeId>,
+    ) -> Tree {
+        let graph_node = graph.node(node);
+        assert!(
+            !graph_node.is_hole(),
+            "a fragment context has no hole at its root"
+        );
+        let children = graph_node
+            .tree_children()
+            .iter()
+            .map(|&child| {
+                if graph.node(child).is_hole() {
+                    if let Some(&replacement) = substitutions.get(&child) {
+                        build(graph, replacement, substitutions, arena, sockets)
+                    } else {
+                        sockets.push(child);
+                        arena.add_node(FragmentNode::Hole(child), Vec::new())
+                    }
+                } else {
+                    build(graph, child, substitutions, arena, sockets)
+                }
+            })
+            .collect();
+        arena.add_node(FragmentNode::Node(node), children)
+    }
+
+    let substitutions = substitutions.iter().copied().collect::<HashMap<_, _>>();
+    let mut sockets = Vec::new();
+    let tree = build(graph, root, &substitutions, arena, &mut sockets);
+    (tree, sockets)
+}
+
+fn format_fragment(arena: &TreeArena<FragmentNode>, tree: Tree, graph: &HncGraph) -> String {
+    fn write(arena: &TreeArena<FragmentNode>, tree: Tree, graph: &HncGraph, output: &mut String) {
+        match arena.get_label(tree) {
+            FragmentNode::Hole(hole) => output.push_str(graph.node(*hole).name()),
+            FragmentNode::Node(node) => {
+                let graph_node = graph.node(*node);
+                output.push_str(graph_node.label().expect("fragment nodes are labeled"));
+                let children = arena.get_children(tree);
+                if !children.is_empty() {
+                    output.push('(');
+                    for (index, child) in children.iter().enumerate() {
+                        if index > 0 {
+                            output.push_str(", ");
+                        }
+                        write(arena, *child, graph, output);
+                    }
+                    output.push(')');
+                }
+            }
+        }
+    }
+
+    let mut output = String::new();
+    write(arena, tree, graph, &mut output);
+    output
+}
+
+fn fragment_holes(arena: &TreeArena<FragmentNode>, root: Tree) -> Vec<NodeId> {
+    fn collect(arena: &TreeArena<FragmentNode>, tree: Tree, holes: &mut Vec<NodeId>) {
+        match arena.get_label(tree) {
+            FragmentNode::Hole(hole) => holes.push(*hole),
+            FragmentNode::Node(_) => {
+                for &child in arena.get_children(tree) {
+                    collect(arena, child, holes);
+                }
+            }
+        }
+    }
+
+    let mut holes = Vec::new();
+    collect(arena, root, &mut holes);
+    holes
+}
+
+/// Label in a node-specific fragment context used as a ranked chart terminal.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum FragmentNode {
+    /// A labeled node of the source graph.
+    Node(NodeId),
+    /// An open source-graph hole filled by an automaton child.
+    Hole(NodeId),
+}
+
+/// Display metadata shared by the rules of one chart state.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ChartState {
+    /// Dense automaton-state identity, stable for the lifetime of the chart.
+    pub state: u32,
+    /// Number of rules in the state group.
+    pub rule_count: usize,
+    /// Nodes of the source subgraph.
+    pub subgraph: Vec<String>,
+    /// Variant among filtered states with the same source subgraph.
+    pub variant: Option<u32>,
+}
+
 /// One readable rule in a split chart.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ChartRule {
-    /// Nodes of the left-hand-side subgraph.
-    pub subgraph: Vec<String>,
-    /// Root fragment selected by this split.
-    pub root: String,
-    /// Dominator and child-subgraph pairs, in automaton-child order.
-    pub attachments: Vec<(String, Vec<String>)>,
-    /// Hole-to-root substitutions made inside the root fragment.
-    pub substitutions: Vec<(String, String)>,
+    /// Dense automaton-state identity, stable for the lifetime of the chart.
+    pub state: u32,
+    /// One-based rule ordinal within the state group.
+    pub ordinal: usize,
+    /// Complete readable top fragment context.
+    pub fragment: String,
+    /// Hole and child-subgraph pairs, in fragment-socket order.
+    pub assignments: Vec<(String, Vec<String>)>,
+}
+
+/// One lazily elaborated range of chart rows and its state definitions.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ChartRulePage {
+    /// Logical index of the first returned row.
+    pub start: usize,
+    /// Total number of logical chart rows.
+    pub total: usize,
+    /// State definitions referenced by `rules`, each included once.
+    pub states: Vec<ChartState>,
+    /// Complete rules in the requested range.
+    pub rules: Vec<ChartRule>,
+}
+
+/// Indexing and grouping data owned by a chart view.
+pub struct ChartDisplay {
+    offsets: Vec<usize>,
+    variants: Vec<Option<u32>>,
+    subgraph_count: usize,
 }
 
 /// Compact tree automaton whose rules are free-root splits.
-pub struct Chart {
+pub struct FragmentAutomaton {
     automaton: Explicit,
-    derivation_plan: DfsLanguagePlan,
-    split_symbols: Vec<Split>,
-    subgraphs: Vec<Subgraph>,
-    graph: HncGraph,
-    count: BigUint,
-    empty_solution: bool,
+    fragment_arena: Arc<TreeArena<FragmentNode>>,
+    fragment_roots: Arc<[Tree]>,
+    state_subgraphs: Vec<Subgraph>,
 }
 
-impl Chart {
-    /// Underlying bottom-up tree automaton.
+impl FragmentAutomaton {
+    /// Underlying explicit tree automaton.
     #[must_use]
     pub const fn automaton(&self) -> &Explicit {
         &self.automaton
     }
 
+    /// Shared arena containing every fragment terminal.
+    #[must_use]
+    pub fn fragment_arena(&self) -> &TreeArena<FragmentNode> {
+        &self.fragment_arena
+    }
+
+    /// Root of the fragment terminal denoted by `symbol`.
+    #[must_use]
+    pub fn fragment_root(&self, symbol: Symbol) -> Tree {
+        self.fragment_roots[symbol.0 as usize]
+    }
+
+    fn source_subgraph(&self, state: StateId) -> &Subgraph {
+        &self.state_subgraphs[state.index()]
+    }
+}
+
+/// A solved dominance graph represented by a fragment automaton.
+pub struct Chart {
+    fragment_automaton: FragmentAutomaton,
+    derivation_plan: DfsLanguagePlan,
+    graph: Arc<HncGraph>,
+    count: BigUint,
+}
+
+impl Chart {
+    /// Underlying bottom-up tree automaton.
+    #[must_use]
+    pub const fn fragment_automaton(&self) -> &FragmentAutomaton {
+        &self.fragment_automaton
+    }
+
     /// Number of automaton states (subgraphs).
     #[must_use]
     pub fn state_count(&self) -> usize {
-        self.automaton.num_states() as usize
+        self.fragment_automaton.automaton.num_states() as usize
     }
 
     /// Number of split transitions.
     #[must_use]
     pub fn split_count(&self) -> usize {
-        self.split_symbols.len()
+        self.fragment_automaton.automaton.num_rules()
     }
 
     /// Exact number of solutions.
@@ -191,188 +339,284 @@ impl Chart {
         let (arena, handles, hole_slots) = initialize_solution_arena(self);
         Solutions {
             chart: self,
-            inner: self.derivations(),
+            inner: self.derivation_plan.iter(),
+            fragments: make_solution_fragments(self),
             arena,
             handles,
             hole_slots,
             root: None,
             current: false,
-            returned_empty: false,
         }
     }
 
-    /// Enumerate the chart's split derivations without materializing Solutions.
-    pub fn derivations(&self) -> DfsLanguageIterator<'_> {
-        self.derivation_plan.iter()
+    pub fn graph(&self) -> &HncGraph {
+        &self.graph
     }
 
-    /// Rules of this chart in the same order as the automaton transitions.
-    #[must_use]
-    pub fn rules(&self) -> Vec<ChartRule> {
-        let name = |node: NodeId| self.graph.node(node).name().to_owned();
-        self.split_symbols
+    fn source_subgraph(&self, state: StateId) -> &Subgraph {
+        self.fragment_automaton.source_subgraph(state)
+    }
+
+    pub(crate) fn from_filtered_automaton(
+        source: &Self,
+        automaton: Explicit,
+        source_states: &[StateId],
+    ) -> Self {
+        assert_eq!(automaton.num_states() as usize, source_states.len());
+        let subgraphs = source_states
             .iter()
-            .map(|split| ChartRule {
-                subgraph: self.subgraphs[split.subgraph.0 as usize]
-                    .nodes(&self.graph)
-                    .into_iter()
-                    .map(name)
-                    .collect(),
-                root: name(split.root),
-                attachments: split
-                    .attachments
-                    .iter()
-                    .map(|(dominator, child)| {
-                        (
-                            name(*dominator),
-                            self.subgraphs[child.0 as usize]
-                                .nodes(&self.graph)
-                                .into_iter()
-                                .map(name)
-                                .collect(),
-                        )
-                    })
-                    .collect(),
-                substitutions: split
-                    .substitutions
-                    .iter()
-                    .map(|(hole, root)| (name(*hole), name(*root)))
-                    .collect(),
-            })
-            .collect()
+            .map(|state| source.source_subgraph(*state).clone())
+            .collect::<Vec<_>>();
+        let count = count_automaton(&automaton);
+        let derivation_plan = DfsLanguagePlan::new(&automaton)
+            .expect("filtered charts retain an acyclic productive state graph");
+        Self {
+            fragment_automaton: FragmentAutomaton {
+                automaton,
+                fragment_arena: Arc::clone(&source.fragment_automaton.fragment_arena),
+                fragment_roots: Arc::clone(&source.fragment_automaton.fragment_roots),
+                state_subgraphs: subgraphs,
+            },
+            derivation_plan,
+            graph: Arc::clone(&source.graph),
+            count,
+        }
     }
 
-    /// Select Solutions and compile their derivations into another compact chart.
-    ///
-    /// This is an exact finite-language operation. Shared derivation subtrees are
-    /// interned into shared automaton states in the result.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`SolveError::Cancelled`] if `cancelled` requests cancellation.
+    pub(crate) fn empty_filter_result(source: &Self) -> Self {
+        let automaton = ExplicitBuilder::new().build();
+        let derivation_plan =
+            DfsLanguagePlan::new(&automaton).expect("an empty automaton has no productive cycle");
+        Self {
+            fragment_automaton: FragmentAutomaton {
+                automaton,
+                fragment_arena: Arc::clone(&source.fragment_automaton.fragment_arena),
+                fragment_roots: Arc::clone(&source.fragment_automaton.fragment_roots),
+                state_subgraphs: Vec::new(),
+            },
+            derivation_plan,
+            graph: Arc::clone(&source.graph),
+            count: BigUint::from(0_u8),
+        }
+    }
+}
+
+impl ChartDisplay {
+    /// Build the display index and filtered-state grouping for `chart`.
+    #[must_use]
+    pub fn new(chart: &Chart) -> Self {
+        let offsets = make_display_offsets(chart.fragment_automaton().automaton());
+        let mut totals = HashMap::<&Subgraph, usize>::new();
+        for subgraph in &chart.fragment_automaton.state_subgraphs {
+            *totals.entry(subgraph).or_default() += 1;
+        }
+        let mut seen = HashMap::<&Subgraph, u32>::new();
+        let variants = chart
+            .fragment_automaton
+            .state_subgraphs
+            .iter()
+            .map(|subgraph| {
+                if totals[subgraph] == 1 {
+                    None
+                } else {
+                    let variant = seen.entry(subgraph).or_default();
+                    *variant += 1;
+                    Some(*variant)
+                }
+            })
+            .collect();
+        Self {
+            offsets,
+            variants,
+            subgraph_count: totals.len(),
+        }
+    }
+
+    /// Number of distinct source subgraphs represented by chart states.
+    #[must_use]
+    pub const fn subgraph_count(&self) -> usize {
+        self.subgraph_count
+    }
+
+    /// Number of logical rule rows in the display.
+    #[must_use]
+    pub fn row_count(&self) -> usize {
+        self.offsets.last().copied().unwrap_or(0)
+    }
+
+    /// Elaborate a stable range of chart-display rows.
     ///
     /// # Panics
     ///
-    /// Panics if this chart violates the solver's internal derivation invariants.
-    pub fn select_solutions(
-        &self,
-        mut keep: impl FnMut(&Solution<'_>) -> bool,
-        cancelled: impl Fn() -> bool,
-    ) -> Result<Self, SolveError> {
-        if self.empty_solution {
-            let arena = TreeArena::new();
-            let retained = keep(&Solution {
-                chart: self,
-                arena: &arena,
-                root: None,
-            });
-            let automaton = ExplicitBuilder::new().build();
-            let derivation_plan = DfsLanguagePlan::new(&automaton)
-                .expect("an empty automaton has no productive cycles");
-            return Ok(Self {
-                automaton,
-                derivation_plan,
-                split_symbols: Vec::new(),
-                subgraphs: Vec::new(),
-                graph: self.graph.clone(),
-                count: BigUint::from(u8::from(retained)),
-                empty_solution: retained,
-            });
+    /// Panics only if the chart contains more states than Alto can represent.
+    #[must_use]
+    pub fn rule_page(&self, chart: &Chart, start: usize, count: usize) -> ChartRulePage {
+        assert_eq!(self.offsets.len(), chart.state_count() + 1);
+        let end = start.saturating_add(count).min(self.row_count());
+        if start >= end {
+            return ChartRulePage {
+                start,
+                total: self.row_count(),
+                states: Vec::new(),
+                rules: Vec::new(),
+            };
         }
-
-        let mut builder = ExplicitBuilder::new();
-        let mut interned: HashMap<(Symbol, Vec<StateId>), StateId> = HashMap::new();
-        let mut count = BigUint::from(0_u8);
-        let mut solutions = self.solutions();
-        while solutions.advance() {
-            if cancelled() {
-                return Err(SolveError::Cancelled);
+        let name = |node: NodeId| chart.graph.node(node).name().to_owned();
+        let mut rows = Vec::with_capacity(end - start);
+        let mut states = Vec::new();
+        let mut displayed_subgraphs = HashMap::<StateId, Vec<String>>::new();
+        let mut displayed_fragments = HashMap::<Symbol, (String, Vec<NodeId>)>::new();
+        let mut state_index = self
+            .offsets
+            .partition_point(|&offset| offset <= start)
+            .saturating_sub(1);
+        while state_index < chart.state_count() && self.offsets[state_index] < end {
+            let state = StateId(u32::try_from(state_index).expect("state count exceeds u32"));
+            let state_start = self.offsets[state_index];
+            let state_end = self.offsets[state_index + 1];
+            states.push(ChartState {
+                state: state.0,
+                rule_count: state_end - state_start,
+                subgraph: chart
+                    .source_subgraph(state)
+                    .nodes(&chart.graph)
+                    .into_iter()
+                    .map(name)
+                    .collect(),
+                variant: self.variants[state.index()],
+            });
+            let first = start.saturating_sub(state_start);
+            let take = end.min(state_end).saturating_sub(state_start + first);
+            for (ordinal, rule) in chart
+                .fragment_automaton
+                .automaton
+                .rules_topdown(state)
+                .enumerate()
+                .skip(first)
+                .take(take)
+            {
+                let (fragment, sockets) =
+                    displayed_fragments.entry(rule.symbol).or_insert_with(|| {
+                        let fragment_root = chart.fragment_automaton.fragment_root(rule.symbol);
+                        (
+                            format_fragment(
+                                chart.fragment_automaton.fragment_arena(),
+                                fragment_root,
+                                &chart.graph,
+                            ),
+                            fragment_holes(
+                                chart.fragment_automaton.fragment_arena(),
+                                fragment_root,
+                            ),
+                        )
+                    });
+                rows.push(ChartRule {
+                    state: rule.result.0,
+                    ordinal: ordinal + 1,
+                    fragment: fragment.clone(),
+                    assignments: sockets
+                        .iter()
+                        .copied()
+                        .zip(rule.children.iter().copied())
+                        .map(|(hole, child)| {
+                            let child_subgraph = displayed_subgraphs
+                                .entry(child)
+                                .or_insert_with(|| {
+                                    chart
+                                        .source_subgraph(child)
+                                        .nodes(&chart.graph)
+                                        .into_iter()
+                                        .map(name)
+                                        .collect()
+                                })
+                                .clone();
+                            (name(hole), child_subgraph)
+                        })
+                        .collect(),
+                });
             }
-            let solution = solutions.current().expect("advance produced a solution");
-            if keep(&solution) {
-                let derivation = solutions
-                    .current_derivation()
-                    .expect("a nonempty solution has a derivation");
-                let root = copy_derivation(derivation, &mut builder, &mut interned);
-                builder.add_accepting(root);
-                count += BigUint::from(1_u8);
-            }
+            state_index += 1;
         }
-        let automaton = builder.build();
-        let derivation_plan = DfsLanguagePlan::new(&automaton)
-            .expect("selected solver charts retain the acyclic state graph");
-        Ok(Self {
-            automaton,
-            derivation_plan,
-            split_symbols: self.split_symbols.clone(),
-            subgraphs: self.subgraphs.clone(),
-            graph: self.graph.clone(),
-            count,
-            empty_solution: false,
-        })
+        ChartRulePage {
+            start,
+            total: self.row_count(),
+            states,
+            rules: rows,
+        }
     }
 }
 
-fn copy_derivation(
-    derivation: DfsDerivation<'_>,
-    builder: &mut ExplicitBuilder,
-    interned: &mut HashMap<(Symbol, Vec<StateId>), StateId>,
-) -> StateId {
-    let nodes = derivation.nodes().collect::<Vec<_>>();
-    let mut child_states = nodes
-        .iter()
-        .map(|node| vec![None; node.arity])
-        .collect::<Vec<_>>();
-    let mut states = vec![None; nodes.len()];
-    for index in (0..nodes.len()).rev() {
-        let node = nodes[index];
-        let children = std::mem::take(&mut child_states[index])
-            .into_iter()
-            .map(|state| state.expect("children precede parents in reverse pre-order"))
-            .collect::<Vec<_>>();
-        let key = (node.symbol, children.clone());
-        let state = if let Some(&state) = interned.get(&key) {
-            state
-        } else {
-            let state = builder.new_state();
-            builder.add_rule(node.symbol, children, state);
-            interned.insert(key, state);
-            state
-        };
-        states[index] = Some(state);
-        if let Some((parent, child_index)) = node.parent {
-            child_states[parent][child_index] = Some(state);
-        }
+fn make_display_offsets(automaton: &Explicit) -> Vec<usize> {
+    let mut offsets = Vec::with_capacity(automaton.num_states() as usize + 1);
+    offsets.push(0);
+    for state in 0..automaton.num_states() {
+        let count = automaton.rules_topdown(StateId(state)).count();
+        offsets.push(offsets.last().copied().unwrap_or(0) + count);
     }
-    states[0].expect("a derivation has a root")
+    offsets
 }
 
-/// Compact identity of one node in a fully resolved solution.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct SolutionNode {
-    /// Original graph node identity.
-    pub id: NodeId,
+fn count_automaton(automaton: &Explicit) -> BigUint {
+    fn count_state(
+        automaton: &Explicit,
+        state: StateId,
+        visiting: &mut HashSet<StateId>,
+        memo: &mut HashMap<StateId, BigUint>,
+    ) -> BigUint {
+        if let Some(count) = memo.get(&state) {
+            return count.clone();
+        }
+        assert!(
+            visiting.insert(state),
+            "a finite chart cannot contain a productive cycle"
+        );
+        let mut total = BigUint::from(0_u8);
+        for rule in automaton.rules_topdown(state) {
+            let mut here = BigUint::from(1_u8);
+            for &child in rule.children {
+                here *= count_state(automaton, child, visiting, memo);
+            }
+            total += here;
+        }
+        visiting.remove(&state);
+        memo.insert(state, total.clone());
+        total
+    }
+
+    let mut total = BigUint::from(0_u8);
+    let mut visiting = HashSet::new();
+    let mut memo = HashMap::new();
+    automaton.initial_states(&mut |state| {
+        total += count_state(automaton, state, &mut visiting, &mut memo);
+    });
+    total
 }
 
 /// One fully resolved tree borrowing the iterator's reusable arena.
 #[derive(Clone, Copy)]
 pub struct Solution<'a> {
     chart: &'a Chart,
-    arena: &'a TreeArena<SolutionNode>,
-    root: Option<Tree>,
+    arena: &'a TreeArena<NodeId>,
+    root: Tree,
 }
 
 impl Solution<'_> {
+    /// Source graph whose labeled nodes form this solution.
+    #[must_use]
+    pub fn graph(&self) -> &HncGraph {
+        self.chart.graph()
+    }
+
     /// Tree storage.
     #[must_use]
-    pub const fn arena(&self) -> &TreeArena<SolutionNode> {
+    pub const fn arena(&self) -> &TreeArena<NodeId> {
         self.arena
     }
 
     /// Original graph identity represented by an arena node.
     #[must_use]
     pub fn node_id(&self, tree: Tree) -> NodeId {
-        self.arena.get_label(tree).id
+        *self.arena.get_label(tree)
     }
 
     /// External name of an arena node.
@@ -395,39 +639,16 @@ impl Solution<'_> {
             .expect("solution nodes are labeled")
     }
 
-    /// Root handle; absent only for the empty graph's solution.
+    /// Root handle.
     #[must_use]
-    pub const fn root(&self) -> Option<Tree> {
+    pub const fn root(&self) -> Tree {
         self.root
     }
 
-    /// Canonical term using external node names to disambiguate equal labels.
+    /// Semantic term using graph labels only.
     #[must_use]
     pub fn to_term(&self) -> String {
-        fn write(solution: &Solution<'_>, node: Tree, output: &mut String) {
-            output.push_str(solution.node_label(node));
-            output.push('[');
-            output.push_str(solution.node_name(node));
-            output.push(']');
-            let children = solution.arena.get_children(node);
-            if !children.is_empty() {
-                output.push('(');
-                for (index, child) in children.iter().enumerate() {
-                    if index > 0 {
-                        output.push(',');
-                    }
-                    write(solution, *child, output);
-                }
-                output.push(')');
-            }
-        }
-
-        let Some(root) = self.root else {
-            return String::new();
-        };
-        let mut output = String::new();
-        write(self, root, &mut output);
-        output
+        self.to_label_term(",")
     }
 
     /// Serialize the semantic tree using labels only, as expected by Utool's
@@ -448,53 +669,40 @@ impl Solution<'_> {
                 output.push(')');
             }
         }
-        let Some(root) = self.root else {
-            return String::new();
-        };
         let mut output = String::new();
-        write(self, root, separator, &mut output);
+        write(self, self.root, separator, &mut output);
         output
     }
 }
 
-/// Streaming solution iterator backed by finite depth-first chart enumeration.
+/// Streaming solution cursor backed by finite depth-first chart enumeration.
 ///
 /// Every labeled graph node has one stable arena handle. Advancing changes only
-/// the child slots corresponding to hole substitutions and the current root.
+/// the child slots represented by fragment sockets and the current root.
 pub struct Solutions<'a> {
     chart: &'a Chart,
     inner: DfsLanguageIterator<'a>,
-    arena: TreeArena<SolutionNode>,
+    fragments: Vec<SolutionFragment>,
+    arena: TreeArena<NodeId>,
     handles: Vec<Option<Tree>>,
     hole_slots: Vec<Option<(Tree, usize)>>,
     root: Option<Tree>,
     current: bool,
-    returned_empty: bool,
 }
 
 impl Solutions<'_> {
-    /// Advance to the next solved form, invalidating the previous one.
+    /// Advance to the next solution, invalidating the previous one.
     ///
     /// # Panics
     ///
     /// Panics if the chart violates the solver's internal derivation invariants.
     pub fn advance(&mut self) -> bool {
-        if self.chart.empty_solution {
-            if self.returned_empty {
-                self.current = false;
-                return false;
-            }
-            self.returned_empty = true;
-            self.root = None;
-            self.current = true;
-            return true;
-        }
         if !self.inner.advance() {
             self.current = false;
             return false;
         }
         update_solution(
-            self.chart,
+            &self.fragments,
             self.inner.current().expect("advance produced a derivation"),
             self.inner.changed_from(),
             self.current,
@@ -507,49 +715,26 @@ impl Solutions<'_> {
         true
     }
 
-    /// Skip `n` derivations and advance to the following solved form.
-    pub fn advance_by(&mut self, n: usize) -> bool {
-        if self.chart.empty_solution {
-            if n == 0 && !self.returned_empty {
-                self.returned_empty = true;
-                self.root = None;
-                self.current = true;
-                return true;
-            }
-            self.returned_empty = true;
-            self.current = false;
-            return false;
-        }
-        if n > 0 && self.current {
-            self.current = false;
-        }
-        for _ in 0..n {
-            if !self.inner.advance() {
-                self.current = false;
-                return false;
-            }
-        }
-        self.advance()
-    }
-
-    /// Borrow the current solved form until the next mutable iterator access.
+    /// Borrow the current solution until the next mutable cursor access.
     #[must_use]
     pub fn current(&self) -> Option<Solution<'_>> {
-        self.current.then_some(Solution {
+        if !self.current {
+            return None;
+        }
+        Some(Solution {
             chart: self.chart,
             arena: &self.arena,
-            root: self.root,
+            root: self.root?,
         })
-    }
-
-    fn current_derivation(&self) -> Option<DfsDerivation<'_>> {
-        self.current.then(|| self.inner.current()).flatten()
     }
 }
 
 /// Solver failure.
 #[derive(Debug, Error)]
 pub enum SolveError {
+    /// Empty dominance graphs do not have a tree-shaped solution.
+    #[error("cannot solve an empty dominance graph")]
+    EmptyGraph,
     /// The accepted HNC graph unexpectedly has multiple components.
     #[error("HNC graph has {0} weakly connected components")]
     Disconnected(usize),
@@ -576,7 +761,7 @@ pub fn solve(graph: &HncGraph) -> Result<Chart, SolveError> {
 #[must_use]
 pub fn is_solvable(graph: &HncGraph) -> bool {
     if graph.parsed().nodes().is_empty() {
-        return true;
+        return false;
     }
     SolvabilityCompiler {
         graph,
@@ -603,18 +788,7 @@ pub fn solve_with_cancellation(
         return Err(SolveError::Cancelled);
     }
     if graph.parsed().nodes().is_empty() {
-        let automaton = ExplicitBuilder::new().build();
-        let derivation_plan =
-            DfsLanguagePlan::new(&automaton).expect("an empty automaton has no productive cycles");
-        return Ok(Chart {
-            automaton,
-            derivation_plan,
-            split_symbols: Vec::new(),
-            subgraphs: Vec::new(),
-            graph: graph.clone(),
-            count: BigUint::from(1_u8),
-            empty_solution: true,
-        });
+        return Err(SolveError::EmptyGraph);
     }
 
     let mut compiler = Compiler::new(graph);
@@ -628,13 +802,15 @@ pub fn solve_with_cancellation(
     let derivation_plan = DfsLanguagePlan::new(&automaton)
         .expect("solver charts have an acyclic productive state graph");
     Ok(Chart {
-        automaton,
+        fragment_automaton: FragmentAutomaton {
+            automaton,
+            fragment_arena: Arc::new(compiler.fragment_arena),
+            fragment_roots: compiler.fragment_roots.into(),
+            state_subgraphs: compiler.subgraphs,
+        },
         derivation_plan,
-        split_symbols: compiler.splits,
-        subgraphs: compiler.subgraphs,
-        graph: graph.clone(),
+        graph: Arc::new(graph.clone()),
         count,
-        empty_solution: false,
     })
 }
 
@@ -644,7 +820,10 @@ struct Compiler<'a> {
     states: HashMap<Subgraph, StateId>,
     counts: Vec<Option<BigUint>>,
     subgraphs: Vec<Subgraph>,
-    splits: Vec<Split>,
+    fragment_arena: TreeArena<FragmentNode>,
+    fragment_roots: Vec<Tree>,
+    fragment_sockets: Vec<Box<[NodeId]>>,
+    fragment_symbols: HashMap<(NodeId, Vec<(NodeId, NodeId)>), Symbol>,
 }
 
 struct SolvabilityCompiler<'a> {
@@ -687,7 +866,10 @@ impl<'a> Compiler<'a> {
             states: HashMap::new(),
             counts: Vec::new(),
             subgraphs: Vec::new(),
-            splits: Vec::new(),
+            fragment_arena: TreeArena::new(),
+            fragment_roots: Vec::new(),
+            fragment_sockets: Vec::new(),
+            fragment_symbols: HashMap::new(),
         }
     }
 
@@ -720,27 +902,67 @@ impl<'a> Compiler<'a> {
         let graph = self.graph;
         let mut candidates = SplitCandidates::new(graph, subgraph);
         while let Some(candidate) = candidates.next(cancelled)? {
-            let mut child_states = Vec::with_capacity(candidate.attachments.len());
-            let mut attachments = Vec::with_capacity(candidate.attachments.len());
+            let mut children = Vec::with_capacity(candidate.attachments.len());
             let mut split_count = BigUint::from(1_u8);
-            for (dominator, child) in &candidate.attachments {
-                let (child_state, child_count) = self.compile(child, cancelled)?;
-                child_states.push(child_state);
-                attachments.push((*dominator, SubgraphId(child_state.0)));
+            for (hole, child) in candidate.attachments {
+                let (child_state, child_count) = self.compile(&child, cancelled)?;
+                children.push((hole, child_state));
                 split_count *= child_count;
             }
             if split_count == BigUint::from(0_u8) {
                 continue;
             }
-            let symbol = Symbol(
-                u32::try_from(self.splits.len()).expect("split count exceeds symbol capacity"),
+
+            let mut substitutions = candidate.substitutions.clone();
+            substitutions.sort_unstable();
+            let fragment_key = (candidate.root, substitutions);
+            let symbol = if let Some(&symbol) = self.fragment_symbols.get(&fragment_key) {
+                symbol
+            } else {
+                let symbol = Symbol(
+                    u32::try_from(self.fragment_roots.len())
+                        .expect("fragment count exceeds symbol capacity"),
+                );
+                let (root, sockets) = build_fragment(
+                    self.graph,
+                    candidate.root,
+                    &candidate.substitutions,
+                    &mut self.fragment_arena,
+                );
+                self.fragment_roots.push(root);
+                self.fragment_sockets.push(sockets.into_boxed_slice());
+                self.fragment_symbols.insert(fragment_key, symbol);
+                debug_assert_eq!(
+                    self.fragment_sockets[symbol.0 as usize].len(),
+                    children.len()
+                );
+                symbol
+            };
+            let sockets = &self.fragment_sockets[symbol.0 as usize];
+            assert_eq!(
+                sockets.len(),
+                children.len(),
+                "every open fragment socket has one child subgraph"
             );
-            self.splits.push(Split {
-                subgraph: SubgraphId(state.0),
-                root: candidate.root,
-                attachments,
-                substitutions: candidate.substitutions,
-            });
+            for (socket_index, &hole) in sockets.iter().enumerate() {
+                let child_index = children[socket_index..]
+                    .iter()
+                    .position(|(dominator, _)| *dominator == hole)
+                    .map_or_else(
+                        || {
+                            panic!(
+                                "open fragment hole {} has no child subgraph",
+                                self.graph.node(hole).name()
+                            )
+                        },
+                        |offset| socket_index + offset,
+                    );
+                children.swap(socket_index, child_index);
+            }
+            let child_states = children
+                .into_iter()
+                .map(|(_, child_state)| child_state)
+                .collect();
             self.builder.add_rule(symbol, child_states, state);
             total += split_count;
         }
@@ -1077,34 +1299,85 @@ impl<'a> SplitTraversal<'a> {
 }
 
 type SolutionArena = (
-    TreeArena<SolutionNode>,
+    TreeArena<NodeId>,
     Vec<Option<Tree>>,
     Vec<Option<(Tree, usize)>>,
 );
+
+struct SolutionFragment {
+    root: NodeId,
+    sockets: Box<[NodeId]>,
+    internal_links: Box<[(NodeId, NodeId)]>,
+}
+
+fn make_solution_fragments(chart: &Chart) -> Vec<SolutionFragment> {
+    fn collect(
+        graph: &HncGraph,
+        arena: &TreeArena<FragmentNode>,
+        tree: Tree,
+        sockets: &mut Vec<NodeId>,
+        internal_links: &mut Vec<(NodeId, NodeId)>,
+    ) {
+        match arena.get_label(tree) {
+            FragmentNode::Hole(hole) => sockets.push(*hole),
+            FragmentNode::Node(parent_node) => {
+                for (position, &child) in arena.get_children(tree).iter().enumerate() {
+                    let source_child = graph.node(*parent_node).tree_children()[position];
+                    if let FragmentNode::Node(child_node) = arena.get_label(child)
+                        && graph.node(source_child).is_hole()
+                    {
+                        internal_links.push((source_child, *child_node));
+                    }
+                    collect(graph, arena, child, sockets, internal_links);
+                }
+            }
+        }
+    }
+
+    let arena = chart.fragment_automaton.fragment_arena();
+    chart
+        .fragment_automaton
+        .fragment_roots
+        .iter()
+        .copied()
+        .map(|tree| {
+            let mut sockets = Vec::new();
+            let mut internal_links = Vec::new();
+            collect(
+                chart.graph(),
+                arena,
+                tree,
+                &mut sockets,
+                &mut internal_links,
+            );
+            SolutionFragment {
+                root: fragment_root_node(arena, tree),
+                sockets: sockets.into_boxed_slice(),
+                internal_links: internal_links.into_boxed_slice(),
+            }
+        })
+        .collect()
+}
 
 fn initialize_solution_arena(chart: &Chart) -> SolutionArena {
     let nodes = chart.graph.parsed().nodes();
     let mut arena = TreeArena::new();
     let mut handles = vec![None; nodes.len()];
     let mut hole_slots = vec![None; nodes.len()];
-    if chart.empty_solution {
-        return (arena, handles, hole_slots);
-    }
-
     let placeholder_id = nodes
         .iter()
         .enumerate()
         .find(|(_, node)| !node.is_hole() && node.tree_children().is_empty())
         .map(|(index, _)| NodeId::from_index(index))
         .expect("a finite nonempty solution has a labeled leaf");
-    let placeholder = arena.add_node(SolutionNode { id: placeholder_id }, Vec::new());
+    let placeholder = arena.add_node(placeholder_id, Vec::new());
     handles[placeholder_id.index()] = Some(placeholder);
 
     for (index, node) in nodes.iter().enumerate() {
         let id = NodeId::from_index(index);
         if !node.is_hole() && id != placeholder_id {
             let children = vec![placeholder; node.tree_children().len()];
-            handles[index] = Some(arena.add_node(SolutionNode { id }, children));
+            handles[index] = Some(arena.add_node(id, children));
         }
     }
     for (parent_index, node) in nodes.iter().enumerate() {
@@ -1127,11 +1400,11 @@ fn initialize_solution_arena(chart: &Chart) -> SolutionArena {
 
 #[allow(clippy::too_many_arguments)]
 fn update_solution(
-    chart: &Chart,
+    fragments: &[SolutionFragment],
     derivation: DfsDerivation<'_>,
     changed_from: usize,
     had_current: bool,
-    arena: &mut TreeArena<SolutionNode>,
+    arena: &mut TreeArena<NodeId>,
     handles: &[Option<Tree>],
     hole_slots: &[Option<(Tree, usize)>],
     root: &mut Option<Tree>,
@@ -1139,28 +1412,34 @@ fn update_solution(
     let first_changed = if had_current { changed_from } else { 0 };
     for frame in first_changed..derivation.len() {
         let node = derivation.node(frame);
-        let split = &chart.split_symbols[node.symbol.0 as usize];
-        for &(hole, replacement) in &split.substitutions {
+        let fragment = &fragments[node.symbol.0 as usize];
+        for &(hole, replacement) in &fragment.internal_links {
             set_hole_child(hole, replacement, arena, handles, hole_slots);
         }
         if let Some((parent, child_index)) = node.parent {
             let parent_symbol = derivation.node(parent).symbol;
-            let dominator =
-                chart.split_symbols[parent_symbol.0 as usize].attachments[child_index].0;
-            set_hole_child(dominator, split.root, arena, handles, hole_slots);
+            let hole = fragments[parent_symbol.0 as usize].sockets[child_index];
+            set_hole_child(hole, fragment.root, arena, handles, hole_slots);
         }
     }
 
     let top_symbol = derivation.node(0).symbol;
-    let top = chart.split_symbols[top_symbol.0 as usize].root;
+    let top = fragments[top_symbol.0 as usize].root;
     *root = handles[top.index()];
+}
+
+fn fragment_root_node(arena: &TreeArena<FragmentNode>, tree: Tree) -> NodeId {
+    let FragmentNode::Node(node) = arena.get_label(tree) else {
+        unreachable!("a fragment context has a labeled root")
+    };
+    *node
 }
 
 #[allow(clippy::too_many_arguments)]
 fn set_hole_child(
     hole: NodeId,
     replacement: NodeId,
-    arena: &mut TreeArena<SolutionNode>,
+    arena: &mut TreeArena<NodeId>,
     handles: &[Option<Tree>],
     hole_slots: &[Option<(Tree, usize)>],
 ) {

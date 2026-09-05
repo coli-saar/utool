@@ -20,7 +20,7 @@ mod holesem_parser {
     include!(concat!(env!("OUT_DIR"), "/holesem_parser.rs"));
 }
 
-pub mod automata_ext;
+mod automata_ext;
 pub mod codec;
 pub mod filter;
 pub mod graph;
@@ -37,6 +37,6 @@ pub use layout::{
     EdgeKind, Layout, LayoutEdge, LayoutError, LayoutOptions, NodeBox, Point, Size, layout_graph,
 };
 pub use solver::{
-    Chart, ChartRule, Solution, SolutionNode, Solutions, SolveError, is_solvable, solve,
-    solve_with_cancellation,
+    Chart, ChartDisplay, ChartRule, ChartRulePage, ChartState, FragmentAutomaton, FragmentNode,
+    Solution, Solutions, SolveError, is_solvable, solve, solve_with_cancellation,
 };
