@@ -5,10 +5,11 @@ use std::{
         Arc, Mutex,
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
+    time::Instant,
 };
 use tauri::{
     Emitter,
-    menu::{MenuBuilder, SubmenuBuilder},
+    menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
 };
 use utool::{
     Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutOptions, OutputCodec, Point,
@@ -69,12 +70,14 @@ struct GraphView {
 struct LoadedDocumentView {
     document_id: u64,
     graph: GraphView,
+    elapsed_ms: f64,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ChartView {
     chart_id: u64,
+    elapsed_ms: f64,
     solution_count: String,
     state_count: usize,
     subgraph_count: usize,
@@ -112,7 +115,7 @@ struct ChartRowPage {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct SolutionView {
-    term: String,
+    elapsed_ms: f64,
     nodes: Vec<SolutionNodeView>,
     edges: Vec<(usize, usize)>,
 }
@@ -189,7 +192,7 @@ fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
     })
 }
 
-fn solution_view(solution: &Solution) -> SolutionView {
+fn solution_view(solution: &Solution, elapsed_ms: f64) -> SolutionView {
     let mut nodes = Vec::new();
     let mut edges = Vec::new();
     let root = solution.root();
@@ -207,7 +210,7 @@ fn solution_view(solution: &Solution) -> SolutionView {
         }
     }
     SolutionView {
-        term: solution.to_term(),
+        elapsed_ms,
         nodes,
         edges,
     }
@@ -219,8 +222,10 @@ fn load_document(
     codec: String,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<LoadedDocumentView, String> {
+    let started = Instant::now();
     let graph = parse_graph(&input, &codec)?;
     let drawing = graph_view(&graph)?;
+    let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
     let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     state
         .documents
@@ -230,6 +235,7 @@ fn load_document(
     Ok(LoadedDocumentView {
         document_id,
         graph: drawing,
+        elapsed_ms,
     })
 }
 
@@ -259,8 +265,10 @@ async fn build_chart(
         .insert(job_id.clone(), Arc::clone(&cancelled));
     tauri::async_runtime::spawn_blocking(move || {
         let result = (|| {
+            let started = Instant::now();
             let chart = solve_with_cancellation(&graph, || cancelled.load(Ordering::Relaxed))
                 .map_err(|error| error.to_string())?;
+            let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
             if cancelled.load(Ordering::SeqCst) {
                 return Err("chart construction was cancelled".to_owned());
             }
@@ -268,7 +276,7 @@ async fn build_chart(
                 display: ChartDisplay::new(&chart),
                 chart,
             });
-            let response = chart_view(chart_id, &stored);
+            let response = chart_view(chart_id, &stored, elapsed_ms);
             if !documents
                 .lock()
                 .map_err(|_| "document state is unavailable")?
@@ -315,13 +323,18 @@ async fn solution_at(
             .ok_or("chart is no longer available")?,
     );
     tauri::async_runtime::spawn_blocking(move || {
+        let started = Instant::now();
         let mut solutions = chart.chart.solutions();
         for _ in 0..=index {
             if !solutions.advance() {
                 return Ok(None);
             }
         }
-        Ok(Some(solution_view(&solutions.current().unwrap())))
+        let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+        Ok(Some(solution_view(
+            &solutions.current().unwrap(),
+            elapsed_ms,
+        )))
     })
     .await
     .map_err(|error| format!("solution task failed: {error}"))?
@@ -353,10 +366,11 @@ fn export_document(
     String::from_utf8(output).map_err(|error| error.to_string())
 }
 
-fn chart_view(chart_id: u64, stored: &StoredChart) -> ChartView {
+fn chart_view(chart_id: u64, stored: &StoredChart, elapsed_ms: f64) -> ChartView {
     let chart = &stored.chart;
     ChartView {
         chart_id,
+        elapsed_ms,
         solution_count: chart.count_solutions().to_string(),
         state_count: chart.state_count(),
         subgraph_count: stored.display.subgraph_count(),
@@ -437,9 +451,11 @@ async fn filter_chart_command(
                     .get(&chart_id)
                     .ok_or("chart is no longer available")?,
             );
+            let started = Instant::now();
             let filtered =
                 filter_chart(&source.chart, &system, || cancelled.load(Ordering::Relaxed))
                     .map_err(|error| error.to_string())?;
+            let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
             if cancelled.load(Ordering::SeqCst) {
                 return Err("chart filtering was cancelled".to_owned());
             }
@@ -447,7 +463,7 @@ async fn filter_chart_command(
                 display: ChartDisplay::new(&filtered),
                 chart: filtered,
             });
-            let response = chart_view(result_id, &stored);
+            let response = chart_view(result_id, &stored, elapsed_ms);
             charts
                 .lock()
                 .map_err(|_| "chart state is unavailable")?
@@ -479,24 +495,39 @@ pub fn run() {
             export_document
         ])
         .setup(|app| {
+            let open = MenuItemBuilder::with_id("open", "Open…")
+                .accelerator("CmdOrCtrl+O")
+                .build(app)?;
+            let zoom_in = MenuItemBuilder::with_id("zoom-in", "Zoom In")
+                .accelerator("CmdOrCtrl+=")
+                .build(app)?;
+            let zoom_out = MenuItemBuilder::with_id("zoom-out", "Zoom Out")
+                .accelerator("CmdOrCtrl+-")
+                .build(app)?;
+            let actual_size = MenuItemBuilder::with_id("actual-size", "Actual Size")
+                .accelerator("CmdOrCtrl+0")
+                .build(app)?;
             let application = SubmenuBuilder::new(app, "Utool")
                 .text("about", "About Utool")
                 .separator()
                 .quit()
                 .build()?;
             let file = SubmenuBuilder::new(app, "File")
-                .text("open", "Open…")
+                .item(&open)
                 .separator()
                 .text("export-svg", "Export SVG…")
                 .text("export-domcon", "Export Domcon/Oz…")
                 .text("export-dot", "Export Graphviz DOT…")
                 .build()?;
-            let solver = SubmenuBuilder::new(app, "Solver")
-                .text("filter-chart", "Add Filter…")
-                .text("show-solution", "Show Solutions")
+            let view = SubmenuBuilder::new(app, "View")
+                .item(&zoom_in)
+                .item(&zoom_out)
+                .item(&actual_size)
+                .separator()
+                .text("fit-window", "Fit to Window")
                 .build()?;
             let menu = MenuBuilder::new(app)
-                .items(&[&application, &file, &solver])
+                .items(&[&application, &file, &view])
                 .build()?;
             app.set_menu(menu)?;
             app.on_menu_event(|app, event| {

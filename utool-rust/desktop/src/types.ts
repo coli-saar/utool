@@ -27,7 +27,7 @@ export type GraphView = {
 };
 
 export type SolutionView = {
-  term: string;
+  elapsedMs: number;
   nodes: Array<{ id: number; name: string; label: string }>;
   edges: Array<[number, number]>;
 };
@@ -35,10 +35,12 @@ export type SolutionView = {
 export type LoadedDocumentView = {
   documentId: number;
   graph: GraphView;
+  elapsedMs: number;
 };
 
 export type ChartView = {
   chartId: number;
+  elapsedMs: number;
   solutionCount: string;
   stateCount: number;
   subgraphCount: number;

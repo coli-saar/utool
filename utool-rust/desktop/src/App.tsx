@@ -5,15 +5,20 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GraphCanvas } from "./GraphCanvas";
+import type { Zoom } from "./GraphCanvas";
 import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
-const ZOOMS = [25, 33, 50, 67, 75, 100, 125, 150];
-
 type ViewName = "graph" | "chart" | "solutions";
 type DocumentView = { title: string; documentId: number; graph: GraphView };
 type ChartVariant = { key: string; name: string; chart: ChartView };
 type ActionStatus = { action: string; elapsedMs: number | null; running: boolean };
+
+function formatElapsed(elapsedMs: number): string {
+  if (elapsedMs < 1) return `${(elapsedMs * 1000).toFixed(elapsedMs < 0.1 ? 1 : 0)} µs`;
+  if (elapsedMs < 1000) return `${elapsedMs.toFixed(elapsedMs < 10 ? 2 : 1)} ms`;
+  return `${(elapsedMs / 1000).toFixed(3)} s`;
+}
 
 function solutionGraph(solution: SolutionView): GraphView {
   const children = new Map<number, number[]>();
@@ -218,8 +223,9 @@ export default function App() {
   const [solutionRunning, setSolutionRunning] = useState(false);
   const [solution, setSolution] = useState<SolutionView | null>(null);
   const [solutionIndex, setSolutionIndex] = useState(0);
-  const [graphZoom, setGraphZoom] = useState(50);
-  const [solutionZoom, setSolutionZoom] = useState(50);
+  const [graphZoom, setGraphZoom] = useState<Zoom>(100);
+  const [solutionZoom, setSolutionZoom] = useState<Zoom>(100);
+  const [graphOffsets, setGraphOffsets] = useState<Record<number, { x: number; y: number }>>({});
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<ActionStatus>({ action: "Ready", elapsedMs: null, running: false });
   const svg = useRef<SVGSVGElement | null>(null);
@@ -235,17 +241,17 @@ export default function App() {
     const token = ++solutionOperation.current;
     const startedAt = performance.now();
     setSolutionRunning(true);
-    if (announce) setStatus({ action: `Loading solution ${index + 1}`, elapsedMs: null, running: true });
+    if (announce) setStatus({ action: `Computing solution ${index + 1}`, elapsedMs: null, running: true });
     try {
       const next = await invoke<SolutionView | null>("solution_at", { chartId: chart.chartId, index });
       if (solutionOperation.current !== token) return;
       setSolution(next);
       setSolutionIndex(index);
-      if (announce) setStatus({ action: `Loaded solution ${index + 1}`, elapsedMs: performance.now() - startedAt, running: false });
+      if (announce) setStatus({ action: `Computed solution ${index + 1}`, elapsedMs: next?.elapsedMs ?? 0, running: false });
     } catch (reason) {
       if (solutionOperation.current !== token) return;
       setError(String(reason));
-      setStatus({ action: "Loading solution failed", elapsedMs: performance.now() - startedAt, running: false });
+      setStatus({ action: "Computing solution failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
       if (solutionOperation.current === token) setSolutionRunning(false);
     }
@@ -263,7 +269,7 @@ export default function App() {
       const base = { key: "base", name: "Unfiltered", chart };
       setVariants([base]);
       setActiveVariantKey("base");
-      setStatus({ action: `Chart ready · ${chart.solutionCount} solutions`, elapsedMs: performance.now() - startedAt, running: false });
+      setStatus({ action: "Computed chart", elapsedMs: chart.elapsedMs, running: false });
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
@@ -293,8 +299,11 @@ export default function App() {
       setChartRunning(false);
       setFilterRunning(null);
       setActiveView("graph");
+      setGraphOffsets({});
+      setGraphZoom(100);
+      setSolutionZoom(100);
       setDocument({ title, documentId: loaded.documentId, graph: loaded.graph });
-      setStatus({ action: `Opened ${title}`, elapsedMs: performance.now() - startedAt, running: false });
+      setStatus({ action: `Opened ${title}`, elapsedMs: loaded.elapsedMs, running: false });
       void getCurrentWindow().setTitle(`Utool — ${title}`);
       void computeBaseChart(loaded, token);
     } catch (reason) {
@@ -347,7 +356,7 @@ export default function App() {
       setActiveVariantKey(key);
       setSolution(null);
       setSolutionIndex(0);
-      setStatus({ action: `${filterName} applied · ${chart.solutionCount} solutions`, elapsedMs: performance.now() - startedAt, running: false });
+      setStatus({ action: `${filterName} applied`, elapsedMs: chart.elapsedMs, running: false });
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
@@ -370,10 +379,19 @@ export default function App() {
     if (variant.chart.solutionCount !== "0") void loadSolution(variant.chart, 0, false);
   }, [loadSolution, variants]);
 
-  const setZoom = (zoom: number) => {
+  const setZoom = useCallback((zoom: Zoom) => {
     if (activeView === "graph") setGraphZoom(zoom);
     if (activeView === "solutions") setSolutionZoom(zoom);
-  };
+  }, [activeView]);
+
+  const changeZoom = useCallback((direction: 1 | -1) => {
+    const change = (current: Zoom): Zoom => {
+      const numeric = current === "fit" ? 100 : current;
+      return Math.min(400, Math.max(25, Math.round(numeric * (direction > 0 ? 1.2 : 1 / 1.2))));
+    };
+    if (activeView === "graph") setGraphZoom(change);
+    if (activeView === "solutions") setSolutionZoom(change);
+  }, [activeView]);
 
   const exportSvg = useCallback(async () => {
     if (!svg.current || activeView === "chart") return;
@@ -401,16 +419,34 @@ export default function App() {
     const pending = Promise.all([
       listen("menu-open", openDocument), listen("menu-export-svg", exportSvg),
       listen("menu-export-domcon", () => exportGraph("domcon")), listen("menu-export-dot", () => exportGraph("dot")),
-      listen("menu-show-solution", () => setActiveView("solutions")),
-      listen("menu-filter-chart", chooseFilter),
+      listen("menu-zoom-in", () => changeZoom(1)),
+      listen("menu-zoom-out", () => changeZoom(-1)),
+      listen("menu-actual-size", () => setZoom(100)),
+      listen("menu-fit-window", () => setZoom("fit")),
       listen("menu-about", () => setError("Utool Rust — HNC dominance graph solving with rusty-alto.")),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [chooseFilter, exportGraph, exportSvg, openDocument]);
+  }, [changeZoom, exportGraph, exportSvg, openDocument, setZoom]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;
-  const activeZoom = activeView === "graph" ? graphZoom : solutionZoom;
+
+  useEffect(() => {
+    if (activeView !== "solutions" || !activeVariant) return;
+    const navigate = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, [contenteditable='true']") || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "ArrowLeft" && solutionIndex > 0 && !solutionRunning) {
+        event.preventDefault();
+        void loadSolution(activeVariant.chart, solutionIndex - 1);
+      } else if (event.key === "ArrowRight" && BigInt(solutionIndex + 1) < BigInt(solutionTotal) && !solutionRunning) {
+        event.preventDefault();
+        void loadSolution(activeVariant.chart, solutionIndex + 1);
+      }
+    };
+    window.addEventListener("keydown", navigate);
+    return () => window.removeEventListener("keydown", navigate);
+  }, [activeVariant, activeView, loadSolution, solutionIndex, solutionRunning, solutionTotal]);
 
   return <main>
     <nav className="tabs" aria-label="Document views">
@@ -423,20 +459,20 @@ export default function App() {
     {error && <div className="error-banner" onClick={() => setError(null)}>{error}</div>}
     <section className="document">
       {!document && <div className="welcome"><h2>No graph open</h2><p>Choose File → Open… to open a dominance graph.</p></div>}
-      {document && activeView === "graph" && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} onSvgReady={(element) => { svg.current = element; }} />}
+      {document && activeView === "graph" && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} offsets={graphOffsets} onOffsetsChange={setGraphOffsets} onZoomChange={setGraphZoom} onSvgReady={(element) => { svg.current = element; }} />}
       {document && activeView !== "graph" && derivedLoading && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>You can continue inspecting the graph while the solution space is prepared.</p></div>}
       {document && activeView === "chart" && activeVariant && <div className="chart-view">
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
-        <div className="chart-header"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.splitCount}</b> split rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>
         <ChartRules key={activeVariant.chart.chartId} chart={activeVariant.chart} />
+        <div className="chart-bar"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.splitCount}</b> split rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>
       </div>}
       {document && activeView === "solutions" && activeVariant && <div className="solutions-view">
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
-        {solutionTotal === "0" ? <div className="zero-solutions"><h2>No solutions</h2><p>No solved forms satisfy {activeVariant.name === "Unfiltered" ? "this graph" : activeVariant.name}.</p>{activeVariant.key !== "base" && <button onClick={() => selectVariant("base")}>Show unfiltered</button>}</div>
-          : solution ? <><GraphCanvas key={`${activeVariant.key}-${solutionIndex}`} graph={solutionGraph(solution)} zoom={solutionZoom} onSvgReady={(element) => { svg.current = element; }} /><div className="solution-bar"><span className="solution-label">Solved form</span><div className="solution-nav"><button aria-label="Previous solution" disabled={solutionIndex === 0 || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex - 1)}>←</button><label><span>Solution</span><input value={solutionIndex + 1} onChange={(event) => { const value = Number(event.target.value); if (Number.isSafeInteger(value) && value > 0 && BigInt(value) <= BigInt(solutionTotal)) void loadSolution(activeVariant.chart, value - 1); }} /></label><span>of <b>{solutionTotal}</b></span><button aria-label="Next solution" disabled={BigInt(solutionIndex + 1) >= BigInt(solutionTotal) || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex + 1)}>→</button></div><code title={solution.term}>{solution.term}</code></div></>
-          : <div className="computing"><span className="large-spinner" /><h2>Preparing first solution</h2></div>}
+        {solutionTotal === "0" ? <div className="zero-solutions"><h2>No solutions</h2><p>No solutions satisfy {activeVariant.name === "Unfiltered" ? "this graph" : activeVariant.name}.</p>{activeVariant.key !== "base" && <button onClick={() => selectVariant("base")}>Show unfiltered</button>}</div>
+          : solution ? <><GraphCanvas key={`${activeVariant.key}-${solutionIndex}`} graph={solutionGraph(solution)} zoom={solutionZoom} draggable={false} onZoomChange={setSolutionZoom} onSvgReady={(element) => { svg.current = element; }} /><div className="solution-bar"><div className="solution-nav"><button title="Previous solution (Left Arrow)" aria-label="Previous solution" disabled={solutionIndex === 0 || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex - 1)}>←</button><label><span>Solution</span><input value={solutionIndex + 1} onChange={(event) => { const value = Number(event.target.value); if (Number.isSafeInteger(value) && value > 0 && BigInt(value) <= BigInt(solutionTotal)) void loadSolution(activeVariant.chart, value - 1); }} /></label><span>of <b>{solutionTotal}</b></span><button title="Next solution (Right Arrow)" aria-label="Next solution" disabled={BigInt(solutionIndex + 1) >= BigInt(solutionTotal) || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex + 1)}>→</button></div></div></>
+          : <div className="computing"><span className="large-spinner" /><h2>Computing first solution</h2></div>}
       </div>}
     </section>
-    <footer className="status-bar"><span className={status.running ? "busy" : ""}>{status.action}</span>{document && activeView !== "chart" && <label className="zoom">Zoom <select value={activeZoom} onChange={(event) => setZoom(Number(event.target.value))}>{ZOOMS.map((value) => <option key={value} value={value}>{value}%</option>)}</select></label>}<time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : status.elapsedMs < 1000 ? `${status.elapsedMs.toFixed(1)} ms` : `${(status.elapsedMs / 1000).toFixed(3)} s`}</time></footer>
+    <footer className="status-bar"><span className={`status-operation${status.running ? " busy" : ""}`}>{status.action}</span><time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : formatElapsed(status.elapsedMs)}</time></footer>
   </main>;
 }

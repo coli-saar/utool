@@ -7,8 +7,8 @@ and Solutions. Chart construction begins in the background as soon as a graph
 opens, and its exact solution count appears on the Solutions tab when ready.
 
 A chart can be filtered with a Utool rewrite-system file from the shared
-solution-space control in the Chart and Solutions views, or from the Solver
-menu. The unfiltered chart and completed filtered variants are cached, so
+solution-space control in the Chart and Solutions views. The unfiltered chart
+and completed filtered variants are cached, so
 switching between them is immediate and keeps Chart and Solutions synchronized.
 
 Graphs can be exported as Domcon/Oz or Graphviz DOT, and graphical graph and
@@ -27,16 +27,18 @@ npm run tauri dev
 ```
 
 The initial graph is a small Domcon/Oz example with two solutions. Its chart is
-computed immediately. Use the fixed tabs to inspect the graph, chart, and solved
-forms; controls along the bottom of Solutions navigate to any exact solution
+computed immediately. Use the fixed tabs to inspect the graph, chart, and
+solutions; controls along the bottom of Solutions navigate to any exact solution
 number. The Chart view lists the actual split rules, grouped and numbered by
 their left-hand-side subgraph.
 
-Graph and solved-form tabs have a zoom selector and start at 50%. Dragging a
-node moves its entire solid-edge fragment. **File → Open…** accepts Domcon/Oz
+Graph and solution tabs start at 100%. Zoom commands are in the **View** menu;
+Cmd/Ctrl-wheel zooms, while ordinary wheel and trackpad gestures pan scrollable
+drawings. Dragging a node in the Graph tab moves its entire solid-edge fragment
+and the adjustment survives tab changes. **File → Open…** accepts Domcon/Oz
 text or Hole Semantics; `.pl` files select the latter codec automatically. The input
 text is intentionally not displayed: after decoding, the graph is the
-document. **File → Export SVG…** exports the active graph or solved-form drawing,
+document. **File → Export SVG…** exports the active graph or solution drawing,
 including manual fragment adjustments. The bottom status bar reports the
 runtime of loading/codec conversion, chart construction, and each Solution
 enumeration.
