@@ -50,6 +50,7 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
   const pendingMove = useRef<{ members: number[]; originals: Record<number, Point>; dx: number; dy: number } | null>(null);
   const animationFrame = useRef<number | null>(null);
   const previousFrame = useRef<{ x: number; y: number; factor: number; viewportWidth: number; viewportHeight: number } | null>(null);
+  const previousGraph = useRef(graph);
   const nodes = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph]);
   const fragmentOf = useMemo(() => fragments(graph), [graph]);
   const fragmentMembers = useMemo(() => {
@@ -87,10 +88,10 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
       return { node, x: node.x + offset.x, y: node.y + offset.y };
     });
     if (!placed.length) return { x: 0, y: 0, width: Math.max(graph.width, 1), height: Math.max(graph.height, 1) };
-    const left = Math.min(0, ...placed.map(({ x }) => x));
-    const top = Math.min(0, ...placed.map(({ y }) => y));
-    const right = Math.max(graph.width, ...placed.map(({ node, x }) => x + node.width));
-    const bottom = Math.max(graph.height, ...placed.map(({ node, y }) => y + node.height));
+    const left = Math.min(...placed.map(({ x }) => x));
+    const top = Math.min(...placed.map(({ y }) => y));
+    const right = Math.max(...placed.map(({ node, x }) => x + node.width));
+    const bottom = Math.max(...placed.map(({ node, y }) => y + node.height));
     return { x: left - PADDING, y: top - PADDING, width: right - left + PADDING * 2, height: bottom - top + PADDING * 2 };
   }, [graph, offsets]);
 
@@ -99,31 +100,29 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
     viewportSize.height > 0 ? viewportSize.height / bounds.height : 1,
   );
   const factor = zoom === "fit" ? fitFactor : zoom / 100;
-  const originalWidth = graph.width + PADDING * 2;
-  const originalHeight = graph.height + PADDING * 2;
   const viewportWorldWidth = viewportSize.width / factor;
   const viewportWorldHeight = viewportSize.height / factor;
-  const originalViewX = -PADDING - Math.max(0, viewportWorldWidth - originalWidth) / 2;
-  const originalViewY = -PADDING - Math.max(0, viewportWorldHeight - originalHeight) / 2;
-  const viewX = Math.min(originalViewX, bounds.x);
-  const viewY = Math.min(originalViewY, bounds.y);
-  const viewRight = Math.max(originalViewX + viewportWorldWidth, bounds.x + bounds.width);
-  const viewBottom = Math.max(originalViewY + viewportWorldHeight, bounds.y + bounds.height);
-  const viewWidth = viewRight - viewX;
-  const viewHeight = viewBottom - viewY;
+  const viewWidth = Math.max(bounds.width, viewportWorldWidth);
+  const viewHeight = Math.max(bounds.height, viewportWorldHeight);
+  const viewX = bounds.x - Math.max(0, viewportWorldWidth - bounds.width) / 2;
+  const viewY = bounds.y - Math.max(0, viewportWorldHeight - bounds.height) / 2;
   const canvasWidth = viewWidth * factor;
   const canvasHeight = viewHeight * factor;
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     const previous = previousFrame.current;
+    const graphChanged = previousGraph.current !== graph;
     const viewportUnchanged = previous?.viewportWidth === viewportSize.width && previous.viewportHeight === viewportSize.height;
-    if (viewport && previous && viewportUnchanged && Math.abs(previous.factor - factor) < 0.0001) {
+    if (viewport && graphChanged) {
+      if (canvasWidth > viewportSize.width) viewport.scrollLeft = 0;
+    } else if (viewport && previous && viewportUnchanged && Math.abs(previous.factor - factor) < 0.0001) {
       viewport.scrollLeft += (previous.x - viewX) * factor;
       viewport.scrollTop += (previous.y - viewY) * factor;
     }
+    previousGraph.current = graph;
     previousFrame.current = { x: viewX, y: viewY, factor, viewportWidth: viewportSize.width, viewportHeight: viewportSize.height };
-  }, [factor, viewX, viewY, viewportSize.height, viewportSize.width]);
+  }, [canvasWidth, factor, graph, viewX, viewY, viewportSize.height, viewportSize.width]);
 
   const svgPoint = (event: PointerEvent) => {
     const svg = svgRef.current!;

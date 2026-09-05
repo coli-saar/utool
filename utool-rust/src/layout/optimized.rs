@@ -284,6 +284,57 @@ impl<'a> FragmentOptimizer<'a> {
                 f32::midpoint(lower, upper)
             };
         }
+
+        // Source-only fragments (in particular the graph's top fragment)
+        // must be centered last: the incoming pass above may have moved all
+        // of their dominance children.
+        for &fragment in by_height.iter().rev() {
+            let has_incoming = self.graph.parsed().dominance_edges().iter().any(
+                |&(source, target)| {
+                    self.fragment_of[target.index()] == fragment
+                        && self.fragment_of[source.index()] != fragment
+                },
+            );
+            if has_incoming {
+                continue;
+            }
+            let mut desired_sum = 0.0_f32;
+            let mut desired_count = 0.0_f32;
+            for &(source, target) in self.graph.parsed().dominance_edges() {
+                if self.fragment_of[source.index()] != fragment
+                    || self.fragment_of[target.index()] == fragment
+                {
+                    continue;
+                }
+                let target_center = anchors[self.fragment_of[target.index()]]
+                    + self.local_x[target.index()]
+                    + self.baseline.nodes[target.index()].size.width / 2.0;
+                let source_center = self.local_x[source.index()]
+                    + self.baseline.nodes[source.index()].size.width / 2.0;
+                desired_sum += target_center - source_center;
+                desired_count += 1.0;
+            }
+            if desired_count == 0.0 {
+                continue;
+            }
+            let mut lower = f32::NEG_INFINITY;
+            let mut upper = f32::INFINITY;
+            for &other in &order {
+                if rank[&other] < rank[&fragment] && self.separation[other][fragment] > 0.0 {
+                    lower = lower.max(anchors[other] + self.separation[other][fragment]);
+                } else if rank[&other] > rank[&fragment]
+                    && self.separation[fragment][other] > 0.0
+                {
+                    upper = upper.min(anchors[other] - self.separation[fragment][other]);
+                }
+            }
+            let desired = desired_sum / desired_count;
+            anchors[fragment] = if lower <= upper {
+                desired.clamp(lower, upper)
+            } else {
+                f32::midpoint(lower, upper)
+            };
+        }
         anchors
     }
 

@@ -439,6 +439,54 @@ fn optimized_layout_centers_rondane_892_named_fragment() {
 }
 
 #[test]
+fn optimized_layout_centers_rondane_650_top_fragment() {
+    let graph = HncGraph::try_from(
+        parse_mrs_prolog(include_str!(
+            "../../src/main/resources/examples/rondane-650.mrs.pl"
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let measured = graph
+        .parsed()
+        .nodes()
+        .iter()
+        .map(|node| {
+            let text = node.label().unwrap_or(node.name());
+            (
+                graph.node_id(node.name()).expect("node is indexed"),
+                Size {
+                    width: (text.chars().count() as f32 * 8.0 + 28.0).max(54.0),
+                    height: 34.0,
+                },
+            )
+        })
+        .collect::<Vec<_>>();
+    let chart = solve(&graph).unwrap();
+    let layout = layout_optimized_chart(&chart, &measured, LayoutOptions::default()).unwrap();
+    let source = graph.node_id("h3").unwrap();
+    let source_center = layout.nodes[source.index()].origin.x
+        + layout.nodes[source.index()].size.width / 2.0;
+    let target_centers = graph
+        .parsed()
+        .dominance_edges()
+        .iter()
+        .filter_map(|&(edge_source, target)| {
+            (edge_source == source).then(|| {
+                layout.nodes[target.index()].origin.x
+                    + layout.nodes[target.index()].size.width / 2.0
+            })
+        })
+        .collect::<Vec<_>>();
+    assert!(!target_centers.is_empty());
+    let target_barycenter = target_centers.iter().sum::<f32>() / target_centers.len() as f32;
+    assert!(
+        (source_center - target_barycenter).abs() < 0.01,
+        "h3 center {source_center}, child barycenter {target_barycenter}"
+    );
+}
+
+#[test]
 fn default_chart_layout_uses_the_larger_horizontal_fragment_gap() {
     fn mark(graph: &HncGraph, node: utool::NodeId, fragment: usize, result: &mut [usize]) {
         result[node.index()] = fragment;
