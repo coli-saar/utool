@@ -1,6 +1,7 @@
 //! Text codecs.
 
 use crate::graph::ParsedGraph;
+use std::fmt::Write as _;
 use thiserror::Error;
 
 mod domcon;
@@ -37,6 +38,10 @@ impl InputCodec {
     }
 
     /// Parse input into a graph.
+    ///
+    /// # Errors
+    ///
+    /// Returns a codec error if the input is syntactically or semantically invalid.
     pub fn parse(self, input: &str) -> CodecResult {
         match self {
             Self::DomconOz => parse_domcon_oz(input),
@@ -47,6 +52,10 @@ impl InputCodec {
 }
 
 /// Generate the pure chain described by Java Utool's `chain` input codec.
+///
+/// # Errors
+///
+/// Returns a codec error unless `input` is a positive integer.
 pub fn parse_chain(input: &str) -> CodecResult {
     let length = input
         .parse::<usize>()
@@ -112,25 +121,31 @@ pub fn encode_dot(graph: &ParsedGraph) -> String {
     let mut output = String::from("digraph dominance_graph {\n");
     for node in graph.nodes() {
         let label = node.label().unwrap_or(node.name());
-        output.push_str(&format!(
-            "  {} [label={}];\n",
+        writeln!(
+            output,
+            "  {} [label={}];",
             quoted(node.name()),
             quoted(label)
-        ));
+        )
+        .expect("writing to a String cannot fail");
         for child in node.tree_children() {
-            output.push_str(&format!(
-                "  {} -> {} [style=solid];\n",
+            writeln!(
+                output,
+                "  {} -> {} [style=solid];",
                 quoted(node.name()),
                 quoted(graph.node(*child).name())
-            ));
+            )
+            .expect("writing to a String cannot fail");
         }
     }
     for (source, target) in graph.dominance_edges() {
-        output.push_str(&format!(
-            "  {} -> {} [style=dotted];\n",
+        writeln!(
+            output,
+            "  {} -> {} [style=dotted];",
             quoted(graph.node(*source).name()),
             quoted(graph.node(*target).name())
-        ));
+        )
+        .expect("writing to a String cannot fail");
     }
     output.push_str("}\n");
     output

@@ -12,7 +12,7 @@ impl NodeId {
     /// Construct an identifier from an index.
     #[must_use]
     pub(crate) fn from_index(index: usize) -> Self {
-        Self(index as u32)
+        Self(u32::try_from(index).expect("graph node count exceeds u32"))
     }
 
     /// Returns the zero-based node index.
@@ -88,7 +88,7 @@ impl ParsedGraph {
         self.nodes
             .iter()
             .position(|node| node.name == name)
-            .map(|index| NodeId(index as u32))
+            .map(NodeId::from_index)
     }
 
     /// Access a node by identifier.
@@ -100,7 +100,7 @@ impl ParsedGraph {
     pub(crate) fn tree_parents(&self) -> Result<Vec<Option<NodeId>>, GraphError> {
         let mut parents = vec![None; self.nodes.len()];
         for (parent_index, parent) in self.nodes.iter().enumerate() {
-            let parent_id = NodeId(parent_index as u32);
+            let parent_id = NodeId::from_index(parent_index);
             for &child in &parent.tree_children {
                 if let Some(previous) = parents[child.index()].replace(parent_id) {
                     return Err(GraphError::MultipleTreeParents {
@@ -135,9 +135,9 @@ impl ParsedGraph {
         let mut remap = vec![None; self.nodes.len()];
         let mut nodes = Vec::with_capacity(self.nodes.len().saturating_sub(1));
         for (old_index, node) in self.nodes.iter().enumerate() {
-            let old = NodeId(old_index as u32);
+            let old = NodeId::from_index(old_index);
             if old != removed {
-                remap[old_index] = Some(NodeId(nodes.len() as u32));
+                remap[old_index] = Some(NodeId::from_index(nodes.len()));
                 nodes.push(Node {
                     name: node.name.clone(),
                     label: node.label.clone(),
@@ -178,7 +178,7 @@ impl ParsedGraph {
                 node.tree_children
                     .iter()
                     .copied()
-                    .map(move |child| (NodeId(parent as u32), child))
+                    .map(move |child| (NodeId::from_index(parent), child))
             })
             .chain(self.dominance_edges.iter().copied())
         {
@@ -193,7 +193,7 @@ impl ParsedGraph {
                 continue;
             }
             seen[start] = true;
-            let mut queue = VecDeque::from([NodeId(start as u32)]);
+            let mut queue = VecDeque::from([NodeId::from_index(start)]);
             let mut component = Vec::new();
             while let Some(node) = queue.pop_front() {
                 component.push(node);
@@ -224,7 +224,7 @@ impl GraphBuilder {
         if let Some(&id) = self.names.get(&name) {
             return id;
         }
-        let id = NodeId(self.graph.nodes.len() as u32);
+        let id = NodeId::from_index(self.graph.nodes.len());
         self.graph.nodes.push(Node {
             name: name.clone(),
             label: None,
@@ -235,6 +235,11 @@ impl GraphBuilder {
     }
 
     /// Set the label of a node.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GraphError::ConflictingLabel`] if the node already has a
+    /// different label.
     pub fn set_label(&mut self, node: NodeId, label: impl Into<String>) -> Result<(), GraphError> {
         let label = label.into();
         let target = &mut self.graph.nodes[node.index()];
@@ -343,7 +348,7 @@ impl TryFrom<ParsedGraph> for HncGraph {
         deduplicate_edges(&mut graph);
         let mut parent = vec![None; graph.nodes.len()];
         for (source_index, source) in graph.nodes.iter().enumerate() {
-            let source_id = NodeId(source_index as u32);
+            let source_id = NodeId::from_index(source_index);
             let mut local = HashSet::new();
             for &target in &source.tree_children {
                 if !local.insert(target) {
@@ -367,13 +372,13 @@ impl TryFrom<ParsedGraph> for HncGraph {
         let roots: Vec<_> = parent
             .iter()
             .enumerate()
-            .filter_map(|(index, parent)| parent.is_none().then_some(NodeId(index as u32)))
+            .filter_map(|(index, parent)| parent.is_none().then_some(NodeId::from_index(index)))
             .collect();
         let holes: Vec<_> = graph
             .nodes
             .iter()
             .enumerate()
-            .filter_map(|(index, node)| node.is_hole().then_some(NodeId(index as u32)))
+            .filter_map(|(index, node)| node.is_hole().then_some(NodeId::from_index(index)))
             .collect();
 
         for &hole in &holes {
@@ -468,7 +473,7 @@ fn ensure_tree_acyclic(graph: &ParsedGraph) -> Result<(), GraphError> {
 
     let mut colors = vec![0; graph.nodes.len()];
     for index in 0..graph.nodes.len() {
-        visit(graph, NodeId(index as u32), &mut colors)?;
+        visit(graph, NodeId::from_index(index), &mut colors)?;
     }
     Ok(())
 }
@@ -488,7 +493,7 @@ fn is_hypernormally_connected(graph: &ParsedGraph) -> bool {
     let mut adjacency = vec![Vec::new(); graph.nodes.len()];
     let mut next_edge_id = 0;
     for (parent_index, node) in graph.nodes.iter().enumerate() {
-        let parent = NodeId(parent_index as u32);
+        let parent = NodeId::from_index(parent_index);
         for &child in &node.tree_children {
             adjacency[parent.index()].push(AdjacentEdge {
                 id: next_edge_id,
@@ -538,7 +543,7 @@ fn is_hypernormally_connected(graph: &ParsedGraph) -> bool {
         let mut path = Vec::with_capacity(node_count);
         let mut on_path = vec![false; node_count];
         hnc_visit(
-            NodeId(start as u32),
+            NodeId::from_index(start),
             &mut path,
             &mut on_path,
             None,

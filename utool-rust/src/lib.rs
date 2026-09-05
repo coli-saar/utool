@@ -1,21 +1,21 @@
 //! Core library for the Rust reimplementation of Utool.
 
-#[allow(clippy::all, dead_code, missing_docs)]
+#[allow(clippy::all, clippy::pedantic, dead_code, missing_docs)]
 mod domcon_oz_grammar_trait {
     include!(concat!(env!("OUT_DIR"), "/domcon_oz_grammar_trait.rs"));
 }
 mod domcon_oz_grammar;
-#[allow(clippy::all, dead_code, missing_docs)]
+#[allow(clippy::all, clippy::pedantic, dead_code, missing_docs)]
 mod domcon_oz_parser {
     include!(concat!(env!("OUT_DIR"), "/domcon_oz_parser.rs"));
 }
 
-#[allow(clippy::all, dead_code, missing_docs)]
+#[allow(clippy::all, clippy::pedantic, dead_code, missing_docs)]
 mod holesem_grammar_trait {
     include!(concat!(env!("OUT_DIR"), "/holesem_grammar_trait.rs"));
 }
 mod holesem_grammar;
-#[allow(clippy::all, dead_code, missing_docs)]
+#[allow(clippy::all, clippy::pedantic, dead_code, missing_docs)]
 mod holesem_parser {
     include!(concat!(env!("OUT_DIR"), "/holesem_parser.rs"));
 }

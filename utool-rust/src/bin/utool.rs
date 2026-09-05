@@ -31,6 +31,7 @@ enum Operation {
 }
 
 #[derive(Default)]
+#[allow(clippy::struct_excessive_bools)]
 struct Options {
     input_codec: Option<String>,
     output_codec: Option<String>,
@@ -42,7 +43,7 @@ struct Options {
     dump_chart: bool,
     limit: Option<usize>,
     help: bool,
-    help_options: bool,
+    codec_options_help: bool,
     display_codecs: bool,
     version: bool,
     positional: Vec<String>,
@@ -89,24 +90,24 @@ fn options(args: &[String]) -> Result<Options, String> {
             _ if !name.is_empty() => match name {
                 "input-codec" => {
                     result.input_codec =
-                        Some(take_value(args, &mut index, attached, "--input-codec")?)
+                        Some(take_value(args, &mut index, attached, "--input-codec")?);
                 }
                 "output-codec" => {
                     result.output_codec =
-                        Some(take_value(args, &mut index, attached, "--output-codec")?)
+                        Some(take_value(args, &mut index, attached, "--output-codec")?);
                 }
                 "output" => {
-                    result.output = Some(take_value(args, &mut index, attached, "--output")?)
+                    result.output = Some(take_value(args, &mut index, attached, "--output")?);
                 }
                 "filter" => {
-                    result.filter = Some(take_value(args, &mut index, attached, "--filter")?)
+                    result.filter = Some(take_value(args, &mut index, attached, "--filter")?);
                 }
                 "limit" => {
                     result.limit = Some(
                         take_value(args, &mut index, attached, "--limit")?
                             .parse()
                             .map_err(|_| "--limit requires a nonnegative integer".to_owned())?,
-                    )
+                    );
                 }
                 "input-codec-options" | "output-codec-options" => {
                     let _ = take_value(args, &mut index, attached, argument)?;
@@ -116,7 +117,7 @@ fn options(args: &[String]) -> Result<Options, String> {
                 "nochart" => result.nochart = true,
                 "dump-chart" => result.dump_chart = true,
                 "help" => result.help = true,
-                "help-options" => result.help_options = true,
+                "help-options" => result.codec_options_help = true,
                 "display-codecs" => result.display_codecs = true,
                 "version" => result.version = true,
                 _ => return Err(format!("Unknown option: {argument}")),
@@ -241,12 +242,12 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<String, (Str
         if path.ends_with(".t.oz") {
             return Ok("term-oz".to_owned());
         }
-        if path.ends_with(".clls") {
+        if has_extension(path, "clls") {
             return Ok("domcon-oz".to_owned());
         }
     }
     if opts.input_codec.as_deref() == Some("domcon-oz")
-        || input_name.is_some_and(|p| p.ends_with(".clls"))
+        || input_name.is_some_and(|path| has_extension(path, "clls"))
     {
         return Ok("domcon-oz".to_owned());
     }
@@ -254,6 +255,13 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<String, (Str
         "You must specify an output codec for this operation!".to_owned(),
         NO_OUTPUT_CODEC,
     ))
+}
+
+fn has_extension(path: &str, expected: &str) -> bool {
+    std::path::Path::new(path)
+        .extension()
+        .and_then(std::ffi::OsStr::to_str)
+        .is_some_and(|extension| extension.eq_ignore_ascii_case(expected))
 }
 
 fn write_result(opts: &Options, text: &str) -> Result<(), (String, u8)> {
@@ -302,14 +310,15 @@ fn format_duration(duration: Duration) -> String {
     if nanos < 1_000 {
         format!("{nanos} ns")
     } else if nanos < 1_000_000 {
-        format!("{:.3} µs", nanos as f64 / 1_000.0)
+        format!("{:.3} µs", duration.as_secs_f64() * 1_000_000.0)
     } else if nanos < 1_000_000_000 {
-        format!("{:.3} ms", nanos as f64 / 1_000_000.0)
+        format!("{:.3} ms", duration.as_secs_f64() * 1_000.0)
     } else {
         format!("{:.3} s", duration.as_secs_f64())
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u8)> {
     let graph = read_graph(opts, source)?;
     let solve_output_codec = if op == Operation::Solve && !opts.no_output {
@@ -485,7 +494,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             let solutions_per_second = if enumeration_duration.is_zero() {
                 0.0
             } else {
-                count as f64 / enumeration_duration.as_secs_f64()
+                approximate_f64(count) / enumeration_duration.as_secs_f64()
             };
             eprintln!("Enumerated {count} solved forms.");
             eprintln!(
@@ -495,6 +504,11 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         }
     }
     Ok(u8::from(solvable))
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn approximate_f64(value: usize) -> f64 {
+    value as f64
 }
 
 fn main() -> ExitCode {
@@ -510,7 +524,7 @@ fn main() -> ExitCode {
         );
         return ExitCode::SUCCESS;
     }
-    if opts.help_options {
+    if opts.codec_options_help {
         eprintln!(
             "utool global options are:\n  --help-options\n  --display-codecs, -d\n  --display-statistics, -s\n  --no-output, -n\n  --filter, -f <filename>\n  --version"
         );

@@ -176,7 +176,7 @@ impl Chart {
 
     /// Number of split transitions.
     #[must_use]
-    pub const fn split_count(&self) -> usize {
+    pub fn split_count(&self) -> usize {
         self.split_symbols.len()
     }
 
@@ -246,6 +246,14 @@ impl Chart {
     ///
     /// This is an exact finite-language operation. Shared derivation subtrees are
     /// interned into shared automaton states in the result.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SolveError::Cancelled`] if `cancelled` requests cancellation.
+    ///
+    /// # Panics
+    ///
+    /// Panics if this chart violates the solver's internal derivation invariants.
     pub fn select_solutions(
         &self,
         mut keep: impl FnMut(&Solution<'_>) -> bool,
@@ -374,6 +382,10 @@ impl Solution<'_> {
     }
 
     /// Semantic label of an arena node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `tree` does not represent a labeled solution node.
     #[must_use]
     pub fn node_label(&self, tree: Tree) -> &str {
         self.chart
@@ -462,6 +474,10 @@ pub struct Solutions<'a> {
 
 impl Solutions<'_> {
     /// Advance to the next solved form, invalidating the previous one.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the chart violates the solver's internal derivation invariants.
     pub fn advance(&mut self) -> bool {
         if self.chart.empty_solution {
             if self.returned_empty {
@@ -546,6 +562,10 @@ pub enum SolveError {
 }
 
 /// Construct a chart using the free-fragment split algorithm.
+///
+/// # Errors
+///
+/// Returns an error if the graph cannot be compiled into a valid chart.
 pub fn solve(graph: &HncGraph) -> Result<Chart, SolveError> {
     solve_with_cancellation(graph, || false)
 }
@@ -566,6 +586,15 @@ pub fn is_solvable(graph: &HncGraph) -> bool {
 }
 
 /// Construct a chart, checking `cancelled` between split-expansion steps.
+///
+/// # Errors
+///
+/// Returns [`SolveError::Cancelled`] if `cancelled` requests cancellation, or
+/// another solver error if chart construction fails.
+///
+/// # Panics
+///
+/// Panics if an internal chart-construction invariant is violated.
 pub fn solve_with_cancellation(
     graph: &HncGraph,
     cancelled: impl Fn() -> bool,
@@ -703,7 +732,9 @@ impl<'a> Compiler<'a> {
             if split_count == BigUint::from(0_u8) {
                 continue;
             }
-            let symbol = Symbol(self.splits.len() as u32);
+            let symbol = Symbol(
+                u32::try_from(self.splits.len()).expect("split count exceeds symbol capacity"),
+            );
             self.splits.push(Split {
                 subgraph: SubgraphId(state.0),
                 root: candidate.root,
@@ -1045,13 +1076,13 @@ impl<'a> SplitTraversal<'a> {
     }
 }
 
-fn initialize_solution_arena(
-    chart: &Chart,
-) -> (
+type SolutionArena = (
     TreeArena<SolutionNode>,
     Vec<Option<Tree>>,
     Vec<Option<(Tree, usize)>>,
-) {
+);
+
+fn initialize_solution_arena(chart: &Chart) -> SolutionArena {
     let nodes = chart.graph.parsed().nodes();
     let mut arena = TreeArena::new();
     let mut handles = vec![None; nodes.len()];

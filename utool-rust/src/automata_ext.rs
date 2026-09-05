@@ -38,6 +38,10 @@ pub struct DfsDerivation<'a> {
 
 impl DfsDerivation<'_> {
     /// Node at a pre-order index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is outside this derivation.
     #[must_use]
     pub fn node(&self, index: usize) -> DfsDerivationNode {
         let frame = &self.frames[index];
@@ -126,6 +130,10 @@ impl DfsLanguagePlan {
     ///
     /// Returns [`DfsLanguageError::ProductiveCycle`] when a productive cycle
     /// is reachable from an accepting state.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the automaton reports more states than fit in its `u32` state IDs.
     pub fn new(automaton: &Explicit) -> Result<Self, DfsLanguageError> {
         let productive = automaton.reachable_states();
         let mut accepting = Vec::new();
@@ -159,6 +167,7 @@ impl DfsLanguagePlan {
 
     /// Start a fresh iterator over this plan.
     #[must_use]
+    #[allow(clippy::iter_not_returning_iterator)]
     pub fn iter(&self) -> DfsLanguageIterator<'_> {
         DfsLanguageIterator {
             rules: &self.rules,
@@ -186,7 +195,7 @@ pub struct DfsLanguageIterator<'a> {
     finished: bool,
 }
 
-impl<'a> DfsLanguageIterator<'a> {
+impl DfsLanguageIterator<'_> {
     /// Move to the next accepting derivation.
     pub fn advance(&mut self) -> bool {
         if self.finished {
@@ -212,7 +221,7 @@ impl<'a> DfsLanguageIterator<'a> {
     pub fn current(&self) -> Option<DfsDerivation<'_>> {
         self.current.then_some(DfsDerivation {
             frames: &self.frames,
-            rules: &self.rules,
+            rules: self.rules,
         })
     }
 

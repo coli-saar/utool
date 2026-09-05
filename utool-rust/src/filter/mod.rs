@@ -56,6 +56,11 @@ pub enum FilterError {
 
 impl RewriteSystem {
     /// Parse the Java Utool rewrite-file surface syntax.
+    ///
+    /// # Errors
+    ///
+    /// Returns a syntax error for malformed rules and
+    /// [`FilterError::ContextWildcard`] for unsupported context wildcards.
     pub fn parse(input: &str) -> Result<Self, FilterError> {
         let mut system = Self::default();
         for (offset, original) in input.lines().enumerate() {
@@ -266,6 +271,14 @@ fn solution_term(solution: &Solution) -> Option<GroundTerm> {
 }
 
 /// Remove Solutions which rewrite to another Solution in the same chart.
+///
+/// # Errors
+///
+/// Returns an error if chart selection is cancelled or fails.
+///
+/// # Panics
+///
+/// Panics if the source chart violates the solver's derivation invariants.
 pub fn filter_chart(
     chart: &Chart,
     system: &RewriteSystem,
@@ -361,13 +374,14 @@ fn matches(
     bindings: &mut HashMap<String, GroundTerm>,
 ) -> bool {
     match pattern {
-        Pattern::Variable(name) => match bindings.get(name) {
-            Some(bound) => bound == term,
-            None => {
+        Pattern::Variable(name) => {
+            if let Some(bound) = bindings.get(name) {
+                bound == term
+            } else {
                 bindings.insert(name.clone(), term.clone());
                 true
             }
-        },
+        }
         Pattern::Node(label, children) => {
             label == &term.label
                 && children.len() == term.children.len()

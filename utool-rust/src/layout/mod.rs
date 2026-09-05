@@ -103,6 +103,15 @@ pub enum LayoutError {
 
 /// Lay out every fragment as an ordered tree, then arrange the fragment graph
 /// in dominance-distance layers.
+///
+/// # Errors
+///
+/// Returns [`LayoutError::MissingNodeSize`] when a graph node has no measured size.
+///
+/// # Panics
+///
+/// Panics if a validated graph has inconsistent fragment membership.
+#[allow(clippy::too_many_lines)]
 pub fn layout_graph(
     graph: &HncGraph,
     measured_sizes: &[(NodeId, Size)],
@@ -176,9 +185,9 @@ pub fn layout_graph(
     }
     let mut fallback_level = levels.values().copied().max().unwrap_or(0);
     for &root in graph.roots() {
-        if !levels.contains_key(&root) {
+        if let std::collections::hash_map::Entry::Vacant(entry) = levels.entry(root) {
             fallback_level += 1;
-            levels.insert(root, fallback_level);
+            entry.insert(fallback_level);
         }
     }
 
@@ -222,9 +231,9 @@ pub fn layout_graph(
 
     let mut positioned = HashMap::new();
     let mut nodes = Vec::with_capacity(graph.parsed().nodes().len());
-    for index in 0..graph.parsed().nodes().len() {
+    for (index, fragment) in fragment_of.iter().enumerate() {
         let node = NodeId::from_index(index);
-        let fragment = fragment_of[index].expect("every node belongs to a fragment");
+        let fragment = fragment.expect("every node belongs to a fragment");
         let local = local_positions[&node];
         let offset = fragment_offsets[&fragment];
         let origin = Point {
@@ -367,7 +376,7 @@ fn route_edge(
         y: target_origin.y,
     };
     let points = if kind == EdgeKind::Tree {
-        let middle = (start.y + end.y) / 2.0;
+        let middle = f32::midpoint(start.y, end.y);
         vec![
             start,
             Point {

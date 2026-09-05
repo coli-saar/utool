@@ -43,7 +43,7 @@ fn lays_out_fragments_without_node_overlap() {
     let origins: HashSet<_> = layout
         .nodes
         .iter()
-        .map(|node| (node.origin.x as i32, node.origin.y as i32))
+        .map(|node| (node.origin.x.to_bits(), node.origin.y.to_bits()))
         .collect();
     assert_eq!(origins.len(), layout.nodes.len());
     assert!(layout.size.width > 0.0 && layout.size.height > 0.0);

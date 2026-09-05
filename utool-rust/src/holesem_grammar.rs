@@ -21,7 +21,7 @@ pub(crate) fn parse(input: &str) -> CodecResult {
     let mut actions = HolesemGrammar::default();
     crate::holesem_parser::parse(input, "<holesem>", &mut actions)
         .map_err(|error| CodecError::Syntax(error.to_string()))?;
-    lower(actions.input.expect("Parol must invoke the start action"))
+    lower(&actions.input.expect("Parol must invoke the start action"))
 }
 
 struct Lowering {
@@ -155,7 +155,7 @@ impl Lowering {
     }
 }
 
-fn lower(input: Input<'_>) -> CodecResult {
+fn lower(input: &Input<'_>) -> CodecResult {
     let mut lowering = Lowering::new();
     lowering.lower_term(&input.term)?;
     lowering.finish()
