@@ -272,6 +272,7 @@ impl GraphBuilder {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HncGraph {
     graph: ParsedGraph,
+    names: HashMap<String, NodeId>,
     tree_parent: Vec<Option<NodeId>>,
     roots: Vec<NodeId>,
     holes: Vec<NodeId>,
@@ -315,7 +316,7 @@ impl HncGraph {
     /// Find a node by external name.
     #[must_use]
     pub fn node_id(&self, name: &str) -> Option<NodeId> {
-        self.graph.node_id(name)
+        self.names.get(name).copied()
     }
 
     pub(crate) fn incoming_dominance(&self, node: NodeId) -> &[(usize, NodeId)] {
@@ -424,8 +425,16 @@ impl TryFrom<ParsedGraph> for HncGraph {
         }
         assert!(fragment_of.iter().all(|fragment| *fragment != usize::MAX));
 
+        let mut names = HashMap::with_capacity(graph.nodes.len());
+        for (index, node) in graph.nodes.iter().enumerate() {
+            names
+                .entry(node.name.clone())
+                .or_insert_with(|| NodeId::from_index(index));
+        }
+
         Ok(Self {
             graph,
+            names,
             tree_parent: parent,
             roots,
             holes,
@@ -512,63 +521,115 @@ fn is_hypernormally_connected(graph: &ParsedGraph) -> bool {
         next_edge_id += 1;
     }
 
+    // This linear test is complete for solvable graphs and sound for all
+    // graphs: outside its intended domain it can miss an HNC graph, but it
+    // cannot accept a non-HNC graph. Keep the exact search as the fallback.
+    let mut fast_visited = vec![false; graph.nodes.len()];
+    hnc_fast_visit(NodeId(0), false, &adjacency, &mut fast_visited);
+    if fast_visited.iter().all(|visited| *visited) {
+        return true;
+    }
+
     let node_count = graph.nodes.len();
-    let mut reachable = vec![vec![false; node_count]; node_count];
+    let mut reachable = vec![false; node_count * node_count];
+    let mut visit_marks = HashSet::new();
     for start in 0..node_count {
-        let mut table = vec![vec![HashSet::<usize>::new(); node_count]; node_count];
-        let mut history = HashSet::new();
+        visit_marks.clear();
+        let mut path = Vec::with_capacity(node_count);
+        let mut on_path = vec![false; node_count];
         hnc_visit(
             NodeId(start as u32),
-            &mut history,
+            &mut path,
+            &mut on_path,
             None,
             &adjacency,
-            &mut table,
+            &mut reachable,
+            &mut visit_marks,
+            node_count,
+            next_edge_id,
         );
-        for source in 0..node_count {
-            for target in 0..node_count {
-                reachable[source][target] |= !table[source][target].is_empty();
-            }
-        }
     }
-    (0..node_count)
-        .all(|source| (0..node_count).all(|target| source == target || reachable[source][target]))
+    (0..node_count).all(|source| {
+        (0..node_count).all(|target| source == target || reachable[source * node_count + target])
+    })
 }
 
-fn hnc_visit(
+fn hnc_fast_visit(
     node: NodeId,
-    history: &mut HashSet<NodeId>,
-    last_edge: Option<usize>,
+    arrived_via_dominance: bool,
     adjacency: &[Vec<AdjacentEdge>],
-    table: &mut [Vec<HashSet<usize>>],
+    visited: &mut [bool],
 ) {
-    if history.contains(&node) {
-        return;
-    }
-    let mut seen_it = true;
-    if let Some(last_edge) = last_edge {
-        for &previous in history.iter() {
-            if table[previous.index()][node.index()].insert(last_edge) {
-                seen_it = false;
-            }
-        }
-    }
-    if !seen_it || last_edge.is_none() {
-        let last_was_outgoing_dominance = last_edge.is_some_and(|last| {
-            adjacency[node.index()]
-                .iter()
-                .any(|edge| edge.id == last && edge.dominance && edge.outgoing)
-        });
-        for edge in &adjacency[node.index()] {
-            if Some(edge.id) == last_edge
-                || (edge.dominance && edge.outgoing && last_was_outgoing_dominance)
-            {
+    visited[node.index()] = true;
+    let mut used_outgoing_dominance = false;
+    for edge in &adjacency[node.index()] {
+        if edge.dominance && edge.outgoing {
+            if arrived_via_dominance || used_outgoing_dominance {
                 continue;
             }
-            history.insert(node);
-            hnc_visit(edge.neighbor, history, Some(edge.id), adjacency, table);
-            history.remove(&node);
+            used_outgoing_dominance = true;
+        }
+        if !visited[edge.neighbor.index()] {
+            hnc_fast_visit(edge.neighbor, edge.dominance, adjacency, visited);
         }
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn hnc_visit(
+    node: NodeId,
+    path: &mut Vec<NodeId>,
+    on_path: &mut [bool],
+    last_edge: Option<usize>,
+    adjacency: &[Vec<AdjacentEdge>],
+    reachable: &mut [bool],
+    visit_marks: &mut HashSet<usize>,
+    node_count: usize,
+    edge_count: usize,
+) {
+    if on_path[node.index()] {
+        return;
+    }
+
+    let mut discovered = last_edge.is_none();
+    if let Some(last_edge) = last_edge {
+        for &previous in path.iter() {
+            reachable[previous.index() * node_count + node.index()] = true;
+            let mark = (previous.index() * node_count + node.index()) * edge_count + last_edge;
+            if visit_marks.insert(mark) {
+                discovered = true;
+            }
+        }
+    }
+    if !discovered {
+        return;
+    }
+
+    on_path[node.index()] = true;
+    path.push(node);
+    let arrived_up_dominance = last_edge.is_some_and(|last| {
+        adjacency[node.index()]
+            .iter()
+            .any(|edge| edge.id == last && edge.dominance && edge.outgoing)
+    });
+    for edge in &adjacency[node.index()] {
+        if Some(edge.id) != last_edge && !(arrived_up_dominance && edge.dominance && edge.outgoing)
+        {
+            hnc_visit(
+                edge.neighbor,
+                path,
+                on_path,
+                Some(edge.id),
+                adjacency,
+                reachable,
+                visit_marks,
+                node_count,
+                edge_count,
+            );
+        }
+    }
+    path.pop();
+    on_path[node.index()] = false;
 }
 
 /// Structural or fragment-membership error.

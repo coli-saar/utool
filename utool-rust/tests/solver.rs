@@ -1,5 +1,7 @@
 use num_bigint::BigUint;
-use utool::{HncGraph, SolveError, parse_chain, parse_domcon_oz, solve, solve_with_cancellation};
+use utool::{
+    HncGraph, SolveError, is_solvable, parse_chain, parse_domcon_oz, solve, solve_with_cancellation,
+};
 
 fn solve_text(input: &str) -> utool::Chart {
     let parsed = parse_domcon_oz(input).unwrap();
@@ -78,6 +80,43 @@ fn hnc_does_not_imply_solvable() {
         solve_text("[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]");
     assert_eq!(chart.count_solutions(), BigUint::from(0_u8));
     assert!(!chart.solutions().advance());
+}
+
+#[test]
+fn closed_chain_is_hnc_but_unsolvable() {
+    let parsed = parse_domcon_oz(
+        "[label(y0 a0) label(x1 f1(xl1 xr1)) label(y1 a1) \
+         label(x2 f2(xl2 xr2)) label(y2 a2) label(x3 f3(xl3 xr3)) \
+         dom(xl1 y0) dom(xr1 y1) dom(xl2 y1) dom(xr2 y2) \
+         dom(xl3 y2) dom(xr3 y0)]",
+    )
+    .unwrap();
+    let graph = HncGraph::try_from(parsed).unwrap();
+    assert!(!is_solvable(&graph));
+    assert_eq!(
+        solve(&graph).unwrap().count_solutions(),
+        BigUint::from(0_u8)
+    );
+}
+
+#[test]
+fn existence_solver_agrees_with_chart_construction() {
+    for length in 1..=8 {
+        let graph = HncGraph::try_from(parse_chain(&length.to_string()).unwrap()).unwrap();
+        assert_eq!(
+            is_solvable(&graph),
+            solve(&graph).unwrap().count_solutions() != 0_u8.into()
+        );
+    }
+
+    let graph = HncGraph::try_from(
+        parse_domcon_oz(
+            "[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]",
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert!(!is_solvable(&graph));
 }
 
 #[test]

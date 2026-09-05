@@ -6,7 +6,7 @@ use std::{
 };
 use utool::{
     GraphBuilder, HncGraph, InputCodec, RewriteSystem, Solution, encode_domcon_oz, encode_dot,
-    filter_chart, solve,
+    filter_chart, is_solvable, solve,
 };
 
 const IO_ERROR: u8 = 128;
@@ -353,30 +353,35 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
                 .dominance_edges()
                 .iter()
                 .all(|(source, _)| graph.node(*source).is_hole());
-        let compact = graph.parsed().nodes().iter().all(|node| {
-            node.label().is_none() || graph.parsed().node_id(node.name()).is_some_and(root)
-        });
+        let compact = graph
+            .parsed()
+            .nodes()
+            .iter()
+            .all(|node| node.label().is_none() || graph.node_id(node.name()).is_some_and(root));
         let compactifiable = graph
             .parsed()
             .dominance_edges()
             .iter()
             .all(|(source, _)| graph.node(*source).is_hole() || root(*source));
-        let leaf_labelled = graph.parsed().nodes().iter().all(|node| {
-            node.label().is_some()
-                || graph.parsed().node_id(node.name()).is_some_and(|id| {
-                    graph
-                        .parsed()
-                        .dominance_edges()
-                        .iter()
-                        .any(|(s, _)| *s == id)
-                })
-        });
+        let mut has_outgoing_dominance = vec![false; graph.parsed().nodes().len()];
+        for &(source, _) in graph.parsed().dominance_edges() {
+            has_outgoing_dominance[source.index()] = true;
+        }
+        let leaf_labelled = graph
+            .parsed()
+            .nodes()
+            .iter()
+            .enumerate()
+            .all(|(index, node)| node.label().is_some() || has_outgoing_dominance[index]);
         return Ok(u8::from(weakly_normal)
             | (u8::from(normal) << 1)
             | (u8::from(compact) << 2)
             | (u8::from(compactifiable) << 3)
             | 16
             | (u8::from(leaf_labelled) << 5));
+    }
+    if op == Operation::Solvable && !opts.statistics && opts.filter.is_none() && !opts.dump_chart {
+        return Ok(u8::from(is_solvable(&graph)));
     }
     let started = Instant::now();
     let mut chart = solve(&graph).map_err(|e| (e.to_string(), SOLVER_NOT_APPLICABLE))?;

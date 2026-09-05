@@ -120,7 +120,6 @@ fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
             let text = node.label().unwrap_or(node.name());
             (
                 graph
-                    .parsed()
                     .node_id(node.name())
                     .expect("node is indexed"),
                 Size {

@@ -37,5 +37,6 @@ pub use layout::{
     EdgeKind, Layout, LayoutEdge, LayoutError, LayoutOptions, NodeBox, Point, Size, layout_graph,
 };
 pub use solver::{
-    Chart, ChartRule, Solution, SolutionNode, Solutions, SolveError, solve, solve_with_cancellation,
+    Chart, ChartRule, Solution, SolutionNode, Solutions, SolveError, is_solvable, solve,
+    solve_with_cancellation,
 };

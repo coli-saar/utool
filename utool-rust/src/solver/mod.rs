@@ -550,6 +550,21 @@ pub fn solve(graph: &HncGraph) -> Result<Chart, SolveError> {
     solve_with_cancellation(graph, || false)
 }
 
+/// Decide solvability by retaining only the first successful split of each subgraph.
+///
+/// Unlike [`solve`], this does not construct a chart or count solved forms.
+#[must_use]
+pub fn is_solvable(graph: &HncGraph) -> bool {
+    if graph.parsed().nodes().is_empty() {
+        return true;
+    }
+    SolvabilityCompiler {
+        graph,
+        memo: HashMap::new(),
+    }
+    .check(&Subgraph::all(graph))
+}
+
 /// Construct a chart, checking `cancelled` between split-expansion steps.
 pub fn solve_with_cancellation(
     graph: &HncGraph,
@@ -603,6 +618,38 @@ struct Compiler<'a> {
     splits: Vec<Split>,
 }
 
+struct SolvabilityCompiler<'a> {
+    graph: &'a HncGraph,
+    memo: HashMap<Subgraph, bool>,
+}
+
+impl SolvabilityCompiler<'_> {
+    fn check(&mut self, subgraph: &Subgraph) -> bool {
+        if let Some(&solvable) = self.memo.get(subgraph) {
+            return solvable;
+        }
+
+        let graph = self.graph;
+        let mut candidates = SplitCandidates::new(graph, subgraph);
+        while let Some(candidate) = candidates
+            .next(&|| false)
+            .expect("solvability checking is never cancelled")
+        {
+            if candidate
+                .attachments
+                .iter()
+                .all(|(_, child)| self.check(child))
+            {
+                self.memo.insert(subgraph.clone(), true);
+                return true;
+            }
+        }
+
+        self.memo.insert(subgraph.clone(), false);
+        false
+    }
+}
+
 impl<'a> Compiler<'a> {
     fn new(graph: &'a HncGraph) -> Self {
         Self {
@@ -641,18 +688,9 @@ impl<'a> Compiler<'a> {
         self.states.insert(subgraph.clone(), state);
 
         let mut total = BigUint::from(0_u8);
-        for root_index in 0..self.graph.roots().len() {
-            if cancelled() {
-                return Err(SolveError::Cancelled);
-            }
-            let root = self.graph.roots()[root_index];
-            if !subgraph.contains(self.graph, root) || indegree_in(self.graph, root, subgraph) != 0
-            {
-                continue;
-            }
-            let Some(candidate) = compute_split(self.graph, root, subgraph) else {
-                continue;
-            };
+        let graph = self.graph;
+        let mut candidates = SplitCandidates::new(graph, subgraph);
+        while let Some(candidate) = candidates.next(cancelled)? {
             let mut child_states = Vec::with_capacity(candidate.attachments.len());
             let mut attachments = Vec::with_capacity(candidate.attachments.len());
             let mut split_count = BigUint::from(1_u8);
@@ -678,6 +716,41 @@ impl<'a> Compiler<'a> {
 
         self.counts[state.0 as usize] = Some(total.clone());
         Ok((state, total))
+    }
+}
+
+struct SplitCandidates<'a> {
+    graph: &'a HncGraph,
+    subgraph: &'a Subgraph,
+    next_root: usize,
+}
+
+impl<'a> SplitCandidates<'a> {
+    const fn new(graph: &'a HncGraph, subgraph: &'a Subgraph) -> Self {
+        Self {
+            graph,
+            subgraph,
+            next_root: 0,
+        }
+    }
+
+    fn next(
+        &mut self,
+        cancelled: &impl Fn() -> bool,
+    ) -> Result<Option<SplitCandidate>, SolveError> {
+        while let Some(&root) = self.graph.roots().get(self.next_root) {
+            self.next_root += 1;
+            if cancelled() {
+                return Err(SolveError::Cancelled);
+            }
+            if self.subgraph.contains(self.graph, root)
+                && indegree_in(self.graph, root, self.subgraph) == 0
+                && let Some(candidate) = compute_split(self.graph, root, self.subgraph)
+            {
+                return Ok(Some(candidate));
+            }
+        }
+        Ok(None)
     }
 }
 
