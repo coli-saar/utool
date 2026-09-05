@@ -46,6 +46,8 @@ export type ChartView = {
   subgraphCount: number;
   splitCount: number;
   displayRowCount: number;
+  topFragments: string[];
+  graph: GraphView | null;
 };
 
 export type ChartRule = {

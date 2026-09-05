@@ -3,7 +3,8 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
 import type { Zoom } from "./GraphCanvas";
 import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
@@ -21,25 +22,92 @@ function formatElapsed(elapsedMs: number): string {
 }
 
 function solutionGraph(solution: SolutionView): GraphView {
+  const SIBLING_GAP = 18;
+  const ROOT_GAP = 64;
+  const LEVEL_GAP = 85;
   const children = new Map<number, number[]>();
   const incoming = new Set<number>();
   solution.edges.forEach(([from, to]) => { children.set(from, [...(children.get(from) ?? []), to]); incoming.add(to); });
+  const widths = new Map(solution.nodes.map((node) => [node.id, Math.max(54, node.label.length * 8 + 28)]));
   const positions = new Map<number, { x: number; y: number }>();
-  let leaf = 0;
-  const place = (id: number, depth: number): number => {
-    const descendants = children.get(id) ?? [];
-    if (!descendants.length) { const x = leaf++ * 100; positions.set(id, { x, y: depth * 85 }); return x; }
-    const xs = descendants.map((child) => place(child, depth + 1));
-    const x = (xs[0] + xs[xs.length - 1]) / 2;
-    positions.set(id, { x, y: depth * 85 });
-    return x;
+
+  type TreePoint = { x: number; level: number };
+  type Subtree = {
+    width: number;
+    rootCenter: number;
+    leftContour: number[];
+    rightContour: number[];
+    positions: Map<number, TreePoint>;
   };
-  solution.nodes.filter((node) => !incoming.has(node.id)).forEach((root) => place(root.id, 0));
-  const nodes = solution.nodes.map((node) => ({ ...node, hole: false, x: positions.get(node.id)?.x ?? 0, y: positions.get(node.id)?.y ?? 0, width: Math.max(54, node.label.length * 8 + 28), height: 34 }));
+  const layoutTree = (id: number): Subtree => {
+    const nodeWidth = widths.get(id)!;
+    const descendants = children.get(id) ?? [];
+    if (!descendants.length) {
+      return {
+        width: nodeWidth,
+        rootCenter: nodeWidth / 2,
+        leftContour: [0],
+        rightContour: [nodeWidth],
+        positions: new Map([[id, { x: 0, level: 0 }]]),
+      };
+    }
+
+    const childTrees = descendants.map((child) => layoutTree(child));
+    const childOffsets: number[] = [];
+    const childrenLeft: number[] = [];
+    const childrenRight: number[] = [];
+    childTrees.forEach((tree, index) => {
+      const offset = index === 0 ? 0 : Array.from(
+        { length: Math.min(childrenRight.length, tree.leftContour.length) },
+        (_, level) => childrenRight[level] + SIBLING_GAP - tree.leftContour[level],
+      ).reduce((required, value) => Math.max(required, value), 0);
+      childOffsets.push(offset);
+      tree.leftContour.forEach((value, level) => {
+        childrenLeft[level] = Math.min(childrenLeft[level] ?? Infinity, value + offset);
+        childrenRight[level] = Math.max(childrenRight[level] ?? -Infinity, tree.rightContour[level] + offset);
+      });
+    });
+    const childrenCenter = descendants.reduce((sum, child, index) => {
+      return sum + childOffsets[index] + childTrees[index].rootCenter;
+    }, 0) / descendants.length;
+    const parentX = childrenCenter - nodeWidth / 2;
+    const left = Math.min(parentX, ...childrenLeft);
+    const right = Math.max(parentX + nodeWidth, ...childrenRight);
+    const shift = -left;
+    const subtreePositions = new Map<number, TreePoint>();
+    childTrees.forEach((tree, index) => {
+      tree.positions.forEach((point, nodeId) => {
+        subtreePositions.set(nodeId, {
+          x: point.x + childOffsets[index] + shift,
+          level: point.level + 1,
+        });
+      });
+    });
+    subtreePositions.set(id, { x: parentX + shift, level: 0 });
+    return {
+      width: right - left,
+      rootCenter: childrenCenter + shift,
+      leftContour: [parentX + shift, ...childrenLeft.map((value) => value + shift)],
+      rightContour: [parentX + nodeWidth + shift, ...childrenRight.map((value) => value + shift)],
+      positions: subtreePositions,
+    };
+  };
+
+  let rootCursor = 0;
+  solution.nodes.filter((node) => !incoming.has(node.id)).forEach((root) => {
+    const tree = layoutTree(root.id);
+    tree.positions.forEach((point, id) => positions.set(id, {
+      x: point.x + rootCursor,
+      y: point.level * LEVEL_GAP,
+    }));
+    rootCursor += tree.width + ROOT_GAP;
+  });
+  const contentWidth = Math.max(0, rootCursor - ROOT_GAP);
+  const nodes = solution.nodes.map((node) => ({ ...node, hole: false, x: positions.get(node.id)?.x ?? 0, y: positions.get(node.id)?.y ?? 0, width: widths.get(node.id)!, height: 34 }));
   return {
     nodes,
     edges: solution.edges.map(([source, target]) => ({ source, target, kind: "tree", points: [], light: false })),
-    width: Math.max(220, leaf * 100),
+    width: Math.max(220, contentWidth),
     height: Math.max(160, ...nodes.map((node) => node.y + 70)),
   };
 }
@@ -48,6 +116,7 @@ const CHART_PAGE_SIZE = 96;
 const CHART_CACHE_PAGES = 8;
 const CHART_ROW_ESTIMATE = 58;
 const CHART_OVERSCAN = 10;
+const FALLBACK_LAYOUT_DELAY_MS = 200;
 
 class RowHeightIndex {
   private readonly corrections: Float32Array;
@@ -95,7 +164,7 @@ function ChartRuleRow({ row, state, index, top, onHeight }: { row: ChartRule; st
       <span className="chart-rule-number">{row.ordinal}</span>
       <span className="chart-fragment" aria-label="Top fragment">{row.fragment}</span>
       <span className="chart-assignments" aria-label="Hole assignments">
-        {row.assignments.map(([hole, subgraph]) => <span key={hole}><b>{hole}</b><span aria-hidden="true"> ↦ </span><i>[{subgraph.join(", ")}]</i></span>)}
+        {row.assignments.map(([hole, subgraph]) => <span key={hole}><b>{hole}</b><span aria-hidden="true"> → </span><i>[{subgraph.join(", ")}]</i></span>)}
       </span>
     </div>
   </div>;
@@ -103,6 +172,7 @@ function ChartRuleRow({ row, state, index, top, onHeight }: { row: ChartRule; st
 
 function ChartRules({ chart }: { chart: ChartView }) {
   const viewport = useRef<HTMLDivElement | null>(null);
+  const fragmentRulers = useRef<HTMLDivElement | null>(null);
   const alive = useRef(true);
   const heights = useMemo(() => new RowHeightIndex(chart.displayRowCount), [chart.chartId, chart.displayRowCount]);
   const pending = useRef(new Set<number>());
@@ -110,13 +180,14 @@ function ChartRules({ chart }: { chart: ChartView }) {
   const [states, setStates] = useState(new Map<number, ChartState>());
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
+  const [fragmentColumnWidth, setFragmentColumnWidth] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [, setMeasurementVersion] = useState(0);
 
   useEffect(() => () => { alive.current = false; }, []);
 
   useEffect(() => {
-    setRows(new Map()); setStates(new Map()); pending.current.clear(); setScrollTop(0); setLoadError(null);
+    setRows(new Map()); setStates(new Map()); pending.current.clear(); setScrollTop(0); setLoadError(null); setFragmentColumnWidth(0);
     viewport.current?.scrollTo({ top: 0 });
   }, [chart.chartId]);
 
@@ -175,6 +246,18 @@ function ChartRules({ chart }: { chart: ChartView }) {
     setStates((current) => new Map(Array.from(current).filter(([state]) => retained.has(state))));
   }, [rows]);
 
+  useLayoutEffect(() => {
+    const rulers = fragmentRulers.current;
+    if (!rulers) return;
+    const measured = Array.from(rulers.children)
+      .map((element) => {
+        const style = getComputedStyle(element);
+        return element.getBoundingClientRect().width + Number.parseFloat(style.paddingLeft || "0");
+      })
+      .reduce((widest, width) => Math.max(widest, width), 0);
+    if (measured > 0) setFragmentColumnWidth(Math.ceil(measured));
+  }, [chart.topFragments]);
+
   const recordHeight = useCallback((index: number, height: number) => {
     if (!heights.set(index, height)) return;
     setMeasurementVersion((version) => version + 1);
@@ -190,8 +273,16 @@ function ChartRules({ chart }: { chart: ChartView }) {
       ? <ChartRuleRow key={`${chart.chartId}-${index}`} row={row} state={state} index={index} top={rowTop(index)} onHeight={recordHeight} />
       : <div key={`${chart.chartId}-${index}`} className="chart-row chart-row-loading" style={{ top: rowTop(index), height: CHART_ROW_ESTIMATE }}>Loading rule</div>);
   }
-  return <div ref={viewport} className="chart-list" onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
-    <div className="chart-list-space" style={{ height: rowTop(chart.displayRowCount) }}>{rendered}</div>
+  const columnStyle = fragmentColumnWidth > 0
+    ? { "--chart-fragment-width": `${fragmentColumnWidth}px` } as CSSProperties
+    : undefined;
+  return <div ref={viewport} className="chart-list" style={columnStyle} onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+    <div className="chart-list-space" style={{ height: rowTop(chart.displayRowCount) }}>
+      <div ref={fragmentRulers} className="chart-fragment-rulers" aria-hidden="true">
+        {chart.topFragments.map((fragment) => <span key={fragment} className="chart-fragment">{fragment}</span>)}
+      </div>
+      {rendered}
+    </div>
   </div>;
 }
 
@@ -215,6 +306,7 @@ function SolutionSpaceControl({ variants, activeKey, filterRunning, onSelect, on
 
 export default function App() {
   const [document, setDocument] = useState<DocumentView | null>(null);
+  const [graphReady, setGraphReady] = useState(false);
   const [activeView, setActiveView] = useState<ViewName>("graph");
   const [variants, setVariants] = useState<ChartVariant[]>([]);
   const [activeVariantKey, setActiveVariantKey] = useState("base");
@@ -233,9 +325,22 @@ export default function App() {
   const loadOperation = useRef(0);
   const solutionOperation = useRef(0);
   const activeJob = useRef<string | null>(null);
+  const fallbackTimer = useRef<number | null>(null);
   const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
 
   const makeJobId = () => crypto.randomUUID();
+
+  const cancelFallbackTimer = () => {
+    if (fallbackTimer.current !== null) {
+      window.clearTimeout(fallbackTimer.current);
+      fallbackTimer.current = null;
+    }
+  };
+
+  useEffect(() => () => cancelFallbackTimer(), []);
+  useEffect(() => {
+    void getCurrentWindow().setTitle(document ? `${document.title} — Utool` : "Utool");
+  }, [document?.title]);
 
   const loadSolution = useCallback(async (chart: ChartView, index: number, announce = true) => {
     const token = ++solutionOperation.current;
@@ -266,13 +371,23 @@ export default function App() {
     try {
       const chart = await invoke<ChartView>("build_chart", { documentId: loaded.documentId, jobId });
       if (operation.current !== token) return;
+      cancelFallbackTimer();
       const base = { key: "base", name: "Unfiltered", chart };
       setVariants([base]);
       setActiveVariantKey("base");
+      if (chart.graph) {
+        setDocument((current) => current?.documentId === loaded.documentId
+          ? { ...current, graph: chart.graph! }
+          : current);
+        setGraphOffsets({});
+      }
+      setGraphReady(true);
       setStatus({ action: "Computed chart", elapsedMs: chart.elapsedMs, running: false });
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
+      cancelFallbackTimer();
+      setGraphReady(true);
       setError(String(reason));
       setStatus({ action: "Computing chart failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
@@ -302,9 +417,14 @@ export default function App() {
       setGraphOffsets({});
       setGraphZoom(100);
       setSolutionZoom(100);
+      setGraphReady(false);
       setDocument({ title, documentId: loaded.documentId, graph: loaded.graph });
       setStatus({ action: `Opened ${title}`, elapsedMs: loaded.elapsedMs, running: false });
-      void getCurrentWindow().setTitle(`Utool — ${title}`);
+      cancelFallbackTimer();
+      fallbackTimer.current = window.setTimeout(() => {
+        if (operation.current === token) setGraphReady(true);
+        fallbackTimer.current = null;
+      }, FALLBACK_LAYOUT_DELAY_MS);
       void computeBaseChart(loaded, token);
     } catch (reason) {
       if (loadOperation.current !== loadToken) return;
@@ -469,7 +589,8 @@ export default function App() {
     {error && <div className="error-banner" onClick={() => setError(null)}>{error}</div>}
     <section className="document">
       {!document && <div className="welcome"><h2>No graph open</h2><p>Choose File → Open… to open a dominance graph.</p></div>}
-      {document && activeView === "graph" && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} offsets={graphOffsets} onOffsetsChange={setGraphOffsets} onZoomChange={setGraphZoom} onSvgReady={(element) => { svg.current = element; }} />}
+      {document && activeView === "graph" && !graphReady && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>Preparing the graph layout.</p></div>}
+      {document && activeView === "graph" && graphReady && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} offsets={graphOffsets} onOffsetsChange={setGraphOffsets} onZoomChange={setGraphZoom} onSvgReady={(element) => { svg.current = element; }} />}
       {document && activeView !== "graph" && derivedLoading && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>You can continue inspecting the graph while the solution space is prepared.</p></div>}
       {document && activeView === "chart" && activeVariant && <div className="chart-view">
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}

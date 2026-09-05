@@ -35,7 +35,8 @@ pub use codec::{
 pub use filter::{FilterError, Pattern, RewriteRule, RewriteSystem, filter_chart};
 pub use graph::{GraphBuilder, GraphError, HncGraph, Node, NodeId, ParsedGraph};
 pub use layout::{
-    EdgeKind, Layout, LayoutEdge, LayoutError, LayoutOptions, NodeBox, Point, Size, layout_graph,
+    EdgeKind, Layout, LayoutEdge, LayoutError, LayoutOptions, NodeBox, Point, Size, layout_chart,
+    layout_graph, layout_java_chart, layout_optimized_chart,
 };
 pub use solver::{
     Chart, ChartDisplay, ChartRule, ChartRulePage, ChartState, FragmentAutomaton, FragmentNode,

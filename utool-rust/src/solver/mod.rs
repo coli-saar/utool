@@ -309,6 +309,23 @@ pub struct Chart {
     count: BigUint,
 }
 
+/// Compact chart view used by the graph-layout implementation.
+pub(crate) struct LayoutChart {
+    pub(crate) top_states: Vec<usize>,
+    pub(crate) states: Vec<LayoutChartState>,
+}
+
+pub(crate) struct LayoutChartState {
+    pub(crate) fragments: Vec<NodeId>,
+    pub(crate) splits: Vec<LayoutChartSplit>,
+}
+
+pub(crate) struct LayoutChartSplit {
+    pub(crate) root: NodeId,
+    pub(crate) dominators: Vec<NodeId>,
+    pub(crate) children: Vec<usize>,
+}
+
 impl Chart {
     /// Underlying bottom-up tree automaton.
     #[must_use]
@@ -351,6 +368,73 @@ impl Chart {
 
     pub fn graph(&self) -> &HncGraph {
         &self.graph
+    }
+
+    /// Readable forms of every distinct top fragment used by chart rules.
+    #[must_use]
+    pub fn top_fragments(&self) -> Vec<String> {
+        let mut symbols = self
+            .fragment_automaton
+            .automaton()
+            .rules()
+            .map(|rule| rule.symbol)
+            .collect::<Vec<_>>();
+        symbols.sort_unstable_by_key(|symbol| symbol.0);
+        symbols.dedup();
+        let mut fragments = symbols
+            .into_iter()
+            .map(|symbol| {
+                format_fragment(
+                    self.fragment_automaton.fragment_arena(),
+                    self.fragment_automaton.fragment_root(symbol),
+                    &self.graph,
+                )
+            })
+            .collect::<Vec<_>>();
+        fragments.sort();
+        fragments.dedup();
+        fragments
+    }
+
+    pub(crate) fn layout_chart(&self) -> LayoutChart {
+        let automaton = self.fragment_automaton.automaton();
+        let arena = self.fragment_automaton.fragment_arena();
+        let graph = self.graph();
+        let mut top_states = Vec::new();
+        automaton.initial_states(&mut |state| top_states.push(state.index()));
+        top_states.sort_unstable();
+
+        let states = (0..automaton.num_states())
+            .map(|state_index| {
+                let state = StateId(state_index);
+                let fragments = self
+                    .source_subgraph(state)
+                    .0
+                    .members()
+                    .map(|fragment| graph.roots()[fragment])
+                    .collect();
+                let splits = automaton
+                    .rules_topdown(state)
+                    .map(|rule| {
+                        let terminal = self.fragment_automaton.fragment_root(rule.symbol);
+                        let root = match arena.get_label(terminal) {
+                            FragmentNode::Node(root) => *root,
+                            FragmentNode::Hole(_) => {
+                                unreachable!("a chart terminal is rooted in a labeled fragment")
+                            }
+                        };
+                        let dominators = fragment_holes(arena, terminal);
+                        LayoutChartSplit {
+                            root: graph.roots()[graph.fragment_of(root)],
+                            dominators,
+                            children: rule.children.iter().map(|state| state.index()).collect(),
+                        }
+                    })
+                    .collect();
+                LayoutChartState { fragments, splits }
+            })
+            .collect();
+        LayoutChart { top_states, states }
     }
 
     fn source_subgraph(&self, state: StateId) -> &Subgraph {

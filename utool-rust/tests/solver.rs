@@ -253,3 +253,42 @@ fn chart_rows_are_stable_across_lazy_pages() {
     assert_eq!(expected.len(), display.row_count());
     assert!(expected.iter().all(|row| !row.fragment.contains(": ")));
 }
+
+#[test]
+fn top_fragments_enumerate_distinct_rule_symbols_without_paging() {
+    let chart = solve_text(
+        "[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]",
+    );
+    let display = ChartDisplay::new(&chart);
+    let mut from_rows = display
+        .rule_page(&chart, 0, display.row_count())
+        .rules
+        .into_iter()
+        .map(|rule| rule.fragment)
+        .collect::<Vec<_>>();
+    from_rows.sort();
+    from_rows.dedup();
+    assert_eq!(chart.top_fragments(), from_rows);
+    assert!(chart.top_fragments().contains(&"f(g(y1))".to_owned()));
+}
+
+#[test]
+fn rondane_top_fragments_cover_every_displayed_rule() {
+    let graph = HncGraph::try_from(
+        utool::parse_mrs_prolog(include_str!(
+            "../../src/main/resources/examples/rondane-892.mrs.pl"
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let chart = solve(&graph).unwrap();
+    let display = ChartDisplay::new(&chart);
+    let top_fragments = chart.top_fragments();
+    let page = display.rule_page(&chart, 0, display.row_count());
+    assert!(
+        page.rules
+            .iter()
+            .all(|rule| top_fragments.contains(&rule.fragment)),
+        "top-fragment metadata omitted a displayed substituted fragment"
+    );
+}

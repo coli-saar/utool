@@ -12,8 +12,9 @@ use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
 };
 use utool::{
-    Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutOptions, OutputCodec, Point,
-    RewriteSystem, Size, Solution, filter_chart, layout_graph, solve_with_cancellation,
+    Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutError, LayoutOptions, OutputCodec,
+    Point, RewriteSystem, Size, Solution, filter_chart, layout_chart, layout_graph,
+    solve_with_cancellation,
 };
 
 struct Document {
@@ -83,6 +84,8 @@ struct ChartView {
     subgraph_count: usize,
     split_count: usize,
     display_row_count: usize,
+    top_fragments: Vec<String>,
+    graph: Option<GraphView>,
 }
 
 #[derive(Serialize)]
@@ -135,7 +138,7 @@ fn parse_graph(input: &str, codec: &str) -> Result<HncGraph, String> {
     HncGraph::try_from(parsed).map_err(|error| error.to_string())
 }
 
-fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
+fn graph_view(graph: &HncGraph, chart: Option<&Chart>) -> Result<GraphView, String> {
     let sizes: Vec<_> = graph
         .parsed()
         .nodes()
@@ -151,8 +154,18 @@ fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
             )
         })
         .collect();
-    let layout =
-        layout_graph(graph, &sizes, LayoutOptions::default()).map_err(|error| error.to_string())?;
+    let options = LayoutOptions::default();
+    let layout = if let Some(chart) = chart {
+        match layout_chart(chart, &sizes, options) {
+            Ok(layout) => layout,
+            Err(LayoutError::UnsolvableGraph) => {
+                layout_graph(graph, &sizes, options).map_err(|error| error.to_string())?
+            }
+            Err(error) => return Err(error.to_string()),
+        }
+    } else {
+        layout_graph(graph, &sizes, options).map_err(|error| error.to_string())?
+    };
     let nodes = layout
         .nodes
         .iter()
@@ -224,7 +237,7 @@ fn load_document(
 ) -> Result<LoadedDocumentView, String> {
     let started = Instant::now();
     let graph = parse_graph(&input, &codec)?;
-    let drawing = graph_view(&graph)?;
+    let drawing = graph_view(&graph, None)?;
     let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
     let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     state
@@ -276,7 +289,7 @@ async fn build_chart(
                 display: ChartDisplay::new(&chart),
                 chart,
             });
-            let response = chart_view(chart_id, &stored, elapsed_ms);
+            let response = chart_view(chart_id, &stored, elapsed_ms, Some(&graph))?;
             if !documents
                 .lock()
                 .map_err(|_| "document state is unavailable")?
@@ -366,9 +379,14 @@ fn export_document(
     String::from_utf8(output).map_err(|error| error.to_string())
 }
 
-fn chart_view(chart_id: u64, stored: &StoredChart, elapsed_ms: f64) -> ChartView {
+fn chart_view(
+    chart_id: u64,
+    stored: &StoredChart,
+    elapsed_ms: f64,
+    graph: Option<&HncGraph>,
+) -> Result<ChartView, String> {
     let chart = &stored.chart;
-    ChartView {
+    Ok(ChartView {
         chart_id,
         elapsed_ms,
         solution_count: chart.count_solutions().to_string(),
@@ -376,7 +394,9 @@ fn chart_view(chart_id: u64, stored: &StoredChart, elapsed_ms: f64) -> ChartView
         subgraph_count: stored.display.subgraph_count(),
         split_count: chart.split_count(),
         display_row_count: stored.display.row_count(),
-    }
+        top_fragments: chart.top_fragments(),
+        graph: graph.map(|graph| graph_view(graph, Some(chart))).transpose()?,
+    })
 }
 
 #[tauri::command]
@@ -463,7 +483,7 @@ async fn filter_chart_command(
                 display: ChartDisplay::new(&filtered),
                 chart: filtered,
             });
-            let response = chart_view(result_id, &stored, elapsed_ms);
+            let response = chart_view(result_id, &stored, elapsed_ms, None)?;
             charts
                 .lock()
                 .map_err(|_| "chart state is unavailable")?

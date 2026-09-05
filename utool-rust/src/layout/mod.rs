@@ -1,5 +1,11 @@
 //! Renderer-neutral graph layout.
 
+mod chart;
+mod optimized;
+
+pub use chart::layout_java_chart;
+pub use optimized::{layout_chart, layout_optimized_chart};
+
 use crate::graph::{HncGraph, NodeId};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
@@ -78,7 +84,9 @@ pub struct LayoutOptions {
     pub node_y_gap: f32,
     /// Horizontal space between fragments.
     pub fragment_x_gap: f32,
-    /// Vertical space reserved between fragment levels.
+    /// Horizontal space between fragments in the default chart-backed layout.
+    pub chart_fragment_x_gap: f32,
+    /// Minimum vertical space between dominance-edge endpoints and fragment levels.
     pub fragment_y_gap: f32,
 }
 
@@ -86,8 +94,9 @@ impl Default for LayoutOptions {
     fn default() -> Self {
         Self {
             node_x_gap: 15.0,
-            node_y_gap: 15.0,
+            node_y_gap: 27.0,
             fragment_x_gap: 30.0,
+            chart_fragment_x_gap: 50.0,
             fragment_y_gap: 75.0,
         }
     }
@@ -99,20 +108,38 @@ pub enum LayoutError {
     /// Missing measured size.
     #[error("no measured size for node {0:?}")]
     MissingNodeSize(NodeId),
+    /// The chart has no derivations, so Java's chart layout is not applicable.
+    #[error("cannot compute a chart layout because the graph is unsolvable")]
+    UnsolvableGraph,
+    /// Fixed fragment geometry makes a downward dominance-edge cycle impossible.
+    #[error("cannot point every dominance edge down while preserving fragment geometry")]
+    InfeasibleDownwardLayout,
 }
 
-/// Lay out every fragment as an ordered tree, then arrange the fragment graph
-/// in dominance-distance layers.
+/// Lay out a graph without chart information using bounded, deterministic
+/// fragment ordering and compaction.
 ///
 /// # Errors
 ///
-/// Returns [`LayoutError::MissingNodeSize`] when a graph node has no measured size.
+/// Returns [`LayoutError::MissingNodeSize`] when a graph node has no measured
+/// size, or [`LayoutError::InfeasibleDownwardLayout`] when the graph's vertical
+/// constraints cannot all point downward.
 ///
 /// # Panics
 ///
 /// Panics if a validated graph has inconsistent fragment membership.
-#[allow(clippy::too_many_lines)]
 pub fn layout_graph(
+    graph: &HncGraph,
+    measured_sizes: &[(NodeId, Size)],
+    options: LayoutOptions,
+) -> Result<Layout, LayoutError> {
+    let seed = layout_graph_seed(graph, measured_sizes, options)?;
+    optimized::optimize_graph_layout(graph, seed, options)
+}
+
+/// Produce a cheap deterministic seed for the graph-only optimizer.
+#[allow(clippy::too_many_lines)]
+fn layout_graph_seed(
     graph: &HncGraph,
     measured_sizes: &[(NodeId, Size)],
     options: LayoutOptions,

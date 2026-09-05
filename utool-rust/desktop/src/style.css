@@ -33,7 +33,7 @@ marker path { fill: #df303b; }
 .graph-canvas.draggable .node { cursor: grab; touch-action: none; }
 .graph-canvas.dragging, .graph-canvas.dragging .node, .graph-canvas.dragging .fragment-hitboxes rect { cursor: grabbing; }
 .node rect { fill: #fff; stroke: #384557; stroke-width: 1.35; vector-effect: non-scaling-stroke; }
-.node.hole rect { fill: #fff; stroke: #d52e38; stroke-dasharray: 3 2; }
+.node.hole rect { fill: #fff; stroke: #b8c0ca; stroke-width: .9; stroke-dasharray: none; }
 .node text { text-anchor: middle; font-size: 12px; pointer-events: none; user-select: none; }
 .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #505a67; }
 .welcome h2 { margin: 0; color: #202630; }
@@ -52,10 +52,12 @@ marker path { fill: #df303b; }
 .chart-row-first { margin-top: 8px; padding-top: 10px; border-top: 1px solid #d9dde3; }
 .chart-state-label { min-height: 25px; padding: 0 8px 7px; display: flex; align-items: baseline; gap: 10px; color: #303a47; font-weight: 650; }
 .chart-state-label small { color: #7a8490; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 10px; font-weight: 550; text-transform: uppercase; letter-spacing: .04em; }
-.chart-rule-grid { display: grid; grid-template-columns: 32px minmax(210px, 34%) minmax(280px, 1fr); align-items: start; column-gap: 12px; padding: 2px 8px; line-height: 1.55; }
+.chart-rule-grid { display: grid; grid-template-columns: 32px var(--chart-fragment-width, 120px) minmax(280px, 1fr); align-items: start; column-gap: 20px; padding: 2px 8px; line-height: 1.55; }
 .chart-rule-number { color: #8a939e; text-align: left; font-variant-numeric: tabular-nums; }
-.chart-fragment { color: #873946; font-weight: 650; white-space: pre-wrap; padding-left: 1.25em; text-indent: -1.25em; }
-.chart-assignments { display: flex; flex-direction: column; color: #4f5a68; }
+.chart-fragment { color: #873946; font-weight: 650; white-space: pre; padding-left: 1.25em; text-indent: -1.25em; }
+.chart-fragment-rulers { position: absolute; visibility: hidden; display: flex; flex-direction: column; align-items: flex-start; pointer-events: none; }
+.chart-fragment-rulers .chart-fragment { display: block; width: max-content; white-space: pre; }
+.chart-assignments { display: flex; flex-direction: column; margin-left: 24px; color: #4f5a68; }
 .chart-assignments b { color: #873946; font-weight: 600; }
 .chart-assignments i { color: #315d96; font-style: normal; }
 .chart-row-loading { padding: 14px 40px; color: #8a939e; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
@@ -63,7 +65,7 @@ marker path { fill: #df303b; }
 @media (max-width: 950px) {
   .chart-rule-grid { grid-template-columns: 32px 1fr; }
   .chart-fragment, .chart-assignments { grid-column: 2; }
-  .chart-assignments { padding-top: 3px; }
+  .chart-assignments { margin-left: 0; padding-top: 3px; }
 }
 .solutions-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .solution-bar { min-height: 34px; padding: 3px 10px; display: flex; align-items: center; justify-content: center; border-top: 1px solid #d4d8df; background: #f5f6f8; font-size: 11px; }
