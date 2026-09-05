@@ -18,3 +18,8 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 utool = { path = "../.." }
+
+# Keep Tauri's fast, debuggable development build while compiling the
+# CPU-intensive Utool engine and its dependencies with full optimization.
+[profile.dev.package."*"]
+opt-level = 3

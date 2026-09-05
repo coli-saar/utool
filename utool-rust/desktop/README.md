@@ -26,6 +26,19 @@ npm install
 npm run tauri dev
 ```
 
+This keeps the Tauri application shell in Cargo's debuggable development
+profile, but compiles the `utool` engine and all other Rust dependencies with
+`opt-level = 3`. To compile and run the entire desktop application with Cargo's
+release profile instead, use:
+
+```sh
+npm run dev:release
+```
+
+The release command takes longer to compile and does not enable Rust debug
+assertions, but gives the most representative runtime performance. `tauri
+build` also uses the release profile when producing an application bundle.
+
 The initial graph is a small Domcon/Oz example with two solutions. Its chart is
 computed immediately. Use the fixed tabs to inspect the graph, chart, and
 solutions; controls along the bottom of Solutions navigate to any exact solution

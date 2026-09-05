@@ -29,7 +29,7 @@ pub enum Pattern {
 }
 
 /// One weakening or equivalence rule.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct RewriteRule {
     /// Required polarity/annotation for an oriented rule.
     pub annotation: Option<String>,
@@ -177,6 +177,10 @@ impl RewriteSystem {
             }
             return Err(syntax(line_number, "expected a rewrite or annotation rule"));
         }
+        let mut unique_rules = HashSet::new();
+        system
+            .rules
+            .retain(|rule| unique_rules.insert(rule.clone()));
         Ok(system)
     }
 }
@@ -1495,6 +1499,20 @@ pub fn filter_chart(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parsing_suppresses_exact_duplicate_rewrite_rules() {
+        let equation = "a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))";
+        let weakening = "[+] a#1(X,a#2(Y,Z)) -> a#2(Y,a#1(X,Z))";
+        let system =
+            RewriteSystem::parse(&format!("{equation}\n{equation}\n{weakening}\n{weakening}"))
+                .unwrap();
+
+        assert_eq!(system.rules.len(), 2);
+        assert!(!system.rules[0].oriented);
+        assert!(system.rules[1].oriented);
+        assert_eq!(system.rules[1].annotation.as_deref(), Some("+"));
+    }
 
     #[test]
     fn parses_utool_rewrite_surface_and_preserves_occurrences() {
