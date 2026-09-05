@@ -90,3 +90,52 @@ fn chain_specification_is_a_length_not_a_filename() {
         .unwrap();
     assert_eq!(invalid.code(), Some(193));
 }
+
+#[test]
+fn compound_input_suffixes_select_distinct_codecs_and_bare_pl_is_ambiguous() {
+    let mrs = fixture(
+        "compound-mrs",
+        "mrs.pl",
+        "psoa(h1,e2,[rel('rain',h3,[attrval('ARG0',e2)])],hcons([qeq(h1,h3)]))",
+    );
+    let holesem = fixture(
+        "compound-holesem",
+        "hs.pl",
+        "some(A,and(label(A),pred1(A,rain,x)))",
+    );
+    let ambiguous = fixture("ambiguous", "pl", "some(A,hole(A))");
+    for path in [&mrs, &holesem] {
+        let status = Command::new(env!("CARGO_BIN_EXE_utool"))
+            .args(["solvable", path.to_str().unwrap()])
+            .status()
+            .unwrap();
+        assert_eq!(status.code(), Some(1), "{}", path.display());
+    }
+    let status = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["solvable", ambiguous.to_str().unwrap()])
+        .status()
+        .unwrap();
+    assert_eq!(status.code(), Some(151));
+    for path in [mrs, holesem, ambiguous] {
+        fs::remove_file(path).unwrap();
+    }
+}
+
+#[test]
+fn compound_output_suffix_selects_gxl_without_an_explicit_codec() {
+    let input = fixture("gxl-output-input", "clls", "[label(x a)]");
+    let output = fixture("gxl-output", "dg.xml", "");
+    let status = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args([
+            "convert",
+            "-o",
+            output.to_str().unwrap(),
+            input.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert!(status.success());
+    assert!(fs::read_to_string(&output).unwrap().contains("<gxl"));
+    fs::remove_file(input).unwrap();
+    fs::remove_file(output).unwrap();
+}

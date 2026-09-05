@@ -314,13 +314,23 @@ export default function App() {
   }, [computeBaseChart]);
 
   const openDocument = useCallback(async () => {
-    const selected = await open({ multiple: false, filters: [{ name: "Dominance graphs", extensions: ["clls", "oz", "pl", "txt"] }] });
+    // Native pickers filter by the final filesystem extension. Compound codec
+    // suffixes are resolved below after the user has selected the file.
+    const selected = await open({ multiple: false, filters: [{ name: "Dominance graphs", extensions: ["clls", "pl", "xml"] }] });
     if (!selected) return;
     const startedAt = performance.now();
     const title = selected.split(/[\\/]/).pop() ?? "Graph";
     setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
     try {
-      await addGraph(await readTextFile(selected), selected.toLowerCase().endsWith(".pl") ? "holesem" : "domcon-oz", title, startedAt);
+      const lower = selected.toLowerCase();
+      const codec = lower.endsWith(".mrs.pl") ? "mrs-prolog"
+        : lower.endsWith(".hs.pl") ? "holesem-comsem"
+        : lower.endsWith(".mrs.xml") ? "mrs-xml"
+        : lower.endsWith(".dg.xml") ? "domgraph-gxl"
+        : lower.endsWith(".clls") ? "domcon-oz"
+        : null;
+      if (!codec) throw new Error(`Unsupported graph filename: ${title}`);
+      await addGraph(await readTextFile(selected), codec, title, startedAt);
     } catch (reason) {
       setError(String(reason));
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
@@ -330,7 +340,7 @@ export default function App() {
   const chooseFilter = useCallback(async () => {
     const base = variants.find((variant) => variant.key === "base");
     if (!base || filterRunning) return;
-    const selected = await open({ multiple: false, filters: [{ name: "Utool rewrite systems", extensions: ["rew", "rules", "txt"] }] });
+    const selected = await open({ multiple: false });
     if (!selected) return;
     const filterName = selected.split(/[\\/]/).pop() ?? "Filter";
     const key = `filter:${selected}`;

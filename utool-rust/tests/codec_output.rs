@@ -11,6 +11,15 @@ fn output_registry_resolves_every_name_alias_and_suffix() {
         ("domcon", OutputCodec::DomconOz),
         ("domgraph-dot", OutputCodec::DomgraphDot),
         ("dot", OutputCodec::DomgraphDot),
+        ("domgraph-gxl", OutputCodec::DomgraphGxl),
+        ("gxl", OutputCodec::DomgraphGxl),
+        ("domgraph-udraw", OutputCodec::DomgraphUdraw),
+        ("udraw", OutputCodec::DomgraphUdraw),
+        ("domgraph-codegen", OutputCodec::DomgraphCodegen),
+        ("codegen", OutputCodec::DomgraphCodegen),
+        ("plugging-oz", OutputCodec::PluggingOz),
+        ("plugging-lkb", OutputCodec::PluggingLkb),
+        ("plugging-groovy", OutputCodec::PluggingGroovy),
         ("term-prolog", OutputCodec::TermProlog),
         ("term-oz", OutputCodec::TermOz),
     ];
@@ -23,8 +32,13 @@ fn output_registry_resolves_every_name_alias_and_suffix() {
     let suffixes = [
         ("result.CLLS", OutputCodec::DomconOz),
         ("result.DG.DOT", OutputCodec::DomgraphDot),
+        ("result.DG.XML", OutputCodec::DomgraphGxl),
+        ("result.DG.UDG", OutputCodec::DomgraphUdraw),
+        ("result.PLUG.OZ", OutputCodec::PluggingOz),
+        ("result.LKBPLUG.LISP", OutputCodec::PluggingLkb),
         ("result.T.PL", OutputCodec::TermProlog),
         ("result.T.OZ", OutputCodec::TermOz),
+        ("result.JAVA", OutputCodec::DomgraphCodegen),
     ];
     for (filename, expected) in suffixes {
         assert_eq!(
@@ -49,6 +63,12 @@ fn output_registry_reports_all_names_and_capabilities() {
     let cases = [
         (OutputCodec::DomconOz, "domcon-oz", true, true),
         (OutputCodec::DomgraphDot, "domgraph-dot", true, false),
+        (OutputCodec::DomgraphGxl, "domgraph-gxl", true, true),
+        (OutputCodec::DomgraphUdraw, "domgraph-udraw", true, false),
+        (OutputCodec::DomgraphCodegen, "domgraph-codegen", true, true),
+        (OutputCodec::PluggingOz, "plugging-oz", true, true),
+        (OutputCodec::PluggingLkb, "plugging-lkb", true, true),
+        (OutputCodec::PluggingGroovy, "plugging-groovy", true, true),
         (OutputCodec::TermProlog, "term-prolog", false, true),
         (OutputCodec::TermOz, "term-oz", false, true),
     ];
@@ -59,6 +79,35 @@ fn output_registry_reports_all_names_and_capabilities() {
         assert_eq!(codec.graph_encoder().is_some(), graph);
         assert_eq!(codec.solution_encoder().is_some(), solutions);
     }
+}
+
+#[test]
+fn legacy_graph_outputs_match_java_shapes_and_gxl_round_trips() {
+    let graph = parse_domcon_oz("[label(x f(h1)) label(h2 'a&b') dom(h1 h2)]").unwrap();
+    let encode = |codec: OutputCodec| {
+        let mut output = Vec::new();
+        codec
+            .graph_encoder()
+            .unwrap()
+            .write_graph(&graph, &mut output)
+            .unwrap();
+        String::from_utf8(output).unwrap()
+    };
+    let gxl = encode(OutputCodec::DomgraphGxl);
+    assert_eq!(utool::parse_domgraph_gxl(&gxl).unwrap(), graph);
+    assert!(gxl.contains("a&amp;b"));
+    let udraw = encode(OutputCodec::DomgraphUdraw);
+    assert!(udraw.contains("EDGEPATTERN\",\"solid"));
+    assert!(udraw.contains("EDGEPATTERN\",\"dotted"));
+    assert_eq!(encode(OutputCodec::PluggingOz), "[plug(h1 h2)]\n");
+    assert_eq!(encode(OutputCodec::PluggingLkb), "( (1 1 2) (2 1 2))\n");
+    assert_eq!(
+        encode(OutputCodec::PluggingGroovy),
+        "[[[\"h1\", \"h2\"]],[:]]"
+    );
+    let code = encode(OutputCodec::DomgraphCodegen);
+    assert!(code.contains("graph.addNode(\"x\", new NodeData(NodeType.LABELLED));"));
+    assert!(code.contains("new EdgeData(EdgeType.DOMINANCE)"));
 }
 
 #[test]
@@ -164,6 +213,11 @@ fn domcon_solution_codec_delimits_multiple_solutions_exactly() {
 fn solution_encoder_can_be_reused_after_begin_resets_its_state() {
     for codec in [
         OutputCodec::DomconOz,
+        OutputCodec::DomgraphGxl,
+        OutputCodec::DomgraphCodegen,
+        OutputCodec::PluggingOz,
+        OutputCodec::PluggingLkb,
+        OutputCodec::PluggingGroovy,
         OutputCodec::TermProlog,
         OutputCodec::TermOz,
     ] {
@@ -181,7 +235,16 @@ fn solution_encoder_can_be_reused_after_begin_resets_its_state() {
 #[test]
 fn graph_codecs_propagate_writer_errors() {
     let graph = parse_domcon_oz("[label(x a)]").unwrap();
-    for codec in [OutputCodec::DomconOz, OutputCodec::DomgraphDot] {
+    for codec in [
+        OutputCodec::DomconOz,
+        OutputCodec::DomgraphDot,
+        OutputCodec::DomgraphGxl,
+        OutputCodec::DomgraphUdraw,
+        OutputCodec::DomgraphCodegen,
+        OutputCodec::PluggingOz,
+        OutputCodec::PluggingLkb,
+        OutputCodec::PluggingGroovy,
+    ] {
         let error = codec
             .graph_encoder()
             .unwrap()
@@ -195,6 +258,11 @@ fn graph_codecs_propagate_writer_errors() {
 fn solution_codecs_propagate_errors_from_every_lifecycle_method() {
     for codec in [
         OutputCodec::DomconOz,
+        OutputCodec::DomgraphGxl,
+        OutputCodec::DomgraphCodegen,
+        OutputCodec::PluggingOz,
+        OutputCodec::PluggingLkb,
+        OutputCodec::PluggingGroovy,
         OutputCodec::TermProlog,
         OutputCodec::TermOz,
     ] {

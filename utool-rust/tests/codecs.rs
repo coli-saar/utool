@@ -1,6 +1,6 @@
 use utool::{
-    CodecError, GraphError, HncGraph, InputCodec, parse_chain, parse_domcon_oz, parse_holesem,
-    solve,
+    CodecError, GraphError, HncGraph, InputCodec, parse_chain, parse_domcon_oz, parse_domgraph_gxl,
+    parse_holesem, parse_mrs_prolog, parse_mrs_xml, solve,
 };
 
 #[test]
@@ -8,8 +8,12 @@ fn input_registry_resolves_every_name_alias_and_suffix() {
     let names = [
         ("domcon-oz", InputCodec::DomconOz),
         ("domcon", InputCodec::DomconOz),
+        ("domgraph-gxl", InputCodec::DomgraphGxl),
+        ("gxl", InputCodec::DomgraphGxl),
         ("holesem-comsem", InputCodec::HoleSemantics),
         ("holesem", InputCodec::HoleSemantics),
+        ("mrs-prolog", InputCodec::MrsProlog),
+        ("mrs-xml", InputCodec::MrsXml),
         ("chain", InputCodec::Chain),
     ];
     for (name, expected) in names {
@@ -20,11 +24,10 @@ fn input_registry_resolves_every_name_alias_and_suffix() {
 
     let suffixes = [
         ("graph.CLLS", InputCodec::DomconOz),
-        ("graph.domcon", InputCodec::DomconOz),
-        ("graph.oz", InputCodec::DomconOz),
-        ("graph.txt", InputCodec::DomconOz),
-        ("graph.PL", InputCodec::HoleSemantics),
-        ("graph.holesem", InputCodec::HoleSemantics),
+        ("graph.DG.XML", InputCodec::DomgraphGxl),
+        ("graph.HS.PL", InputCodec::HoleSemantics),
+        ("graph.MRS.PL", InputCodec::MrsProlog),
+        ("graph.MRS.XML", InputCodec::MrsXml),
     ];
     for (filename, expected) in suffixes {
         assert_eq!(
@@ -35,9 +38,21 @@ fn input_registry_resolves_every_name_alias_and_suffix() {
     }
     assert_eq!(InputCodec::from_filename("graph"), None);
     assert_eq!(InputCodec::from_filename("graph.json"), None);
+    for ambiguous in [
+        "graph.pl",
+        "graph.xml",
+        "graph.oz",
+        "graph.txt",
+        "graph.domcon",
+    ] {
+        assert_eq!(InputCodec::from_filename(ambiguous), None, "{ambiguous}");
+    }
 
     assert_eq!(InputCodec::DomconOz.name(), "domcon-oz");
+    assert_eq!(InputCodec::DomgraphGxl.name(), "domgraph-gxl");
     assert_eq!(InputCodec::HoleSemantics.name(), "holesem-comsem");
+    assert_eq!(InputCodec::MrsProlog.name(), "mrs-prolog");
+    assert_eq!(InputCodec::MrsXml.name(), "mrs-xml");
     assert_eq!(InputCodec::Chain.name(), "chain");
 }
 
@@ -51,7 +66,106 @@ fn input_registry_dispatches_to_every_parser() {
             .nodes()
             .is_empty()
     );
+    assert_eq!(
+        InputCodec::MrsProlog
+            .parse("psoa(h1,e2,[rel('rain',h3,[attrval('ARG0',e2)])],hcons([qeq(h1,h3)]))")
+            .unwrap()
+            .nodes()
+            .len(),
+        1
+    );
+    assert_eq!(InputCodec::MrsXml.parse("<mrs><var vid=\"h1\"/><ep><pred>rain</pred><var vid=\"h3\"/><fvpair><rargname>ARG0</rargname><var vid=\"e2\"/></fvpair></ep><hcons><hi><var vid=\"h1\"/></hi><lo><var vid=\"h3\"/></lo></hcons></mrs>").unwrap().nodes().len(), 1);
+    assert_eq!(InputCodec::DomgraphGxl.parse("<gxl xmlns:xlink=\"x\"><graph><node id=\"x\"><type xlink:href=\"leaf\"/><attr name=\"label\"><string>a</string></attr></node></graph></gxl>").unwrap().nodes().len(), 1);
     assert_eq!(InputCodec::Chain.parse("1").unwrap().nodes().len(), 5);
+}
+
+#[test]
+fn mrs_prolog_matches_java_reference_and_all_repository_examples_are_hnc() {
+    let stefan_mrs = r"psoa(h1,e2,
+[
+ rel('proper_q',h3,
+     [ attrval('ARG0',x4),
+       attrval('RSTR',h5),
+       attrval('BODY',h6)]),
+ rel('named_rel',h7,
+     [ attrval('ARG0',x4),
+       attrval('NAME','Aicke')]),
+ rel('proper_q',h8,
+     [ attrval('ARG0',x9),
+       attrval('RSTR',h10),
+       attrval('BODY',h11)]),
+ rel('named_rel',h12,
+     [ attrval('ARG0',x9),
+       attrval('NAME','Aicke')]),
+ rel('kennen_rel',h13,
+     [ attrval('ARG0',e2),
+       attrval('ARG1',x4),
+       attrval('ARG2',x9)])],
+ hcons([
+ qeq(h5,h7),
+ qeq(h10,h12)
+ ]))";
+    let input = stefan_mrs;
+    let expected = parse_domcon_oz("[label(h3 proper_q(h5 h6)) label(h7 named_rel) label(h8 proper_q(h10 h11)) label(h12 named_rel) label(h13 kennen_rel) dom(h5 h7) dom(h10 h12) dom(h11 h13) dom(h6 h13)]").unwrap();
+    assert_graph_equivalent(&parse_mrs_prolog(input).unwrap(), &expected);
+
+    for input in [
+        include_str!("../../src/main/resources/examples/rondane-1.mrs.pl"),
+        include_str!("../../src/main/resources/examples/rondane-1262.mrs.pl"),
+        include_str!("../../src/main/resources/examples/rondane-1409.mrs.pl"),
+        include_str!("../../src/main/resources/examples/rondane-650.mrs.pl"),
+        include_str!("../../src/main/resources/examples/rondane-892.mrs.pl"),
+        stefan_mrs,
+        include_str!("fixtures/rademaker.mrs.pl"),
+    ] {
+        assert!(HncGraph::try_from(parse_mrs_prolog(input).unwrap()).is_ok());
+    }
+}
+
+fn assert_graph_equivalent(actual: &utool::ParsedGraph, expected: &utool::ParsedGraph) {
+    let describe = |graph: &utool::ParsedGraph| {
+        let nodes: std::collections::BTreeSet<_> = graph
+            .nodes()
+            .iter()
+            .map(|node| {
+                (
+                    node.name().to_owned(),
+                    node.label().map(str::to_owned),
+                    node.tree_children()
+                        .iter()
+                        .map(|child| graph.node(*child).name().to_owned())
+                        .collect::<Vec<_>>(),
+                )
+            })
+            .collect();
+        let dominance: std::collections::BTreeSet<_> = graph
+            .dominance_edges()
+            .iter()
+            .map(|&(source, target)| {
+                (
+                    graph.node(source).name().to_owned(),
+                    graph.node(target).name().to_owned(),
+                )
+            })
+            .collect();
+        (nodes, dominance)
+    };
+    assert_eq!(describe(actual), describe(expected));
+}
+
+#[test]
+fn mrs_xml_and_gxl_decode_entities_and_match_equivalent_domcon() {
+    let mrs = "<mrs><var vid=\"h1\"/><ep><pred>a&amp;b</pred><var vid=\"h3\"/><fvpair><rargname>ARG0</rargname><var vid=\"e2\"/></fvpair></ep><hcons><hi><var vid=\"h1\"/></hi><lo><var vid=\"h3\"/></lo></hcons></mrs>";
+    assert_eq!(
+        parse_mrs_xml(mrs).unwrap(),
+        parse_domcon_oz("[label(h3 'a&b')]").unwrap()
+    );
+
+    let gxl = "<gxl xmlns:xlink=\"x\"><graph><node id=\"r\"><type xlink:href=\"root\"/><attr name=\"label\"><string>a&amp;b</string></attr></node><node id=\"h\"><type xlink:href=\"hole\"/></node><node id=\"x\"><type xlink:href=\"leaf\"/><attr name=\"label\"><string>c</string></attr></node><edge from=\"r\" to=\"h\"><type xlink:href=\"solid\"/></edge><edge from=\"h\" to=\"x\"><type xlink:href=\"dominance\"/></edge></graph></gxl>";
+    assert_eq!(
+        parse_domgraph_gxl(gxl).unwrap(),
+        parse_domcon_oz("[label(r 'a&b'(h)) label(x c) dom(h x)]").unwrap()
+    );
 }
 
 #[test]

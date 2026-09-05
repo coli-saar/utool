@@ -443,7 +443,7 @@ fn main() -> ExitCode {
     }
     if opts.display_codecs {
         println!(
-            "Input codecs:\n  chain\n  domcon-oz (.clls)\n  holesem-comsem (.hs.pl)\nOutput codecs:\n  domcon-oz (.clls)\n  domgraph-dot (.dg.dot)\n  term-prolog (.t.pl)\n  term-oz (.t.oz)"
+            "Input codecs:\n  chain\n  domcon-oz (.clls)\n  domgraph-gxl (.dg.xml)\n  holesem-comsem (.hs.pl)\n  mrs-prolog (.mrs.pl)\n  mrs-xml (.mrs.xml)\nOutput codecs:\n  domcon-oz (.clls)\n  domgraph-gxl (.dg.xml)\n  domgraph-dot (.dg.dot)\n  domgraph-udraw (.dg.udg)\n  plugging-oz (.plug.oz)\n  plugging-lkb (.lkbplug.lisp)\n  term-prolog (.t.pl)\n  term-oz (.t.oz)\n  domgraph-codegen (.java)\n  plugging-groovy"
         );
         return ExitCode::SUCCESS;
     }

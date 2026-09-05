@@ -11,11 +11,15 @@ use crate::graph::ParsedGraph;
 use thiserror::Error;
 
 mod domcon;
+mod gxl;
 mod holesem;
+mod mrs;
 mod output;
 
 pub use domcon::parse_domcon_oz;
+pub use gxl::parse_domgraph_gxl;
 pub use holesem::parse_holesem;
+pub use mrs::{parse_mrs_prolog, parse_mrs_xml};
 pub use output::{GraphOutputCodec, OutputCodec, SolutionEncoder};
 
 /// Input formats currently supported by the Rust implementation.
@@ -23,8 +27,14 @@ pub use output::{GraphOutputCodec, OutputCodec, SolutionEncoder};
 pub enum InputCodec {
     /// Oz-style dominance constraints.
     DomconOz,
+    /// GXL representation of a dominance graph.
+    DomgraphGxl,
     /// Prolog-style Hole Semantics.
     HoleSemantics,
+    /// DELPH-IN/LKB Prolog-style Minimal Recursion Semantics.
+    MrsProlog,
+    /// XML Minimal Recursion Semantics.
+    MrsXml,
     /// Synthetic pure chains used for benchmarks.
     Chain,
 }
@@ -35,7 +45,10 @@ impl InputCodec {
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
             "domcon-oz" | "domcon" => Some(Self::DomconOz),
+            "domgraph-gxl" | "gxl" => Some(Self::DomgraphGxl),
             "holesem-comsem" | "holesem" => Some(Self::HoleSemantics),
+            "mrs-prolog" => Some(Self::MrsProlog),
+            "mrs-xml" => Some(Self::MrsXml),
             "chain" => Some(Self::Chain),
             _ => None,
         }
@@ -46,7 +59,10 @@ impl InputCodec {
     pub const fn name(self) -> &'static str {
         match self {
             Self::DomconOz => "domcon-oz",
+            Self::DomgraphGxl => "domgraph-gxl",
             Self::HoleSemantics => "holesem-comsem",
+            Self::MrsProlog => "mrs-prolog",
+            Self::MrsXml => "mrs-xml",
             Self::Chain => "chain",
         }
     }
@@ -54,15 +70,21 @@ impl InputCodec {
     /// Infer a codec from a file name. The inference is intentionally shared by
     /// the desktop and CLI frontends.
     #[must_use]
+    #[allow(clippy::case_sensitive_file_extension_comparisons)]
     pub fn from_filename(filename: &str) -> Option<Self> {
-        let extension = std::path::Path::new(filename)
-            .extension()?
-            .to_str()?
-            .to_ascii_lowercase();
-        match extension.as_str() {
-            "pl" | "holesem" => Some(Self::HoleSemantics),
-            "clls" | "domcon" | "oz" | "txt" => Some(Self::DomconOz),
-            _ => None,
+        let filename = filename.to_ascii_lowercase();
+        if filename.ends_with(".mrs.pl") {
+            Some(Self::MrsProlog)
+        } else if filename.ends_with(".hs.pl") {
+            Some(Self::HoleSemantics)
+        } else if filename.ends_with(".mrs.xml") {
+            Some(Self::MrsXml)
+        } else if filename.ends_with(".dg.xml") {
+            Some(Self::DomgraphGxl)
+        } else if filename.ends_with(".clls") {
+            Some(Self::DomconOz)
+        } else {
+            None
         }
     }
 
@@ -74,7 +96,10 @@ impl InputCodec {
     pub fn parse(self, input: &str) -> CodecResult {
         match self {
             Self::DomconOz => parse_domcon_oz(input),
+            Self::DomgraphGxl => parse_domgraph_gxl(input),
             Self::HoleSemantics => parse_holesem(input),
+            Self::MrsProlog => parse_mrs_prolog(input),
+            Self::MrsXml => parse_mrs_xml(input),
             Self::Chain => parse_chain(input),
         }
     }

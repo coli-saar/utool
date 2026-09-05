@@ -29,7 +29,8 @@ pub mod solver;
 
 pub use codec::{
     CodecError, GraphOutputCodec, InputCodec, OutputCodec, SolutionEncoder, encode_domcon_oz,
-    encode_dot, parse_chain, parse_domcon_oz, parse_holesem,
+    encode_dot, parse_chain, parse_domcon_oz, parse_domgraph_gxl, parse_holesem, parse_mrs_prolog,
+    parse_mrs_xml,
 };
 pub use filter::{FilterError, Pattern, RewriteRule, RewriteSystem, filter_chart};
 pub use graph::{GraphBuilder, GraphError, HncGraph, Node, NodeId, ParsedGraph};

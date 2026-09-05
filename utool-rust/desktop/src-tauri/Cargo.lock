@@ -4606,6 +4606,7 @@ dependencies = [
  "packed-term-arena",
  "parol",
  "parol_runtime",
+ "quick-xml",
  "rusty-alto",
  "scnr2",
  "serde",

@@ -1,6 +1,136 @@
 use utool::{
-    FilterError, HncGraph, RewriteSystem, filter_chart, parse_chain, parse_domcon_oz, solve,
+    FilterError, HncGraph, RewriteSystem, filter_chart, parse_chain, parse_domcon_oz,
+    parse_mrs_prolog, solve,
 };
+
+const STEFAN_MRS: &str = r"
+psoa(h1,e2,
+[
+ rel('proper_q',h3,
+     [ attrval('ARG0',x4),
+       attrval('RSTR',h5),
+       attrval('BODY',h6)]),
+ rel('named_rel',h7,
+     [ attrval('ARG0',x4),
+       attrval('NAME','Aicke')]),
+ rel('proper_q',h8,
+     [ attrval('ARG0',x9),
+       attrval('RSTR',h10),
+       attrval('BODY',h11)]),
+ rel('named_rel',h12,
+     [ attrval('ARG0',x9),
+       attrval('NAME','Aicke')]),
+ rel('kennen_rel',h13,
+     [ attrval('ARG0',e2),
+       attrval('ARG1',x4),
+       attrval('ARG2',x9)])],
+ hcons([
+ qeq(h5,h7),
+ qeq(h10,h12)
+ ]))
+";
+
+const STEFAN_EQUIVALENCES: &str = r"
+// Auto-converted from the utool 3.1-era XML equivalence format
+// (source: equivalences.xml) to the utool 3.2+ RewritingSystemParser syntax.
+
+start annotation: +
+neutral annotation: 0
+
+// equivalencegroup: def_q#1, def_q#1, udef_q#1, demonstrative_q#1, demonstrative_q#1, some_q#0, some_q#1, one_q#0, one_q#1
+def_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,some_q#2(Y0,Y1)) = some_q#2(def_q#1(A,Y0),Y1)
+def_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,one_q#2(Y0,Y1)) = one_q#2(def_q#1(A,Y0),Y1)
+def_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,some_q#2(Y0,Y1)) = some_q#2(def_q#1(A,Y0),Y1)
+def_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,def_q#1(A,Y1))
+def_q#1(A,one_q#2(Y0,Y1)) = one_q#2(def_q#1(A,Y0),Y1)
+def_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,def_q#1(A,Y1))
+udef_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,some_q#2(Y0,Y1)) = some_q#2(udef_q#1(A,Y0),Y1)
+udef_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,udef_q#1(A,Y1))
+udef_q#1(A,one_q#2(Y0,Y1)) = one_q#2(udef_q#1(A,Y0),Y1)
+udef_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,udef_q#1(A,Y1))
+demonstrative_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,some_q#2(Y0,Y1)) = some_q#2(demonstrative_q#1(A,Y0),Y1)
+demonstrative_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,one_q#2(Y0,Y1)) = one_q#2(demonstrative_q#1(A,Y0),Y1)
+demonstrative_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,some_q#2(Y0,Y1)) = some_q#2(demonstrative_q#1(A,Y0),Y1)
+demonstrative_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,demonstrative_q#1(A,Y1))
+demonstrative_q#1(A,one_q#2(Y0,Y1)) = one_q#2(demonstrative_q#1(A,Y0),Y1)
+demonstrative_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,demonstrative_q#1(A,Y1))
+some_q#1(def_q#2(Y0,Y1),A) = def_q#2(Y0,some_q#1(Y1,A))
+some_q#1(def_q#2(Y0,Y1),A) = def_q#2(Y0,some_q#1(Y1,A))
+some_q#1(udef_q#2(Y0,Y1),A) = udef_q#2(Y0,some_q#1(Y1,A))
+some_q#1(demonstrative_q#2(Y0,Y1),A) = demonstrative_q#2(Y0,some_q#1(Y1,A))
+some_q#1(demonstrative_q#2(Y0,Y1),A) = demonstrative_q#2(Y0,some_q#1(Y1,A))
+some_q#1(some_q#2(Y0,Y1),A) = some_q#2(some_q#1(Y0,A),Y1)
+some_q#1(some_q#2(Y0,Y1),A) = some_q#2(Y0,some_q#1(Y1,A))
+some_q#1(one_q#2(Y0,Y1),A) = one_q#2(some_q#1(Y0,A),Y1)
+some_q#1(one_q#2(Y0,Y1),A) = one_q#2(Y0,some_q#1(Y1,A))
+some_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,some_q#1(A,Y1))
+some_q#1(A,one_q#2(Y0,Y1)) = one_q#2(some_q#1(A,Y0),Y1)
+some_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,some_q#1(A,Y1))
+one_q#1(def_q#2(Y0,Y1),A) = def_q#2(Y0,one_q#1(Y1,A))
+one_q#1(def_q#2(Y0,Y1),A) = def_q#2(Y0,one_q#1(Y1,A))
+one_q#1(udef_q#2(Y0,Y1),A) = udef_q#2(Y0,one_q#1(Y1,A))
+one_q#1(demonstrative_q#2(Y0,Y1),A) = demonstrative_q#2(Y0,one_q#1(Y1,A))
+one_q#1(demonstrative_q#2(Y0,Y1),A) = demonstrative_q#2(Y0,one_q#1(Y1,A))
+one_q#1(some_q#2(Y0,Y1),A) = some_q#2(one_q#1(Y0,A),Y1)
+one_q#1(some_q#2(Y0,Y1),A) = some_q#2(Y0,one_q#1(Y1,A))
+one_q#1(one_q#2(Y0,Y1),A) = one_q#2(one_q#1(Y0,A),Y1)
+one_q#1(one_q#2(Y0,Y1),A) = one_q#2(Y0,one_q#1(Y1,A))
+one_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,def_q#2(Y0,Y1)) = def_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,udef_q#2(Y0,Y1)) = udef_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,demonstrative_q#2(Y0,Y1)) = demonstrative_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,some_q#2(Y0,Y1)) = some_q#2(one_q#1(A,Y0),Y1)
+one_q#1(A,some_q#2(Y0,Y1)) = some_q#2(Y0,one_q#1(A,Y1))
+one_q#1(A,one_q#2(Y0,Y1)) = one_q#2(Y0,one_q#1(A,Y1))
+
+// equivalencegroup: every_q#1, each_q#1
+every_q#1(A,every_q#2(Y0,Y1)) = every_q#2(Y0,every_q#1(A,Y1))
+every_q#1(A,each_q#2(Y0,Y1)) = each_q#2(Y0,every_q#1(A,Y1))
+each_q#1(A,every_q#2(Y0,Y1)) = every_q#2(Y0,each_q#1(A,Y1))
+each_q#1(A,each_q#2(Y0,Y1)) = each_q#2(Y0,each_q#1(A,Y1))
+
+// permutesWithEverything: proper_q#1
+proper_q(A,*[Y]) = *[proper_q(A,Y)]
+
+// permutesWithEverything: pronoun_q#1
+pronoun_q(A,*[Y]) = *[pronoun_q(A,Y)]
+
+";
 
 fn solution_terms(chart: &utool::Chart) -> Vec<String> {
     let mut terms = Vec::new();
@@ -95,4 +225,17 @@ fn context_wildcards_filter_below_one_unchanged_parent() {
         solution_terms(&filtered),
         ["a(bar,wrap(every(foo,baz)))", "wrap(every(foo,a(bar,baz)))",]
     );
+}
+
+#[test]
+fn stefan_eigennamen_equivalences_reduce_two_scopings_to_one() {
+    let parsed = parse_mrs_prolog(STEFAN_MRS).unwrap();
+    let graph = HncGraph::try_from(parsed).unwrap();
+    let chart = solve(&graph).unwrap();
+    assert_eq!(chart.count_solutions().to_string(), "2");
+
+    let rules = RewriteSystem::parse(STEFAN_EQUIVALENCES).unwrap();
+    let filtered = filter_chart(&chart, &rules, || false).unwrap();
+    assert_eq!(filtered.count_solutions().to_string(), "1");
+    assert_eq!(solution_terms(&filtered).len(), 1);
 }
