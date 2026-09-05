@@ -11,8 +11,8 @@ use tauri::{
     menu::{MenuBuilder, SubmenuBuilder},
 };
 use utool::{
-    Chart, EdgeKind, HncGraph, InputCodec, LayoutOptions, Point, RewriteSystem, Size, Solution,
-    encode_domcon_oz, encode_dot, filter_chart, layout_graph, solve_with_cancellation,
+    Chart, EdgeKind, HncGraph, InputCodec, LayoutOptions, OutputCodec, Point, RewriteSystem, Size,
+    Solution, filter_chart, layout_graph, solve_with_cancellation,
 };
 
 struct Document {
@@ -102,11 +102,8 @@ struct SolutionNodeView {
 }
 
 fn parse_graph(input: &str, codec: &str) -> Result<HncGraph, String> {
-    let codec = match codec {
-        "domcon-oz" => InputCodec::DomconOz,
-        "holesem" => InputCodec::HoleSemantics,
-        other => return Err(format!("unsupported input codec: {other}")),
-    };
+    let codec = InputCodec::from_name(codec)
+        .ok_or_else(|| format!("unsupported input codec: {codec}"))?;
     let parsed = codec.parse(input).map_err(|error| error.to_string())?;
     HncGraph::try_from(parsed).map_err(|error| error.to_string())
 }
@@ -310,11 +307,16 @@ fn export_document(
         .get(&document_id)
         .ok_or("document is no longer open")?
         .graph;
-    match format.as_str() {
-        "domcon" => Ok(encode_domcon_oz(graph.parsed())),
-        "dot" => Ok(encode_dot(graph.parsed())),
-        _ => Err(format!("unsupported output format: {format}")),
-    }
+    let codec = OutputCodec::from_name(&format)
+        .ok_or_else(|| format!("unsupported output format: {format}"))?;
+    let encoder = codec
+        .graph_encoder()
+        .ok_or_else(|| format!("output format does not support graphs: {}", codec.name()))?;
+    let mut output = Vec::new();
+    encoder
+        .write_graph(graph.parsed(), &mut output)
+        .map_err(|error| error.to_string())?;
+    String::from_utf8(output).map_err(|error| error.to_string())
 }
 
 fn chart_view(chart_id: u64, chart: &Chart) -> ChartView {

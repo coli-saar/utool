@@ -1,0 +1,6 @@
+[label(x f(x1))
+ label(y g(y1))
+ label(z a)
+ dom(x1 z)
+ dom(y1 z)
+ dom(y x1)]

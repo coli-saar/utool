@@ -1,14 +1,22 @@
-//! Text codecs.
+//! Parsing and streaming serialization for dominance graphs and solved forms.
+//!
+//! [`InputCodec`] selects an eager parser which produces a [`ParsedGraph`].
+//! Output uses a different model because solution enumeration is destructive:
+//! [`OutputCodec`] discovers a format, [`GraphOutputCodec`] writes one graph,
+//! and [`SolutionEncoder`] writes a framed solution sequence without retaining
+//! earlier solutions. The legacy [`encode_domcon_oz`] and [`encode_dot`]
+//! helpers remain convenient when a complete in-memory [`String`] is desired.
 
 use crate::graph::ParsedGraph;
-use std::fmt::Write as _;
 use thiserror::Error;
 
 mod domcon;
 mod holesem;
+mod output;
 
 pub use domcon::parse_domcon_oz;
 pub use holesem::parse_holesem;
+pub use output::{GraphOutputCodec, OutputCodec, SolutionEncoder};
 
 /// Input formats currently supported by the Rust implementation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,6 +30,27 @@ pub enum InputCodec {
 }
 
 impl InputCodec {
+    /// Resolve a canonical codec name or a frontend alias.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "domcon-oz" | "domcon" => Some(Self::DomconOz),
+            "holesem-comsem" | "holesem" => Some(Self::HoleSemantics),
+            "chain" => Some(Self::Chain),
+            _ => None,
+        }
+    }
+
+    /// Canonical command-line name.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::DomconOz => "domcon-oz",
+            Self::HoleSemantics => "holesem-comsem",
+            Self::Chain => "chain",
+        }
+    }
+
     /// Infer a codec from a file name. The inference is intentionally shared by
     /// the desktop and CLI frontends.
     #[must_use]
@@ -84,71 +113,31 @@ pub fn parse_chain(input: &str) -> CodecResult {
 }
 
 /// Serialize a graph as canonical Domcon/Oz constraints.
+///
+/// This convenience function buffers the complete result. Use
+/// [`OutputCodec::graph_encoder`] to write directly to an output stream.
 #[must_use]
 pub fn encode_domcon_oz(graph: &ParsedGraph) -> String {
-    let mut constraints = Vec::new();
-    for node in graph.nodes() {
-        if let Some(label) = node.label() {
-            let children = node
-                .tree_children()
-                .iter()
-                .map(|child| graph.node(*child).name())
-                .collect::<Vec<_>>()
-                .join(" ");
-            constraints.push(if children.is_empty() {
-                format!("label({} {})", node.name(), label)
-            } else {
-                format!("label({} {}({children}))", node.name(), label)
-            });
-        }
-    }
-    constraints.extend(graph.dominance_edges().iter().map(|(source, target)| {
-        format!(
-            "dom({} {})",
-            graph.node(*source).name(),
-            graph.node(*target).name()
-        )
-    }));
-    format!("[{}]", constraints.join(" "))
+    encode_graph_to_string(OutputCodec::DomconOz, graph)
 }
 
 /// Serialize a graph in Graphviz DOT form.
+///
+/// This convenience function buffers the complete result. Use
+/// [`OutputCodec::graph_encoder`] to write directly to an output stream.
 #[must_use]
 pub fn encode_dot(graph: &ParsedGraph) -> String {
-    fn quoted(value: &str) -> String {
-        format!("\"{}\"", value.replace('\\', "\\\\").replace('\"', "\\\""))
-    }
-    let mut output = String::from("digraph dominance_graph {\n");
-    for node in graph.nodes() {
-        let label = node.label().unwrap_or(node.name());
-        writeln!(
-            output,
-            "  {} [label={}];",
-            quoted(node.name()),
-            quoted(label)
-        )
-        .expect("writing to a String cannot fail");
-        for child in node.tree_children() {
-            writeln!(
-                output,
-                "  {} -> {} [style=solid];",
-                quoted(node.name()),
-                quoted(graph.node(*child).name())
-            )
-            .expect("writing to a String cannot fail");
-        }
-    }
-    for (source, target) in graph.dominance_edges() {
-        writeln!(
-            output,
-            "  {} -> {} [style=dotted];",
-            quoted(graph.node(*source).name()),
-            quoted(graph.node(*target).name())
-        )
-        .expect("writing to a String cannot fail");
-    }
-    output.push_str("}\n");
-    output
+    encode_graph_to_string(OutputCodec::DomgraphDot, graph)
+}
+
+fn encode_graph_to_string(codec: OutputCodec, graph: &ParsedGraph) -> String {
+    let mut output = Vec::new();
+    codec
+        .graph_encoder()
+        .expect("selected codec supports graphs")
+        .write_graph(graph, &mut output)
+        .expect("writing to a Vec cannot fail");
+    String::from_utf8(output).expect("text codecs emit UTF-8")
 }
 
 /// A syntax or semantic codec error.

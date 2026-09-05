@@ -115,8 +115,9 @@ struct DfsFrame {
 /// mutable DFS stack is reused between results. The same accepted tree can be
 /// returned more than once if it has multiple accepting runs.
 ///
-/// This is a streaming iterator rather than [`Iterator`]: call [`advance`](Self::advance),
-/// inspect [`current`](Self::current), then advance again. This lets the current
+/// This is a streaming iterator rather than [`Iterator`]: call
+/// [`advance`](DfsLanguageIterator::advance), inspect
+/// [`current`](DfsLanguageIterator::current), then advance again. This lets the current
 /// derivation borrow the iterator's reusable stack without cloning a tree.
 pub struct DfsLanguagePlan {
     rules: Vec<Vec<DfsRule>>,

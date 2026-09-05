@@ -175,7 +175,16 @@ fn atom_text(atom: &Atom<'_>) -> String {
             .text(),
     };
     if raw.starts_with('\'') && raw.ends_with('\'') {
-        raw[1..raw.len() - 1].to_owned()
+        let mut output = String::new();
+        let mut characters = raw[1..raw.len() - 1].chars();
+        while let Some(character) = characters.next() {
+            if character == '\\' {
+                output.push(characters.next().unwrap_or(character));
+            } else {
+                output.push(character);
+            }
+        }
+        output
     } else {
         raw.to_owned()
     }

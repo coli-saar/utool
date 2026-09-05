@@ -28,8 +28,8 @@ pub mod layout;
 pub mod solver;
 
 pub use codec::{
-    CodecError, InputCodec, encode_domcon_oz, encode_dot, parse_chain, parse_domcon_oz,
-    parse_holesem,
+    CodecError, GraphOutputCodec, InputCodec, OutputCodec, SolutionEncoder, encode_domcon_oz,
+    encode_dot, parse_chain, parse_domcon_oz, parse_holesem,
 };
 pub use filter::{FilterError, Pattern, RewriteRule, RewriteSystem, filter_chart};
 pub use graph::{GraphBuilder, GraphError, HncGraph, Node, NodeId, ParsedGraph};

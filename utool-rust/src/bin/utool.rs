@@ -4,10 +4,7 @@ use std::{
     process::ExitCode,
     time::{Duration, Instant},
 };
-use utool::{
-    GraphBuilder, HncGraph, InputCodec, RewriteSystem, Solution, encode_domcon_oz, encode_dot,
-    filter_chart, is_solvable, solve,
-};
+use utool::{HncGraph, InputCodec, OutputCodec, RewriteSystem, filter_chart, is_solvable, solve};
 
 const IO_ERROR: u8 = 128;
 const NO_INPUT: u8 = 150;
@@ -163,18 +160,10 @@ fn print_help(command: Option<&str>) {
     }
 }
 
-fn codec(name: &str) -> Option<InputCodec> {
-    match name {
-        "domcon-oz" => Some(InputCodec::DomconOz),
-        "holesem-comsem" | "holesem" => Some(InputCodec::HoleSemantics),
-        "chain" => Some(InputCodec::Chain),
-        _ => None,
-    }
-}
-
 fn read_graph(opts: &Options, source: &str) -> Result<HncGraph, (String, u8)> {
     let selected = if let Some(name) = &opts.input_codec {
-        codec(name).ok_or_else(|| (format!("Unknown input codec: {name}"), NO_SUCH_INPUT_CODEC))?
+        InputCodec::from_name(name)
+            .ok_or_else(|| (format!("Unknown input codec: {name}"), NO_SUCH_INPUT_CODEC))?
     } else {
         InputCodec::from_filename(source).ok_or_else(|| {
             (
@@ -218,14 +207,9 @@ fn read_graph(opts: &Options, source: &str) -> Result<HncGraph, (String, u8)> {
     })
 }
 
-fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<String, (String, u8)> {
+fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<OutputCodec, (String, u8)> {
     if let Some(name) = &opts.output_codec {
-        return matches!(
-            name.as_str(),
-            "domcon-oz" | "domgraph-dot" | "term-prolog" | "term-oz"
-        )
-        .then(|| name.clone())
-        .ok_or_else(|| {
+        return OutputCodec::from_name(name).ok_or_else(|| {
             (
                 format!("Unknown output codec: {name}"),
                 NO_SUCH_OUTPUT_CODEC,
@@ -233,48 +217,19 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<String, (Str
         });
     }
     if let Some(path) = &opts.output {
-        if path.ends_with(".dg.dot") {
-            return Ok("domgraph-dot".to_owned());
-        }
-        if path.ends_with(".t.pl") {
-            return Ok("term-prolog".to_owned());
-        }
-        if path.ends_with(".t.oz") {
-            return Ok("term-oz".to_owned());
-        }
-        if has_extension(path, "clls") {
-            return Ok("domcon-oz".to_owned());
+        if let Some(codec) = OutputCodec::from_filename(path) {
+            return Ok(codec);
         }
     }
     if opts.input_codec.as_deref() == Some("domcon-oz")
-        || input_name.is_some_and(|path| has_extension(path, "clls"))
+        || input_name.and_then(OutputCodec::from_filename) == Some(OutputCodec::DomconOz)
     {
-        return Ok("domcon-oz".to_owned());
+        return Ok(OutputCodec::DomconOz);
     }
     Err((
         "You must specify an output codec for this operation!".to_owned(),
         NO_OUTPUT_CODEC,
     ))
-}
-
-fn has_extension(path: &str, expected: &str) -> bool {
-    std::path::Path::new(path)
-        .extension()
-        .and_then(std::ffi::OsStr::to_str)
-        .is_some_and(|extension| extension.eq_ignore_ascii_case(expected))
-}
-
-fn write_result(opts: &Options, text: &str) -> Result<(), (String, u8)> {
-    if opts.no_output {
-        return Ok(());
-    }
-    if let Some(path) = &opts.output {
-        fs::write(path, text).map_err(|e| (e.to_string(), IO_ERROR))
-    } else {
-        io::stdout()
-            .write_all(text.as_bytes())
-            .map_err(|e| (e.to_string(), IO_ERROR))
-    }
 }
 
 fn result_writer(opts: &Options) -> Result<BufWriter<Box<dyn Write>>, (String, u8)> {
@@ -284,25 +239,6 @@ fn result_writer(opts: &Options) -> Result<BufWriter<Box<dyn Write>>, (String, u
         Box::new(io::stdout())
     };
     Ok(BufWriter::new(writer))
-}
-
-fn solution_as_domcon(solution: &Solution) -> String {
-    let mut builder = GraphBuilder::default();
-    if let Some(root) = solution.root() {
-        let mut stack = vec![root];
-        while let Some(tree) = stack.pop() {
-            let id = builder.ensure_node(solution.node_name(tree).to_owned());
-            builder
-                .set_label(id, solution.node_label(tree).to_owned())
-                .expect("a Solution has consistent labels");
-            for child in solution.arena().get_children(tree) {
-                let child_id = builder.ensure_node(solution.node_name(*child).to_owned());
-                builder.add_tree_edge(id, child_id);
-                stack.push(*child);
-            }
-        }
-    }
-    encode_domcon_oz(&builder.finish())
 }
 
 fn format_duration(duration: Duration) -> String {
@@ -323,7 +259,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
     let graph = read_graph(opts, source)?;
     let solve_output_codec = if op == Operation::Solve && !opts.no_output {
         let codec = output_codec(opts, Some(source))?;
-        if !matches!(codec.as_str(), "term-prolog" | "term-oz" | "domcon-oz") {
+        if !codec.supports_solutions() {
             return Err((
                 "This output codec doesn't support the printing of multiple solved forms!"
                     .to_owned(),
@@ -336,17 +272,19 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
     };
     if op == Operation::Convert {
         let codec = output_codec(opts, Some(source))?;
-        let text = match codec.as_str() {
-            "domcon-oz" => encode_domcon_oz(graph.parsed()),
-            "domgraph-dot" => encode_dot(graph.parsed()),
-            _ => {
-                return Err((
-                    "This graph is not supported by the specified output codec.".to_owned(),
-                    225,
-                ));
-            }
+        let Some(encoder) = codec.graph_encoder() else {
+            return Err((
+                "This graph is not supported by the specified output codec.".to_owned(),
+                225,
+            ));
         };
-        write_result(opts, &text)?;
+        if !opts.no_output {
+            let mut writer = result_writer(opts)?;
+            encoder
+                .write_graph(graph.parsed(), &mut writer)
+                .and_then(|()| writer.flush())
+                .map_err(|e| (e.to_string(), IO_ERROR))?;
+        }
         return Ok(0);
     }
     if op == Operation::Classify {
@@ -429,65 +367,31 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         let enumeration_started = Instant::now();
         let mut count = 0_usize;
         let limit = opts.limit.unwrap_or(usize::MAX);
-        if solve_output_codec.is_none() {
-            let mut solutions = chart.solutions();
-            while count < limit && solutions.advance() {
-                count += 1;
-            }
-        } else {
-            let codec = solve_output_codec
-                .as_deref()
-                .expect("output presence was checked above");
+        if let Some(codec) = solve_output_codec {
             let mut writer = result_writer(opts)?;
-            if codec == "domcon-oz" {
-                writer
-                    .write_all(b"%%  autogenerated by Utool\n[\n")
-                    .map_err(|e| (e.to_string(), IO_ERROR))?;
-            } else {
-                writer
-                    .write_all(b"[")
-                    .map_err(|e| (e.to_string(), IO_ERROR))?;
-            }
+            let mut encoder = codec
+                .solution_encoder()
+                .expect("solution codec capability was checked above");
+            encoder
+                .begin(&mut writer)
+                .map_err(|e| (e.to_string(), IO_ERROR))?;
             let mut solutions = chart.solutions();
             while count < limit && solutions.advance() {
                 let solution = solutions.current().expect("advance produced a solution");
-                let rendered = match codec {
-                    "domcon-oz" => solution_as_domcon(&solution),
-                    "term-prolog" => solution.to_label_term(","),
-                    "term-oz" => solution.to_label_term(" "),
-                    _ => unreachable!("output codec validated above"),
-                };
-                if count > 0 && codec != "domcon-oz" {
-                    let separator = if codec == "term-prolog" {
-                        b",\n"
-                    } else {
-                        b" \n"
-                    };
-                    writer
-                        .write_all(separator)
-                        .map_err(|e| (e.to_string(), IO_ERROR))?;
-                }
-                writer
-                    .write_all(rendered.as_bytes())
+                encoder
+                    .write_solution(&solution, &mut writer)
                     .map_err(|e| (e.to_string(), IO_ERROR))?;
-                if codec == "domcon-oz" {
-                    writer
-                        .write_all(b"\n")
-                        .map_err(|e| (e.to_string(), IO_ERROR))?;
-                }
                 count += 1;
             }
-            let ending = if codec == "domcon-oz" && count == 0 {
-                b"\n]\n".as_slice()
-            } else if codec == "domcon-oz" {
-                b"]\n".as_slice()
-            } else {
-                b"]".as_slice()
-            };
-            writer
-                .write_all(ending)
+            encoder
+                .finish(&mut writer)
                 .and_then(|()| writer.flush())
                 .map_err(|e| (e.to_string(), IO_ERROR))?;
+        } else {
+            let mut solutions = chart.solutions();
+            while count < limit && solutions.advance() {
+                count += 1;
+            }
         }
         let enumeration_duration = enumeration_started.elapsed();
         if opts.statistics {

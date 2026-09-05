@@ -61,7 +61,16 @@ fn atom_text(atom: &OzAtom<'_>) -> String {
 
 fn unquote(raw: &str) -> String {
     if raw.starts_with('\'') && raw.ends_with('\'') {
-        raw[1..raw.len() - 1].replace("\\'", "'")
+        let mut output = String::new();
+        let mut characters = raw[1..raw.len() - 1].chars();
+        while let Some(character) = characters.next() {
+            if character == '\\' {
+                output.push(characters.next().unwrap_or(character));
+            } else {
+                output.push(character);
+            }
+        }
+        output
     } else {
         raw.to_owned()
     }
