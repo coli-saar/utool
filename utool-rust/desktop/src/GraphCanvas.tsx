@@ -1,4 +1,4 @@
-import { PointerEvent, useMemo, useRef, useState } from "react";
+import { PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { GraphView, Point } from "./types";
 
 type Props = {
@@ -35,9 +35,23 @@ function fragments(graph: GraphView): Map<number, number[]> {
 export function GraphCanvas({ graph, zoom, onSvgReady }: Props) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [offsets, setOffsets] = useState<Record<number, Point>>({});
-  const drag = useRef<{ members: number[]; start: Point; originals: Record<number, Point> } | null>(null);
+  const drag = useRef<{ pointerId: number; members: number[]; start: Point; originals: Record<number, Point> } | null>(null);
+  const pendingMove = useRef<{ members: number[]; originals: Record<number, Point>; dx: number; dy: number } | null>(null);
+  const animationFrame = useRef<number | null>(null);
   const nodes = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph]);
   const fragmentOf = useMemo(() => fragments(graph), [graph]);
+  const fragmentMembers = useMemo(() => {
+    const unique = new Map<number, number[]>();
+    graph.nodes.forEach((node) => {
+      const members = fragmentOf.get(node.id) ?? [node.id];
+      unique.set(Math.min(...members), members);
+    });
+    return Array.from(unique.values());
+  }, [fragmentOf, graph.nodes]);
+
+  useEffect(() => () => {
+    if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current);
+  }, []);
 
   const position = (id: number) => {
     const node = nodes.get(id)!;
@@ -54,63 +68,119 @@ export function GraphCanvas({ graph, zoom, onSvgReady }: Props) {
   };
 
   const beginDrag = (event: PointerEvent, id: number) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+    const svg = svgRef.current!;
+    svg.setPointerCapture(event.pointerId);
+    svg.classList.add("dragging");
     const members = fragmentOf.get(id) ?? [id];
     drag.current = {
+      pointerId: event.pointerId,
       members,
       start: svgPoint(event),
       originals: Object.fromEntries(members.map((member) => [member, offsets[member] ?? { x: 0, y: 0 }])),
     };
   };
 
-  const moveDrag = (event: PointerEvent) => {
-    if (!drag.current) return;
-    const point = svgPoint(event);
-    const current = drag.current;
-    const dx = point.x - current.start.x;
-    const dy = point.y - current.start.y;
+  const commitPendingMove = () => {
+    const pending = pendingMove.current;
+    pendingMove.current = null;
+    if (!pending) return;
     setOffsets((old) => ({
       ...old,
-      ...Object.fromEntries(current.members.map((id) => [id, {
-        x: current.originals[id].x + dx,
-        y: current.originals[id].y + dy,
+      ...Object.fromEntries(pending.members.map((id) => [id, {
+        x: pending.originals[id].x + pending.dx,
+        y: pending.originals[id].y + pending.dy,
       }])),
     }));
   };
 
-  const route = (sourceId: number, targetId: number, kind: string) => {
+  const moveDrag = (event: PointerEvent) => {
+    if (!drag.current || drag.current.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    const point = svgPoint(event);
+    const current = drag.current;
+    const dx = point.x - current.start.x;
+    const dy = point.y - current.start.y;
+    pendingMove.current = { members: current.members, originals: current.originals, dx, dy };
+    if (animationFrame.current !== null) return;
+    animationFrame.current = requestAnimationFrame(() => {
+      animationFrame.current = null;
+      commitPendingMove();
+    });
+  };
+
+  const endDrag = (event: PointerEvent) => {
+    if (!drag.current || drag.current.pointerId !== event.pointerId) return;
+    const svg = svgRef.current;
+    drag.current = null;
+    if (animationFrame.current !== null) {
+      cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = null;
+    }
+    commitPendingMove();
+    svg?.classList.remove("dragging");
+    if (svg?.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+  };
+
+  const lostPointerCapture = () => {
+    drag.current = null;
+    if (animationFrame.current !== null) {
+      cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = null;
+    }
+    commitPendingMove();
+    svgRef.current?.classList.remove("dragging");
+  };
+
+  const route = (sourceId: number, targetId: number) => {
     const source = nodes.get(sourceId)!;
     const target = nodes.get(targetId)!;
     const s = position(sourceId);
     const t = position(targetId);
     const start = { x: s.x + source.width / 2, y: s.y + source.height };
     const end = { x: t.x + target.width / 2, y: t.y };
-    if (kind === "tree") {
-      const middle = (start.y + end.y) / 2;
-      return `${start.x},${start.y} ${start.x},${middle} ${end.x},${middle} ${end.x},${end.y}`;
-    }
     return `${start.x},${start.y} ${end.x},${end.y}`;
   };
 
   const factor = zoom / 100;
   const viewWidth = Math.max(graph.width / factor, 300);
   const viewHeight = Math.max(graph.height / factor, 220);
+  const fragmentBoxes = fragmentMembers.map((members) => {
+    const placed = members.map((id) => ({ node: nodes.get(id)!, at: position(id) }));
+    const x = Math.min(...placed.map(({ at }) => at.x));
+    const y = Math.min(...placed.map(({ at }) => at.y));
+    const right = Math.max(...placed.map(({ node, at }) => at.x + node.width));
+    const bottom = Math.max(...placed.map(({ node, at }) => at.y + node.height));
+    return { members, x, y, width: right - x, height: bottom - y };
+  }).sort((left, right) => right.width * right.height - left.width * left.height);
   return (
     <svg
       ref={(element) => { svgRef.current = element; onSvgReady?.(element); }}
       className="graph-canvas"
       viewBox={`${-(viewWidth - graph.width) / 2 - 20} ${-(viewHeight - graph.height) / 2 - 20} ${viewWidth} ${viewHeight}`}
       onPointerMove={moveDrag}
-      onPointerUp={() => { drag.current = null; }}
-      onPointerCancel={() => { drag.current = null; }}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onLostPointerCapture={lostPointerCapture}
+      onDragStart={(event) => event.preventDefault()}
       role="img"
       aria-label="Dominance graph"
     >
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" /></marker>
       </defs>
+      <g className="fragment-hitboxes" aria-hidden="true">
+        {fragmentBoxes.map((box) => <rect
+          key={box.members[0]}
+          x={box.x}
+          y={box.y}
+          width={box.width}
+          height={box.height}
+          onPointerDown={(event) => beginDrag(event, box.members[0])}
+        />)}
+      </g>
       <g className="edges">
-        {graph.edges.map((edge, index) => <polyline key={`${edge.source}-${edge.target}-${index}`} points={route(edge.source, edge.target, edge.kind)} className={`${edge.kind} ${edge.light ? "light" : ""}`} markerEnd={edge.kind === "dominance" ? "url(#arrow)" : undefined} />)}
+        {graph.edges.map((edge, index) => <polyline key={`${edge.source}-${edge.target}-${index}`} points={route(edge.source, edge.target)} className={`${edge.kind} ${edge.light ? "light" : ""}`} markerEnd={edge.kind === "dominance" ? "url(#arrow)" : undefined} />)}
       </g>
       <g className="nodes">
         {graph.nodes.map((node) => {

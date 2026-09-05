@@ -3,7 +3,7 @@ use std::{
     collections::HashMap,
     sync::{
         Arc, Mutex,
-        atomic::{AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
 };
 use tauri::{
@@ -27,9 +27,9 @@ struct StoredChart {
 #[derive(Default)]
 struct DocumentState {
     documents: Arc<Mutex<HashMap<u64, Document>>>,
-    charts: Arc<Mutex<HashMap<u64, StoredChart>>>,
+    charts: Arc<Mutex<HashMap<u64, Arc<StoredChart>>>>,
+    jobs: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
     next_id: AtomicU64,
-    generation: Arc<AtomicU64>,
 }
 
 #[derive(Serialize)]
@@ -126,8 +126,8 @@ struct SolutionNodeView {
 }
 
 fn parse_graph(input: &str, codec: &str) -> Result<HncGraph, String> {
-    let codec = InputCodec::from_name(codec)
-        .ok_or_else(|| format!("unsupported input codec: {codec}"))?;
+    let codec =
+        InputCodec::from_name(codec).ok_or_else(|| format!("unsupported input codec: {codec}"))?;
     let parsed = codec.parse(input).map_err(|error| error.to_string())?;
     HncGraph::try_from(parsed).map_err(|error| error.to_string())
 }
@@ -140,9 +140,7 @@ fn graph_view(graph: &HncGraph) -> Result<GraphView, String> {
         .map(|node| {
             let text = node.label().unwrap_or(node.name());
             (
-                graph
-                    .node_id(node.name())
-                    .expect("node is indexed"),
+                graph.node_id(node.name()).expect("node is indexed"),
                 Size {
                     width: (text.chars().count() as f32 * 8.0 + 28.0).max(54.0),
                     height: 34.0,
@@ -238,6 +236,7 @@ fn load_document(
 #[tauri::command]
 async fn build_chart(
     document_id: u64,
+    job_id: String,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<ChartView, String> {
     let graph = state
@@ -250,62 +249,82 @@ async fn build_chart(
         .clone();
     let documents = Arc::clone(&state.documents);
     let charts = Arc::clone(&state.charts);
+    let jobs = Arc::clone(&state.jobs);
     let chart_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
-    let generation = Arc::clone(&state.generation);
-    let job = generation.fetch_add(1, Ordering::SeqCst) + 1;
+    let cancelled = Arc::new(AtomicBool::new(false));
+    state
+        .jobs
+        .lock()
+        .map_err(|_| "job state is unavailable")?
+        .insert(job_id.clone(), Arc::clone(&cancelled));
     tauri::async_runtime::spawn_blocking(move || {
-        let chart = solve_with_cancellation(&graph, || generation.load(Ordering::Relaxed) != job)
-            .map_err(|error| error.to_string())?;
-        if generation.load(Ordering::SeqCst) != job {
-            return Err("chart construction was cancelled".to_owned());
+        let result = (|| {
+            let chart = solve_with_cancellation(&graph, || cancelled.load(Ordering::Relaxed))
+                .map_err(|error| error.to_string())?;
+            if cancelled.load(Ordering::SeqCst) {
+                return Err("chart construction was cancelled".to_owned());
+            }
+            let stored = Arc::new(StoredChart {
+                display: ChartDisplay::new(&chart),
+                chart,
+            });
+            let response = chart_view(chart_id, &stored);
+            if !documents
+                .lock()
+                .map_err(|_| "document state is unavailable")?
+                .contains_key(&document_id)
+            {
+                return Err("document is no longer open".to_owned());
+            }
+            charts
+                .lock()
+                .map_err(|_| "chart state is unavailable")?
+                .insert(chart_id, stored);
+            Ok(response)
+        })();
+        if let Ok(mut active) = jobs.lock() {
+            active.remove(&job_id);
         }
-        let stored = StoredChart {
-            display: ChartDisplay::new(&chart),
-            chart,
-        };
-        let response = chart_view(chart_id, &stored);
-        if !documents
-            .lock()
-            .map_err(|_| "document state is unavailable")?
-            .contains_key(&document_id)
-        {
-            return Err("document is no longer open".to_owned());
-        }
-        charts
-            .lock()
-            .map_err(|_| "chart state is unavailable")?
-            .insert(chart_id, stored);
-        Ok(response)
+        result
     })
     .await
     .map_err(|error| format!("solver task failed: {error}"))?
 }
 
 #[tauri::command]
-fn cancel_chart(state: tauri::State<'_, DocumentState>) {
-    state.generation.fetch_add(1, Ordering::SeqCst);
+fn cancel_chart(job_id: String, state: tauri::State<'_, DocumentState>) {
+    if let Ok(jobs) = state.jobs.lock()
+        && let Some(cancelled) = jobs.get(&job_id)
+    {
+        cancelled.store(true, Ordering::SeqCst);
+    }
 }
 
 #[tauri::command]
-fn solution_at(
+async fn solution_at(
     chart_id: u64,
     index: usize,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<Option<SolutionView>, String> {
-    let charts = state
-        .charts
-        .lock()
-        .map_err(|_| "chart state is unavailable")?;
-    let chart = charts
-        .get(&chart_id)
-        .ok_or("chart is no longer available")?;
-    let mut solutions = chart.chart.solutions();
-    for _ in 0..=index {
-        if !solutions.advance() {
-            return Ok(None);
+    let chart = Arc::clone(
+        state
+            .charts
+            .lock()
+            .map_err(|_| "chart state is unavailable")?
+            .get(&chart_id)
+            .ok_or("chart is no longer available")?,
+    );
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut solutions = chart.chart.solutions();
+        for _ in 0..=index {
+            if !solutions.advance() {
+                return Ok(None);
+            }
         }
-    }
-    Ok(Some(solution_view(&solutions.current().unwrap())))
+        Ok(Some(solution_view(&solutions.current().unwrap())))
+    })
+    .await
+    .map_err(|error| format!("solution task failed: {error}"))?
 }
 
 #[tauri::command]
@@ -358,9 +377,12 @@ fn chart_rows(
         .charts
         .lock()
         .map_err(|_| "chart state is unavailable")?;
-    let chart = charts
-        .get(&chart_id)
-        .ok_or("chart is no longer available")?;
+    let chart = Arc::clone(
+        charts
+            .get(&chart_id)
+            .ok_or("chart is no longer available")?,
+    );
+    drop(charts);
     let count = count.min(MAX_PAGE_SIZE);
     let page = chart.display.rule_page(&chart.chart, start, count);
     Ok(ChartRowPage {
@@ -393,31 +415,49 @@ fn chart_rows(
 async fn filter_chart_command(
     chart_id: u64,
     rewrite_system: String,
+    job_id: String,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<ChartView, String> {
     let system = RewriteSystem::parse(&rewrite_system).map_err(|error| error.to_string())?;
     let charts = Arc::clone(&state.charts);
-    let generation = Arc::clone(&state.generation);
+    let jobs = Arc::clone(&state.jobs);
     let result_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
-    let job = generation.fetch_add(1, Ordering::SeqCst) + 1;
+    let cancelled = Arc::new(AtomicBool::new(false));
+    state
+        .jobs
+        .lock()
+        .map_err(|_| "job state is unavailable")?
+        .insert(job_id.clone(), Arc::clone(&cancelled));
     tauri::async_runtime::spawn_blocking(move || {
-        let guard = charts.lock().map_err(|_| "chart state is unavailable")?;
-        let source = guard.get(&chart_id).ok_or("chart is no longer available")?;
-        let filtered = filter_chart(&source.chart, &system, || {
-            generation.load(Ordering::Relaxed) != job
-        })
-        .map_err(|error| error.to_string())?;
-        drop(guard);
-        let stored = StoredChart {
-            display: ChartDisplay::new(&filtered),
-            chart: filtered,
-        };
-        let response = chart_view(result_id, &stored);
-        charts
-            .lock()
-            .map_err(|_| "chart state is unavailable")?
-            .insert(result_id, stored);
-        Ok(response)
+        let result = (|| {
+            let source = Arc::clone(
+                charts
+                    .lock()
+                    .map_err(|_| "chart state is unavailable")?
+                    .get(&chart_id)
+                    .ok_or("chart is no longer available")?,
+            );
+            let filtered =
+                filter_chart(&source.chart, &system, || cancelled.load(Ordering::Relaxed))
+                    .map_err(|error| error.to_string())?;
+            if cancelled.load(Ordering::SeqCst) {
+                return Err("chart filtering was cancelled".to_owned());
+            }
+            let stored = Arc::new(StoredChart {
+                display: ChartDisplay::new(&filtered),
+                chart: filtered,
+            });
+            let response = chart_view(result_id, &stored);
+            charts
+                .lock()
+                .map_err(|_| "chart state is unavailable")?
+                .insert(result_id, stored);
+            Ok(response)
+        })();
+        if let Ok(mut active) = jobs.lock() {
+            active.remove(&job_id);
+        }
+        result
     })
     .await
     .map_err(|error| format!("filter task failed: {error}"))?
@@ -452,9 +492,8 @@ pub fn run() {
                 .text("export-dot", "Export Graphviz DOT…")
                 .build()?;
             let solver = SubmenuBuilder::new(app, "Solver")
-                .text("build-chart", "Build Chart")
-                .text("filter-chart", "Filter Chart…")
-                .text("show-solution", "Show First Solution")
+                .text("filter-chart", "Add Filter…")
+                .text("show-solution", "Show Solutions")
                 .build()?;
             let menu = MenuBuilder::new(app)
                 .items(&[&application, &file, &solver])

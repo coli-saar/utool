@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -9,10 +10,9 @@ import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedD
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
 const ZOOMS = [25, 33, 50, 67, 75, 100, 125, 150];
 
-type GraphTab = { key: string; kind: "graph"; title: string; documentId: number; graph: GraphView; zoom: number };
-type ChartTab = { key: string; kind: "chart"; title: string; sourceTitle: string; documentId: number; chart: ChartView };
-type SolutionTab = { key: string; kind: "solution"; title: string; sourceTitle: string; documentId: number; chartId: number; solution: SolutionView; index: number; total: string; zoom: number };
-type Tab = GraphTab | ChartTab | SolutionTab;
+type ViewName = "graph" | "chart" | "solutions";
+type DocumentView = { title: string; documentId: number; graph: GraphView };
+type ChartVariant = { key: string; name: string; chart: ChartView };
 type ActionStatus = { action: string; elapsedMs: number | null; running: boolean };
 
 function solutionGraph(solution: SolutionView): GraphView {
@@ -190,38 +190,124 @@ function ChartRules({ chart }: { chart: ChartView }) {
   </div>;
 }
 
+function SolutionSpaceControl({ variants, activeKey, filterRunning, onSelect, onAdd }: {
+  variants: ChartVariant[];
+  activeKey: string;
+  filterRunning: string | null;
+  onSelect: (key: string) => void;
+  onAdd: () => void;
+}) {
+  const choose = "__choose_filter__";
+  return <label className="filter-picker" htmlFor="solution-space">
+    <span>Filter</span>
+    <select id="solution-space" value={activeKey} onChange={(event) => event.target.value === choose ? onAdd() : onSelect(event.target.value)} disabled={Boolean(filterRunning) || variants.length === 0}>
+      {variants.length === 0 && <option value="base">Computing chart…</option>}
+      {variants.map((variant) => <option key={variant.key} value={variant.key}>{variant.key === "base" ? "None" : variant.name} · {variant.chart.solutionCount} solutions</option>)}
+      {variants.length > 0 && <option value={choose}>Choose filter…</option>}
+    </select>
+  </label>;
+}
+
 export default function App() {
-  const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeKey, setActiveKey] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [document, setDocument] = useState<DocumentView | null>(null);
+  const [activeView, setActiveView] = useState<ViewName>("graph");
+  const [variants, setVariants] = useState<ChartVariant[]>([]);
+  const [activeVariantKey, setActiveVariantKey] = useState("base");
+  const [chartRunning, setChartRunning] = useState(false);
+  const [filterRunning, setFilterRunning] = useState<string | null>(null);
+  const [solutionRunning, setSolutionRunning] = useState(false);
+  const [solution, setSolution] = useState<SolutionView | null>(null);
+  const [solutionIndex, setSolutionIndex] = useState(0);
+  const [graphZoom, setGraphZoom] = useState(50);
+  const [solutionZoom, setSolutionZoom] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<ActionStatus>({ action: "Ready", elapsedMs: null, running: false });
   const svg = useRef<SVGSVGElement | null>(null);
-  const serial = useRef(0);
   const operation = useRef(0);
-  const actionStarted = useRef(0);
-  const active = tabs.find((tab) => tab.key === activeKey);
+  const loadOperation = useRef(0);
+  const solutionOperation = useRef(0);
+  const activeJob = useRef<string | null>(null);
+  const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
+
+  const makeJobId = () => crypto.randomUUID();
+
+  const loadSolution = useCallback(async (chart: ChartView, index: number, announce = true) => {
+    const token = ++solutionOperation.current;
+    const startedAt = performance.now();
+    setSolutionRunning(true);
+    if (announce) setStatus({ action: `Loading solution ${index + 1}`, elapsedMs: null, running: true });
+    try {
+      const next = await invoke<SolutionView | null>("solution_at", { chartId: chart.chartId, index });
+      if (solutionOperation.current !== token) return;
+      setSolution(next);
+      setSolutionIndex(index);
+      if (announce) setStatus({ action: `Loaded solution ${index + 1}`, elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) {
+      if (solutionOperation.current !== token) return;
+      setError(String(reason));
+      setStatus({ action: "Loading solution failed", elapsedMs: performance.now() - startedAt, running: false });
+    } finally {
+      if (solutionOperation.current === token) setSolutionRunning(false);
+    }
+  }, []);
+
+  const computeBaseChart = useCallback(async (loaded: LoadedDocumentView, token: number) => {
+    const startedAt = performance.now();
+    const jobId = makeJobId();
+    activeJob.current = jobId;
+    setChartRunning(true);
+    setStatus({ action: "Computing chart", elapsedMs: null, running: true });
+    try {
+      const chart = await invoke<ChartView>("build_chart", { documentId: loaded.documentId, jobId });
+      if (operation.current !== token) return;
+      const base = { key: "base", name: "Unfiltered", chart };
+      setVariants([base]);
+      setActiveVariantKey("base");
+      setStatus({ action: `Chart ready · ${chart.solutionCount} solutions`, elapsedMs: performance.now() - startedAt, running: false });
+      if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
+    } catch (reason) {
+      if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
+      setError(String(reason));
+      setStatus({ action: "Computing chart failed", elapsedMs: performance.now() - startedAt, running: false });
+    } finally {
+      if (operation.current === token) {
+        activeJob.current = null;
+        setChartRunning(false);
+      }
+    }
+  }, [loadSolution]);
 
   const addGraph = useCallback(async (input: string, codec: string, title: string, startedAt = performance.now()) => {
+    const loadToken = ++loadOperation.current;
     setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
     setError(null);
     try {
       const loaded = await invoke<LoadedDocumentView>("load_document", { input, codec });
-      const tab: GraphTab = { key: `graph-${++serial.current}`, kind: "graph", title, documentId: loaded.documentId, graph: loaded.graph, zoom: 50 };
-      setTabs((old) => [...old, tab]);
-      setActiveKey(tab.key);
+      if (loadOperation.current !== loadToken) return;
+      const token = ++operation.current;
+      if (activeJob.current) void invoke("cancel_chart", { jobId: activeJob.current });
+      activeJob.current = null;
+      solutionOperation.current++;
+      setVariants([]);
+      setSolution(null);
+      setChartRunning(false);
+      setFilterRunning(null);
+      setActiveView("graph");
+      setDocument({ title, documentId: loaded.documentId, graph: loaded.graph });
       setStatus({ action: `Opened ${title}`, elapsedMs: performance.now() - startedAt, running: false });
+      void getCurrentWindow().setTitle(`Utool — ${title}`);
+      void computeBaseChart(loaded, token);
     } catch (reason) {
+      if (loadOperation.current !== loadToken) return;
       setError(String(reason));
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
-  }, []);
+  }, [computeBaseChart]);
 
   const openDocument = useCallback(async () => {
     const selected = await open({ multiple: false, filters: [{ name: "Dominance graphs", extensions: ["clls", "oz", "pl", "txt"] }] });
     if (!selected) return;
     const startedAt = performance.now();
-    actionStarted.current = startedAt;
     const title = selected.split(/[\\/]/).pop() ?? "Graph";
     setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
     try {
@@ -232,105 +318,82 @@ export default function App() {
     }
   }, [addGraph]);
 
-  const buildChart = useCallback(async () => {
-    const graphTab = tabs.find((tab) => tab.key === activeKey);
-    if (!graphTab || graphTab.kind !== "graph") return;
-    const token = ++operation.current;
-    const startedAt = performance.now();
-    actionStarted.current = startedAt;
-    setBusy(true); setError(null);
-    setStatus({ action: "Computing chart", elapsedMs: null, running: true });
-    try {
-      const chart = await invoke<ChartView>("build_chart", { documentId: graphTab.documentId });
-      if (operation.current !== token) return;
-      const tab: ChartTab = { key: `chart-${++serial.current}`, kind: "chart", title: `${graphTab.title} Chart`, sourceTitle: graphTab.title, documentId: graphTab.documentId, chart };
-      setTabs((old) => [...old, tab]); setActiveKey(tab.key);
-      setStatus({ action: "Computed chart", elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { if (operation.current === token) { setError(String(reason)); setStatus({ action: "Computing chart failed", elapsedMs: performance.now() - startedAt, running: false }); } }
-    finally { if (operation.current === token) setBusy(false); }
-  }, [activeKey, tabs]);
-
-  const showFirstSolution = useCallback(async () => {
-    const chartTab = tabs.find((tab) => tab.key === activeKey);
-    if (!chartTab || chartTab.kind !== "chart" || chartTab.chart.solutionCount === "0") return;
-    const startedAt = performance.now();
-    actionStarted.current = startedAt;
-    setStatus({ action: "Enumerating Solution 1", elapsedMs: null, running: true });
-    setError(null);
-    try {
-      const solution = await invoke<SolutionView | null>("solution_at", { chartId: chartTab.chart.chartId, index: 0 });
-      if (!solution) return;
-      const tab: SolutionTab = { key: `solution-${++serial.current}`, kind: "solution", title: `${chartTab.sourceTitle} SF #1`, sourceTitle: chartTab.sourceTitle, documentId: chartTab.documentId, chartId: chartTab.chart.chartId, solution, index: 0, total: chartTab.chart.solutionCount, zoom: 50 };
-      setTabs((old) => [...old, tab]); setActiveKey(tab.key);
-      setStatus({ action: "Enumerated Solution 1", elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { setError(String(reason)); setStatus({ action: "Enumerating Solution failed", elapsedMs: performance.now() - startedAt, running: false }); }
-  }, [activeKey, tabs]);
-
-  const showSolution = async (nextIndex: number) => {
-    if (!active || active.kind !== "solution") return;
-    const startedAt = performance.now();
-    actionStarted.current = startedAt;
-    setStatus({ action: `Enumerating Solution ${nextIndex + 1}`, elapsedMs: null, running: true });
-    try {
-      const solution = await invoke<SolutionView | null>("solution_at", { chartId: active.chartId, index: nextIndex });
-      if (!solution) return;
-      setTabs((old) => old.map((tab) => tab.key === active.key ? { ...active, solution, index: nextIndex, title: `${active.sourceTitle} SF #${nextIndex + 1}` } : tab));
-      setStatus({ action: `Enumerated Solution ${nextIndex + 1}`, elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { setError(String(reason)); setStatus({ action: "Enumerating Solution failed", elapsedMs: performance.now() - startedAt, running: false }); }
-  };
-
-  const filterActiveChart = useCallback(async () => {
-    const chartTab = tabs.find((tab) => tab.key === activeKey);
-    if (!chartTab || chartTab.kind !== "chart") return;
+  const chooseFilter = useCallback(async () => {
+    const base = variants.find((variant) => variant.key === "base");
+    if (!base || filterRunning) return;
     const selected = await open({ multiple: false, filters: [{ name: "Utool rewrite systems", extensions: ["rew", "rules", "txt"] }] });
     if (!selected) return;
-    const token = ++operation.current;
+    const filterName = selected.split(/[\\/]/).pop() ?? "Filter";
+    const key = `filter:${selected}`;
+    const cached = variants.find((variant) => variant.key === key);
+    if (cached) {
+      setActiveVariantKey(key);
+      setSolution(null);
+      if (cached.chart.solutionCount !== "0") void loadSolution(cached.chart, 0, false);
+      return;
+    }
+    const token = operation.current;
     const startedAt = performance.now();
-    actionStarted.current = startedAt;
-    setBusy(true); setError(null); setStatus({ action: "Filtering chart", elapsedMs: null, running: true });
+    const jobId = makeJobId();
+    activeJob.current = jobId;
+    setFilterRunning(filterName);
+    setError(null);
+    setStatus({ action: `Applying ${filterName}`, elapsedMs: null, running: true });
     try {
-      const chart = await invoke<ChartView>("filter_chart_command", { chartId: chartTab.chart.chartId, rewriteSystem: await readTextFile(selected) });
+      const chart = await invoke<ChartView>("filter_chart_command", { chartId: base.chart.chartId, rewriteSystem: await readTextFile(selected), jobId });
       if (operation.current !== token) return;
-      const tab: ChartTab = { key: `chart-${++serial.current}`, kind: "chart", title: `${chartTab.sourceTitle} Filtered Chart`, sourceTitle: chartTab.sourceTitle, documentId: chartTab.documentId, chart };
-      setTabs((old) => [...old, tab]); setActiveKey(tab.key);
-      setStatus({ action: "Filtered chart", elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { if (operation.current === token) { setError(String(reason)); setStatus({ action: "Filtering chart failed", elapsedMs: performance.now() - startedAt, running: false }); } }
-    finally { if (operation.current === token) setBusy(false); }
-  }, [activeKey, tabs]);
+      const variant = { key, name: filterName, chart };
+      setVariants((current) => [...current, variant]);
+      setActiveVariantKey(key);
+      setSolution(null);
+      setSolutionIndex(0);
+      setStatus({ action: `${filterName} applied · ${chart.solutionCount} solutions`, elapsedMs: performance.now() - startedAt, running: false });
+      if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
+    } catch (reason) {
+      if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
+      setError(String(reason));
+      setStatus({ action: "Filtering chart failed", elapsedMs: performance.now() - startedAt, running: false });
+    } finally {
+      if (operation.current === token) {
+        activeJob.current = null;
+        setFilterRunning(null);
+      }
+    }
+  }, [filterRunning, loadSolution, variants]);
+
+  const selectVariant = useCallback((key: string) => {
+    const variant = variants.find((item) => item.key === key);
+    if (!variant) return;
+    setActiveVariantKey(key);
+    setSolution(null);
+    setSolutionIndex(0);
+    if (variant.chart.solutionCount !== "0") void loadSolution(variant.chart, 0, false);
+  }, [loadSolution, variants]);
 
   const setZoom = (zoom: number) => {
-    if (!active || active.kind === "chart") return;
-    setTabs((old) => old.map((tab) => tab.key === active.key ? { ...tab, zoom } : tab));
-  };
-
-  const closeTab = (key: string) => {
-    setTabs((old) => {
-      const index = old.findIndex((tab) => tab.key === key);
-      const next = old.filter((tab) => tab.key !== key);
-      if (key === activeKey) setActiveKey(next[Math.min(index, next.length - 1)]?.key ?? "");
-      return next;
-    });
+    if (activeView === "graph") setGraphZoom(zoom);
+    if (activeView === "solutions") setSolutionZoom(zoom);
   };
 
   const exportSvg = useCallback(async () => {
-    if (!svg.current) return;
-    const selected = await save({ defaultPath: `${active?.title ?? "utool-graph"}.svg`, filters: [{ name: "SVG image", extensions: ["svg"] }] });
+    if (!svg.current || activeView === "chart") return;
+    const selected = await save({ defaultPath: `${document?.title ?? "utool-graph"}.svg`, filters: [{ name: "SVG image", extensions: ["svg"] }] });
     if (selected) await writeTextFile(selected, `<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
-  }, [active?.title]);
+  }, [activeView, document?.title]);
 
   const exportGraph = useCallback(async (format: "domcon" | "dot") => {
-    if (!active) return;
+    if (!document) return;
     const extension = format === "dot" ? "dot" : "clls";
-    const selected = await save({ defaultPath: `${active.title}.${extension}`, filters: [{ name: format === "dot" ? "Graphviz DOT" : "Domcon/Oz", extensions: [extension] }] });
+    const selected = await save({ defaultPath: `${document.title}.${extension}`, filters: [{ name: format === "dot" ? "Graphviz DOT" : "Domcon/Oz", extensions: [extension] }] });
     if (!selected) return;
     const startedAt = performance.now();
     setStatus({ action: `Exporting ${format}`, elapsedMs: null, running: true });
     try {
-      const text = await invoke<string>("export_document", { documentId: active.documentId, format });
+      const text = await invoke<string>("export_document", { documentId: document.documentId, format });
       await writeTextFile(selected, text);
       setStatus({ action: `Exported ${format}`, elapsedMs: performance.now() - startedAt, running: false });
     } catch (reason) { setError(String(reason)); setStatus({ action: `Exporting ${format} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
-  }, [active]);
+  }, [document]);
 
   useEffect(() => { void addGraph(EXAMPLE, "domcon-oz", "Example"); }, [addGraph]);
   useEffect(() => {
@@ -338,31 +401,42 @@ export default function App() {
     const pending = Promise.all([
       listen("menu-open", openDocument), listen("menu-export-svg", exportSvg),
       listen("menu-export-domcon", () => exportGraph("domcon")), listen("menu-export-dot", () => exportGraph("dot")),
-      listen("menu-build-chart", buildChart), listen("menu-show-solution", showFirstSolution),
-      listen("menu-filter-chart", filterActiveChart),
+      listen("menu-show-solution", () => setActiveView("solutions")),
+      listen("menu-filter-chart", chooseFilter),
       listen("menu-about", () => setError("Utool Rust — HNC dominance graph solving with rusty-alto.")),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [buildChart, exportGraph, exportSvg, filterActiveChart, openDocument, showFirstSolution]);
+  }, [chooseFilter, exportGraph, exportSvg, openDocument]);
+
+  const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
+  const derivedLoading = chartRunning && !activeVariant;
+  const activeZoom = activeView === "graph" ? graphZoom : solutionZoom;
 
   return <main>
-    <header>
-      <h1>Utool</h1>
-      <div className="toolbar">
-        {active?.kind === "graph" && (!busy ? <button className="primary" onClick={buildChart}>Build Chart</button> : <button onClick={() => { operation.current++; setBusy(false); setStatus({ action: "Chart construction cancelled", elapsedMs: performance.now() - actionStarted.current, running: false }); void invoke("cancel_chart"); }}>Cancel</button>)}
-        {active?.kind === "chart" && <><button disabled={busy} onClick={filterActiveChart}>Filter Chart…</button><button className="primary" disabled={active.chart.solutionCount === "0" || busy} onClick={showFirstSolution}>Show First Solution</button></>}
-        {active && active.kind !== "chart" && <label className="zoom">Zoom <select value={active.zoom} onChange={(event) => setZoom(Number(event.target.value))}>{ZOOMS.map((value) => <option key={value} value={value}>{value}%</option>)}</select></label>}
-        <button onClick={exportSvg} disabled={!active || active.kind === "chart"}>Export SVG…</button>
-      </div>
-    </header>
-    <nav className="tabs">{tabs.map((tab) => <button key={tab.key} className={tab.key === activeKey ? "active" : ""} onClick={() => setActiveKey(tab.key)}><span>{tab.title}</span><i onClick={(event) => { event.stopPropagation(); closeTab(tab.key); }}>×</i></button>)}</nav>
+    <nav className="tabs" aria-label="Document views">
+      {(["graph", "chart", "solutions"] as ViewName[]).map((view) => <button key={view} className={view === activeView ? "active" : ""} onClick={() => setActiveView(view)} disabled={!document}>
+        <span>{view === "graph" ? "Graph" : view === "chart" ? "Chart" : `Solutions${activeVariant ? ` (${activeVariant.chart.solutionCount})` : ""}`}</span>
+        {view !== "graph" && derivedLoading && <i className="tab-spinner" aria-label="Computing" />}
+      </button>)}
+      {document && <SolutionSpaceControl variants={variants} activeKey={activeVariantKey} filterRunning={filterRunning} onSelect={selectVariant} onAdd={chooseFilter} />}
+    </nav>
     {error && <div className="error-banner" onClick={() => setError(null)}>{error}</div>}
     <section className="document">
-      {!active && <div className="welcome"><h2>No graph open</h2><p>Choose File → Open… to open a dominance graph.</p></div>}
-      {active?.kind === "graph" && <GraphCanvas key={active.key} graph={active.graph} zoom={active.zoom} onSvgReady={(element) => { svg.current = element; }} />}
-      {active?.kind === "chart" && <div className="chart-view"><div className="chart-header"><span><b>{active.chart.stateCount}</b> states{active.chart.stateCount !== active.chart.subgraphCount && <> · <b>{active.chart.subgraphCount}</b> subgraphs</>} · <b>{active.chart.splitCount}</b> split rules · <b>{active.chart.solutionCount}</b> solutions</span><button className="primary" disabled={active.chart.solutionCount === "0"} onClick={showFirstSolution}>Show First Solution</button></div><ChartRules key={active.chart.chartId} chart={active.chart} /></div>}
-      {active?.kind === "solution" && <><GraphCanvas key={active.key} graph={solutionGraph(active.solution)} zoom={active.zoom} onSvgReady={(element) => { svg.current = element; }} /><div className="solution-bar"><b>Solved form</b><button disabled={active.index === 0} onClick={() => showSolution(active.index - 1)}>←</button><input value={active.index + 1} onChange={(event) => { const value = Number(event.target.value); if (value > 0 && BigInt(value) <= BigInt(active.total)) void showSolution(value - 1); }} /><button disabled={BigInt(active.index + 1) >= BigInt(active.total)} onClick={() => showSolution(active.index + 1)}>→</button><span>of {active.total} (Graph: {active.sourceTitle})</span><code>{active.solution.term}</code></div></>}
+      {!document && <div className="welcome"><h2>No graph open</h2><p>Choose File → Open… to open a dominance graph.</p></div>}
+      {document && activeView === "graph" && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} onSvgReady={(element) => { svg.current = element; }} />}
+      {document && activeView !== "graph" && derivedLoading && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>You can continue inspecting the graph while the solution space is prepared.</p></div>}
+      {document && activeView === "chart" && activeVariant && <div className="chart-view">
+        {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
+        <div className="chart-header"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.splitCount}</b> split rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>
+        <ChartRules key={activeVariant.chart.chartId} chart={activeVariant.chart} />
+      </div>}
+      {document && activeView === "solutions" && activeVariant && <div className="solutions-view">
+        {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
+        {solutionTotal === "0" ? <div className="zero-solutions"><h2>No solutions</h2><p>No solved forms satisfy {activeVariant.name === "Unfiltered" ? "this graph" : activeVariant.name}.</p>{activeVariant.key !== "base" && <button onClick={() => selectVariant("base")}>Show unfiltered</button>}</div>
+          : solution ? <><GraphCanvas key={`${activeVariant.key}-${solutionIndex}`} graph={solutionGraph(solution)} zoom={solutionZoom} onSvgReady={(element) => { svg.current = element; }} /><div className="solution-bar"><span className="solution-label">Solved form</span><div className="solution-nav"><button aria-label="Previous solution" disabled={solutionIndex === 0 || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex - 1)}>←</button><label><span>Solution</span><input value={solutionIndex + 1} onChange={(event) => { const value = Number(event.target.value); if (Number.isSafeInteger(value) && value > 0 && BigInt(value) <= BigInt(solutionTotal)) void loadSolution(activeVariant.chart, value - 1); }} /></label><span>of <b>{solutionTotal}</b></span><button aria-label="Next solution" disabled={BigInt(solutionIndex + 1) >= BigInt(solutionTotal) || solutionRunning} onClick={() => void loadSolution(activeVariant.chart, solutionIndex + 1)}>→</button></div><code title={solution.term}>{solution.term}</code></div></>
+          : <div className="computing"><span className="large-spinner" /><h2>Preparing first solution</h2></div>}
+      </div>}
     </section>
-    <footer className="status-bar"><span className={status.running ? "busy" : ""}>{status.action}</span><time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : status.elapsedMs < 1000 ? `${status.elapsedMs.toFixed(1)} ms` : `${(status.elapsedMs / 1000).toFixed(3)} s`}</time></footer>
+    <footer className="status-bar"><span className={status.running ? "busy" : ""}>{status.action}</span>{document && activeView !== "chart" && <label className="zoom">Zoom <select value={activeZoom} onChange={(event) => setZoom(Number(event.target.value))}>{ZOOMS.map((value) => <option key={value} value={value}>{value}%</option>)}</select></label>}<time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : status.elapsedMs < 1000 ? `${status.elapsedMs.toFixed(1)} ms` : `${(status.elapsedMs / 1000).toFixed(3)} s`}</time></footer>
   </main>;
 }
