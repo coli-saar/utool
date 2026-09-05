@@ -1,13 +1,15 @@
 //! Relative-normal-form filtering over compact fragment automata.
 
-use crate::automata_ext::trim;
+use crate::automata_ext::{trim, trim_productive};
 use crate::graph::{HncGraph, NodeId};
 use crate::solver::{Chart, FragmentNode};
 use packed_term_arena::tree::{Tree, TreeArena};
 use rusty_alto::{
-    BottomUpTa, DetBottomUpTa, Explicit, ExplicitBuilder, StateId, Symbol, TopDownTa,
+    BottomUpTa, DetBottomUpTa, Explicit, ExplicitBuilder, IndexedBottomUpTa, StateId, Symbol,
+    TopDownTa,
 };
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::rc::Rc;
 use thiserror::Error;
 
 /// A first-order rewrite-system term.
@@ -484,7 +486,11 @@ enum CttState {
 #[derive(Clone, Debug)]
 enum CttLhs {
     Variable(CttState, u32),
-    Node(NodeId, Vec<CttLhs>),
+    Node {
+        node: NodeId,
+        children: Vec<CttLhs>,
+        interior: u32,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -498,10 +504,11 @@ struct CttRule {
     lhs: CttLhs,
     state: CttState,
     rhs: CttRhs,
+    variables: usize,
 }
 
 struct Ctt {
-    rules: HashMap<CttState, Vec<(u32, CttRule)>>,
+    rules: HashMap<(CttState, Option<Symbol>), Vec<CttRule>>,
     final_state: CttState,
 }
 
@@ -566,14 +573,35 @@ fn build_ctt(
     )?;
     append_rewrite_rules(graph, system, &annotation_ids, cancelled, &mut all_rules)?;
 
-    let mut rules = HashMap::<CttState, Vec<(u32, CttRule)>>::new();
-    for (index, rule) in all_rules.into_iter().enumerate() {
-        rules.entry(rule.state).or_default().push((
-            u32::try_from(index).expect("CTT rule count exceeds u32"),
-            rule,
-        ));
+    let mut next_interior = 0_u32;
+    for rule in &mut all_rules {
+        assign_interior_ids(&mut rule.lhs, &mut next_interior);
+    }
+    let mut rules = HashMap::<(CttState, Option<Symbol>), Vec<CttRule>>::new();
+    for rule in all_rules {
+        let root = match &rule.rhs {
+            CttRhs::Variable(_) => None,
+            CttRhs::Node(node, _) => Some(Symbol(
+                u32::try_from(node.index()).expect("node count exceeds u32"),
+            )),
+        };
+        rules.entry((rule.state, root)).or_default().push(rule);
     }
     Ok(Ctt { rules, final_state })
+}
+
+fn assign_interior_ids(lhs: &mut CttLhs, next: &mut u32) {
+    let CttLhs::Node {
+        children, interior, ..
+    } = lhs
+    else {
+        return;
+    };
+    *interior = *next;
+    *next = next.checked_add(1).expect("CTT interior count exceeds u32");
+    for child in children {
+        assign_interior_ids(child, next);
+    }
 }
 
 fn append_copy_rules(
@@ -608,9 +636,14 @@ fn append_copy_rules(
             })
             .collect::<Vec<_>>();
         all_rules.push(CttRule {
-            lhs: CttLhs::Node(node_id, neutral_children),
+            lhs: CttLhs::Node {
+                node: node_id,
+                children: neutral_children,
+                interior: u32::MAX,
+            },
             state: CttState::Neutral,
             rhs: CttRhs::Node(node_id, rhs_children.clone()),
+            variables: arity,
         });
 
         for parent_name in annotation_names {
@@ -649,9 +682,14 @@ fn append_copy_rules(
                     })
                     .collect();
                 all_rules.push(CttRule {
-                    lhs: CttLhs::Node(node_id, lhs_children),
+                    lhs: CttLhs::Node {
+                        node: node_id,
+                        children: lhs_children,
+                        interior: u32::MAX,
+                    },
                     state: CttState::Annotation(parent_id),
                     rhs: CttRhs::Node(node_id, rhs_children.clone()),
+                    variables: arity,
                 });
             }
         }
@@ -694,6 +732,7 @@ fn append_rewrite_rules(
                     lhs: lhs.clone(),
                     state,
                     rhs: rhs.clone(),
+                    variables: variables.len(),
                 });
             }
         }
@@ -718,13 +757,14 @@ fn assign_variables(pattern: &SpecializedPattern, variables: &mut HashMap<String
 fn ctt_lhs(pattern: &SpecializedPattern, variables: &HashMap<String, u32>) -> CttLhs {
     match pattern {
         SpecializedPattern::Variable(name) => CttLhs::Variable(CttState::Neutral, variables[name]),
-        SpecializedPattern::Node(node, children) => CttLhs::Node(
-            *node,
-            children
+        SpecializedPattern::Node(node, children) => CttLhs::Node {
+            node: *node,
+            children: children
                 .iter()
                 .map(|child| ctt_lhs(child, variables))
                 .collect(),
-        ),
+            interior: u32::MAX,
+        },
     }
 }
 
@@ -945,14 +985,15 @@ fn enumerate_distinct_assignments(
     }
 }
 
-struct NodeExpansion {
-    automaton: Explicit,
-}
-
 struct ExpansionBuilder {
     builder: ExplicitBuilder,
     bottom_up: HashMap<(Symbol, Vec<StateId>), StateId>,
     top_down: HashMap<(StateId, Symbol), Vec<StateId>>,
+}
+
+struct NodeExpansion {
+    automaton: Explicit,
+    top_down: Vec<Vec<(Symbol, Vec<StateId>)>>,
 }
 
 fn expand_chart(chart: &Chart, cancelled: impl Fn() -> bool) -> Result<NodeExpansion, FilterError> {
@@ -986,8 +1027,17 @@ fn expand_chart(chart: &Chart, cancelled: impl Fn() -> bool) -> Result<NodeExpan
         )?;
         debug_assert_eq!(next_socket, rule.children.len());
     }
+    let automaton = expansion.builder.build();
+    let mut top_down = vec![Vec::new(); automaton.num_states() as usize];
+    for ((state, symbol), children) in expansion.top_down {
+        top_down[state.index()].push((symbol, children));
+    }
+    for rules in &mut top_down {
+        rules.sort_unstable_by_key(|(symbol, _)| *symbol);
+    }
     Ok(NodeExpansion {
-        automaton: expansion.builder.build(),
+        automaton,
+        top_down,
     })
 }
 
@@ -1049,11 +1099,7 @@ impl ExpansionBuilder {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum PreMarker {
     Ctt(CttState),
-    Interior {
-        rule: u32,
-        target: StateId,
-        path: Vec<u16>,
-    },
+    Interior { target: StateId, interior: u32 },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -1065,7 +1111,7 @@ struct PreState {
 struct PreBuilder {
     builder: ExplicitBuilder,
     states: HashMap<PreState, StateId>,
-    keys: Vec<PreState>,
+    targets: Vec<StateId>,
     rules: HashSet<(Symbol, Vec<StateId>, StateId)>,
 }
 
@@ -1074,20 +1120,20 @@ impl PreBuilder {
         Self {
             builder: ExplicitBuilder::new(),
             states: HashMap::new(),
-            keys: Vec::new(),
+            targets: Vec::new(),
             rules: HashSet::new(),
         }
     }
 
-    fn state(&mut self, key: PreState) -> StateId {
+    fn state(&mut self, key: PreState) -> (StateId, bool) {
         if let Some(&state) = self.states.get(&key) {
-            return state;
+            return (state, false);
         }
         let state = self.builder.new_state();
-        assert_eq!(state.index(), self.keys.len());
-        self.keys.push(key.clone());
+        assert_eq!(state.index(), self.targets.len());
+        self.targets.push(key.target);
         self.states.insert(key, state);
-        state
+        (state, true)
     }
 
     fn add_rule(&mut self, symbol: Symbol, children: Vec<StateId>, result: StateId) {
@@ -1098,23 +1144,20 @@ impl PreBuilder {
 }
 
 fn compute_preimage(
-    graph: &HncGraph,
-    target: &Explicit,
+    target: &NodeExpansion,
     ctt: &Ctt,
     cancelled: impl Fn() -> bool,
 ) -> Result<Explicit, FilterError> {
     let mut output = PreBuilder::new();
     let mut agenda = VecDeque::new();
-    let mut seen = HashSet::new();
-    target.initial_states(&mut |target_state| {
-        let pair = (ctt.final_state, target_state);
-        if seen.insert(pair) {
-            agenda.push_back(pair);
-        }
-        let state = output.state(PreState {
+    target.automaton.initial_states(&mut |target_state| {
+        let (state, is_new) = output.state(PreState {
             target: target_state,
             marker: PreMarker::Ctt(ctt.final_state),
         });
+        if is_new {
+            agenda.push_back((ctt.final_state, target_state));
+        }
         output.builder.add_accepting(state);
     });
 
@@ -1122,31 +1165,31 @@ fn compute_preimage(
         if cancelled() {
             return Err(FilterError::Cancelled);
         }
-        let Some(rules) = ctt.rules.get(&ctt_state) else {
-            continue;
-        };
-        for (rule_id, rule) in rules {
-            let mut variables = HashMap::new();
-            if !match_rhs(graph, &rule.rhs, target_state, target, &mut variables)? {
+        for root in std::iter::once(None).chain(
+            target.top_down[target_state.index()]
+                .iter()
+                .map(|(symbol, _)| Some(*symbol)),
+        ) {
+            let Some(rules) = ctt.rules.get(&(ctt_state, root)) else {
                 continue;
-            }
-            let mut leaves = Vec::new();
-            decompose_lhs(
-                &rule.lhs,
-                true,
-                &mut Vec::new(),
-                *rule_id,
-                target_state,
-                rule.state,
-                &variables,
-                target,
-                &mut output,
-                &mut leaves,
-            );
-            for pair in leaves {
-                if seen.insert(pair) {
-                    agenda.push_back(pair);
+            };
+            for rule in rules {
+                let mut variables = vec![None; rule.variables];
+                if !match_rhs(&rule.rhs, target_state, target, &mut variables) {
+                    continue;
                 }
+                let mut leaves = Vec::new();
+                decompose_lhs(
+                    &rule.lhs,
+                    true,
+                    target_state,
+                    rule.state,
+                    &variables,
+                    target,
+                    &mut output,
+                    &mut leaves,
+                );
+                agenda.extend(leaves);
             }
         }
     }
@@ -1154,42 +1197,37 @@ fn compute_preimage(
 }
 
 fn match_rhs(
-    graph: &HncGraph,
     rhs: &CttRhs,
     state: StateId,
-    target: &Explicit,
-    variables: &mut HashMap<u32, StateId>,
-) -> Result<bool, FilterError> {
+    target: &NodeExpansion,
+    variables: &mut [Option<StateId>],
+) -> bool {
     match rhs {
-        CttRhs::Variable(variable) => Ok(variables
-            .insert(*variable, state)
-            .is_none_or(|known| known == state)),
+        CttRhs::Variable(variable) => {
+            let slot = &mut variables[*variable as usize];
+            if let Some(known) = *slot {
+                known == state
+            } else {
+                *slot = Some(state);
+                true
+            }
+        }
         CttRhs::Node(node, children) => {
             let symbol = Symbol(u32::try_from(node.index()).expect("node count exceeds u32"));
-            let mut matching = Vec::new();
-            target.step_topdown(&state, &mut |candidate, child_states| {
-                if candidate == symbol {
-                    matching.push(child_states.to_vec());
-                }
-            });
-            if matching.len() > 1 {
-                return Err(FilterError::NonDeterministicExpansion {
-                    direction: "top-down",
-                    node: graph.node(*node).name().to_owned(),
-                });
-            }
-            let Some(child_states) = matching.pop() else {
-                return Ok(false);
+            let rules = &target.top_down[state.index()];
+            let Ok(index) = rules.binary_search_by_key(&symbol, |(candidate, _)| *candidate) else {
+                return false;
             };
+            let child_states = &rules[index].1;
             if child_states.len() != children.len() {
-                return Ok(false);
+                return false;
             }
             for (child, child_state) in children.iter().zip(child_states) {
-                if !match_rhs(graph, child, child_state, target, variables)? {
-                    return Ok(false);
+                if !match_rhs(child, *child_state, target, variables) {
+                    return false;
                 }
             }
-            Ok(true)
+            true
         }
     }
 }
@@ -1198,34 +1236,36 @@ fn match_rhs(
 fn decompose_lhs(
     lhs: &CttLhs,
     top: bool,
-    path: &mut Vec<u16>,
-    rule_id: u32,
     root_target: StateId,
     root_ctt: CttState,
-    variables: &HashMap<u32, StateId>,
-    target: &Explicit,
+    variables: &[Option<StateId>],
+    target: &NodeExpansion,
     output: &mut PreBuilder,
     leaves: &mut Vec<(CttState, StateId)>,
 ) -> StateId {
     match lhs {
         CttLhs::Variable(state, variable) => {
-            let target_state = variables[variable];
-            leaves.push((*state, target_state));
-            output.state(PreState {
+            let target_state = variables[*variable as usize].expect("matched CTT variable");
+            let (preimage_state, is_new) = output.state(PreState {
                 target: target_state,
                 marker: PreMarker::Ctt(*state),
-            })
+            });
+            if is_new {
+                leaves.push((*state, target_state));
+            }
+            preimage_state
         }
-        CttLhs::Node(node, children) => {
+        CttLhs::Node {
+            node,
+            children,
+            interior,
+        } => {
             let mut child_states = Vec::with_capacity(children.len());
             let mut child_target_states = Vec::with_capacity(children.len());
-            for (index, child) in children.iter().enumerate() {
-                path.push(u16::try_from(index).expect("rewrite pattern arity exceeds u16"));
+            for child in children {
                 let child_state = decompose_lhs(
                     child,
                     false,
-                    path,
-                    rule_id,
                     root_target,
                     root_ctt,
                     variables,
@@ -1233,8 +1273,7 @@ fn decompose_lhs(
                     output,
                     leaves,
                 );
-                path.pop();
-                child_target_states.push(output.keys[child_state.index()].target);
+                child_target_states.push(output.targets[child_state.index()]);
                 child_states.push(child_state);
             }
             let symbol = Symbol(u32::try_from(node.index()).expect("node count exceeds u32"));
@@ -1242,6 +1281,7 @@ fn decompose_lhs(
                 root_target
             } else {
                 target
+                    .automaton
                     .step_det(symbol, &child_target_states)
                     .unwrap_or(root_target)
             };
@@ -1249,12 +1289,11 @@ fn decompose_lhs(
                 PreMarker::Ctt(root_ctt)
             } else {
                 PreMarker::Interior {
-                    rule: rule_id,
                     target: root_target,
-                    path: path.clone(),
+                    interior: *interior,
                 }
             };
-            let state = output.state(PreState {
+            let (state, _) = output.state(PreState {
                 target: target_state,
                 marker,
             });
@@ -1264,18 +1303,92 @@ fn decompose_lhs(
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct ResidualId(u32);
+
+impl ResidualId {
+    fn index(self) -> usize {
+        self.0 as usize
+    }
+}
+
+#[derive(Default)]
+struct ResidualInterner {
+    ids: HashMap<Rc<[StateId]>, ResidualId>,
+    sets: Vec<Rc<[StateId]>>,
+}
+
+impl ResidualInterner {
+    fn intern(&mut self, states: Vec<StateId>) -> ResidualId {
+        if let Some(&id) = self.ids.get(states.as_slice()) {
+            return id;
+        }
+        let id = ResidualId(u32::try_from(self.sets.len()).expect("residual count exceeds u32"));
+        let states = Rc::<[StateId]>::from(states);
+        self.ids.insert(Rc::clone(&states), id);
+        self.sets.push(states);
+        id
+    }
+
+    fn get(&self, id: ResidualId) -> &[StateId] {
+        &self.sets[id.index()]
+    }
+}
+
 #[derive(Clone)]
 struct DerivedState {
     left: StateId,
-    residual: Vec<StateId>,
+    residual: ResidualId,
 }
 
 struct DifferenceBuilder {
     builder: ExplicitBuilder,
-    states: HashMap<(StateId, Vec<StateId>), StateId>,
+    states: HashMap<(StateId, ResidualId), StateId>,
     info: Vec<DerivedState>,
     partners: Vec<Vec<StateId>>,
-    rules: HashSet<(Symbol, Vec<StateId>, StateId)>,
+}
+
+struct SiblingDegrees {
+    by_position: Vec<Vec<u32>>,
+}
+
+impl SiblingDegrees {
+    // Symbol-independent occurrence counts are compact and still distinguish
+    // ubiquitous copy states from highly selective interior states. Set size
+    // alone is a poor predictor of the corresponding posting-list volume.
+    fn build(automaton: &Explicit) -> Self {
+        let mut by_position = Vec::<Vec<u32>>::new();
+        for rule in automaton.rules() {
+            for (position, child) in rule.children.iter().enumerate() {
+                if by_position.len() <= position {
+                    by_position
+                        .resize_with(position + 1, || vec![0; automaton.num_states() as usize]);
+                }
+                by_position[position][child.index()] =
+                    by_position[position][child.index()].saturating_add(1);
+            }
+        }
+        Self { by_position }
+    }
+
+    fn best_position(&self, choices: &[&[StateId]]) -> usize {
+        choices
+            .iter()
+            .enumerate()
+            .min_by_key(|(position, states)| {
+                states.iter().fold(0_u64, |total, state| {
+                    total
+                        + u64::from(
+                            self.by_position
+                                .get(*position)
+                                .and_then(|degrees| degrees.get(state.index()))
+                                .copied()
+                                .unwrap_or(0),
+                        )
+                })
+            })
+            .map_or(0, |(position, _)| position)
+    }
 }
 
 impl DifferenceBuilder {
@@ -1285,12 +1398,11 @@ impl DifferenceBuilder {
             states: HashMap::new(),
             info: Vec::new(),
             partners: vec![Vec::new(); left_states],
-            rules: HashSet::new(),
         }
     }
 
-    fn state(&mut self, left: StateId, residual: Vec<StateId>, accepting: bool) -> StateId {
-        let key = (left, residual.clone());
+    fn state(&mut self, left: StateId, residual: ResidualId, accepting: bool) -> StateId {
+        let key = (left, residual);
         if let Some(&state) = self.states.get(&key) {
             return state;
         }
@@ -1304,12 +1416,6 @@ impl DifferenceBuilder {
         }
         state
     }
-
-    fn add_rule(&mut self, symbol: Symbol, children: Vec<StateId>, result: StateId) {
-        if self.rules.insert((symbol, children.clone(), result)) {
-            self.builder.add_rule(symbol, children, result);
-        }
-    }
 }
 
 fn difference_on_fragments(
@@ -1318,48 +1424,62 @@ fn difference_on_fragments(
     cancelled: impl Fn() -> bool,
 ) -> Result<Chart, FilterError> {
     let automaton = chart.fragment_automaton().automaton();
-    let rules = bottom_up_rules(automaton)?;
+    let states = bottom_up_states(automaton)?;
     let mut output = DifferenceBuilder::new(automaton.num_states() as usize);
-    let mut left_accepting = vec![false; automaton.num_states() as usize];
-    automaton.initial_states(&mut |state| {
-        left_accepting[state.index()] = true;
-    });
+    let mut residuals = ResidualInterner::default();
+    let sibling_degrees = SiblingDegrees::build(preimage);
 
-    for (symbol, left_children, left_result) in rules {
+    for left_result in states {
         if cancelled() {
             return Err(FilterError::Cancelled);
         }
-        let choices = left_children
-            .iter()
-            .map(|child| output.partners[child.index()].clone())
-            .collect::<Vec<_>>();
-        enumerate_state_products(&choices, 0, &mut Vec::new(), &mut |derived_children| {
+        for rule in automaton.rules_topdown(left_result) {
+            let choices = rule
+                .children
+                .iter()
+                .map(|child| output.partners[child.index()].clone())
+                .collect::<Vec<_>>();
             let fragment_automaton = chart.fragment_automaton();
-            let fragment = fragment_automaton.fragment_root(symbol);
-            let mut next_socket = 0;
-            let residual = evaluate_fragment(
-                fragment_automaton.fragment_arena(),
-                fragment,
-                derived_children,
-                &output.info,
-                &mut next_socket,
-                preimage,
+            let fragment = fragment_automaton.fragment_root(rule.symbol);
+            let left_accepting = automaton.is_accepting(&left_result);
+            let mut derived_children = Vec::with_capacity(choices.len());
+            enumerate_state_products(
+                &choices,
+                0,
+                &mut derived_children,
+                &mut |derived_children| {
+                    let mut next_socket = 0;
+                    let residual = evaluate_fragment(
+                        fragment_automaton.fragment_arena(),
+                        fragment,
+                        derived_children,
+                        &output.info,
+                        &mut next_socket,
+                        preimage,
+                        &sibling_degrees,
+                        &mut residuals,
+                    );
+                    debug_assert_eq!(next_socket, derived_children.len());
+                    let accepting = left_accepting
+                        && residuals
+                            .get(residual)
+                            .iter()
+                            .all(|state| !preimage.is_accepting(state));
+                    let result = output.state(left_result, residual, accepting);
+                    output
+                        .builder
+                        .add_rule(rule.symbol, derived_children.to_vec(), result);
+                },
             );
-            debug_assert_eq!(next_socket, derived_children.len());
-            let accepting = left_accepting[left_result.index()]
-                && residual.iter().all(|state| !preimage.is_accepting(state));
-            let result = output.state(left_result, residual, accepting);
-            output.add_rule(symbol, derived_children.to_vec(), result);
-        });
+        }
     }
-
     let untrimmed_sources = output
         .info
         .iter()
         .map(|state| state.left)
         .collect::<Vec<_>>();
     let untrimmed = output.builder.build();
-    let trimmed = trim(&untrimmed);
+    let trimmed = trim_productive(&untrimmed);
     let source_states = trimmed
         .source_states
         .iter()
@@ -1372,6 +1492,14 @@ fn difference_on_fragments(
     ))
 }
 
+fn state_product_count(choices: &[&[StateId]]) -> usize {
+    choices.iter().fold(1_usize, |product, choices| {
+        product
+            .checked_mul(choices.len())
+            .expect("difference product count exceeds usize")
+    })
+}
+
 fn evaluate_fragment(
     fragments: &TreeArena<FragmentNode>,
     tree: Tree,
@@ -1379,44 +1507,82 @@ fn evaluate_fragment(
     derived_info: &[DerivedState],
     next_socket: &mut usize,
     automaton: &Explicit,
-) -> Vec<StateId> {
+    sibling_degrees: &SiblingDegrees,
+    residuals: &mut ResidualInterner,
+) -> ResidualId {
     match fragments.get_label(tree) {
         FragmentNode::Hole(_) => {
             let child = derived_children[*next_socket];
             *next_socket += 1;
-            derived_info[child.index()].residual.clone()
+            derived_info[child.index()].residual
         }
         FragmentNode::Node(node) => {
-            let choices = fragments
-                .get_children(tree)
+            let mut child_residuals = Vec::with_capacity(fragments.get_children(tree).len());
+            for &child in fragments.get_children(tree) {
+                child_residuals.push(evaluate_fragment(
+                    fragments,
+                    child,
+                    derived_children,
+                    derived_info,
+                    next_socket,
+                    automaton,
+                    sibling_degrees,
+                    residuals,
+                ));
+            }
+            let choices = child_residuals
                 .iter()
-                .map(|&child| {
-                    evaluate_fragment(
-                        fragments,
-                        child,
-                        derived_children,
-                        derived_info,
-                        next_socket,
-                        automaton,
-                    )
-                })
+                .map(|&residual| residuals.get(residual))
                 .collect::<Vec<_>>();
             let symbol = Symbol(u32::try_from(node.index()).expect("node count exceeds u32"));
-            let mut results = Vec::new();
-            enumerate_state_products(&choices, 0, &mut Vec::new(), &mut |states| {
-                automaton.step(symbol, states, &mut |state| {
-                    results.push(state);
-                });
-            });
-            results.sort_unstable();
-            results.dedup();
-            results
+            let result = transition_over_state_sets(symbol, &choices, automaton, sibling_degrees);
+            residuals.intern(result)
         }
     }
 }
 
-fn enumerate_state_products(
-    choices: &[Vec<StateId>],
+fn transition_over_state_sets(
+    symbol: Symbol,
+    choices: &[&[StateId]],
+    automaton: &Explicit,
+    sibling_degrees: &SiblingDegrees,
+) -> Vec<StateId> {
+    let mut results = Vec::new();
+    // Exact tuple lookup wins for tiny products; beyond that, enumerate actual
+    // rules from the least frequent child position and test their siblings.
+    if choices.len() >= 2 && state_product_count(choices) > 4 {
+        let trigger_position = sibling_degrees.best_position(choices);
+        for trigger in choices[trigger_position] {
+            automaton.step_partial(
+                symbol,
+                trigger_position,
+                trigger,
+                &mut |children, result| {
+                    if children.len() == choices.len()
+                        && children
+                            .iter()
+                            .zip(choices)
+                            .all(|(child, allowed)| allowed.binary_search(child).is_ok())
+                    {
+                        results.push(result);
+                    }
+                },
+            );
+        }
+    } else {
+        enumerate_state_products(choices, 0, &mut Vec::new(), &mut |states| {
+            automaton.step(symbol, states, &mut |state| {
+                results.push(state);
+            });
+        });
+    }
+    results.sort_unstable();
+    results.dedup();
+    results
+}
+
+fn enumerate_state_products<T: AsRef<[StateId]>>(
+    choices: &[T],
     index: usize,
     current: &mut Vec<StateId>,
     out: &mut impl FnMut(&[StateId]),
@@ -1425,21 +1591,19 @@ fn enumerate_state_products(
         out(current);
         return;
     }
-    for &choice in &choices[index] {
+    for &choice in choices[index].as_ref() {
         current.push(choice);
         enumerate_state_products(choices, index + 1, current, out);
         current.pop();
     }
 }
 
-fn bottom_up_rules(
-    automaton: &Explicit,
-) -> Result<Vec<(Symbol, Vec<StateId>, StateId)>, FilterError> {
+fn bottom_up_states(automaton: &Explicit) -> Result<Vec<StateId>, FilterError> {
     fn visit(
         automaton: &Explicit,
         state: StateId,
         marks: &mut [u8],
-        output: &mut Vec<(Symbol, Vec<StateId>, StateId)>,
+        output: &mut Vec<StateId>,
     ) -> Result<(), FilterError> {
         match marks[state.index()] {
             2 => return Ok(()),
@@ -1453,11 +1617,7 @@ fn bottom_up_rules(
             }
         }
         marks[state.index()] = 2;
-        output.extend(
-            automaton
-                .rules_topdown(state)
-                .map(|rule| (rule.symbol, rule.children.to_vec(), rule.result)),
-        );
+        output.push(state);
         Ok(())
     }
 
@@ -1491,7 +1651,7 @@ pub fn filter_chart(
     }
     let expansion = expand_chart(chart, cancelled)?;
     let ctt = build_ctt(chart.graph(), system, cancelled)?;
-    let preimage = compute_preimage(chart.graph(), &expansion.automaton, &ctt, cancelled)?;
+    let preimage = compute_preimage(&expansion, &ctt, cancelled)?;
     let preimage = trim(&preimage).automaton;
     difference_on_fragments(chart, &preimage, cancelled)
 }
@@ -1499,6 +1659,39 @@ pub fn filter_chart(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sibling_indexed_set_transition_matches_cartesian_transition() {
+        let mut builder = ExplicitBuilder::new();
+        let left = [
+            builder.new_state(),
+            builder.new_state(),
+            builder.new_state(),
+        ];
+        let right = [builder.new_state(), builder.new_state()];
+        let outside = builder.new_state();
+        let results = [builder.new_state(), builder.new_state()];
+        let symbol = Symbol(7);
+        builder.add_rule(symbol, vec![left[0], right[0]], results[0]);
+        builder.add_rule(symbol, vec![left[1], right[1]], results[1]);
+        builder.add_rule(symbol, vec![left[2], right[0]], results[0]);
+        builder.add_rule(symbol, vec![outside, right[0]], results[1]);
+        let automaton = builder.build();
+        let choices = vec![left.to_vec(), right.to_vec()];
+        let choice_slices = choices.iter().map(Vec::as_slice).collect::<Vec<_>>();
+        let degrees = SiblingDegrees::build(&automaton);
+
+        let mut cartesian = Vec::new();
+        enumerate_state_products(&choices, 0, &mut Vec::new(), &mut |children| {
+            automaton.step(symbol, children, &mut |result| cartesian.push(result));
+        });
+        cartesian.sort_unstable();
+        cartesian.dedup();
+        let sibling = transition_over_state_sets(symbol, &choice_slices, &automaton, &degrees);
+
+        assert_eq!(sibling, cartesian);
+        assert_eq!(sibling, results);
+    }
 
     #[test]
     fn parsing_suppresses_exact_duplicate_rewrite_rules() {

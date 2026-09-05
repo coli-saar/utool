@@ -4,7 +4,6 @@
 //! `rusty-alto` itself.
 
 use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol, TopDownTa};
-use std::collections::HashSet;
 use thiserror::Error;
 
 /// A transition indexed once from an explicit automaton for fast top-down use.
@@ -345,22 +344,38 @@ pub struct Trimmed {
 #[must_use]
 pub fn trim(automaton: &Explicit) -> Trimmed {
     let productive = automaton.reachable_states();
-    let mut useful = HashSet::new();
+    trim_with_productivity(automaton, |state| productive.contains(state.index()))
+}
+
+/// Remove states and transitions which cannot occur in an accepting run when
+/// every state is known to be productive.
+///
+/// This is useful for automata constructed bottom-up: every state is introduced
+/// by a rule whose children were already productive, so recomputing
+/// productivity would duplicate work performed by the construction.
+#[must_use]
+pub(crate) fn trim_productive(automaton: &Explicit) -> Trimmed {
+    trim_with_productivity(automaton, |_| true)
+}
+
+fn trim_with_productivity(
+    automaton: &Explicit,
+    is_productive: impl Fn(StateId) -> bool,
+) -> Trimmed {
+    let mut useful = vec![false; automaton.num_states() as usize];
     let mut work = Vec::new();
     automaton.initial_states(&mut |state| {
-        if productive.contains(state.index()) && useful.insert(state) {
+        if is_productive(state) && !useful[state.index()] {
+            useful[state.index()] = true;
             work.push(state);
         }
     });
     while let Some(parent) = work.pop() {
         for rule in automaton.rules_topdown(parent) {
-            if rule
-                .children
-                .iter()
-                .all(|child| productive.contains(child.index()))
-            {
+            if rule.children.iter().copied().all(&is_productive) {
                 for &child in rule.children {
-                    if useful.insert(child) {
+                    if !useful[child.index()] {
+                        useful[child.index()] = true;
                         work.push(child);
                     }
                 }
@@ -368,31 +383,31 @@ pub fn trim(automaton: &Explicit) -> Trimmed {
         }
     }
 
-    let mut source_states = useful.into_iter().collect::<Vec<_>>();
-    source_states.sort_unstable_by_key(|state| state.index());
-    let mut builder = ExplicitBuilder::new();
-    let new_states = source_states
+    let source_states = useful
         .iter()
-        .map(|_| builder.new_state())
+        .enumerate()
+        .filter_map(|(index, &is_useful)| {
+            is_useful.then(|| StateId(u32::try_from(index).expect("state count is stored as u32")))
+        })
         .collect::<Vec<_>>();
-    let remap = source_states
-        .iter()
-        .zip(new_states.iter())
-        .map(|(&old, &new)| (old, new))
-        .collect::<std::collections::HashMap<_, _>>();
+    let mut builder = ExplicitBuilder::new();
+    let mut remap = vec![None; automaton.num_states() as usize];
+    for &old in &source_states {
+        remap[old.index()] = Some(builder.new_state());
+    }
     automaton.initial_states(&mut |old| {
-        if let Some(&new) = remap.get(&old) {
+        if let Some(new) = remap[old.index()] {
             builder.add_accepting(new);
         }
     });
     for rule in automaton.rules() {
-        let Some(&result) = remap.get(&rule.result) else {
+        let Some(result) = remap[rule.result.index()] else {
             continue;
         };
         let Some(children) = rule
             .children
             .iter()
-            .map(|child| remap.get(child).copied())
+            .map(|child| remap[child.index()])
             .collect::<Option<Vec<_>>>()
         else {
             continue;
@@ -480,6 +495,24 @@ mod tests {
         assert_eq!(result.automaton.num_rules(), 2);
         assert!(result.automaton.is_accepting(&StateId(1)));
         assert_eq!(result.source_states, vec![useful_leaf, root]);
+    }
+
+    #[test]
+    fn productive_trim_matches_general_trim_when_all_states_are_productive() {
+        let mut builder = ExplicitBuilder::new();
+        let useful_leaf = builder.new_state();
+        let root = builder.new_state();
+        let dead_leaf = builder.new_state();
+        builder.add_rule(Symbol(0), vec![], useful_leaf);
+        builder.add_rule(Symbol(1), vec![useful_leaf], root);
+        builder.add_rule(Symbol(2), vec![], dead_leaf);
+        builder.add_accepting(root);
+        let automaton = builder.build();
+        let general = trim(&automaton);
+        let specialized = trim_productive(&automaton);
+        assert_eq!(specialized.source_states, general.source_states);
+        assert_eq!(specialized.automaton.num_states(), 2);
+        assert_eq!(specialized.automaton.num_rules(), 2);
     }
 
     #[test]
