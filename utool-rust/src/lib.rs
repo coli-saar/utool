@@ -25,6 +25,7 @@ pub mod codec;
 pub mod filter;
 pub mod graph;
 pub mod layout;
+pub mod server;
 pub mod solver;
 
 pub use codec::{

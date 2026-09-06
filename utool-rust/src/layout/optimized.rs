@@ -289,12 +289,15 @@ impl<'a> FragmentOptimizer<'a> {
         // must be centered last: the incoming pass above may have moved all
         // of their dominance children.
         for &fragment in by_height.iter().rev() {
-            let has_incoming = self.graph.parsed().dominance_edges().iter().any(
-                |&(source, target)| {
-                    self.fragment_of[target.index()] == fragment
-                        && self.fragment_of[source.index()] != fragment
-                },
-            );
+            let has_incoming =
+                self.graph
+                    .parsed()
+                    .dominance_edges()
+                    .iter()
+                    .any(|&(source, target)| {
+                        self.fragment_of[target.index()] == fragment
+                            && self.fragment_of[source.index()] != fragment
+                    });
             if has_incoming {
                 continue;
             }
@@ -322,9 +325,7 @@ impl<'a> FragmentOptimizer<'a> {
             for &other in &order {
                 if rank[&other] < rank[&fragment] && self.separation[other][fragment] > 0.0 {
                     lower = lower.max(anchors[other] + self.separation[other][fragment]);
-                } else if rank[&other] > rank[&fragment]
-                    && self.separation[fragment][other] > 0.0
-                {
+                } else if rank[&other] > rank[&fragment] && self.separation[fragment][other] > 0.0 {
                     upper = upper.min(anchors[other] - self.separation[fragment][other]);
                 }
             }

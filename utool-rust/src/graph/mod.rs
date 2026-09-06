@@ -208,6 +208,67 @@ impl ParsedGraph {
         }
         result
     }
+
+    /// Number of tree fragments (nodes without a tree parent).
+    #[must_use]
+    pub fn fragment_count(&self) -> usize {
+        self.tree_parents().map_or(0, |parents| {
+            parents.into_iter().filter(Option::is_none).count()
+        })
+    }
+
+    /// Whether every dominance edge starts at a hole or ends at a fragment root.
+    #[must_use]
+    pub fn is_weakly_normal(&self) -> bool {
+        let Ok(parents) = self.tree_parents() else {
+            return false;
+        };
+        self.dominance_edges.iter().all(|&(source, target)| {
+            self.node(source).is_hole() || parents[target.index()].is_none()
+        })
+    }
+
+    /// Whether every dominance edge starts at a hole and ends at a fragment root.
+    #[must_use]
+    pub fn is_normal(&self) -> bool {
+        let Ok(parents) = self.tree_parents() else {
+            return false;
+        };
+        self.dominance_edges.iter().all(|&(source, target)| {
+            self.node(source).is_hole() && parents[target.index()].is_none()
+        })
+    }
+
+    /// Whether every labelled node is a fragment root.
+    #[must_use]
+    pub fn is_compact(&self) -> bool {
+        let Ok(parents) = self.tree_parents() else {
+            return false;
+        };
+        self.nodes
+            .iter()
+            .enumerate()
+            .all(|(index, node)| node.label.is_none() || parents[index].is_none())
+    }
+
+    /// Whether the graph is hypernormally connected.
+    #[must_use]
+    pub fn is_hypernormally_connected(&self) -> bool {
+        is_hypernormally_connected(self)
+    }
+
+    /// Whether every leaf is labelled.
+    #[must_use]
+    pub fn is_leaf_labelled(&self) -> bool {
+        let mut has_outgoing_dominance = vec![false; self.nodes.len()];
+        for &(source, _) in &self.dominance_edges {
+            has_outgoing_dominance[source.index()] = true;
+        }
+        self.nodes
+            .iter()
+            .enumerate()
+            .all(|(index, node)| node.label.is_some() || has_outgoing_dominance[index])
+    }
 }
 
 /// Builder which interns external node names.

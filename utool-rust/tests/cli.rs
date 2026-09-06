@@ -73,7 +73,11 @@ fn chain_specification_is_a_length_not_a_filename() {
     assert_eq!(output.status.code(), Some(1));
     let statistics = String::from_utf8(output.stderr).unwrap();
     assert!(statistics.contains("Number of solved forms: 5"));
+    assert!(statistics.contains("Chart construction"));
+    assert!(statistics.contains("Chart size:"));
+    assert!(statistics.contains("Language size: 5 solved forms"));
     assert!(statistics.contains("Time to build chart:"));
+    assert!(!statistics.contains("Filtering"));
     assert!(statistics.contains("Enumerated 5 solved forms."));
     assert!(statistics.contains("Time to enumerate solutions:"));
     assert!(statistics.contains("solutions/sec)"));
@@ -89,6 +93,58 @@ fn chain_specification_is_a_length_not_a_filename() {
         .status()
         .unwrap();
     assert_eq!(invalid.code(), Some(193));
+}
+
+#[test]
+fn filtering_reports_both_phases_only_with_statistics() {
+    let input = fixture(
+        "filter-report-input",
+        "clls",
+        "[label(x a(x1 x2)) label(y a(y1 y2)) label(p p) label(q q) label(r r) dom(x1 p) dom(y1 q) dom(x2 r) dom(y2 r)]",
+    );
+    let rules = fixture(
+        "filter-report-rules",
+        "rules",
+        "a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args([
+            "solvable",
+            "-s",
+            "-f",
+            rules.to_str().unwrap(),
+            input.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+
+    let report = String::from_utf8(output.stderr).unwrap();
+    assert_eq!(report.matches("Chart construction").count(), 1);
+    assert_eq!(report.matches("Filtering").count(), 1);
+    assert_eq!(report.matches("Chart size:").count(), 2);
+    assert_eq!(report.matches("Language size:").count(), 2);
+    assert!(report.contains("Language size: 2 solved forms"));
+    assert!(report.contains("Language size: 1 solved forms"));
+    assert!(report.contains("Time to build chart:"));
+    assert!(report.contains("Time to filter chart:"));
+
+    let quiet = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args([
+            "solvable",
+            "-f",
+            rules.to_str().unwrap(),
+            input.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(quiet.status.code(), Some(1));
+    assert!(quiet.stdout.is_empty());
+    assert!(quiet.stderr.is_empty());
+
+    fs::remove_file(input).unwrap();
+    fs::remove_file(rules).unwrap();
 }
 
 #[test]

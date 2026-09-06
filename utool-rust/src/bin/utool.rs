@@ -4,7 +4,9 @@ use std::{
     process::ExitCode,
     time::{Duration, Instant},
 };
-use utool::{HncGraph, InputCodec, OutputCodec, RewriteSystem, filter_chart, is_solvable, solve};
+use utool::{
+    Chart, HncGraph, InputCodec, OutputCodec, RewriteSystem, filter_chart, is_solvable, solve,
+};
 
 const IO_ERROR: u8 = 128;
 const NO_INPUT: u8 = 150;
@@ -27,7 +29,6 @@ enum Operation {
     Help,
 }
 
-#[derive(Default)]
 #[allow(clippy::struct_excessive_bools)]
 struct Options {
     input_codec: Option<String>,
@@ -43,7 +44,42 @@ struct Options {
     codec_options_help: bool,
     display_codecs: bool,
     version: bool,
+    port: u16,
+    logging: LoggingOption,
+    warmup: bool,
     positional: Vec<String>,
+}
+
+#[derive(Default)]
+enum LoggingOption {
+    #[default]
+    Disabled,
+    Stderr,
+    File(String),
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            input_codec: None,
+            output_codec: None,
+            output: None,
+            filter: None,
+            statistics: false,
+            no_output: false,
+            nochart: false,
+            dump_chart: false,
+            limit: None,
+            help: false,
+            codec_options_help: false,
+            display_codecs: false,
+            version: false,
+            port: 2802,
+            logging: LoggingOption::Disabled,
+            warmup: false,
+            positional: Vec::new(),
+        }
+    }
 }
 
 fn fail(message: impl AsRef<str>, code: u8) -> ExitCode {
@@ -80,6 +116,21 @@ fn options(args: &[String]) -> Result<Options, String> {
             "-O" => result.output_codec = Some(take_value(args, &mut index, None, "-O")?),
             "-o" => result.output = Some(take_value(args, &mut index, None, "-o")?),
             "-f" => result.filter = Some(take_value(args, &mut index, None, "-f")?),
+            "-p" => {
+                result.port = take_value(args, &mut index, None, "-p")?
+                    .parse()
+                    .map_err(|_| "-p requires a TCP port between 0 and 65535".to_owned())?;
+            }
+            "-l" => {
+                let value = args
+                    .get(index + 1)
+                    .filter(|value| !value.starts_with('-'))
+                    .cloned();
+                if value.is_some() {
+                    index += 1;
+                }
+                result.logging = value.map_or(LoggingOption::Stderr, LoggingOption::File);
+            }
             "-s" => result.statistics = true,
             "-n" => result.no_output = true,
             "-h" => result.help = true,
@@ -99,6 +150,23 @@ fn options(args: &[String]) -> Result<Options, String> {
                 "filter" => {
                     result.filter = Some(take_value(args, &mut index, attached, "--filter")?);
                 }
+                "port" => {
+                    result.port = take_value(args, &mut index, attached, "--port")?
+                        .parse()
+                        .map_err(|_| "--port requires a TCP port between 0 and 65535".to_owned())?;
+                }
+                "logging" => {
+                    let value = attached.map(str::to_owned).or_else(|| {
+                        args.get(index + 1)
+                            .filter(|value| !value.starts_with('-'))
+                            .cloned()
+                    });
+                    if attached.is_none() && value.is_some() {
+                        index += 1;
+                    }
+                    result.logging = value.map_or(LoggingOption::Stderr, LoggingOption::File);
+                }
+                "warmup" => result.warmup = true,
                 "limit" => {
                     result.limit = Some(
                         take_value(args, &mut index, attached, "--limit")?
@@ -151,7 +219,16 @@ fn print_help(command: Option<&str>) {
                 _ => "Unknown command",
             }
         );
-        eprintln!("Usage: utool {command} [options] [input-source]");
+        if command == "server" {
+            eprintln!("Usage: utool server [options]");
+        } else {
+            eprintln!("Usage: utool {command} [options] [input-source]");
+        }
+        if command == "server" {
+            eprintln!(
+                "\nServer options:\n  --port, -p <port>          Accept connections on this port (default: 2802)\n  --logging, -l [filename]   Log traffic to a file, or stderr when omitted\n  --warmup                   Warm up the solver before accepting connections"
+            );
+        }
     } else {
         eprintln!("Usage: utool <subcommand> [options] [args]");
         eprintln!(
@@ -254,6 +331,20 @@ fn format_duration(duration: Duration) -> String {
     }
 }
 
+fn report_chart_phase(name: &str, time_label: &str, chart: &Chart, duration: Duration) {
+    eprintln!("{name}");
+    eprintln!(
+        "  Chart size:    {} states, {} splits",
+        chart.state_count(),
+        chart.split_count()
+    );
+    eprintln!("  Language size: {} solved forms", chart.count_solutions());
+    eprintln!(
+        "  {time_label}: {duration}\n",
+        duration = format_duration(duration)
+    );
+}
+
 #[allow(clippy::too_many_lines)]
 fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u8)> {
     let graph = read_graph(opts, source)?;
@@ -333,6 +424,14 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
     let started = Instant::now();
     let mut chart = solve(&graph).map_err(|e| (e.to_string(), SOLVER_NOT_APPLICABLE))?;
     let chart_duration = started.elapsed();
+    if opts.statistics {
+        report_chart_phase(
+            "Chart construction",
+            "Time to build chart",
+            &chart,
+            chart_duration,
+        );
+    }
     if let Some(path) = &opts.filter {
         let rules = fs::read_to_string(path).map_err(|e| {
             (
@@ -341,8 +440,17 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             )
         })?;
         let system = RewriteSystem::parse(&rules).map_err(|e| (e.to_string(), FILTER_ERROR))?;
+        let filtering_started = Instant::now();
         chart =
             filter_chart(&chart, &system, || false).map_err(|e| (e.to_string(), FILTER_ERROR))?;
+        if opts.statistics {
+            report_chart_phase(
+                "Filtering",
+                "Time to filter chart",
+                &chart,
+                filtering_started.elapsed(),
+            );
+        }
     }
     let solvable = chart.count_solutions() != 0u8.into();
     if opts.statistics {
@@ -354,8 +462,6 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
                 "it is unsolvable"
             }
         );
-        eprintln!("Splits in chart: {}", chart.split_count());
-        eprintln!("Time to build chart: {}", format_duration(chart_duration));
         eprintln!("Number of solved forms: {}\n", chart.count_solutions());
     }
     if opts.dump_chart {
@@ -437,7 +543,7 @@ fn main() -> ExitCode {
     }
     if opts.codec_options_help {
         eprintln!(
-            "utool global options are:\n  --help-options\n  --display-codecs, -d\n  --display-statistics, -s\n  --no-output, -n\n  --filter, -f <filename>\n  --version"
+            "utool global options are:\n  --help-options\n  --display-codecs, -d\n  --display-statistics, -s\n  --no-output, -n\n  --filter, -f <filename>\n  --port, -p <port>\n  --logging, -l [filename]\n  --warmup\n  --version"
         );
         return ExitCode::SUCCESS;
     }
@@ -457,7 +563,26 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
     let op = op.expect("checked");
-    if matches!(op, Operation::Display | Operation::Server) {
+    if op == Operation::Server {
+        let logging = match &opts.logging {
+            LoggingOption::Disabled => utool::server::ServerLogging::Disabled,
+            LoggingOption::Stderr => utool::server::ServerLogging::Stderr,
+            LoggingOption::File(path) => utool::server::ServerLogging::File(path.into()),
+        };
+        let config = utool::server::ServerConfig {
+            port: opts.port,
+            logging,
+            warmup: opts.warmup,
+        };
+        return match utool::server::run(config) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(error) => fail(
+                format!("An I/O error occurred in server mode.\n{error}"),
+                129,
+            ),
+        };
+    }
+    if op == Operation::Display {
         return fail(
             "This command is not available in this binary yet.",
             SOLVER_NOT_APPLICABLE,

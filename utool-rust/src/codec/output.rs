@@ -163,6 +163,76 @@ impl OutputCodec {
             Self::DomgraphDot | Self::DomgraphUdraw => None,
         }
     }
+
+    /// Serialize one solved form without the framing used for a solution sequence.
+    ///
+    /// This is the representation used by the legacy XML server's individual
+    /// `solution` attributes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the selected codec cannot materialize or write the
+    /// solved form.
+    pub fn write_single_solution(
+        self,
+        solution: &Solution<'_>,
+        output: &mut dyn Write,
+    ) -> io::Result<()> {
+        self.write_single_solution_at(solution, 1, output)
+    }
+
+    /// Serialize one solved form using `ordinal` for formats which number outputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the selected codec cannot materialize or write the
+    /// solved form.
+    pub fn write_single_solution_at(
+        self,
+        solution: &Solution<'_>,
+        ordinal: usize,
+        output: &mut dyn Write,
+    ) -> io::Result<()> {
+        match self {
+            Self::DomconOz => {
+                output.write_all(b"[")?;
+                let mut first = true;
+                write_solution_node(solution, solution.root(), &mut first, output)?;
+                let mut stack = vec![solution.root()];
+                while let Some(tree) = stack.pop() {
+                    for &child in solution.arena().get_children(tree) {
+                        write_solution_node(solution, child, &mut first, output)?;
+                        stack.push(child);
+                    }
+                }
+                output.write_all(b"]\n")
+            }
+            Self::TermProlog => write_label_term(solution, solution.root(), ",", output),
+            Self::TermOz => write_label_term(solution, solution.root(), " ", output),
+            Self::DomgraphGxl => write_gxl_graph(&materialize_solution(solution)?, output),
+            Self::DomgraphCodegen => {
+                write_codegen_graph(&materialize_solution(solution)?, ordinal, output)
+            }
+            Self::PluggingOz => {
+                write_plugging(&solution_pluggings(solution), PluggingStyle::Oz, output)
+            }
+            Self::PluggingLkb => {
+                write_plugging(&solution_pluggings(solution), PluggingStyle::Lkb, output)
+            }
+            Self::PluggingGroovy => {
+                write_plugging(&solution_pluggings(solution), PluggingStyle::Groovy, output)
+            }
+            Self::DomgraphDot | Self::DomgraphUdraw => {
+                let Some(encoder) = self.graph_encoder() else {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Unsupported,
+                        "graph codec has no graph encoder",
+                    ));
+                };
+                encoder.write_graph(&materialize_solution(solution)?, output)
+            }
+        }
+    }
 }
 
 /// Serialize a single parsed graph to a byte stream.
