@@ -710,17 +710,26 @@ enum LegacyKind {
 
 struct LegacySolutionEncoder {
     kind: LegacyKind,
+    scratch: Vec<u8>,
+    encoded_names: Vec<Vec<u8>>,
     written: usize,
 }
 
 impl LegacySolutionEncoder {
     const fn new(kind: LegacyKind) -> Self {
-        Self { kind, written: 0 }
+        Self {
+            kind,
+            scratch: Vec::new(),
+            encoded_names: Vec::new(),
+            written: 0,
+        }
     }
 }
 
 impl SolutionEncoder for LegacySolutionEncoder {
     fn begin(&mut self, output: &mut dyn Write) -> io::Result<()> {
+        self.scratch.clear();
+        self.encoded_names.clear();
         self.written = 0;
         match self.kind {
             LegacyKind::Gxl => output.write_all(
@@ -751,14 +760,31 @@ impl SolutionEncoder for LegacySolutionEncoder {
             LegacyKind::Codegen => {
                 write_codegen_graph(&materialize_solution(solution)?, self.written + 1, output)?;
             }
-            LegacyKind::PluggingOz => {
-                write_plugging(&solution_pluggings(solution), PluggingStyle::Oz, output)?;
-            }
-            LegacyKind::PluggingLkb => {
-                write_plugging(&solution_pluggings(solution), PluggingStyle::Lkb, output)?;
-            }
-            LegacyKind::PluggingGroovy => {
-                write_plugging(&solution_pluggings(solution), PluggingStyle::Groovy, output)?;
+            LegacyKind::PluggingOz | LegacyKind::PluggingLkb | LegacyKind::PluggingGroovy => {
+                let style = match self.kind {
+                    LegacyKind::PluggingOz => PluggingStyle::Oz,
+                    LegacyKind::PluggingLkb => PluggingStyle::Lkb,
+                    LegacyKind::PluggingGroovy => PluggingStyle::Groovy,
+                    LegacyKind::Gxl | LegacyKind::Codegen => unreachable!(),
+                };
+                if self.encoded_names.is_empty() {
+                    self.encoded_names = solution
+                        .graph()
+                        .parsed()
+                        .nodes()
+                        .iter()
+                        .map(|node| encode_plugging_name(node.name(), style))
+                        .collect();
+                }
+                self.scratch.clear();
+                append_solution_pluggings(
+                    solution,
+                    solution.root(),
+                    style,
+                    &self.encoded_names,
+                    &mut self.scratch,
+                );
+                output.write_all(&self.scratch)?;
             }
         }
         self.written += 1;
@@ -772,6 +798,100 @@ impl SolutionEncoder for LegacySolutionEncoder {
             LegacyKind::PluggingOz | LegacyKind::PluggingGroovy => output.write_all(b"]"),
             LegacyKind::PluggingLkb => output.write_all(b")"),
         }
+    }
+}
+
+fn encode_plugging_name(value: &str, style: PluggingStyle) -> Vec<u8> {
+    match style {
+        PluggingStyle::Oz => encode_oz_atom(value),
+        PluggingStyle::Lkb => value.get(1..).unwrap_or(value).as_bytes().to_vec(),
+        PluggingStyle::Groovy => value.as_bytes().to_vec(),
+    }
+}
+
+fn append_solution_pluggings(
+    solution: &Solution<'_>,
+    tree: Tree,
+    style: PluggingStyle,
+    encoded_names: &[Vec<u8>],
+    output: &mut Vec<u8>,
+) {
+    match style {
+        PluggingStyle::Oz => output.push(b'['),
+        PluggingStyle::Lkb => output.extend_from_slice(b"( "),
+        PluggingStyle::Groovy => output.extend_from_slice(b"[["),
+    }
+    let mut first = true;
+    append_solution_plugging_edges(solution, tree, style, encoded_names, &mut first, output);
+    match style {
+        PluggingStyle::Oz => output.extend_from_slice(b"]\n"),
+        PluggingStyle::Lkb => output.extend_from_slice(b")\n"),
+        PluggingStyle::Groovy => output.extend_from_slice(b"],[:]]"),
+    }
+}
+
+fn append_solution_plugging_edges(
+    solution: &Solution<'_>,
+    tree: Tree,
+    style: PluggingStyle,
+    encoded_names: &[Vec<u8>],
+    first: &mut bool,
+    output: &mut Vec<u8>,
+) {
+    let original = solution.graph().node(solution.node_id(tree));
+    let resolved = solution.arena().get_children(tree);
+    for (&source_child, &resolved_child) in original.tree_children().iter().zip(resolved) {
+        let source_node = solution.graph().node(source_child);
+        if source_node.is_hole() {
+            if !*first {
+                output.extend_from_slice(match style {
+                    PluggingStyle::Groovy => b", ",
+                    PluggingStyle::Oz | PluggingStyle::Lkb => b" ",
+                });
+            }
+            *first = false;
+            let source = &encoded_names[source_child.index()];
+            let target = &encoded_names[solution.node_id(resolved_child).index()];
+            match style {
+                PluggingStyle::Oz => {
+                    output.extend_from_slice(b"plug(");
+                    output.extend_from_slice(source);
+                    output.push(b' ');
+                    output.extend_from_slice(target);
+                    output.push(b')');
+                }
+                PluggingStyle::Lkb => {
+                    output.push(b'(');
+                    output.extend_from_slice(source);
+                    output.push(b' ');
+                    output.extend_from_slice(source);
+                    output.push(b' ');
+                    output.extend_from_slice(target);
+                    output.extend_from_slice(b") (");
+                    output.extend_from_slice(target);
+                    output.push(b' ');
+                    output.extend_from_slice(source);
+                    output.push(b' ');
+                    output.extend_from_slice(target);
+                    output.push(b')');
+                }
+                PluggingStyle::Groovy => {
+                    output.extend_from_slice(b"[\"");
+                    output.extend_from_slice(source);
+                    output.extend_from_slice(b"\", \"");
+                    output.extend_from_slice(target);
+                    output.extend_from_slice(b"\"]");
+                }
+            }
+        }
+        append_solution_plugging_edges(
+            solution,
+            resolved_child,
+            style,
+            encoded_names,
+            first,
+            output,
+        );
     }
 }
 
@@ -979,6 +1099,7 @@ fn write_solution_node(
 struct TermSolutionEncoder {
     argument_separator: &'static str,
     solution_separator: &'static [u8],
+    scratch: Vec<u8>,
     written: bool,
 }
 
@@ -987,6 +1108,7 @@ impl TermSolutionEncoder {
         Self {
             argument_separator: ",",
             solution_separator: b",\n",
+            scratch: Vec::new(),
             written: false,
         }
     }
@@ -995,6 +1117,7 @@ impl TermSolutionEncoder {
         Self {
             argument_separator: " ",
             solution_separator: b" \n",
+            scratch: Vec::new(),
             written: false,
         }
     }
@@ -1002,6 +1125,7 @@ impl TermSolutionEncoder {
 
 impl SolutionEncoder for TermSolutionEncoder {
     fn begin(&mut self, output: &mut dyn Write) -> io::Result<()> {
+        self.scratch.clear();
         self.written = false;
         output.write_all(b"[")
     }
@@ -1011,16 +1135,38 @@ impl SolutionEncoder for TermSolutionEncoder {
         solution: &Solution<'_>,
         output: &mut dyn Write,
     ) -> io::Result<()> {
+        self.scratch.clear();
         if self.written {
-            output.write_all(self.solution_separator)?;
+            self.scratch.extend_from_slice(self.solution_separator);
         }
-        write_label_term(solution, solution.root(), self.argument_separator, output)?;
+        append_label_term(
+            solution,
+            solution.root(),
+            self.argument_separator.as_bytes(),
+            &mut self.scratch,
+        );
+        output.write_all(&self.scratch)?;
         self.written = true;
         Ok(())
     }
 
     fn finish(&mut self, output: &mut dyn Write) -> io::Result<()> {
         output.write_all(b"]")
+    }
+}
+
+fn append_label_term(solution: &Solution<'_>, tree: Tree, separator: &[u8], output: &mut Vec<u8>) {
+    output.extend_from_slice(solution.node_label(tree).as_bytes());
+    let children = solution.arena().get_children(tree);
+    if !children.is_empty() {
+        output.push(b'(');
+        for (index, child) in children.iter().enumerate() {
+            if index > 0 {
+                output.extend_from_slice(separator);
+            }
+            append_label_term(solution, *child, separator, output);
+        }
+        output.push(b')');
     }
 }
 
