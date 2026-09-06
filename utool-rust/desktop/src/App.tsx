@@ -625,7 +625,7 @@ export default function App() {
       listen("menu-about", () => {
         void invoke<AppInfo>("app_info")
           .then(({ version, buildId }) => message(
-            `Utool, the Swiss Army Knife of Underspecification\nversion ${version}, build ${buildId}`,
+            `Utool, the Swiss Army Knife of Underspecification\nSaarland University\n\nversion ${version}\nbuild ${buildId}`,
             { title: "About Utool", kind: "info" },
           ))
           .catch((reason) => setError(String(reason)));
