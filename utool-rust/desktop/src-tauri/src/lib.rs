@@ -1,15 +1,17 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 use std::{
     collections::HashMap,
+    path::Path,
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
-    time::Instant,
+    time::{Instant, SystemTime, UNIX_EPOCH},
 };
 use tauri::{
-    Emitter,
-    menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
+    Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
+    menu::{MenuBuilder, MenuItemBuilder, MenuItemKind, Submenu, SubmenuBuilder},
 };
 use utool::{
     Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutError, LayoutOptions, OutputCodec,
@@ -19,22 +21,138 @@ use utool::{
 
 struct Document {
     graph: HncGraph,
+    title: String,
+    drawing: GraphView,
+    elapsed_ms: f64,
 }
 
 struct StoredChart {
     chart: Chart,
     display: ChartDisplay,
+    source: String,
+}
+
+#[derive(Default)]
+struct WindowResources {
+    document: Mutex<Option<(u64, Document)>>,
+    charts: Arc<Mutex<HashMap<u64, Arc<StoredChart>>>>,
+    jobs: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
 }
 
 #[derive(Default)]
 struct DocumentState {
-    documents: Arc<Mutex<HashMap<u64, Document>>>,
-    charts: Arc<Mutex<HashMap<u64, Arc<StoredChart>>>>,
-    jobs: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
+    windows: Mutex<HashMap<String, Arc<WindowResources>>>,
+    events: Mutex<Vec<EventEntry>>,
     next_id: AtomicU64,
+    next_event_id: AtomicU64,
 }
 
-#[derive(Serialize)]
+impl DocumentState {
+    fn resources(&self, label: &str) -> Result<Arc<WindowResources>, String> {
+        let mut windows = self
+            .windows
+            .lock()
+            .map_err(|_| "window state is unavailable")?;
+        Ok(Arc::clone(windows.entry(label.to_owned()).or_default()))
+    }
+
+    fn remove_window(&self, label: &str) {
+        let resources = self
+            .windows
+            .lock()
+            .ok()
+            .and_then(|mut windows| windows.remove(label));
+        if let Some(resources) = resources {
+            if let Ok(mut jobs) = resources.jobs.lock() {
+                for cancelled in jobs.values() {
+                    cancelled.store(true, Ordering::SeqCst);
+                }
+                jobs.clear();
+            }
+            if let Ok(mut charts) = resources.charts.lock() {
+                charts.clear();
+            }
+            if let Ok(mut document) = resources.document.lock() {
+                *document = None;
+            }
+        }
+    }
+
+    fn window_title(&self, app: &tauri::AppHandle, window_label: &str) -> String {
+        self.windows
+            .lock()
+            .ok()
+            .and_then(|windows| windows.get(window_label).cloned())
+            .and_then(|resources| {
+                resources.document.lock().ok().and_then(|document| {
+                    document
+                        .as_ref()
+                        .map(|(_, document)| document.title.clone())
+                })
+            })
+            .or_else(|| {
+                app.get_webview_window(window_label)
+                    .and_then(|window| window.title().ok())
+            })
+            .unwrap_or_else(|| window_label.to_owned())
+    }
+
+    fn record(
+        &self,
+        app: &tauri::AppHandle,
+        window_label: impl Into<String>,
+        action: impl Into<String>,
+        arguments: Value,
+        started: Instant,
+        error: Option<String>,
+    ) {
+        let window_label = window_label.into();
+        let window_title = self.window_title(app, &window_label);
+        let event = EventEntry {
+            id: self.next_event_id.fetch_add(1, Ordering::Relaxed) + 1,
+            timestamp_ms: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis(),
+            window_title,
+            action: action.into(),
+            arguments,
+            elapsed_ms: started.elapsed().as_secs_f64() * 1000.0,
+            status: if error.is_some() {
+                EventStatus::Error
+            } else {
+                EventStatus::Success
+            },
+            error,
+        };
+        if let Ok(mut events) = self.events.lock() {
+            events.push(event.clone());
+        }
+        let _ = app.emit("event-log-updated", &event);
+    }
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EventEntry {
+    id: u64,
+    timestamp_ms: u128,
+    window_title: String,
+    action: String,
+    arguments: Value,
+    elapsed_ms: f64,
+    status: EventStatus,
+    error: Option<String>,
+}
+
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "lowercase")]
+enum EventStatus {
+    Success,
+    Error,
+}
+
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct NodeView {
     id: usize,
@@ -47,7 +165,7 @@ struct NodeView {
     height: f32,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct EdgeView {
     source: usize,
@@ -57,7 +175,7 @@ struct EdgeView {
     light: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GraphView {
     nodes: Vec<NodeView>,
@@ -70,6 +188,7 @@ struct GraphView {
 #[serde(rename_all = "camelCase")]
 struct LoadedDocumentView {
     document_id: u64,
+    title: String,
     graph: GraphView,
     elapsed_ms: f64,
 }
@@ -136,6 +255,14 @@ fn parse_graph(input: &str, codec: &str) -> Result<HncGraph, String> {
         InputCodec::from_name(codec).ok_or_else(|| format!("unsupported input codec: {codec}"))?;
     let parsed = codec.parse(input).map_err(|error| error.to_string())?;
     HncGraph::try_from(parsed).map_err(|error| error.to_string())
+}
+
+fn display_filename(path: &str) -> String {
+    Path::new(path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or(path)
+        .to_owned()
 }
 
 fn graph_view(graph: &HncGraph, chart: Option<&Chart>) -> Result<GraphView, String> {
@@ -233,50 +360,116 @@ fn solution_view(solution: &Solution, elapsed_ms: f64) -> SolutionView {
 fn load_document(
     input: String,
     codec: String,
+    title: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<LoadedDocumentView, String> {
     let started = Instant::now();
-    let graph = parse_graph(&input, &codec)?;
-    let drawing = graph_view(&graph, None)?;
-    let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
-    let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
-    state
-        .documents
+    let arguments =
+        json!({ "graph": title, "format": codec, "input size": format!("{} bytes", input.len()) });
+    let result = (|| {
+        let graph = parse_graph(&input, &codec)?;
+        let drawing = graph_view(&graph, None)?;
+        let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+        let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
+        let resources = state.resources(window.label())?;
+        if let Ok(jobs) = resources.jobs.lock() {
+            for cancelled in jobs.values() {
+                cancelled.store(true, Ordering::SeqCst);
+            }
+        }
+        resources
+            .charts
+            .lock()
+            .map_err(|_| "chart state is unavailable")?
+            .clear();
+        resources
+            .jobs
+            .lock()
+            .map_err(|_| "job state is unavailable")?
+            .clear();
+        *resources
+            .document
+            .lock()
+            .map_err(|_| "document state is unavailable")? = Some((
+            document_id,
+            Document {
+                graph,
+                title: title.clone(),
+                drawing: drawing.clone(),
+                elapsed_ms,
+            },
+        ));
+        Ok(LoadedDocumentView {
+            document_id,
+            title,
+            graph: drawing,
+            elapsed_ms,
+        })
+    })();
+    state.record(
+        &app,
+        window.label(),
+        "Open graph",
+        arguments,
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
+}
+
+#[tauri::command]
+fn current_document(
+    window: WebviewWindow,
+    state: tauri::State<'_, DocumentState>,
+) -> Result<Option<LoadedDocumentView>, String> {
+    let resources = state.resources(window.label())?;
+    let document = resources
+        .document
         .lock()
-        .map_err(|_| "document state is unavailable")?
-        .insert(document_id, Document { graph });
-    Ok(LoadedDocumentView {
-        document_id,
-        graph: drawing,
-        elapsed_ms,
-    })
+        .map_err(|_| "document state is unavailable")?;
+    Ok(document
+        .as_ref()
+        .map(|(document_id, document)| LoadedDocumentView {
+            document_id: *document_id,
+            title: document.title.clone(),
+            graph: document.drawing.clone(),
+            elapsed_ms: document.elapsed_ms,
+        }))
 }
 
 #[tauri::command]
 async fn build_chart(
     document_id: u64,
     job_id: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<ChartView, String> {
-    let graph = state
-        .documents
+    let started = Instant::now();
+    let resources = state.resources(window.label())?;
+    let graph = resources
+        .document
         .lock()
         .map_err(|_| "document state is unavailable")?
-        .get(&document_id)
+        .as_ref()
+        .filter(|(id, _)| *id == document_id)
         .ok_or("document is no longer open")?
+        .1
         .graph
         .clone();
-    let documents = Arc::clone(&state.documents);
-    let charts = Arc::clone(&state.charts);
-    let jobs = Arc::clone(&state.jobs);
+    let document = Arc::clone(&resources);
+    let charts = Arc::clone(&resources.charts);
+    let jobs = Arc::clone(&resources.jobs);
     let chart_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     let cancelled = Arc::new(AtomicBool::new(false));
-    state
+    resources
         .jobs
         .lock()
         .map_err(|_| "job state is unavailable")?
         .insert(job_id.clone(), Arc::clone(&cancelled));
-    tauri::async_runtime::spawn_blocking(move || {
+    let result = tauri::async_runtime::spawn_blocking(move || {
         let result = (|| {
             let started = Instant::now();
             let chart = solve_with_cancellation(&graph, || cancelled.load(Ordering::Relaxed))
@@ -288,12 +481,15 @@ async fn build_chart(
             let stored = Arc::new(StoredChart {
                 display: ChartDisplay::new(&chart),
                 chart,
+                source: "Original chart".to_owned(),
             });
             let response = chart_view(chart_id, &stored, elapsed_ms, Some(&graph))?;
-            if !documents
+            if document
+                .document
                 .lock()
                 .map_err(|_| "document state is unavailable")?
-                .contains_key(&document_id)
+                .as_ref()
+                .is_none_or(|(id, _)| *id != document_id)
             {
                 return Err("document is no longer open".to_owned());
             }
@@ -309,33 +505,63 @@ async fn build_chart(
         result
     })
     .await
-    .map_err(|error| format!("solver task failed: {error}"))?
+    .map_err(|error| format!("solver task failed: {error}"))?;
+    state.record(
+        &app,
+        window.label(),
+        "Build chart",
+        json!({ "chart": "Original chart" }),
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
 }
 
 #[tauri::command]
-fn cancel_chart(job_id: String, state: tauri::State<'_, DocumentState>) {
-    if let Ok(jobs) = state.jobs.lock()
+fn cancel_chart(
+    job_id: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, DocumentState>,
+) {
+    let started = Instant::now();
+    let resources = state.resources(window.label());
+    if let Ok(resources) = resources
+        && let Ok(jobs) = resources.jobs.lock()
         && let Some(cancelled) = jobs.get(&job_id)
     {
         cancelled.store(true, Ordering::SeqCst);
     }
+    state.record(
+        &app,
+        window.label(),
+        "Cancel chart job",
+        json!({ "operation": "Chart computation" }),
+        started,
+        None,
+    );
 }
 
 #[tauri::command]
 async fn solution_at(
     chart_id: u64,
     index: usize,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<Option<SolutionView>, String> {
+    let started = Instant::now();
+    let resources = state.resources(window.label())?;
     let chart = Arc::clone(
-        state
+        resources
             .charts
             .lock()
             .map_err(|_| "chart state is unavailable")?
             .get(&chart_id)
             .ok_or("chart is no longer available")?,
     );
-    tauri::async_runtime::spawn_blocking(move || {
+    let chart_source = chart.source.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || {
         let started = Instant::now();
         let mut solutions = chart.chart.solutions();
         for _ in 0..=index {
@@ -350,33 +576,60 @@ async fn solution_at(
         )))
     })
     .await
-    .map_err(|error| format!("solution task failed: {error}"))?
+    .map_err(|error| format!("solution task failed: {error}"))?;
+    state.record(
+        &app,
+        window.label(),
+        "Compute solution",
+        json!({ "chart": chart_source, "solution": index + 1 }),
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
 }
 
 #[tauri::command]
 fn export_document(
     document_id: u64,
     format: String,
+    filename: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<String, String> {
-    let documents = state
-        .documents
-        .lock()
-        .map_err(|_| "document state is unavailable")?;
-    let graph = &documents
-        .get(&document_id)
-        .ok_or("document is no longer open")?
-        .graph;
-    let codec = OutputCodec::from_name(&format)
-        .ok_or_else(|| format!("unsupported output format: {format}"))?;
-    let encoder = codec
-        .graph_encoder()
-        .ok_or_else(|| format!("output format does not support graphs: {}", codec.name()))?;
-    let mut output = Vec::new();
-    encoder
-        .write_graph(graph.parsed(), &mut output)
-        .map_err(|error| error.to_string())?;
-    String::from_utf8(output).map_err(|error| error.to_string())
+    let started = Instant::now();
+    let result = (|| {
+        let resources = state.resources(window.label())?;
+        let document = resources
+            .document
+            .lock()
+            .map_err(|_| "document state is unavailable")?;
+        let graph = &document
+            .as_ref()
+            .filter(|(id, _)| *id == document_id)
+            .ok_or("document is no longer open")?
+            .1
+            .graph;
+        let codec = OutputCodec::from_name(&format)
+            .ok_or_else(|| format!("unsupported output format: {format}"))?;
+        let encoder = codec
+            .graph_encoder()
+            .ok_or_else(|| format!("output format does not support graphs: {}", codec.name()))?;
+        let mut output = Vec::new();
+        encoder
+            .write_graph(graph.parsed(), &mut output)
+            .map_err(|error| error.to_string())?;
+        String::from_utf8(output).map_err(|error| error.to_string())
+    })();
+    state.record(
+        &app,
+        window.label(),
+        "Export graph",
+        json!({ "format": format, "filename": display_filename(&filename) }),
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
 }
 
 fn chart_view(
@@ -395,7 +648,9 @@ fn chart_view(
         split_count: chart.split_count(),
         display_row_count: stored.display.row_count(),
         top_fragments: chart.top_fragments(),
-        graph: graph.map(|graph| graph_view(graph, Some(chart))).transpose()?,
+        graph: graph
+            .map(|graph| graph_view(graph, Some(chart)))
+            .transpose()?,
     })
 }
 
@@ -404,73 +659,119 @@ fn chart_rows(
     chart_id: u64,
     start: usize,
     count: usize,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<ChartRowPage, String> {
+    let started = Instant::now();
     const MAX_PAGE_SIZE: usize = 256;
-    let charts = state
-        .charts
-        .lock()
-        .map_err(|_| "chart state is unavailable")?;
-    let chart = Arc::clone(
-        charts
-            .get(&chart_id)
-            .ok_or("chart is no longer available")?,
+    let result = (|| {
+        let resources = state.resources(window.label())?;
+        let charts = resources
+            .charts
+            .lock()
+            .map_err(|_| "chart state is unavailable")?;
+        let chart = Arc::clone(
+            charts
+                .get(&chart_id)
+                .ok_or("chart is no longer available")?,
+        );
+        let chart_source = chart.source.clone();
+        drop(charts);
+        let count = count.min(MAX_PAGE_SIZE);
+        let page = chart.display.rule_page(&chart.chart, start, count);
+        Ok((
+            ChartRowPage {
+                start: page.start,
+                total: page.total,
+                states: page
+                    .states
+                    .into_iter()
+                    .map(|definition| ChartStateView {
+                        state: definition.state,
+                        rule_count: definition.rule_count,
+                        subgraph: definition.subgraph,
+                        variant: definition.variant,
+                    })
+                    .collect(),
+                rows: page
+                    .rules
+                    .into_iter()
+                    .map(|rule| ChartRuleView {
+                        state: rule.state,
+                        ordinal: rule.ordinal,
+                        fragment: rule.fragment,
+                        assignments: rule.assignments,
+                    })
+                    .collect(),
+            },
+            chart_source,
+        ))
+    })();
+    let chart_source = result
+        .as_ref()
+        .ok()
+        .map_or_else(|| "Unknown chart".to_owned(), |(_, source)| source.clone());
+    let page_result = result.map(|(page, _)| page);
+    state.record(
+        &app,
+        window.label(),
+        "Load chart rows",
+        json!({ "chart": chart_source, "rules": format!("{}–{}", start + 1, start.saturating_add(count)) }),
+        started,
+        page_result.as_ref().err().cloned(),
     );
-    drop(charts);
-    let count = count.min(MAX_PAGE_SIZE);
-    let page = chart.display.rule_page(&chart.chart, start, count);
-    Ok(ChartRowPage {
-        start: page.start,
-        total: page.total,
-        states: page
-            .states
-            .into_iter()
-            .map(|definition| ChartStateView {
-                state: definition.state,
-                rule_count: definition.rule_count,
-                subgraph: definition.subgraph,
-                variant: definition.variant,
-            })
-            .collect(),
-        rows: page
-            .rules
-            .into_iter()
-            .map(|rule| ChartRuleView {
-                state: rule.state,
-                ordinal: rule.ordinal,
-                fragment: rule.fragment,
-                assignments: rule.assignments,
-            })
-            .collect(),
-    })
+    page_result
 }
 
 #[tauri::command]
 async fn filter_chart_command(
     chart_id: u64,
     rewrite_system: String,
+    filename: String,
     job_id: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
     state: tauri::State<'_, DocumentState>,
 ) -> Result<ChartView, String> {
-    let system = RewriteSystem::parse(&rewrite_system).map_err(|error| error.to_string())?;
-    let charts = Arc::clone(&state.charts);
-    let jobs = Arc::clone(&state.jobs);
+    let started = Instant::now();
+    let filter_name = display_filename(&filename);
+    let resources = state.resources(window.label())?;
+    let charts = Arc::clone(&resources.charts);
+    let source = Arc::clone(
+        charts
+            .lock()
+            .map_err(|_| "chart state is unavailable")?
+            .get(&chart_id)
+            .ok_or("chart is no longer available")?,
+    );
+    let source_name = source.source.clone();
+    let system = match RewriteSystem::parse(&rewrite_system).map_err(|error| error.to_string()) {
+        Ok(system) => system,
+        Err(error) => {
+            state.record(
+                &app,
+                window.label(),
+                "Apply chart filter",
+                json!({ "chart": source_name, "filter": filter_name }),
+                started,
+                Some(error.clone()),
+            );
+            return Err(error);
+        }
+    };
+    let jobs = Arc::clone(&resources.jobs);
     let result_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
+    let result_source = format!("Filtered by {filter_name}");
+    let stored_source = result_source.clone();
     let cancelled = Arc::new(AtomicBool::new(false));
-    state
+    resources
         .jobs
         .lock()
         .map_err(|_| "job state is unavailable")?
         .insert(job_id.clone(), Arc::clone(&cancelled));
-    tauri::async_runtime::spawn_blocking(move || {
+    let result = tauri::async_runtime::spawn_blocking(move || {
         let result = (|| {
-            let source = Arc::clone(
-                charts
-                    .lock()
-                    .map_err(|_| "chart state is unavailable")?
-                    .get(&chart_id)
-                    .ok_or("chart is no longer available")?,
-            );
             let started = Instant::now();
             let filtered =
                 filter_chart(&source.chart, &system, || cancelled.load(Ordering::Relaxed))
@@ -482,6 +783,7 @@ async fn filter_chart_command(
             let stored = Arc::new(StoredChart {
                 display: ChartDisplay::new(&filtered),
                 chart: filtered,
+                source: stored_source,
             });
             let response = chart_view(result_id, &stored, elapsed_ms, None)?;
             charts
@@ -496,7 +798,193 @@ async fn filter_chart_command(
         result
     })
     .await
-    .map_err(|error| format!("filter task failed: {error}"))?
+    .map_err(|error| format!("filter task failed: {error}"))?;
+    state.record(
+        &app,
+        window.label(),
+        "Apply chart filter",
+        json!({ "source chart": source_name, "filter": filter_name, "result chart": result_source }),
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct OpenWindowRequest {
+    input: String,
+    codec: String,
+    title: String,
+    filename: String,
+}
+
+#[tauri::command]
+fn open_graph_window(
+    request: OpenWindowRequest,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, DocumentState>,
+) -> Result<(), String> {
+    let started = Instant::now();
+    let arguments = json!({
+        "filename": display_filename(&request.filename),
+        "format": request.codec,
+        "input size": format!("{} bytes", request.input.len()),
+    });
+    let result = (|| {
+        let graph = parse_graph(&request.input, &request.codec)?;
+        let drawing = graph_view(&graph, None)?;
+        let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+        let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
+        let label = format!("graph-{document_id}");
+        let resources = state.resources(&label)?;
+        *resources
+            .document
+            .lock()
+            .map_err(|_| "document state is unavailable")? = Some((
+            document_id,
+            Document {
+                graph,
+                title: request.title.clone(),
+                drawing,
+                elapsed_ms,
+            },
+        ));
+        let create_result =
+            WebviewWindowBuilder::new(&app, &label, WebviewUrl::App("index.html".into()))
+                .title(format!("{} — Utool", request.title))
+                .inner_size(1200.0, 800.0)
+                .min_inner_size(800.0, 560.0)
+                .build()
+                .map_err(|error| error.to_string());
+        if create_result.is_err() {
+            state.remove_window(&label);
+        }
+        create_result
+            .map(|_| refresh_window_menu(&app))
+            .and_then(|result| result)
+    })();
+    state.record(
+        &app,
+        window.label(),
+        "Open graph in new window",
+        arguments,
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
+}
+
+#[tauri::command]
+fn event_entries(state: tauri::State<'_, DocumentState>) -> Result<Vec<EventEntry>, String> {
+    state
+        .events
+        .lock()
+        .map(|events| events.clone())
+        .map_err(|_| "event log is unavailable".to_owned())
+}
+
+#[tauri::command]
+fn report_client_action(
+    action: String,
+    arguments: Value,
+    error: Option<String>,
+    elapsed_ms: f64,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, DocumentState>,
+) {
+    let started = Instant::now()
+        .checked_sub(std::time::Duration::from_secs_f64(
+            (elapsed_ms / 1000.0).max(0.0),
+        ))
+        .unwrap_or_else(Instant::now);
+    state.record(&app, window.label(), action, arguments, started, error);
+}
+
+fn focused_window(app: &tauri::AppHandle) -> Option<WebviewWindow> {
+    app.webview_windows()
+        .into_values()
+        .find(|window| window.is_focused().unwrap_or(false))
+}
+
+const WINDOW_MENU_ID: &str = "window-menu";
+const WINDOW_ITEM_PREFIX: &str = "activate-window:";
+
+fn window_menu(app: &tauri::AppHandle) -> Result<Submenu<tauri::Wry>, String> {
+    app.menu()
+        .and_then(|menu| menu.get(WINDOW_MENU_ID))
+        .and_then(|item| match item {
+            MenuItemKind::Submenu(submenu) => Some(submenu),
+            _ => None,
+        })
+        .ok_or_else(|| "Window menu is unavailable".to_owned())
+}
+
+fn remove_window_menu_item(app: &tauri::AppHandle, label: &str) -> Result<(), String> {
+    let menu = window_menu(app)?;
+    let id = format!("{WINDOW_ITEM_PREFIX}{label}");
+    if let Some(item) = menu.get(&id) {
+        menu.remove(&item).map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+fn refresh_window_menu(app: &tauri::AppHandle) -> Result<(), String> {
+    let menu = window_menu(app)?;
+    for item in menu.items().map_err(|error| error.to_string())? {
+        if item.id().0.starts_with(WINDOW_ITEM_PREFIX) {
+            menu.remove(&item).map_err(|error| error.to_string())?;
+        }
+    }
+
+    let mut windows: Vec<_> = app.webview_windows().into_values().collect();
+    windows.sort_by(|left, right| {
+        let left_title = left.title().unwrap_or_else(|_| left.label().to_owned());
+        let right_title = right.title().unwrap_or_else(|_| right.label().to_owned());
+        left_title
+            .cmp(&right_title)
+            .then_with(|| left.label().cmp(right.label()))
+    });
+    for window in windows {
+        let title = window.title().unwrap_or_else(|_| window.label().to_owned());
+        let item =
+            MenuItemBuilder::with_id(format!("{WINDOW_ITEM_PREFIX}{}", window.label()), title)
+                .build(app)
+                .map_err(|error| error.to_string())?;
+        menu.append(&item).map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+fn activate_window(app: &tauri::AppHandle, label: &str) -> Result<(), String> {
+    let window = app
+        .get_webview_window(label)
+        .ok_or_else(|| format!("window is no longer open: {label}"))?;
+    window.show().map_err(|error| error.to_string())?;
+    window.unminimize().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())
+}
+
+fn show_event_log(app: &tauri::AppHandle) -> Result<(), tauri::Error> {
+    if let Some(window) = app.get_webview_window("event-log") {
+        window.show()?;
+        window.set_focus()?;
+        let _ = refresh_window_menu(app);
+        return Ok(());
+    }
+    WebviewWindowBuilder::new(
+        app,
+        "event-log",
+        WebviewUrl::App("index.html?view=event-log".into()),
+    )
+    .title("Event Log — Utool")
+    .inner_size(920.0, 640.0)
+    .min_inner_size(640.0, 360.0)
+    .build()?;
+    let _ = refresh_window_menu(app);
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -507,16 +995,41 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             load_document,
+            current_document,
+            open_graph_window,
             build_chart,
             cancel_chart,
             chart_rows,
             solution_at,
             filter_chart_command,
-            export_document
+            export_document,
+            event_entries,
+            report_client_action
         ])
+        .on_window_event(|window, event| {
+            if matches!(event, WindowEvent::Destroyed) {
+                let state = window.state::<DocumentState>();
+                let started = Instant::now();
+                state.record(
+                    window.app_handle(),
+                    window.label(),
+                    "Close window",
+                    json!({}),
+                    started,
+                    None,
+                );
+                state.remove_window(window.label());
+                let _ = remove_window_menu_item(window.app_handle(), window.label());
+            } else if matches!(event, WindowEvent::Focused(true)) {
+                let _ = refresh_window_menu(window.app_handle());
+            }
+        })
         .setup(|app| {
             let open = MenuItemBuilder::with_id("open", "Open…")
                 .accelerator("CmdOrCtrl+O")
+                .build(app)?;
+            let close = MenuItemBuilder::with_id("close", "Close")
+                .accelerator("CmdOrCtrl+W")
                 .build(app)?;
             let zoom_in = MenuItemBuilder::with_id("zoom-in", "Zoom In")
                 .accelerator("CmdOrCtrl+=")
@@ -538,6 +1051,17 @@ pub fn run() {
                 .text("export-svg", "Export SVG…")
                 .text("export-domcon", "Export Domcon/Oz…")
                 .text("export-dot", "Export Graphviz DOT…")
+                .separator()
+                .item(&close)
+                .build()?;
+            let edit = SubmenuBuilder::new(app, "Edit")
+                .undo()
+                .redo()
+                .separator()
+                .cut()
+                .copy()
+                .paste()
+                .select_all()
                 .build()?;
             let view = SubmenuBuilder::new(app, "View")
                 .item(&zoom_in)
@@ -546,15 +1070,94 @@ pub fn run() {
                 .separator()
                 .text("fit-window", "Fit to Window")
                 .build()?;
+            let window_menu = SubmenuBuilder::with_id(app, WINDOW_MENU_ID, "Window")
+                .text("event-log", "Event Log…")
+                .separator()
+                .minimize()
+                .separator()
+                .build()?;
             let menu = MenuBuilder::new(app)
-                .items(&[&application, &file, &view])
+                .items(&[&application, &file, &edit, &view, &window_menu])
                 .build()?;
             app.set_menu(menu)?;
+            refresh_window_menu(app.handle()).map_err(std::io::Error::other)?;
             app.on_menu_event(|app, event| {
-                let _ = app.emit(&format!("menu-{}", event.id().0), ());
+                let started = Instant::now();
+                let id = event.id().0.as_str();
+                let target = focused_window(app);
+                let label = target.as_ref().map_or_else(
+                    || "application".to_owned(),
+                    |window| window.label().to_owned(),
+                );
+                let state = app.state::<DocumentState>();
+                let (action, arguments, result) =
+                    if let Some(target_label) = id.strip_prefix(WINDOW_ITEM_PREFIX) {
+                        (
+                            "Activate window".to_owned(),
+                            json!({ "window": state.window_title(app, target_label) }),
+                            activate_window(app, target_label),
+                        )
+                    } else {
+                        let result = match id {
+                            "event-log" => show_event_log(app).map_err(|error| error.to_string()),
+                            "close" => target.as_ref().map_or(Ok(()), |window| {
+                                window.close().map_err(|error| error.to_string())
+                            }),
+                            _ => target.as_ref().map_or(Ok(()), |window| {
+                                window
+                                    .emit(&format!("menu-{id}"), ())
+                                    .map_err(|error| error.to_string())
+                            }),
+                        };
+                        let action = match id {
+                            "open" => "Open graph",
+                            "close" => "Close window",
+                            "event-log" => "Open Event Log",
+                            "export-svg" => "Choose Export SVG",
+                            "export-domcon" => "Choose Export Domcon/Oz",
+                            "export-dot" => "Choose Export Graphviz DOT",
+                            "zoom-in" => "Zoom in",
+                            "zoom-out" => "Zoom out",
+                            "actual-size" => "Use actual size",
+                            "fit-window" => "Fit graph to window",
+                            "about" => "Show About Utool",
+                            _ => id,
+                        };
+                        (action.to_owned(), json!({}), result)
+                    };
+                state.record(app, label, action, arguments, started, result.err());
             });
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("failed to run Utool");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resources_are_isolated_and_jobs_are_cancelled_on_window_removal() {
+        let state = DocumentState::default();
+        let first = state.resources("graph-1").unwrap();
+        let second = state.resources("graph-2").unwrap();
+        assert!(!Arc::ptr_eq(&first, &second));
+
+        let cancelled = Arc::new(AtomicBool::new(false));
+        first
+            .jobs
+            .lock()
+            .unwrap()
+            .insert("solver".to_owned(), Arc::clone(&cancelled));
+        state.remove_window("graph-1");
+
+        assert!(cancelled.load(Ordering::SeqCst));
+        assert!(first.jobs.lock().unwrap().is_empty());
+        assert!(first.charts.lock().unwrap().is_empty());
+        assert!(first.document.lock().unwrap().is_none());
+        let windows = state.windows.lock().unwrap();
+        assert!(!windows.contains_key("graph-1"));
+        assert!(windows.contains_key("graph-2"));
+    }
 }

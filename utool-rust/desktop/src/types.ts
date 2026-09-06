@@ -34,8 +34,20 @@ export type SolutionView = {
 
 export type LoadedDocumentView = {
   documentId: number;
+  title: string;
   graph: GraphView;
   elapsedMs: number;
+};
+
+export type EventEntry = {
+  id: number;
+  timestampMs: number;
+  windowTitle: string;
+  action: string;
+  arguments: unknown;
+  elapsedMs: number;
+  status: "success" | "error";
+  error: string | null;
 };
 
 export type ChartView = {

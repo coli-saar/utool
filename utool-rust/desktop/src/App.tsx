@@ -10,6 +10,7 @@ import type { Zoom } from "./GraphCanvas";
 import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
+const WINDOW_LABEL = getCurrentWindow().label;
 type ViewName = "graph" | "chart" | "solutions";
 type DocumentView = { title: string; documentId: number; graph: GraphView };
 type ChartVariant = { key: string; name: string; chart: ChartView };
@@ -329,6 +330,14 @@ export default function App() {
   const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
 
   const makeJobId = () => crypto.randomUUID();
+  const recordClientAction = (action: string, arguments_: unknown, startedAt: number, reason?: unknown) => {
+    void invoke("report_client_action", {
+      action,
+      arguments: arguments_,
+      elapsedMs: performance.now() - startedAt,
+      error: reason === undefined ? null : String(reason),
+    });
+  };
 
   const cancelFallbackTimer = () => {
     if (fallbackTimer.current !== null) {
@@ -338,6 +347,20 @@ export default function App() {
   };
 
   useEffect(() => () => cancelFallbackTimer(), []);
+  useEffect(() => {
+    const reportWindowError = (event: ErrorEvent) => {
+      recordClientAction("Unhandled UI error", { filename: event.filename, line: event.lineno, column: event.colno }, performance.now(), event.error ?? event.message);
+    };
+    const reportRejection = (event: PromiseRejectionEvent) => {
+      recordClientAction("Unhandled UI promise rejection", {}, performance.now(), event.reason);
+    };
+    window.addEventListener("error", reportWindowError);
+    window.addEventListener("unhandledrejection", reportRejection);
+    return () => {
+      window.removeEventListener("error", reportWindowError);
+      window.removeEventListener("unhandledrejection", reportRejection);
+    };
+  }, []);
   useEffect(() => {
     void getCurrentWindow().setTitle(document ? `${document.title} — Utool` : "Utool");
   }, [document?.title]);
@@ -398,13 +421,7 @@ export default function App() {
     }
   }, [loadSolution]);
 
-  const addGraph = useCallback(async (input: string, codec: string, title: string, startedAt = performance.now()) => {
-    const loadToken = ++loadOperation.current;
-    setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
-    setError(null);
-    try {
-      const loaded = await invoke<LoadedDocumentView>("load_document", { input, codec });
-      if (loadOperation.current !== loadToken) return;
+  const installGraph = useCallback((loaded: LoadedDocumentView) => {
       const token = ++operation.current;
       if (activeJob.current) void invoke("cancel_chart", { jobId: activeJob.current });
       activeJob.current = null;
@@ -418,20 +435,30 @@ export default function App() {
       setGraphZoom(100);
       setSolutionZoom(100);
       setGraphReady(false);
-      setDocument({ title, documentId: loaded.documentId, graph: loaded.graph });
-      setStatus({ action: `Opened ${title}`, elapsedMs: loaded.elapsedMs, running: false });
+      setDocument({ title: loaded.title, documentId: loaded.documentId, graph: loaded.graph });
+      setStatus({ action: `Opened ${loaded.title}`, elapsedMs: loaded.elapsedMs, running: false });
       cancelFallbackTimer();
       fallbackTimer.current = window.setTimeout(() => {
         if (operation.current === token) setGraphReady(true);
         fallbackTimer.current = null;
       }, FALLBACK_LAYOUT_DELAY_MS);
       void computeBaseChart(loaded, token);
+  }, [computeBaseChart]);
+
+  const addGraph = useCallback(async (input: string, codec: string, title: string, startedAt = performance.now()) => {
+    const loadToken = ++loadOperation.current;
+    setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
+    setError(null);
+    try {
+      const loaded = await invoke<LoadedDocumentView>("load_document", { input, codec, title });
+      if (loadOperation.current !== loadToken) return;
+      installGraph(loaded);
     } catch (reason) {
       if (loadOperation.current !== loadToken) return;
       setError(String(reason));
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
-  }, [computeBaseChart]);
+  }, [installGraph]);
 
   const openDocument = useCallback(async () => {
     // Native pickers filter by the final filesystem extension. Compound codec
@@ -450,12 +477,15 @@ export default function App() {
         : lower.endsWith(".clls") ? "domcon-oz"
         : null;
       if (!codec) throw new Error(`Unsupported graph filename: ${title}`);
-      await addGraph(await readTextFile(selected), codec, title, startedAt);
+      const input = await readTextFile(selected);
+      await invoke("open_graph_window", { request: { input, codec, title, filename: selected } });
+      setStatus({ action: `Opened ${title} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
     } catch (reason) {
+      recordClientAction("Open graph file", { filename: selected }, startedAt, reason);
       setError(String(reason));
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
-  }, [addGraph]);
+  }, []);
 
   const chooseFilter = useCallback(async () => {
     const base = variants.find((variant) => variant.key === "base");
@@ -479,7 +509,7 @@ export default function App() {
     setError(null);
     setStatus({ action: `Applying ${filterName}`, elapsedMs: null, running: true });
     try {
-      const chart = await invoke<ChartView>("filter_chart_command", { chartId: base.chart.chartId, rewriteSystem: await readTextFile(selected), jobId });
+      const chart = await invoke<ChartView>("filter_chart_command", { chartId: base.chart.chartId, rewriteSystem: await readTextFile(selected), filename: selected, jobId });
       if (operation.current !== token) return;
       const variant = { key, name: filterName, chart };
       setVariants((current) => [...current, variant]);
@@ -490,6 +520,7 @@ export default function App() {
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
+      recordClientAction("Apply filter file", { filename: selected }, startedAt, reason);
       setError(String(reason));
       setStatus({ action: "Filtering chart failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
@@ -526,7 +557,15 @@ export default function App() {
   const exportSvg = useCallback(async () => {
     if (!svg.current || activeView === "chart") return;
     const selected = await save({ defaultPath: `${document?.title ?? "utool-graph"}.svg`, filters: [{ name: "SVG image", extensions: ["svg"] }] });
-    if (selected) await writeTextFile(selected, `<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
+    if (!selected) return;
+    const startedAt = performance.now();
+    try {
+      await writeTextFile(selected, `<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
+      recordClientAction("Export SVG", { filename: selected }, startedAt);
+    } catch (reason) {
+      recordClientAction("Export SVG", { filename: selected }, startedAt, reason);
+      setError(String(reason));
+    }
   }, [activeView, document?.title]);
 
   const exportGraph = useCallback(async (format: "domcon" | "dot") => {
@@ -537,13 +576,23 @@ export default function App() {
     const startedAt = performance.now();
     setStatus({ action: `Exporting ${format}`, elapsedMs: null, running: true });
     try {
-      const text = await invoke<string>("export_document", { documentId: document.documentId, format });
+      const text = await invoke<string>("export_document", { documentId: document.documentId, format, filename: selected });
       await writeTextFile(selected, text);
+      recordClientAction("Write exported graph", { filename: selected, format }, startedAt);
       setStatus({ action: `Exported ${format}`, elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { setError(String(reason)); setStatus({ action: `Exporting ${format} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
+    } catch (reason) { recordClientAction("Write exported graph", { filename: selected, format }, startedAt, reason); setError(String(reason)); setStatus({ action: `Exporting ${format} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
   }, [document]);
 
-  useEffect(() => { void addGraph(EXAMPLE, "domcon-oz", "Example"); }, [addGraph]);
+  useEffect(() => {
+    if (WINDOW_LABEL === "main") {
+      void addGraph(EXAMPLE, "domcon-oz", "Example");
+    } else {
+      void invoke<LoadedDocumentView | null>("current_document").then((loaded) => {
+        if (loaded) installGraph(loaded);
+        else setError("This graph window no longer has an open document.");
+      }).catch((reason) => setError(String(reason)));
+    }
+  }, [addGraph, installGraph]);
   useEffect(() => {
     let disposed = false;
     const pending = Promise.all([
