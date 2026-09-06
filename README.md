@@ -2,15 +2,18 @@
 
 ![Utool Logo](doc/utool.png)
 
-Utool is the Swiss Army Knife of Underspecification. It is a GUI and library written in Java for performing computations with dominance graphs and other formalisms, which are used to represent semantic ambiguities in natural language processing.
+Utool is the Swiss Army Knife of Underspecification. It is a GUI and library written in Rust for performing computations with dominance graphs and other formalisms, which are used to represent semantic ambiguities in natural language processing.
 
 ![Utool Screenshot](doc/ubench-screenshot.png)
 
 Visit the [Utool homepage](https://coli-saar.github.io/utool/) or read the [detailed manual](https://coli-saar.github.io/utool/manual/).
 
-Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University](https://www.lst.uni-saarland.de/). It is no longer under active development, but it is probably still the fastest solver for underspecified representations of scope ambiguities, and will still run fine today. If you have any questions or requests, please get in touch with [Alexander Koller](http://www.coli.uni-saarland.de/~koller/).
+Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University](https://www.lst.uni-saarland.de/) by [Alexander Koller](https://www.coli.uni-saarland.de/koller/) and collaborators. It is no longer under active development, but it is probably still the fastest solver for underspecified representations of scope ambiguities, and will still run fine today. If you have any questions or requests, please get in touch by submitting a Github issue.
 
-You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases).
+In 2026, in response to sustained interest in Utool, we ported a streamlined version of Utool to Rust. This increased the speed of chart generation and solution enumeration by a factor of 10x and chart filtering speed (with rewrite rules) on complex inputs by a factor of 20x. A Macbook Pro with M5 Pro processor will now compute the chart for the [hardest example in the testsuite](https://github.com/coli-saar/utool/blob/master/src/main/resources/examples/rondane-650.mrs.pl) in 70 milliseconds, reduce to weakest readings in 700 milliseconds, and enumerate the remaining 1.9 million readings in 200 milliseconds.
+
+You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases). You can still use the Java version as Utool 3.4; the 4.x versions are Rust.
+
 
 ## Compiling Utool
 
