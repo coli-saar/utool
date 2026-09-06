@@ -40,6 +40,16 @@ pub enum InputCodec {
 }
 
 impl InputCodec {
+    /// Every input codec exposed by the command-line and desktop frontends.
+    pub const ALL: [Self; 6] = [
+        Self::Chain,
+        Self::DomconOz,
+        Self::DomgraphGxl,
+        Self::HoleSemantics,
+        Self::MrsProlog,
+        Self::MrsXml,
+    ];
+
     /// Resolve a canonical codec name or a frontend alias.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {

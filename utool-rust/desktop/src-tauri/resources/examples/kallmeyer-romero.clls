@@ -1,0 +1,5 @@
+[label(x1 every_x(x2 x3)) label(y1 some_y(y2 y3)) label(z1 two_z(z2 z3))
+ label(xx1 city_x) label(yy1 person_from_y_z) label(zz1 spy_z_y) label(ww1 politician_z)
+ dom(x2 xx1) dom(x3 yy1) dom(y2 yy1) dom(y3 zz1) dom(z2 ww1) dom(z3 zz1)
+ dom(y1 x3)]
+ 

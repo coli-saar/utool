@@ -830,7 +830,7 @@ fn export_document(
     result
 }
 
-fn set_output_menu_enabled(
+fn set_menu_item_enabled(
     items: &[MenuItemKind<tauri::Wry>],
     id: &str,
     enabled: bool,
@@ -844,7 +844,7 @@ fn set_output_menu_enabled(
             }
         }
         if let Some(submenu) = item.as_submenu()
-            && set_output_menu_enabled(
+            && set_menu_item_enabled(
                 &submenu.items().map_err(|error| error.to_string())?,
                 id,
                 enabled,
@@ -873,7 +873,7 @@ fn set_output_context(
         };
         for prefix in ["export", "copy"] {
             let id = format!("{prefix}-{}", codec.name());
-            set_output_menu_enabled(&items, &id, enabled)?;
+            set_menu_item_enabled(&items, &id, enabled)?;
         }
     }
     let svg_enabled = match view.as_str() {
@@ -881,8 +881,8 @@ fn set_output_context(
         "solutions" => has_solution,
         _ => false,
     };
-    set_output_menu_enabled(&items, "export-svg", svg_enabled)?;
-    set_output_menu_enabled(&items, "copy-svg", svg_enabled)?;
+    set_menu_item_enabled(&items, "export-svg", svg_enabled)?;
+    set_menu_item_enabled(&items, "copy-svg", svg_enabled)?;
     Ok(())
 }
 
@@ -1166,6 +1166,17 @@ fn create_graph_window(
         .and_then(|result| result)
 }
 
+fn input_codec_label(codec: InputCodec) -> &'static str {
+    match codec {
+        InputCodec::Chain => "Generated Chain",
+        InputCodec::DomconOz => "Domcon/Oz",
+        InputCodec::DomgraphGxl => "Domgraph GXL",
+        InputCodec::HoleSemantics => "Hole Semantics",
+        InputCodec::MrsProlog => "MRS Prolog",
+        InputCodec::MrsXml => "MRS XML",
+    }
+}
+
 #[tauri::command]
 fn open_graph_window(
     request: OpenWindowRequest,
@@ -1315,6 +1326,25 @@ fn activate_window(app: &tauri::AppHandle, label: &str) -> Result<(), String> {
     window.set_focus().map_err(|error| error.to_string())
 }
 
+fn is_graph_window_label(label: &str) -> bool {
+    label == "main" || label.starts_with("graph-")
+}
+
+fn close_all_graph_windows(app: &tauri::AppHandle) -> Result<(), String> {
+    let mut windows: Vec<_> = app
+        .webview_windows()
+        .into_values()
+        .filter(|window| is_graph_window_label(window.label()))
+        .collect();
+    // Keep the original window until last so closing all behaves consistently
+    // on platforms that terminate an application when its last window closes.
+    windows.sort_by_key(|window| window.label() == "main");
+    for window in windows {
+        window.close().map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
 fn show_event_log(app: &tauri::AppHandle) -> Result<(), tauri::Error> {
     if let Some(window) = app.get_webview_window("event-log") {
         window.show()?;
@@ -1391,6 +1421,9 @@ pub fn run() {
             let close = MenuItemBuilder::with_id("close", "Close")
                 .accelerator("CmdOrCtrl+W")
                 .build(app)?;
+            let close_all = MenuItemBuilder::with_id("close-all", "Close All")
+                .accelerator("CmdOrCtrl+Alt+W")
+                .build(app)?;
             let graph_view = MenuItemBuilder::with_id("view-graph", "Graph")
                 .accelerator("CmdOrCtrl+1")
                 .build(app)?;
@@ -1437,6 +1470,18 @@ pub fn run() {
                 .text("export-svg", "SVG Image…")
                 .build()?;
             let copy_as = copy_as.separator().text("copy-svg", "SVG Image").build()?;
+            let mut paste_as = SubmenuBuilder::new(app, "Paste as");
+            for codec in InputCodec::ALL {
+                let mut item = MenuItemBuilder::with_id(
+                    format!("paste-{}", codec.name()),
+                    input_codec_label(codec),
+                );
+                if codec == InputCodec::DomconOz {
+                    item = item.accelerator("CmdOrCtrl+V");
+                }
+                paste_as = paste_as.item(&item.build(app)?);
+            }
+            let paste_as = paste_as.build()?;
             let file = SubmenuBuilder::new(app, "File")
                 .item(&open)
                 .item(&open_example)
@@ -1444,8 +1489,12 @@ pub fn run() {
                 .item(&export_as)
                 .separator()
                 .item(&close)
+                .item(&close_all)
                 .build()?;
-            let edit = SubmenuBuilder::new(app, "Edit").item(&copy_as).build()?;
+            let edit = SubmenuBuilder::new(app, "Edit")
+                .item(&copy_as)
+                .item(&paste_as)
+                .build()?;
             let view = SubmenuBuilder::new(app, "View")
                 .item(&graph_view)
                 .item(&chart_view)
@@ -1490,6 +1539,7 @@ pub fn run() {
                             "close" => target.as_ref().map_or(Ok(()), |window| {
                                 window.close().map_err(|error| error.to_string())
                             }),
+                            "close-all" => close_all_graph_windows(app),
                             _ => target.as_ref().map_or(Ok(()), |window| {
                                 window
                                     .emit(&format!("menu-{id}"), ())
@@ -1500,10 +1550,12 @@ pub fn run() {
                             "open" => "Open graph",
                             "open-example" => "Choose built-in example",
                             "close" => "Close window",
+                            "close-all" => "Close all graph windows",
                             "event-log" => "Open Event Log",
                             "export-svg" => "Choose Export SVG",
                             id if id.starts_with("export-") => "Choose graph/solution export",
                             id if id.starts_with("copy-") => "Choose graph/solution copy",
+                            id if id.starts_with("paste-") => "Paste graph from clipboard",
                             "view-graph" => "Show graph view",
                             "view-chart" => "Show chart view",
                             "view-solutions" => "Show solutions view",
@@ -1562,6 +1614,15 @@ mod tests {
             parse_startup_arguments(arguments(&["--bogus"])).unwrap_err(),
             "unknown Utool desktop option: --bogus"
         );
+    }
+
+    #[test]
+    fn close_all_targets_document_windows_only() {
+        assert!(is_graph_window_label("main"));
+        assert!(is_graph_window_label("graph-1"));
+        assert!(is_graph_window_label("graph-pasted"));
+        assert!(!is_graph_window_label("event-log"));
+        assert!(!is_graph_window_label("graphical-tool"));
     }
 
     #[test]

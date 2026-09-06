@@ -1,0 +1,5 @@
+Built-in examples for the Rust desktop application.
+
+The build script reads examples.xml and embeds every listed file into the
+application binary. Add new examples to this directory and register them in
+examples.xml. Filenames must be plain filenames rather than paths.

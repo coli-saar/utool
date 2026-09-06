@@ -85,7 +85,10 @@ drawings. Dragging a node in the Graph tab moves its entire solid-edge fragment
 and the adjustment survives tab changes. **File → Open…** accepts Domcon/Oz
 text or Hole Semantics; `.pl` files select the latter codec automatically. The input
 text is intentionally not displayed: after decoding, the graph is the
-document. **File → Export SVG…** exports the active graph or solution drawing,
+document. **Edit → Paste as** decodes clipboard text with a selected input
+codec and opens the resulting graph in a new window. **File → Close All** closes
+all graph windows while leaving auxiliary windows alone. **File → Export SVG…**
+exports the active graph or solution drawing,
 including manual fragment adjustments. The bottom status bar reports the
 runtime of loading/codec conversion, chart construction, and each Solution
 enumeration.

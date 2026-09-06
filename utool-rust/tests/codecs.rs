@@ -5,6 +5,17 @@ use utool::{
 
 #[test]
 fn input_registry_resolves_every_name_alias_and_suffix() {
+    assert_eq!(
+        InputCodec::ALL,
+        [
+            InputCodec::Chain,
+            InputCodec::DomconOz,
+            InputCodec::DomgraphGxl,
+            InputCodec::HoleSemantics,
+            InputCodec::MrsProlog,
+            InputCodec::MrsXml,
+        ]
+    );
     let names = [
         ("domcon-oz", InputCodec::DomconOz),
         ("domcon", InputCodec::DomconOz),

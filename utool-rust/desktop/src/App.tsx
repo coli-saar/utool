@@ -3,7 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { readText, writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
@@ -23,6 +23,16 @@ type OutputFormat = {
   graph: boolean;
   solution: boolean;
 };
+type InputFormat = { name: string; label: string };
+
+const INPUT_FORMATS: InputFormat[] = [
+  { name: "chain", label: "Generated Chain" },
+  { name: "domcon-oz", label: "Domcon/Oz" },
+  { name: "domgraph-gxl", label: "Domgraph GXL" },
+  { name: "holesem-comsem", label: "Hole Semantics" },
+  { name: "mrs-prolog", label: "MRS Prolog" },
+  { name: "mrs-xml", label: "MRS XML" },
+];
 
 const OUTPUT_FORMATS: OutputFormat[] = [
   { name: "domcon-oz", extension: "clls", label: "Domcon/Oz", graph: true, solution: true },
@@ -603,6 +613,24 @@ export default function App() {
     }
   }, []);
 
+  const pasteDocument = useCallback(async (format: InputFormat) => {
+    const startedAt = performance.now();
+    const title = `Clipboard — ${format.label}`;
+    setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
+    setError(null);
+    try {
+      const input = await readText();
+      await invoke("open_graph_window", {
+        request: { input, codec: format.name, title, filename: "Clipboard" },
+      });
+      setStatus({ action: `Opened ${title} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) {
+      recordClientAction("Paste graph from clipboard", { format: format.name }, startedAt, reason);
+      setError(String(reason));
+      setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
+    }
+  }, []);
+
   const showExampleChooser = useCallback(() => {
     setExampleChooserOpen(true);
     if (examples !== null) {
@@ -821,6 +849,9 @@ export default function App() {
         listen(`menu-export-${format.name}`, () => exportCurrent(format)),
         listen(`menu-copy-${format.name}`, () => copyCurrent(format)),
       ]),
+      ...INPUT_FORMATS.map((format) =>
+        listen(`menu-paste-${format.name}`, () => pasteDocument(format))
+      ),
       listen("menu-view-graph", () => setActiveView("graph")),
       listen("menu-view-chart", () => setActiveView("chart")),
       listen("menu-view-solutions", () => setActiveView("solutions")),
@@ -835,7 +866,7 @@ export default function App() {
       }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, setZoom, showExampleChooser]);
+  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, pasteDocument, setZoom, showExampleChooser]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;
