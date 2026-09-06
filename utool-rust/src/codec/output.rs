@@ -49,6 +49,20 @@ pub enum OutputCodec {
 }
 
 impl OutputCodec {
+    /// Every registered output codec, in the order used by frontends.
+    pub const ALL: [Self; 10] = [
+        Self::DomconOz,
+        Self::DomgraphDot,
+        Self::DomgraphGxl,
+        Self::DomgraphUdraw,
+        Self::DomgraphCodegen,
+        Self::PluggingOz,
+        Self::PluggingLkb,
+        Self::PluggingGroovy,
+        Self::TermProlog,
+        Self::TermOz,
+    ];
+
     /// Resolve a canonical codec name or a short frontend alias.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {

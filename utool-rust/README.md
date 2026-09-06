@@ -19,7 +19,7 @@ Prebuilt command-line programs and desktop packages are published on the
 [GitHub Releases page](https://github.com/coli-saar/utool/releases). Release
 artifacts are built for these targets:
 
-| Platform | Desktop packages | Command-line archive |
+| Platform | Desktop packages | Combined command-line/display archive |
 | --- | --- | --- |
 | macOS on Apple Silicon | `.app` and `.dmg` | `aarch64-apple-darwin.tar.gz` |
 | macOS on Intel | `.app` and `.dmg` | `x86_64-apple-darwin.tar.gz` |
@@ -60,13 +60,13 @@ vary slightly with the Tauri bundler version.
 
 ### Install the command-line program
 
-On macOS or Linux, extract the archive for your target and place `utool` in a
-directory on `PATH`. For a per-user installation:
+On macOS or Linux, extract the archive for your target and place both `utool`
+and `utool-display` in the same directory on `PATH`. For a per-user installation:
 
 ```sh
 tar -xzf utool-VERSION-TARGET.tar.gz
 mkdir -p "$HOME/.local/bin"
-install -m 755 utool "$HOME/.local/bin/utool"
+install -m 755 utool utool-display "$HOME/.local/bin/"
 ```
 
 Ensure that `$HOME/.local/bin` is on `PATH`, then verify the installation:
@@ -76,8 +76,8 @@ utool --version
 utool --display-codecs
 ```
 
-On Windows, extract `utool.exe` from the x64 ZIP archive and either run it from
-that directory or add the directory to your user `PATH`.
+On Windows, extract `utool.exe` and `utool-display.exe` from the x64 ZIP archive,
+keep them together, and either run them there or add that directory to `PATH`.
 
 ## Use the command-line program
 
@@ -89,10 +89,9 @@ utool --help-options
 utool --display-codecs
 ```
 
-The main operations are `solve`, `solvable`, `convert`, `classify`, and
-`server`. The `display` command is retained for compatibility but does not
-start the Rust desktop application; launch `Utool.app` or `utool-desktop`
-directly instead.
+The main operations are `solve`, `solvable`, `convert`, `classify`, `display`,
+and `server`. The `display` command starts the bundled `utool-display` companion,
+which must remain in the same directory as `utool`.
 
 Utool normally infers the input codec from a compound filename suffix. For
 example, from the repository checkout:

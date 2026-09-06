@@ -71,6 +71,40 @@ fn convert_does_not_require_solver_applicability() {
     fs::remove_file(input).unwrap();
 }
 
+#[cfg(unix)]
+#[test]
+fn display_launches_the_sibling_companion_and_forwards_arguments() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let directory = std::env::temp_dir().join(format!("utool-display-test-{}", std::process::id()));
+    fs::create_dir_all(&directory).unwrap();
+    let cli = directory.join("utool");
+    let display = directory.join("utool-display");
+    let arguments = directory.join("arguments.txt");
+    fs::copy(env!("CARGO_BIN_EXE_utool"), &cli).unwrap();
+    fs::write(
+        &display,
+        format!(
+            "#!/bin/sh\nprintf '%s\\n' \"$@\" > '{}'\nexit 23\n",
+            arguments.display()
+        ),
+    )
+    .unwrap();
+    fs::set_permissions(&display, fs::Permissions::from_mode(0o755)).unwrap();
+
+    let output = Command::new(&cli)
+        .args(["display", "--filter", "rules.rewrite", "graph.clls"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(23));
+    assert_eq!(
+        fs::read_to_string(&arguments).unwrap(),
+        "--filter\nrules.rewrite\ngraph.clls\n"
+    );
+
+    fs::remove_dir_all(directory).unwrap();
+}
+
 #[test]
 fn solve_defaults_to_the_matching_domcon_codec() {
     let input = fixture("default-codec", "clls", "[label(x a)]");

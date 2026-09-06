@@ -1,7 +1,7 @@
 use std::{
     env, fs,
     io::{self, BufWriter, Read, Write},
-    process::ExitCode,
+    process::{Command, ExitCode},
     time::{Duration, Instant},
 };
 use utool::{
@@ -529,6 +529,55 @@ fn approximate_f64(value: usize) -> f64 {
     value as f64
 }
 
+fn display_program() -> Result<std::path::PathBuf, io::Error> {
+    let executable = env::current_exe()?;
+    let name = if cfg!(windows) {
+        "utool-display.exe"
+    } else {
+        "utool-display"
+    };
+    Ok(executable.with_file_name(name))
+}
+
+fn launch_display(opts: &Options) -> ExitCode {
+    if opts.input_codec.is_some() {
+        return fail(
+            "The display command accepts filenames and infers their codecs; -I is not supported.",
+            NO_INPUT_CODEC,
+        );
+    }
+    let program = match display_program() {
+        Ok(program) if program.is_file() => program,
+        Ok(program) => {
+            return fail(
+                format!(
+                    "The Utool display companion was not found at {}. Reinstall the complete Utool archive with utool and utool-display side by side.",
+                    program.display()
+                ),
+                SOLVER_NOT_APPLICABLE,
+            );
+        }
+        Err(error) => {
+            return fail(
+                format!("Could not locate the Utool executable.\n{error}"),
+                IO_ERROR,
+            );
+        }
+    };
+    let mut command = Command::new(program);
+    if let Some(filter) = &opts.filter {
+        command.arg("--filter").arg(filter);
+    }
+    command.args(opts.positional.iter().skip(1));
+    match command.status() {
+        Ok(status) => status
+            .code()
+            .and_then(|code| u8::try_from(code).ok())
+            .map_or(ExitCode::FAILURE, ExitCode::from),
+        Err(error) => fail(format!("Could not start utool-display.\n{error}"), IO_ERROR),
+    }
+}
+
 fn main() -> ExitCode {
     let args = env::args().skip(1).collect::<Vec<_>>();
     let opts = match options(&args) {
@@ -584,10 +633,7 @@ fn main() -> ExitCode {
         };
     }
     if op == Operation::Display {
-        return fail(
-            "This command is not available in this binary yet.",
-            SOLVER_NOT_APPLICABLE,
-        );
+        return launch_display(&opts);
     }
     let Some(source) = opts.positional.get(1) else {
         return fail("This operation requires an input graph.", NO_INPUT);

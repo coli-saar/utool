@@ -1,5 +1,5 @@
 {
-  "name": "utool-desktop",
+  "name": "utool-display",
   "private": true,
   "version": "4.0.0-alpha3",
   "license": "GPL-2.0-only",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-clipboard-manager": "^2.3.3",
     "@tauri-apps/plugin-dialog": "^2.4.0",
     "@tauri-apps/plugin-fs": "^2.4.0",
     "react": "^19.1.1",

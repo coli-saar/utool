@@ -48,14 +48,14 @@ release profile instead, use:
 npm run dev:release
 ```
 
-To build the standalone `utool-desktop` executable with the frontend embedded,
+To build the standalone `utool-display` executable with the frontend embedded,
 use:
 
 ```sh
 npm run build:standalone
 ```
 
-The executable is written to `src-tauri/target/release/utool-desktop`. Do not
+The executable is written to `src-tauri/target/release/utool-display`. Do not
 use plain `cargo build --release` for this artifact: Tauri's build command
 enables its production asset protocol.
 

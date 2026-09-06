@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { message, open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
@@ -15,6 +16,26 @@ type ViewName = "graph" | "chart" | "solutions";
 type DocumentView = { title: string; documentId: number; graph: GraphView };
 type ChartVariant = { key: string; name: string; chart: ChartView };
 type ActionStatus = { action: string; elapsedMs: number | null; running: boolean };
+type OutputFormat = {
+  name: string;
+  extension: string;
+  label: string;
+  graph: boolean;
+  solution: boolean;
+};
+
+const OUTPUT_FORMATS: OutputFormat[] = [
+  { name: "domcon-oz", extension: "clls", label: "Domcon/Oz", graph: true, solution: true },
+  { name: "domgraph-dot", extension: "dg.dot", label: "Graphviz DOT", graph: true, solution: false },
+  { name: "domgraph-gxl", extension: "dg.xml", label: "Domgraph GXL", graph: true, solution: true },
+  { name: "domgraph-udraw", extension: "dg.udg", label: "uDraw(Graph)", graph: true, solution: false },
+  { name: "domgraph-codegen", extension: "java", label: "Java Code", graph: true, solution: true },
+  { name: "plugging-oz", extension: "plug.oz", label: "Plugging/Oz", graph: true, solution: true },
+  { name: "plugging-lkb", extension: "lkbplug.lisp", label: "LKB Plugging", graph: true, solution: true },
+  { name: "plugging-groovy", extension: "plug.groovy", label: "Groovy Plugging", graph: true, solution: true },
+  { name: "term-prolog", extension: "t.pl", label: "Prolog Term", graph: false, solution: true },
+  { name: "term-oz", extension: "t.oz", label: "Oz Term", graph: false, solution: true },
+];
 
 function formatElapsed(elapsedMs: number): string {
   if (elapsedMs < 1) return `${(elapsedMs * 1000).toFixed(elapsedMs < 0.1 ? 1 : 0)} µs`;
@@ -567,20 +588,60 @@ export default function App() {
     }
   }, [activeView, document?.title]);
 
-  const exportGraph = useCallback(async (format: "domcon" | "dot") => {
+  const encodeCurrent = useCallback(async (format: OutputFormat, filename: string) => {
+    if (activeView === "graph" && document && format.graph) {
+      return invoke<string>("export_document", { documentId: document.documentId, format: format.name, filename });
+    }
+    if (activeView === "solutions" && activeVariant && solution && format.solution) {
+      return invoke<string>("export_solution", { chartId: activeVariant.chart.chartId, index: solutionIndex, format: format.name, filename });
+    }
+    throw new Error(`${format.label} is not applicable to the current view.`);
+  }, [activeVariant, activeView, document, solution, solutionIndex]);
+
+  const exportCurrent = useCallback(async (format: OutputFormat) => {
     if (!document) return;
-    const extension = format === "dot" ? "dot" : "clls";
-    const selected = await save({ defaultPath: `${document.title}.${extension}`, filters: [{ name: format === "dot" ? "Graphviz DOT" : "Domcon/Oz", extensions: [extension] }] });
+    const basename = activeView === "solutions" ? `${document.title}-solution-${solutionIndex + 1}` : document.title;
+    const selected = await save({ defaultPath: `${basename}.${format.extension}`, filters: [{ name: format.label, extensions: [format.extension.split(".").pop()!] }] });
     if (!selected) return;
     const startedAt = performance.now();
-    setStatus({ action: `Exporting ${format}`, elapsedMs: null, running: true });
+    setStatus({ action: `Exporting ${format.label}`, elapsedMs: null, running: true });
     try {
-      const text = await invoke<string>("export_document", { documentId: document.documentId, format, filename: selected });
+      const text = await encodeCurrent(format, selected);
       await writeTextFile(selected, text);
-      recordClientAction("Write exported graph", { filename: selected, format }, startedAt);
-      setStatus({ action: `Exported ${format}`, elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { recordClientAction("Write exported graph", { filename: selected, format }, startedAt, reason); setError(String(reason)); setStatus({ action: `Exporting ${format} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
-  }, [document]);
+      recordClientAction("Write export", { filename: selected, format: format.name, view: activeView }, startedAt);
+      setStatus({ action: `Exported ${format.label}`, elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) { recordClientAction("Write export", { filename: selected, format: format.name, view: activeView }, startedAt, reason); setError(String(reason)); setStatus({ action: `Exporting ${format.label} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
+  }, [activeView, document, encodeCurrent, solutionIndex]);
+
+  const copyCurrent = useCallback(async (format: OutputFormat) => {
+    const startedAt = performance.now();
+    try {
+      await writeText(await encodeCurrent(format, "Clipboard"));
+      recordClientAction("Copy encoded output", { format: format.name, view: activeView }, startedAt);
+      setStatus({ action: `Copied as ${format.label}`, elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) { recordClientAction("Copy encoded output", { format: format.name, view: activeView }, startedAt, reason); setError(String(reason)); }
+  }, [activeView, encodeCurrent]);
+
+  const copySvg = useCallback(async () => {
+    if (!svg.current || activeView === "chart") return;
+    const startedAt = performance.now();
+    try {
+      await writeText(`<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
+      recordClientAction("Copy SVG", { view: activeView }, startedAt);
+      setStatus({ action: "Copied as SVG", elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) { recordClientAction("Copy SVG", { view: activeView }, startedAt, reason); setError(String(reason)); }
+  }, [activeView]);
+
+  useEffect(() => {
+    const syncMenu = () => invoke("set_output_context", { view: activeView, hasDocument: Boolean(document), hasSolution: Boolean(solution && activeVariant) });
+    void syncMenu();
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+    void getCurrentWindow().onFocusChanged(({ payload }) => {
+      if (payload) void syncMenu();
+    }).then((dispose) => { if (disposed) dispose(); else unlisten = dispose; });
+    return () => { disposed = true; unlisten?.(); };
+  }, [activeVariant, activeView, document, solution]);
 
   useEffect(() => {
     if (WINDOW_LABEL === "main") {
@@ -613,8 +674,11 @@ export default function App() {
   useEffect(() => {
     let disposed = false;
     const pending = Promise.all([
-      listen("menu-open", openDocument), listen("menu-export-svg", exportSvg),
-      listen("menu-export-domcon", () => exportGraph("domcon")), listen("menu-export-dot", () => exportGraph("dot")),
+      listen("menu-open", openDocument), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
+      ...OUTPUT_FORMATS.flatMap((format) => [
+        listen(`menu-export-${format.name}`, () => exportCurrent(format)),
+        listen(`menu-copy-${format.name}`, () => copyCurrent(format)),
+      ]),
       listen("menu-view-graph", () => setActiveView("graph")),
       listen("menu-view-chart", () => setActiveView("chart")),
       listen("menu-view-solutions", () => setActiveView("solutions")),
@@ -632,7 +696,7 @@ export default function App() {
       }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [changeZoom, exportGraph, exportSvg, openDocument, setZoom]);
+  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, setZoom]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;

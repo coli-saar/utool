@@ -1,5 +1,5 @@
 [package]
-name = "utool-desktop"
+name = "utool-display"
 version = "4.0.0-alpha3"
 description = "Desktop interface for Utool"
 edition = "2024"
@@ -17,6 +17,7 @@ tauri-build = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri = { version = "2", features = [] }
+tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 utool = { path = "../.." }

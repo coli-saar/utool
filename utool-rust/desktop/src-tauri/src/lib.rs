@@ -786,6 +786,116 @@ fn export_document(
     result
 }
 
+fn set_output_menu_enabled(
+    items: &[MenuItemKind<tauri::Wry>],
+    id: &str,
+    enabled: bool,
+) -> Result<bool, String> {
+    for item in items {
+        if item.id().0 == id {
+            if let Some(item) = item.as_menuitem() {
+                item.set_enabled(enabled)
+                    .map_err(|error| error.to_string())?;
+                return Ok(true);
+            }
+        }
+        if let Some(submenu) = item.as_submenu()
+            && set_output_menu_enabled(
+                &submenu.items().map_err(|error| error.to_string())?,
+                id,
+                enabled,
+            )?
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+#[tauri::command]
+fn set_output_context(
+    view: String,
+    has_document: bool,
+    has_solution: bool,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    let menu = app.menu().ok_or("application menu is unavailable")?;
+    let items = menu.items().map_err(|error| error.to_string())?;
+    for codec in OutputCodec::ALL {
+        let enabled = match view.as_str() {
+            "graph" => has_document && codec.supports_graph(),
+            "solutions" => has_solution && codec.supports_solutions(),
+            _ => false,
+        };
+        for prefix in ["export", "copy"] {
+            let id = format!("{prefix}-{}", codec.name());
+            set_output_menu_enabled(&items, &id, enabled)?;
+        }
+    }
+    let svg_enabled = match view.as_str() {
+        "graph" => has_document,
+        "solutions" => has_solution,
+        _ => false,
+    };
+    set_output_menu_enabled(&items, "export-svg", svg_enabled)?;
+    set_output_menu_enabled(&items, "copy-svg", svg_enabled)?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn export_solution(
+    chart_id: u64,
+    index: usize,
+    format: String,
+    filename: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, DocumentState>,
+) -> Result<String, String> {
+    let started = Instant::now();
+    let resources = state.resources(window.label())?;
+    let chart = Arc::clone(
+        resources
+            .charts
+            .lock()
+            .map_err(|_| "chart state is unavailable")?
+            .get(&chart_id)
+            .ok_or("chart is no longer available")?,
+    );
+    let codec = OutputCodec::from_name(&format)
+        .ok_or_else(|| format!("unsupported output format: {format}"))?;
+    if !codec.supports_solutions() {
+        return Err(format!(
+            "output format does not support solutions: {}",
+            codec.name()
+        ));
+    }
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        let mut solutions = chart.chart.solutions();
+        for _ in 0..=index {
+            if !solutions.advance() {
+                return Err(format!("solution {} is no longer available", index + 1));
+            }
+        }
+        let mut output = Vec::new();
+        codec
+            .write_single_solution_at(&solutions.current().unwrap(), index + 1, &mut output)
+            .map_err(|error| error.to_string())?;
+        String::from_utf8(output).map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| format!("solution export task failed: {error}"))?;
+    state.record(
+        &app,
+        window.label(),
+        "Export solution",
+        json!({ "format": format, "solution": index + 1, "filename": display_filename(&filename) }),
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
+}
+
 fn chart_view(
     chart_id: u64,
     stored: &StoredChart,
@@ -1149,6 +1259,7 @@ pub fn run() {
         .manage(startup)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             take_startup_documents,
             startup_filter,
@@ -1162,6 +1273,8 @@ pub fn run() {
             solution_at,
             filter_chart_command,
             export_document,
+            export_solution,
+            set_output_context,
             event_entries,
             report_client_action
         ])
@@ -1213,24 +1326,37 @@ pub fn run() {
                 .separator()
                 .quit()
                 .build()?;
+            let mut export_as = SubmenuBuilder::new(app, "Export As");
+            let mut copy_as = SubmenuBuilder::new(app, "Copy As");
+            for codec in OutputCodec::ALL {
+                let label = match codec {
+                    OutputCodec::DomconOz => "Domcon/Oz",
+                    OutputCodec::DomgraphDot => "Graphviz DOT",
+                    OutputCodec::DomgraphGxl => "Domgraph GXL",
+                    OutputCodec::DomgraphUdraw => "uDraw(Graph)",
+                    OutputCodec::DomgraphCodegen => "Java Code",
+                    OutputCodec::PluggingOz => "Plugging/Oz",
+                    OutputCodec::PluggingLkb => "LKB Plugging",
+                    OutputCodec::PluggingGroovy => "Groovy Plugging",
+                    OutputCodec::TermProlog => "Prolog Term",
+                    OutputCodec::TermOz => "Oz Term",
+                };
+                export_as = export_as.text(format!("export-{}", codec.name()), format!("{label}…"));
+                copy_as = copy_as.text(format!("copy-{}", codec.name()), label);
+            }
+            let export_as = export_as
+                .separator()
+                .text("export-svg", "SVG Image…")
+                .build()?;
+            let copy_as = copy_as.separator().text("copy-svg", "SVG Image").build()?;
             let file = SubmenuBuilder::new(app, "File")
                 .item(&open)
                 .separator()
-                .text("export-svg", "Export SVG…")
-                .text("export-domcon", "Export Domcon/Oz…")
-                .text("export-dot", "Export Graphviz DOT…")
+                .item(&export_as)
                 .separator()
                 .item(&close)
                 .build()?;
-            let edit = SubmenuBuilder::new(app, "Edit")
-                .undo()
-                .redo()
-                .separator()
-                .cut()
-                .copy()
-                .paste()
-                .select_all()
-                .build()?;
+            let edit = SubmenuBuilder::new(app, "Edit").item(&copy_as).build()?;
             let view = SubmenuBuilder::new(app, "View")
                 .item(&graph_view)
                 .item(&chart_view)
@@ -1286,8 +1412,8 @@ pub fn run() {
                             "close" => "Close window",
                             "event-log" => "Open Event Log",
                             "export-svg" => "Choose Export SVG",
-                            "export-domcon" => "Choose Export Domcon/Oz",
-                            "export-dot" => "Choose Export Graphviz DOT",
+                            id if id.starts_with("export-") => "Choose graph/solution export",
+                            id if id.starts_with("copy-") => "Choose graph/solution copy",
                             "view-graph" => "Show graph view",
                             "view-chart" => "Show chart view",
                             "view-solutions" => "Show solutions view",

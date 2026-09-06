@@ -216,6 +216,7 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
   return <div ref={viewportRef} className={`graph-viewport${layoutReady ? " layout-ready" : ""}`} onWheel={onWheel}>
     <svg
       ref={(element) => { svgRef.current = element; onSvgReady?.(element); }}
+      xmlns="http://www.w3.org/2000/svg"
       className={`graph-canvas${draggable ? " draggable" : ""}`}
       style={{ width: canvasWidth, height: canvasHeight }}
       viewBox={`${viewX} ${viewY} ${viewWidth} ${viewHeight}`}
@@ -227,7 +228,20 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
       role="img"
       aria-label="Dominance graph"
     >
-      <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" /></marker></defs>
+      <defs>
+        <style>{`
+          .graph-canvas { background: #fff; }
+          .fragment-hitboxes rect { fill: transparent; }
+          .edges polyline { fill: none; stroke: #343b45; stroke-width: 1.35; vector-effect: non-scaling-stroke; }
+          .edges .dominance { stroke: #df303b; stroke-dasharray: 3 3; }
+          .edges .light { opacity: .3; }
+          marker path { fill: #df303b; }
+          .node rect { fill: #fff; stroke: #384557; stroke-width: 1.35; vector-effect: non-scaling-stroke; }
+          .node.hole rect { fill: #fff; stroke: #b8c0ca; stroke-width: .9; }
+          .node text { text-anchor: middle; font: 12px sans-serif; }
+        `}</style>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" /></marker>
+      </defs>
       {draggable && <g className="fragment-hitboxes" aria-hidden="true">
         {fragmentBoxes.map((box) => <rect key={box.members[0]} x={box.x} y={box.y} width={box.width} height={box.height} onPointerDown={(event) => beginDrag(event, box.members[0])} />)}
       </g>}

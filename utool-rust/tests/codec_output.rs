@@ -72,6 +72,7 @@ fn output_registry_reports_all_names_and_capabilities() {
         (OutputCodec::TermProlog, "term-prolog", false, true),
         (OutputCodec::TermOz, "term-oz", false, true),
     ];
+    assert_eq!(OutputCodec::ALL, cases.map(|(codec, _, _, _)| codec));
     for (codec, name, graph, solutions) in cases {
         assert_eq!(codec.name(), name);
         assert_eq!(codec.supports_graph(), graph);
