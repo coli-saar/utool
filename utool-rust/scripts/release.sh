@@ -24,8 +24,20 @@ fi
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 
-if [[ -n $(git status --porcelain) ]]; then
-  echo "The working tree is not clean. Commit or stash existing changes first." >&2
+version_files=(
+  utool-rust/Cargo.toml
+  utool-rust/Cargo.lock
+  utool-rust/desktop/package.json
+  utool-rust/desktop/package-lock.json
+  utool-rust/desktop/src-tauri/Cargo.toml
+  utool-rust/desktop/src-tauri/Cargo.lock
+  utool-rust/desktop/src-tauri/tauri.conf.json
+)
+
+if [[ -n $(git status --porcelain -- "${version_files[@]}") ]]; then
+  echo "A release-managed version file already has changes:" >&2
+  git status --short -- "${version_files[@]}" >&2
+  echo "Commit or stash those files first. Changes elsewhere are allowed." >&2
   exit 1
 fi
 
@@ -97,16 +109,8 @@ for manifest_version in "${manifest_versions[@]}"; do
   fi
 done
 
-git diff --check
-git add -- \
-  utool-rust/Cargo.toml \
-  utool-rust/Cargo.lock \
-  utool-rust/desktop/package.json \
-  utool-rust/desktop/package-lock.json \
-  utool-rust/desktop/src-tauri/Cargo.toml \
-  utool-rust/desktop/src-tauri/Cargo.lock \
-  utool-rust/desktop/src-tauri/tauri.conf.json
-git commit -m "Release $tag"
+git diff --check -- "${version_files[@]}"
+git commit --only -m "Release $tag" -- "${version_files[@]}"
 git tag -a "$tag" -m "Utool $version"
 git push "$remote" "$tag"
 
