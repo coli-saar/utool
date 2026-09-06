@@ -1,13 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { open, save } from "@tauri-apps/plugin-dialog";
+import { message, open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
 import type { Zoom } from "./GraphCanvas";
-import type { ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView } from "./types";
+import type { AppInfo, ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView, StartupDocument, StartupFilter } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
 const WINDOW_LABEL = getCurrentWindow().label;
@@ -117,7 +117,6 @@ const CHART_PAGE_SIZE = 96;
 const CHART_CACHE_PAGES = 8;
 const CHART_ROW_ESTIMATE = 58;
 const CHART_OVERSCAN = 10;
-const FALLBACK_LAYOUT_DELAY_MS = 200;
 
 class RowHeightIndex {
   private readonly corrections: Float32Array;
@@ -295,11 +294,13 @@ function SolutionSpaceControl({ variants, activeKey, filterRunning, onSelect, on
   onAdd: () => void;
 }) {
   const choose = "__choose_filter__";
+  const pending = "__pending_filter__";
   return <label className="filter-picker" htmlFor="solution-space">
     <span>Filter</span>
-    <select id="solution-space" value={activeKey} onChange={(event) => event.target.value === choose ? onAdd() : onSelect(event.target.value)} disabled={Boolean(filterRunning) || variants.length === 0}>
+    <select id="solution-space" value={filterRunning ? pending : activeKey} onChange={(event) => event.target.value === choose ? onAdd() : onSelect(event.target.value)} disabled={Boolean(filterRunning) || variants.length === 0}>
       {variants.length === 0 && <option value="base">Computing chart…</option>}
       {variants.map((variant) => <option key={variant.key} value={variant.key}>{variant.key === "base" ? "None" : variant.name} · {variant.chart.solutionCount} solutions</option>)}
+      {filterRunning && <option value={pending}>{filterRunning} · Computing…</option>}
       {variants.length > 0 && <option value={choose}>Choose filter…</option>}
     </select>
   </label>;
@@ -313,6 +314,7 @@ export default function App() {
   const [activeVariantKey, setActiveVariantKey] = useState("base");
   const [chartRunning, setChartRunning] = useState(false);
   const [filterRunning, setFilterRunning] = useState<string | null>(null);
+  const [startupFilter, setStartupFilter] = useState<StartupFilter | null | undefined>(undefined);
   const [solutionRunning, setSolutionRunning] = useState(false);
   const [solution, setSolution] = useState<SolutionView | null>(null);
   const [solutionIndex, setSolutionIndex] = useState(0);
@@ -326,7 +328,7 @@ export default function App() {
   const loadOperation = useRef(0);
   const solutionOperation = useRef(0);
   const activeJob = useRef<string | null>(null);
-  const fallbackTimer = useRef<number | null>(null);
+  const autoFilterDocument = useRef<number | null>(null);
   const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
 
   const makeJobId = () => crypto.randomUUID();
@@ -339,14 +341,6 @@ export default function App() {
     });
   };
 
-  const cancelFallbackTimer = () => {
-    if (fallbackTimer.current !== null) {
-      window.clearTimeout(fallbackTimer.current);
-      fallbackTimer.current = null;
-    }
-  };
-
-  useEffect(() => () => cancelFallbackTimer(), []);
   useEffect(() => {
     const reportWindowError = (event: ErrorEvent) => {
       recordClientAction("Unhandled UI error", { filename: event.filename, line: event.lineno, column: event.colno }, performance.now(), event.error ?? event.message);
@@ -394,7 +388,6 @@ export default function App() {
     try {
       const chart = await invoke<ChartView>("build_chart", { documentId: loaded.documentId, jobId });
       if (operation.current !== token) return;
-      cancelFallbackTimer();
       const base = { key: "base", name: "Unfiltered", chart };
       setVariants([base]);
       setActiveVariantKey("base");
@@ -409,7 +402,6 @@ export default function App() {
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
-      cancelFallbackTimer();
       setGraphReady(true);
       setError(String(reason));
       setStatus({ action: "Computing chart failed", elapsedMs: performance.now() - startedAt, running: false });
@@ -430,6 +422,7 @@ export default function App() {
       setSolution(null);
       setChartRunning(false);
       setFilterRunning(null);
+      autoFilterDocument.current = null;
       setActiveView("graph");
       setGraphOffsets({});
       setGraphZoom(100);
@@ -437,11 +430,6 @@ export default function App() {
       setGraphReady(false);
       setDocument({ title: loaded.title, documentId: loaded.documentId, graph: loaded.graph });
       setStatus({ action: `Opened ${loaded.title}`, elapsedMs: loaded.elapsedMs, running: false });
-      cancelFallbackTimer();
-      fallbackTimer.current = window.setTimeout(() => {
-        if (operation.current === token) setGraphReady(true);
-        fallbackTimer.current = null;
-      }, FALLBACK_LAYOUT_DELAY_MS);
       void computeBaseChart(loaded, token);
   }, [computeBaseChart]);
 
@@ -487,11 +475,9 @@ export default function App() {
     }
   }, []);
 
-  const chooseFilter = useCallback(async () => {
+  const applyFilterFile = useCallback(async (selected: string, rewriteSystem?: string) => {
     const base = variants.find((variant) => variant.key === "base");
     if (!base || filterRunning) return;
-    const selected = await open({ multiple: false });
-    if (!selected) return;
     const filterName = selected.split(/[\\/]/).pop() ?? "Filter";
     const key = `filter:${selected}`;
     const cached = variants.find((variant) => variant.key === key);
@@ -509,7 +495,7 @@ export default function App() {
     setError(null);
     setStatus({ action: `Applying ${filterName}`, elapsedMs: null, running: true });
     try {
-      const chart = await invoke<ChartView>("filter_chart_command", { chartId: base.chart.chartId, rewriteSystem: await readTextFile(selected), filename: selected, jobId });
+      const chart = await invoke<ChartView>("filter_chart_command", { chartId: base.chart.chartId, rewriteSystem: rewriteSystem ?? await readTextFile(selected), filename: selected, jobId });
       if (operation.current !== token) return;
       const variant = { key, name: filterName, chart };
       setVariants((current) => [...current, variant]);
@@ -530,6 +516,19 @@ export default function App() {
       }
     }
   }, [filterRunning, loadSolution, variants]);
+
+  const chooseFilter = useCallback(async () => {
+    const selected = await open({ multiple: false });
+    if (selected) await applyFilterFile(selected);
+  }, [applyFilterFile]);
+
+  useEffect(() => {
+    const base = variants.find((variant) => variant.key === "base");
+    if (!document || !base || startupFilter === undefined || autoFilterDocument.current === document.documentId) return;
+    autoFilterDocument.current = document.documentId;
+    if (!startupFilter) return;
+    void applyFilterFile(startupFilter.filename, startupFilter.rewriteSystem);
+  }, [applyFilterFile, document, startupFilter, variants]);
 
   const selectVariant = useCallback((key: string) => {
     const variant = variants.find((item) => item.key === key);
@@ -585,8 +584,26 @@ export default function App() {
 
   useEffect(() => {
     if (WINDOW_LABEL === "main") {
-      void addGraph(EXAMPLE, "domcon-oz", "Example");
+      void Promise.all([
+        invoke<StartupDocument[]>("take_startup_documents"),
+        invoke<StartupFilter | null>("startup_filter")
+          .then((selected) => { setStartupFilter(selected); })
+          .catch((reason) => { setStartupFilter(null); setError(String(reason)); }),
+      ]).then(async ([documents]) => {
+        if (documents.length === 0) {
+          await addGraph(EXAMPLE, "domcon-oz", "Example");
+          return;
+        }
+        const [first, ...rest] = documents;
+        await addGraph(first.input, first.codec, first.title);
+        for (const request of rest) {
+          await invoke("open_graph_window", { request });
+        }
+      }).catch((reason) => { setStartupFilter(null); setError(String(reason)); });
     } else {
+      void invoke<StartupFilter | null>("startup_filter")
+        .then(setStartupFilter)
+        .catch((reason) => { setStartupFilter(null); setError(String(reason)); });
       void invoke<LoadedDocumentView | null>("current_document").then((loaded) => {
         if (loaded) installGraph(loaded);
         else setError("This graph window no longer has an open document.");
@@ -605,7 +622,14 @@ export default function App() {
       listen("menu-zoom-out", () => changeZoom(-1)),
       listen("menu-actual-size", () => setZoom(100)),
       listen("menu-fit-window", () => setZoom("fit")),
-      listen("menu-about", () => setError("Utool Rust — HNC dominance graph solving with rusty-alto.")),
+      listen("menu-about", () => {
+        void invoke<AppInfo>("app_info")
+          .then(({ version, buildId }) => message(
+            `Utool, the Swiss Army Knife of Underspecification\nversion ${version}, build ${buildId}`,
+            { title: "About Utool", kind: "info" },
+          ))
+          .catch((reason) => setError(String(reason)));
+      }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
   }, [changeZoom, exportGraph, exportSvg, openDocument, setZoom]);

@@ -1,7 +1,7 @@
 use super::{CodecError, CodecResult};
 use crate::graph::GraphBuilder;
-use quick_xml::Reader;
 use quick_xml::events::{BytesStart, Event};
+use quick_xml::{Reader, XmlVersion};
 
 #[derive(Default)]
 struct NodeRecord {
@@ -23,7 +23,7 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Co
         if attribute.key.as_ref() == name {
             return Ok(Some(
                 attribute
-                    .unescape_value()
+                    .normalized_value(XmlVersion::Implicit1_0)
                     .map_err(|error| CodecError::Syntax(error.to_string()))?
                     .into_owned(),
             ));

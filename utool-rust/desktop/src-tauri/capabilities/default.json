@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "core:window:allow-set-title",
+    "dialog:allow-message",
     "dialog:allow-open",
     "dialog:allow-save",
     "fs:allow-read-text-file",

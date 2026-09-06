@@ -26,6 +26,19 @@ npm install
 npm run tauri dev
 ```
 
+Pass graph filenames after `--` to open them at startup. Each graph gets its
+own window. Use `-f` (or `--filter`) to preselect a rewrite-system file for all
+graphs opened during that desktop session:
+
+```sh
+npm run tauri dev -- -- -f ../../src/test/resources/server/filter-rules.txt graph.clls another.mrs.pl
+```
+
+The desktop first computes the original chart, uses it to lay out the graph,
+and then applies the selected filter while keeping the Graph view visible. The
+same filter is applied automatically to graphs opened later with **File →
+Open…**.
+
 This keeps the Tauri application shell in Cargo's debuggable development
 profile, but compiles the `utool` engine and all other Rust dependencies with
 `opt-level = 3`. To compile and run the entire desktop application with Cargo's
@@ -33,6 +46,24 @@ release profile instead, use:
 
 ```sh
 npm run dev:release
+```
+
+To build the standalone `utool-desktop` executable with the frontend embedded,
+use:
+
+```sh
+npm run build:standalone
+```
+
+The executable is written to `src-tauri/target/release/utool-desktop`. Do not
+use plain `cargo build --release` for this artifact: Tauri's build command
+enables its production asset protocol.
+
+The app-icon master is `src-tauri/icons/icon.svg`. Regenerate the macOS,
+Windows, Linux, and store-size assets after changing it with:
+
+```sh
+npm run tauri -- icon src-tauri/icons/icon.svg
 ```
 
 The release command takes longer to compile and does not enable Rust debug

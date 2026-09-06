@@ -68,12 +68,20 @@ pub fn layout_optimized_chart(
     // completely unbalanced.
     let finalizer = FragmentOptimizer::new(
         chart.graph(),
-        best,
+        best.clone(),
         options,
         false,
         options.chart_fragment_x_gap,
     )?;
-    Ok(finalizer.centered())
+    let centered = finalizer.centered();
+    if finalizer
+        .objective(&centered)
+        .better_than(finalizer.objective(&best))
+    {
+        Ok(centered)
+    } else {
+        Ok(best)
+    }
 }
 
 /// Lay out a solved graph with the default chart-backed algorithm.
@@ -226,6 +234,7 @@ impl<'a> FragmentOptimizer<'a> {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn balance_incoming(&self, initial: &[f32]) -> Vec<f32> {
         let mut anchors = initial.to_vec();
         let mut order = (0..anchors.len()).collect::<Vec<_>>();

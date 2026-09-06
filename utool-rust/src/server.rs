@@ -8,7 +8,7 @@ use crate::{
     is_solvable, solve,
 };
 use quick_xml::{
-    Reader,
+    Reader, XmlVersion,
     events::{BytesStart, Event},
 };
 use std::{
@@ -218,7 +218,7 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Se
         })?;
         if attribute.key.as_ref() == name {
             return attribute
-                .unescape_value()
+                .normalized_value(XmlVersion::Implicit1_0)
                 .map(|value| Some(value.into_owned()))
                 .map_err(|error| {
                     ServerError::new(

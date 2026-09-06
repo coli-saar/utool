@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
-    path::Path,
+    ffi::OsString,
+    fs,
+    path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, AtomicU64, Ordering},
@@ -18,6 +20,131 @@ use utool::{
     Point, RewriteSystem, Size, Solution, filter_chart, layout_chart, layout_graph,
     solve_with_cancellation,
 };
+
+#[derive(Debug, PartialEq, Eq)]
+struct StartupArguments {
+    graphs: Vec<PathBuf>,
+    filter: Option<PathBuf>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StartupDocumentView {
+    input: String,
+    codec: String,
+    title: String,
+    filename: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct StartupFilterView {
+    rewrite_system: String,
+    filename: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AppInfoView {
+    version: &'static str,
+    build_id: &'static str,
+}
+
+struct StartupState {
+    documents: Mutex<Option<Result<Vec<StartupDocumentView>, String>>>,
+    filter: Result<Option<StartupFilterView>, String>,
+}
+
+fn parse_startup_arguments(
+    args: impl IntoIterator<Item = OsString>,
+) -> Result<StartupArguments, String> {
+    let args = args.into_iter().collect::<Vec<_>>();
+    let mut graphs = Vec::new();
+    let mut filter = None;
+    let mut positional_only = false;
+    let mut index = 0;
+    while index < args.len() {
+        let argument = &args[index];
+        if !positional_only && argument == "--" {
+            positional_only = true;
+        } else if !positional_only && (argument == "-f" || argument == "--filter") {
+            index += 1;
+            let value = args.get(index).ok_or_else(|| {
+                format!("{} requires a filter filename", argument.to_string_lossy())
+            })?;
+            filter = Some(PathBuf::from(value));
+        } else if !positional_only
+            && let Some(argument) = argument.to_str()
+            && let Some(value) = argument.strip_prefix("--filter=")
+        {
+            if value.is_empty() {
+                return Err("--filter requires a filter filename".to_owned());
+            }
+            filter = Some(PathBuf::from(value));
+        } else if !positional_only && argument.to_string_lossy().starts_with('-') {
+            // Finder used to add a process serial number when starting an app.
+            // Accept it defensively, but reject other flags so typos are visible.
+            if !argument.to_string_lossy().starts_with("-psn_") {
+                return Err(format!(
+                    "unknown Utool desktop option: {}",
+                    argument.to_string_lossy()
+                ));
+            }
+        } else {
+            graphs.push(PathBuf::from(argument));
+        }
+        index += 1;
+    }
+    Ok(StartupArguments { graphs, filter })
+}
+
+fn startup_state(args: impl IntoIterator<Item = OsString>) -> StartupState {
+    let parsed = parse_startup_arguments(args);
+    let documents = parsed.as_ref().map_or_else(
+        |error| Err(error.clone()),
+        |arguments| {
+            arguments
+                .graphs
+                .iter()
+                .map(|path| {
+                    let filename = path.to_string_lossy().into_owned();
+                    let title = path.file_name().map_or_else(
+                        || filename.clone(),
+                        |name| name.to_string_lossy().into_owned(),
+                    );
+                    let codec = InputCodec::from_filename(&filename).ok_or_else(|| {
+                        format!("cannot infer an input codec from graph filename: {filename}")
+                    })?;
+                    let input = fs::read_to_string(path)
+                        .map_err(|error| format!("could not read graph {filename}: {error}"))?;
+                    Ok(StartupDocumentView {
+                        input,
+                        codec: codec.name().to_owned(),
+                        title,
+                        filename,
+                    })
+                })
+                .collect()
+        },
+    );
+    let filter = parsed.and_then(|arguments| {
+        arguments.filter.map_or(Ok(None), |path| {
+            let filename = path.to_string_lossy().into_owned();
+            fs::read_to_string(&path)
+                .map(|rewrite_system| {
+                    Some(StartupFilterView {
+                        rewrite_system,
+                        filename: filename.clone(),
+                    })
+                })
+                .map_err(|error| format!("could not read filter {filename}: {error}"))
+        })
+    });
+    StartupState {
+        documents: Mutex::new(Some(documents)),
+        filter,
+    }
+}
 
 struct Document {
     graph: HncGraph,
@@ -353,6 +480,33 @@ fn solution_view(solution: &Solution, elapsed_ms: f64) -> SolutionView {
         elapsed_ms,
         nodes,
         edges,
+    }
+}
+
+#[tauri::command]
+fn take_startup_documents(
+    state: tauri::State<'_, StartupState>,
+) -> Result<Vec<StartupDocumentView>, String> {
+    state
+        .documents
+        .lock()
+        .map_err(|_| "startup arguments are unavailable".to_owned())?
+        .take()
+        .unwrap_or_else(|| Ok(Vec::new()))
+}
+
+#[tauri::command]
+fn startup_filter(
+    state: tauri::State<'_, StartupState>,
+) -> Result<Option<StartupFilterView>, String> {
+    state.filter.clone()
+}
+
+#[tauri::command]
+fn app_info() -> AppInfoView {
+    AppInfoView {
+        version: env!("CARGO_PKG_VERSION"),
+        build_id: env!("UTOOL_BUILD_ID"),
     }
 }
 
@@ -989,11 +1143,16 @@ fn show_event_log(app: &tauri::AppHandle) -> Result<(), tauri::Error> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let startup = startup_state(std::env::args_os().skip(1));
     tauri::Builder::default()
         .manage(DocumentState::default())
+        .manage(startup)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
+            take_startup_documents,
+            startup_filter,
+            app_info,
             load_document,
             current_document,
             open_graph_window,
@@ -1152,6 +1311,42 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn arguments(values: &[&str]) -> Vec<OsString> {
+        values.iter().map(OsString::from).collect()
+    }
+
+    #[test]
+    fn startup_arguments_accept_graphs_and_filter_forms() {
+        assert_eq!(
+            parse_startup_arguments(arguments(&["-f", "rules.txt", "one.clls", "two.mrs.pl"]))
+                .unwrap(),
+            StartupArguments {
+                graphs: vec![PathBuf::from("one.clls"), PathBuf::from("two.mrs.pl")],
+                filter: Some(PathBuf::from("rules.txt")),
+            }
+        );
+        assert_eq!(
+            parse_startup_arguments(arguments(&["--filter=rules.txt", "--", "-graph.clls"]))
+                .unwrap(),
+            StartupArguments {
+                graphs: vec![PathBuf::from("-graph.clls")],
+                filter: Some(PathBuf::from("rules.txt")),
+            }
+        );
+    }
+
+    #[test]
+    fn startup_arguments_report_missing_filter_and_unknown_options() {
+        assert_eq!(
+            parse_startup_arguments(arguments(&["-f"])).unwrap_err(),
+            "-f requires a filter filename"
+        );
+        assert_eq!(
+            parse_startup_arguments(arguments(&["--bogus"])).unwrap_err(),
+            "unknown Utool desktop option: --bogus"
+        );
+    }
 
     #[test]
     fn resources_are_isolated_and_jobs_are_cancelled_on_window_removal() {

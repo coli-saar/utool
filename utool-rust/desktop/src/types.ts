@@ -39,6 +39,23 @@ export type LoadedDocumentView = {
   elapsedMs: number;
 };
 
+export type StartupDocument = {
+  input: string;
+  codec: string;
+  title: string;
+  filename: string;
+};
+
+export type StartupFilter = {
+  rewriteSystem: string;
+  filename: string;
+};
+
+export type AppInfo = {
+  version: string;
+  buildId: string;
+};
+
 export type EventEntry = {
   id: number;
   timestampMs: number;

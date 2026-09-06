@@ -391,6 +391,7 @@ fn optimized_layout_centers_the_shared_lower_target() {
 }
 
 #[test]
+#[allow(clippy::cast_precision_loss, clippy::filter_map_bool_then)]
 fn optimized_layout_centers_rondane_892_named_fragment() {
     let graph = HncGraph::try_from(
         parse_mrs_prolog(include_str!(
@@ -417,8 +418,8 @@ fn optimized_layout_centers_rondane_892_named_fragment() {
     let chart = solve(&graph).unwrap();
     let layout = layout_optimized_chart(&chart, &measured, LayoutOptions::default()).unwrap();
     let target = graph.node_id("h24").unwrap();
-    let target_center = layout.nodes[target.index()].origin.x
-        + layout.nodes[target.index()].size.width / 2.0;
+    let target_center =
+        layout.nodes[target.index()].origin.x + layout.nodes[target.index()].size.width / 2.0;
     let parent_centers = graph
         .parsed()
         .dominance_edges()
@@ -439,6 +440,7 @@ fn optimized_layout_centers_rondane_892_named_fragment() {
 }
 
 #[test]
+#[allow(clippy::cast_precision_loss, clippy::filter_map_bool_then)]
 fn optimized_layout_centers_rondane_650_top_fragment() {
     let graph = HncGraph::try_from(
         parse_mrs_prolog(include_str!(
@@ -465,8 +467,8 @@ fn optimized_layout_centers_rondane_650_top_fragment() {
     let chart = solve(&graph).unwrap();
     let layout = layout_optimized_chart(&chart, &measured, LayoutOptions::default()).unwrap();
     let source = graph.node_id("h3").unwrap();
-    let source_center = layout.nodes[source.index()].origin.x
-        + layout.nodes[source.index()].size.width / 2.0;
+    let source_center =
+        layout.nodes[source.index()].origin.x + layout.nodes[source.index()].size.width / 2.0;
     let target_centers = graph
         .parsed()
         .dominance_edges()

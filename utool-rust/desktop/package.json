@@ -2,10 +2,12 @@
   "name": "utool-desktop",
   "private": true,
   "version": "0.1.0",
+  "license": "GPL-2.0-only",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:standalone": "tauri build --no-bundle",
     "tauri": "tauri",
     "dev:release": "tauri dev --release"
   },

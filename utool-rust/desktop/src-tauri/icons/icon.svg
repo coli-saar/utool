@@ -1,6 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="108" fill="#315db5"/>
-  <path d="M144 128v126c0 75 39 130 112 130s112-55 112-130V128h-68v130c0 38-13 62-44 62s-44-24-44-62V128z" fill="white"/>
-  <circle cx="144" cy="128" r="28" fill="#f3bd4f"/>
-  <circle cx="368" cy="128" r="28" fill="#f3bd4f"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- App-icon adaptation of the original Utool wordmark: its opening U and
+       red Swiss-cross tile, which serves as the wordmark's lowercase t. -->
+  <rect x="32" y="32" width="960" height="960" rx="214" fill="#f7f7f5"/>
+  <rect x="41" y="41" width="942" height="942" rx="205" fill="none" stroke="#d5d5d0" stroke-width="18"/>
+
+  <!-- The complete 832 x 424 mark is centered at (512, 512). The U and tile
+       share the same cap and baseline; the gap between them is 48 units. -->
+  <g transform="translate(-44 0)">
+    <path
+      d="M140 300h100v225c0 73 26 107 80 107s80-34 80-107V300h100v234c0 120-65 190-180 190s-180-70-180-190z"
+      fill="#111111"
+    />
+
+    <rect x="548" y="300" width="424" height="424" fill="#111111"/>
+    <rect x="562" y="314" width="396" height="396" fill="#cc0000"/>
+    <path
+      d="M717 382h86v87h87v86h-87v87h-86v-87h-87v-86h87z"
+      fill="#ffffff"
+      stroke="#111111"
+      stroke-width="14"
+      stroke-linejoin="miter"
+    />
+  </g>
 </svg>
