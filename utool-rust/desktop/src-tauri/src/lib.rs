@@ -1031,6 +1031,15 @@ pub fn run() {
             let close = MenuItemBuilder::with_id("close", "Close")
                 .accelerator("CmdOrCtrl+W")
                 .build(app)?;
+            let graph_view = MenuItemBuilder::with_id("view-graph", "Graph")
+                .accelerator("CmdOrCtrl+1")
+                .build(app)?;
+            let chart_view = MenuItemBuilder::with_id("view-chart", "Chart")
+                .accelerator("CmdOrCtrl+2")
+                .build(app)?;
+            let solutions_view = MenuItemBuilder::with_id("view-solutions", "Solutions")
+                .accelerator("CmdOrCtrl+3")
+                .build(app)?;
             let zoom_in = MenuItemBuilder::with_id("zoom-in", "Zoom In")
                 .accelerator("CmdOrCtrl+=")
                 .build(app)?;
@@ -1064,6 +1073,10 @@ pub fn run() {
                 .select_all()
                 .build()?;
             let view = SubmenuBuilder::new(app, "View")
+                .item(&graph_view)
+                .item(&chart_view)
+                .item(&solutions_view)
+                .separator()
                 .item(&zoom_in)
                 .item(&zoom_out)
                 .item(&actual_size)
@@ -1116,6 +1129,9 @@ pub fn run() {
                             "export-svg" => "Choose Export SVG",
                             "export-domcon" => "Choose Export Domcon/Oz",
                             "export-dot" => "Choose Export Graphviz DOT",
+                            "view-graph" => "Show graph view",
+                            "view-chart" => "Show chart view",
+                            "view-solutions" => "Show solutions view",
                             "zoom-in" => "Zoom in",
                             "zoom-out" => "Zoom out",
                             "actual-size" => "Use actual size",

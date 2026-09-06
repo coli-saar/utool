@@ -598,6 +598,9 @@ export default function App() {
     const pending = Promise.all([
       listen("menu-open", openDocument), listen("menu-export-svg", exportSvg),
       listen("menu-export-domcon", () => exportGraph("domcon")), listen("menu-export-dot", () => exportGraph("dot")),
+      listen("menu-view-graph", () => setActiveView("graph")),
+      listen("menu-view-chart", () => setActiveView("chart")),
+      listen("menu-view-solutions", () => setActiveView("solutions")),
       listen("menu-zoom-in", () => changeZoom(1)),
       listen("menu-zoom-out", () => changeZoom(-1)),
       listen("menu-actual-size", () => setZoom(100)),
@@ -641,7 +644,7 @@ export default function App() {
       {document && activeView === "graph" && !graphReady && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>Preparing the graph layout.</p></div>}
       {document && activeView === "graph" && graphReady && <GraphCanvas key={document.documentId} graph={document.graph} zoom={graphZoom} offsets={graphOffsets} onOffsetsChange={setGraphOffsets} onZoomChange={setGraphZoom} onSvgReady={(element) => { svg.current = element; }} />}
       {document && activeView !== "graph" && derivedLoading && <div className="computing"><span className="large-spinner" /><h2>Computing chart</h2><p>You can continue inspecting the graph while the solution space is prepared.</p></div>}
-      {document && activeView === "chart" && activeVariant && <div className="chart-view">
+      {document && activeVariant && <div className={`chart-view${activeView === "chart" ? "" : " chart-view-preload"}`} aria-hidden={activeView !== "chart"}>
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
         <ChartRules key={activeVariant.chart.chartId} chart={activeVariant.chart} />
         <div className="chart-bar"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.splitCount}</b> split rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>

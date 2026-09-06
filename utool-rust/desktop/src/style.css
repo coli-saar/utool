@@ -9,9 +9,10 @@ button:hover:not(:disabled) { background: #f0f3f7; }
 button:disabled { opacity: .45; }
 button.primary { background: #315db5; border-color: #315db5; color: #fff; }
 main { height: 100vh; display: grid; grid-template-rows: 40px 1fr 29px; }
-.tabs { padding: 6px 10px 0; display: flex; align-items: end; gap: 3px; background: #e5e7ea; border-bottom: 1px solid #aeb4bc; }
-.tabs button { height: 34px; min-width: 108px; padding: 5px 16px 6px; display: flex; gap: 7px; align-items: center; justify-content: center; border: 1px solid #b7bdc5; border-bottom-color: #aeb4bc; border-radius: 6px 6px 0 0; background: linear-gradient(#f4f5f6, #dfe2e5); color: #4c5560; font-size: 12px; font-weight: 580; box-shadow: inset 0 1px #fff8; }
-.tabs button:hover:not(:disabled) { background: linear-gradient(#fff, #e7e9eb); color: #252d36; }
+.tabs { padding: 6px 10px 0; display: flex; align-items: end; gap: 1px; background: #e5e7ea; border-bottom: 1px solid #aeb4bc; }
+.tabs button { height: 34px; min-width: 108px; padding: 5px 16px 6px; display: flex; gap: 7px; align-items: center; justify-content: center; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: #59626d; font-size: 12px; font-weight: 580; box-shadow: none; }
+.tabs button:hover:not(:disabled):not(.active) { background: #ffffff70; color: #252d36; }
+.tabs button:focus-visible { position: relative; z-index: 2; outline: 2px solid #527dc4; outline-offset: -3px; }
 .tabs button.active { position: relative; z-index: 1; height: 35px; margin-bottom: -1px; border-color: #aeb4bc; border-bottom-color: #fff; background: #fff; color: #202830; box-shadow: none; }
 .filter-picker { height: 33px; margin: 0 0 0 auto; padding: 0 2px 6px 14px; display: flex; align-items: center; gap: 7px; color: #525b66; font-size: 12px; }
 .filter-picker select { min-width: 190px; max-width: 280px; padding: 4px 25px 4px 7px; border-color: #b5bbc3; border-radius: 4px; background: #fff; font-size: 12px; }
@@ -41,6 +42,7 @@ marker path { fill: #df303b; }
 .computing h2, .zero-solutions h2 { margin: 5px 0 0; color: #2b3541; font-size: 17px; }
 .computing p, .zero-solutions p { margin: 0; font-size: 13px; }
 .chart-view { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #f7f8fa; }
+.chart-view-preload { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
 .chart-bar { min-height: 34px; padding: 3px 14px; display: flex; align-items: center; justify-content: flex-end; border-top: 1px solid #d4d8df; background: #f5f6f8; color: #66707c; font-size: 11px; }
 .chart-bar b { color: #27313d; }
 .chart-bar strong { color: #27313d; }
