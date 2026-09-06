@@ -41,6 +41,37 @@ fn solvable_and_convert_match_java_shapes() {
 }
 
 #[test]
+fn classify_reports_all_bits_without_requiring_an_hnc_solver_graph() {
+    let input = fixture("classify-non-hnc", "clls", "[label(x a) label(y b)]");
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["classify", "-s", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    // Weakly normal, normal, compact, compactifiable, and leaf-labelled;
+    // disconnected graphs are not hypernormally connected.
+    assert_eq!(output.status.code(), Some(47));
+    let statistics = String::from_utf8(output.stderr).unwrap();
+    assert!(statistics.contains("not hypernormally connected"));
+    fs::remove_file(input).unwrap();
+}
+
+#[test]
+fn convert_does_not_require_solver_applicability() {
+    let input = fixture("convert-non-hnc", "clls", "[label(x a) label(y b)]");
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["convert", "-O", "domgraph-dot", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert!(
+        String::from_utf8(output.stdout)
+            .unwrap()
+            .contains("digraph dominance_graph")
+    );
+    fs::remove_file(input).unwrap();
+}
+
+#[test]
 fn solve_defaults_to_the_matching_domcon_codec() {
     let input = fixture("default-codec", "clls", "[label(x a)]");
     let output = Command::new(env!("CARGO_BIN_EXE_utool"))

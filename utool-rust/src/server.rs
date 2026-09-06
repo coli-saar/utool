@@ -541,16 +541,18 @@ fn classify_response(graph: &ParsedGraph) -> String {
     let weakly_normal = graph.is_weakly_normal();
     let normal = graph.is_normal();
     let compact = graph.is_compact();
+    let compactifiable = graph.is_compactifiable();
     let hnc = graph.is_hypernormally_connected();
     let leaf_labelled = graph.is_leaf_labelled();
     let code = u8::from(weakly_normal)
         | (u8::from(normal) << 1)
         | (u8::from(compact) << 2)
+        | (u8::from(compactifiable) << 3)
         | (u8::from(hnc) << 4)
         | (u8::from(leaf_labelled) << 5);
     let time = elapsed_ms(started);
     format!(
-        "<result code='{code}' time2='{time}' weaklynormal='{weakly_normal}' normal='{normal}' compact='{compact}' hypernormallyconnected='{hnc}' leaflabelled='{leaf_labelled}' />\n"
+        "<result code='{code}' time2='{time}' weaklynormal='{weakly_normal}' normal='{normal}' compact='{compact}' compactifiable='{compactifiable}' hypernormallyconnected='{hnc}' leaflabelled='{leaf_labelled}' />\n"
     )
 }
 
@@ -739,7 +741,8 @@ mod tests {
             &format!("<utool cmd='classify'><usr codec='domcon-oz' string='{graph}'/></utool>"),
             &cache,
         );
-        assert!(classified.contains("code='55'"), "{classified}");
+        assert!(classified.contains("code='63'"), "{classified}");
+        assert!(classified.contains("compactifiable='true'"), "{classified}");
 
         let nochart = request(
             &format!(

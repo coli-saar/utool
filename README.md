@@ -14,6 +14,8 @@ In 2026, in response to sustained interest in Utool, we ported a streamlined ver
 
 You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases). You can still use the Java version as Utool 3.4; the 4.x versions are Rust.
 
+The instructions below are for the Java version. Have a look at the [Utool 4 README](https://github.com/coli-saar/utool/blob/master/utool-rust/README.md) for installation instructions for the Rust version. Utool 4 is a drop-in replacement for Utool 3, so most of the documentation should still apply.
+
 
 ## Compiling Utool
 

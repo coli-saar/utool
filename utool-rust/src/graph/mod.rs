@@ -223,6 +223,14 @@ impl ParsedGraph {
         let Ok(parents) = self.tree_parents() else {
             return false;
         };
+        if ensure_tree_acyclic(self).is_err()
+            || self
+                .nodes
+                .iter()
+                .any(|node| node.is_hole() && !node.tree_children.is_empty())
+        {
+            return false;
+        }
         self.dominance_edges.iter().all(|&(source, target)| {
             self.node(source).is_hole() || parents[target.index()].is_none()
         })
@@ -231,6 +239,9 @@ impl ParsedGraph {
     /// Whether every dominance edge starts at a hole and ends at a fragment root.
     #[must_use]
     pub fn is_normal(&self) -> bool {
+        if !self.is_weakly_normal() {
+            return false;
+        }
         let Ok(parents) = self.tree_parents() else {
             return false;
         };
@@ -249,6 +260,17 @@ impl ParsedGraph {
             .iter()
             .enumerate()
             .all(|(index, node)| node.label.is_none() || parents[index].is_none())
+    }
+
+    /// Whether every dominance edge starts at a hole or a fragment root.
+    #[must_use]
+    pub fn is_compactifiable(&self) -> bool {
+        let Ok(parents) = self.tree_parents() else {
+            return false;
+        };
+        self.dominance_edges
+            .iter()
+            .all(|&(source, _)| self.node(source).is_hole() || parents[source.index()].is_none())
     }
 
     /// Whether the graph is hypernormally connected.

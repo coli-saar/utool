@@ -5,7 +5,8 @@ use std::{
     time::{Duration, Instant},
 };
 use utool::{
-    Chart, HncGraph, InputCodec, OutputCodec, RewriteSystem, filter_chart, is_solvable, solve,
+    Chart, HncGraph, InputCodec, OutputCodec, ParsedGraph, RewriteSystem, filter_chart,
+    is_solvable, solve,
 };
 
 const IO_ERROR: u8 = 128;
@@ -237,7 +238,7 @@ fn print_help(command: Option<&str>) {
     }
 }
 
-fn read_graph(opts: &Options, source: &str) -> Result<HncGraph, (String, u8)> {
+fn read_graph(opts: &Options, source: &str) -> Result<ParsedGraph, (String, u8)> {
     let selected = if let Some(name) = &opts.input_codec {
         InputCodec::from_name(name)
             .ok_or_else(|| (format!("Unknown input codec: {name}"), NO_SUCH_INPUT_CODEC))?
@@ -264,7 +265,7 @@ fn read_graph(opts: &Options, source: &str) -> Result<HncGraph, (String, u8)> {
             )
         })?;
     }
-    let parsed = selected.parse(&text).map_err(|e| {
+    selected.parse(&text).map_err(|e| {
         let code = if selected == InputCodec::Chain && matches!(&e, utool::CodecError::Semantic(_))
         {
             PARSE_ERROR + 1
@@ -274,12 +275,6 @@ fn read_graph(opts: &Options, source: &str) -> Result<HncGraph, (String, u8)> {
         (
             format!("A parsing error occurred while reading the input.\n{e}"),
             code,
-        )
-    })?;
-    HncGraph::try_from(parsed).map_err(|e| {
-        (
-            format!("A semantic error occurred while decoding the graph.\n{e}"),
-            PARSE_ERROR,
         )
     })
 }
@@ -347,7 +342,7 @@ fn report_chart_phase(name: &str, time_label: &str, chart: &Chart, duration: Dur
 
 #[allow(clippy::too_many_lines)]
 fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u8)> {
-    let graph = read_graph(opts, source)?;
+    let parsed = read_graph(opts, source)?;
     let solve_output_codec = if op == Operation::Solve && !opts.no_output {
         let codec = output_codec(opts, Some(source))?;
         if !codec.supports_solutions() {
@@ -372,52 +367,58 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         if !opts.no_output {
             let mut writer = result_writer(opts)?;
             encoder
-                .write_graph(graph.parsed(), &mut writer)
+                .write_graph(&parsed, &mut writer)
                 .and_then(|()| writer.flush())
                 .map_err(|e| (e.to_string(), IO_ERROR))?;
         }
         return Ok(0);
     }
     if op == Operation::Classify {
-        let root = |node| graph.tree_parent(node).is_none();
-        let weakly_normal = graph
-            .parsed()
-            .dominance_edges()
-            .iter()
-            .all(|(source, target)| graph.node(*source).is_hole() || root(*target));
-        let normal = weakly_normal
-            && graph
-                .parsed()
-                .dominance_edges()
-                .iter()
-                .all(|(source, _)| graph.node(*source).is_hole());
-        let compact = graph
-            .parsed()
-            .nodes()
-            .iter()
-            .all(|node| node.label().is_none() || graph.node_id(node.name()).is_some_and(root));
-        let compactifiable = graph
-            .parsed()
-            .dominance_edges()
-            .iter()
-            .all(|(source, _)| graph.node(*source).is_hole() || root(*source));
-        let mut has_outgoing_dominance = vec![false; graph.parsed().nodes().len()];
-        for &(source, _) in graph.parsed().dominance_edges() {
-            has_outgoing_dominance[source.index()] = true;
+        let weakly_normal = parsed.is_weakly_normal();
+        let normal = parsed.is_normal();
+        let compact = parsed.is_compact();
+        let compactifiable = parsed.is_compactifiable();
+        let hnc = parsed.is_hypernormally_connected();
+        let leaf_labelled = parsed.is_leaf_labelled();
+        if opts.statistics {
+            eprintln!(
+                "The input graph is {}weakly normal.",
+                if weakly_normal { "" } else { "not " }
+            );
+            eprintln!(
+                "The input graph is {}normal.",
+                if normal { "" } else { "not " }
+            );
+            eprintln!(
+                "The input graph is {}compact.",
+                if compact { "" } else { "not " }
+            );
+            eprintln!(
+                "The input graph is {}compactifiable.",
+                if compactifiable { "" } else { "not " }
+            );
+            eprintln!(
+                "The graph is {}hypernormally connected.",
+                if hnc { "" } else { "not " }
+            );
+            eprintln!(
+                "The graph is {}leaf-labelled.",
+                if leaf_labelled { "" } else { "not " }
+            );
         }
-        let leaf_labelled = graph
-            .parsed()
-            .nodes()
-            .iter()
-            .enumerate()
-            .all(|(index, node)| node.label().is_some() || has_outgoing_dominance[index]);
         return Ok(u8::from(weakly_normal)
             | (u8::from(normal) << 1)
             | (u8::from(compact) << 2)
             | (u8::from(compactifiable) << 3)
-            | 16
+            | (u8::from(hnc) << 4)
             | (u8::from(leaf_labelled) << 5));
     }
+    let graph = HncGraph::try_from(parsed).map_err(|e| {
+        (
+            format!("The solver is not applicable to this graph.\n{e}"),
+            SOLVER_NOT_APPLICABLE,
+        )
+    })?;
     if op == Operation::Solvable && !opts.statistics && opts.filter.is_none() && !opts.dump_chart {
         return Ok(u8::from(is_solvable(&graph)));
     }
