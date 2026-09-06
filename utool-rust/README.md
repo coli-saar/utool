@@ -31,7 +31,34 @@ macOS Gatekeeper may therefore ask you to approve the application before its
 first launch. Download releases only from the repository's Releases page and
 verify that you selected the expected tag and architecture.
 
+
+### Install the command-line program
+
+For the most similar experience with Utool 3.x, install the command-line program. These are a drop-in replacement: Instead of `java -jar utool.jar ...`, you simply run `utool ...`, and everything else should mostly be the same.
+
+On macOS or Linux, extract the archive for your target and place both `utool`
+and `utool-display` in the same directory on `PATH`. For a per-user installation:
+
+```sh
+tar -xzf utool-VERSION-TARGET.tar.gz
+mkdir -p "$HOME/.local/bin"
+install -m 755 utool utool-display "$HOME/.local/bin/"
+```
+
+Ensure that `$HOME/.local/bin` is on `PATH`, then verify the installation:
+
+```sh
+utool --version
+utool --display-codecs
+```
+
+On Windows, extract `utool.exe` and `utool-display.exe` from the x64 ZIP archive,
+keep them together, and either run them there or add that directory to `PATH`.
+
+
 ### Install the desktop application
+
+If you primarily work with the GUI desktop application, you can also download a prepackaged app.
 
 On macOS, download the DMG for your processor, open it, and copy `Utool.app` to
 `Applications`. If Gatekeeper blocks the first launch, use the normal macOS
@@ -57,27 +84,6 @@ chmod +x Utool_VERSION_amd64.AppImage
 
 Release filenames contain the actual version in place of `VERSION` and may
 vary slightly with the Tauri bundler version.
-
-### Install the command-line program
-
-On macOS or Linux, extract the archive for your target and place both `utool`
-and `utool-display` in the same directory on `PATH`. For a per-user installation:
-
-```sh
-tar -xzf utool-VERSION-TARGET.tar.gz
-mkdir -p "$HOME/.local/bin"
-install -m 755 utool utool-display "$HOME/.local/bin/"
-```
-
-Ensure that `$HOME/.local/bin` is on `PATH`, then verify the installation:
-
-```sh
-utool --version
-utool --display-codecs
-```
-
-On Windows, extract `utool.exe` and `utool-display.exe` from the x64 ZIP archive,
-keep them together, and either run them there or add that directory to `PATH`.
 
 ## Use the command-line program
 
