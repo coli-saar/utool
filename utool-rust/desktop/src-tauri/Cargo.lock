@@ -4607,9 +4607,11 @@ dependencies = [
  "parol",
  "parol_runtime",
  "quick-xml",
+ "rustc-hash",
  "rusty-alto",
  "scnr2",
  "serde",
+ "smallvec",
  "thiserror 2.0.20",
 ]
 

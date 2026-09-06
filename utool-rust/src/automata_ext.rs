@@ -4,6 +4,7 @@
 //! `rusty-alto` itself.
 
 use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol, TopDownTa};
+use smallvec::SmallVec;
 use thiserror::Error;
 
 /// A transition indexed once from an explicit automaton for fast top-down use.
@@ -332,91 +333,204 @@ fn ensure_acyclic(accepting: &[StateId], rules: &[Vec<DfsRule>]) -> Result<(), D
     Ok(())
 }
 
-/// Result of trimming, including mappings useful for diagnostic provenance.
-pub struct Trimmed {
-    /// The language-equivalent useful part of the input automaton.
-    pub automaton: Explicit,
+// ---------------------------------------------------------------------------
+// Construction-aware automaton trimming
+// ---------------------------------------------------------------------------
+
+/// Result of trimming, including the state mapping needed by filtered charts.
+pub(crate) struct Trimmed {
+    /// The language-equivalent useful part of the staged automaton.
+    pub(crate) automaton: Explicit,
     /// For each new state, the corresponding source state.
-    pub source_states: Vec<StateId>,
+    pub(crate) source_states: Vec<StateId>,
 }
 
-/// Remove states and transitions which cannot occur in an accepting run.
-#[must_use]
-pub fn trim(automaton: &Explicit) -> Trimmed {
-    let productive = automaton.reachable_states();
-    trim_with_productivity(automaton, |state| productive.contains(state.index()))
+struct GeneratedRule {
+    symbol: Symbol,
+    children: SmallVec<[StateId; 2]>,
+    result: StateId,
 }
 
-/// Remove states and transitions which cannot occur in an accepting run when
-/// every state is known to be productive.
+/// A compact staging builder for generated automata.
 ///
-/// This is useful for automata constructed bottom-up: every state is introduced
-/// by a rule whose children were already productive, so recomputing
-/// productivity would duplicate work performed by the construction.
-#[must_use]
-pub(crate) fn trim_productive(automaton: &Explicit) -> Trimmed {
-    trim_with_productivity(automaton, |_| true)
+/// Filtering constructs large intermediate automata and immediately trims
+/// them. Building [`Explicit`] first would create bottom-up and top-down indexes
+/// for rules that trimming then discards. This builder stores each rule once,
+/// computes the useful state set over that storage, and builds [`Explicit`]
+/// only for the surviving rules.
+#[derive(Default)]
+pub(crate) struct GeneratedBuilder {
+    next_state: u32,
+    accepting: Vec<StateId>,
+    rules: Vec<GeneratedRule>,
 }
 
-fn trim_with_productivity(
-    automaton: &Explicit,
-    is_productive: impl Fn(StateId) -> bool,
-) -> Trimmed {
-    let mut useful = vec![false; automaton.num_states() as usize];
-    let mut work = Vec::new();
-    automaton.initial_states(&mut |state| {
-        if is_productive(state) && !useful[state.index()] {
-            useful[state.index()] = true;
-            work.push(state);
+impl GeneratedBuilder {
+    pub(crate) fn new() -> Self {
+        Self::default()
+    }
+
+    pub(crate) fn new_state(&mut self) -> StateId {
+        let state = StateId(self.next_state);
+        self.next_state = self
+            .next_state
+            .checked_add(1)
+            .expect("state count exceeds u32");
+        state
+    }
+
+    pub(crate) fn add_accepting(&mut self, state: StateId) {
+        debug_assert!(state.0 < self.next_state);
+        self.accepting.push(state);
+    }
+
+    pub(crate) fn add_rule(
+        &mut self,
+        symbol: Symbol,
+        children: impl Into<SmallVec<[StateId; 2]>>,
+        result: StateId,
+    ) {
+        let children = children.into();
+        debug_assert!(result.0 < self.next_state);
+        debug_assert!(children.iter().all(|child| child.0 < self.next_state));
+        self.rules.push(GeneratedRule {
+            symbol,
+            children,
+            result,
+        });
+    }
+
+    /// Remove both unproductive states and states that cannot reach acceptance.
+    pub(crate) fn trim(self) -> Trimmed {
+        let productive = self.productive_states();
+        self.trim_with_productive_states(&productive)
+    }
+
+    /// Remove states that cannot reach acceptance when every generated state is
+    /// known to be productive.
+    ///
+    /// The fragment-difference construction satisfies this precondition because
+    /// it creates states in bottom-up order and only as results of rules whose
+    /// children already have productive derivations.
+    pub(crate) fn trim_assuming_productive(self) -> Trimmed {
+        let productive = vec![true; self.next_state as usize];
+        self.trim_with_productive_states(&productive)
+    }
+
+    fn trim_with_productive_states(self, productive: &[bool]) -> Trimmed {
+        let useful = self.useful_states(productive);
+        self.retain_useful(&useful)
+    }
+
+    fn productive_states(&self) -> Vec<bool> {
+        let state_count = self.next_state as usize;
+        let mut productive = vec![false; state_count];
+        // `missing_children[r]` counts occurrences, not distinct child states.
+        // Recording one mention per occurrence makes a rule such as f(q,q) fire
+        // after q becomes productive without a separate duplicate-child case.
+        let mut missing_children = self
+            .rules
+            .iter()
+            .map(|rule| rule.children.len())
+            .collect::<Vec<_>>();
+        let mut mentions = vec![Vec::new(); state_count];
+        let mut work = Vec::new();
+        for (rule_index, rule) in self.rules.iter().enumerate() {
+            if rule.children.is_empty() {
+                if !productive[rule.result.index()] {
+                    productive[rule.result.index()] = true;
+                    work.push(rule.result);
+                }
+                continue;
+            }
+            for &child in &rule.children {
+                mentions[child.index()].push(rule_index);
+            }
         }
-    });
-    while let Some(parent) = work.pop() {
-        for rule in automaton.rules_topdown(parent) {
-            if rule.children.iter().copied().all(&is_productive) {
-                for &child in rule.children {
-                    if !useful[child.index()] {
-                        useful[child.index()] = true;
-                        work.push(child);
+        while let Some(state) = work.pop() {
+            for &rule_index in &mentions[state.index()] {
+                let rule = &self.rules[rule_index];
+                missing_children[rule_index] -= 1;
+                if missing_children[rule_index] == 0 && !productive[rule.result.index()] {
+                    productive[rule.result.index()] = true;
+                    work.push(rule.result);
+                }
+            }
+        }
+        productive
+    }
+
+    fn useful_states(&self, productive: &[bool]) -> Vec<bool> {
+        let state_count = self.next_state as usize;
+        let mut by_result = vec![Vec::new(); state_count];
+        for (rule_index, rule) in self.rules.iter().enumerate() {
+            by_result[rule.result.index()].push(rule_index);
+        }
+        // Starting at productive accepting states, follow productive rules
+        // top-down. The reached states are exactly the productive states that
+        // participate in some accepting run.
+        let mut useful = vec![false; state_count];
+        let mut work = Vec::new();
+        for &state in &self.accepting {
+            if productive[state.index()] && !useful[state.index()] {
+                useful[state.index()] = true;
+                work.push(state);
+            }
+        }
+        while let Some(parent) = work.pop() {
+            for &rule_index in &by_result[parent.index()] {
+                let rule = &self.rules[rule_index];
+                if rule.children.iter().all(|child| productive[child.index()]) {
+                    for &child in &rule.children {
+                        if !useful[child.index()] {
+                            useful[child.index()] = true;
+                            work.push(child);
+                        }
                     }
                 }
             }
         }
+        useful
     }
 
-    let source_states = useful
-        .iter()
-        .enumerate()
-        .filter_map(|(index, &is_useful)| {
-            is_useful.then(|| StateId(u32::try_from(index).expect("state count is stored as u32")))
-        })
-        .collect::<Vec<_>>();
-    let mut builder = ExplicitBuilder::new();
-    let mut remap = vec![None; automaton.num_states() as usize];
-    for &old in &source_states {
-        remap[old.index()] = Some(builder.new_state());
-    }
-    automaton.initial_states(&mut |old| {
-        if let Some(new) = remap[old.index()] {
-            builder.add_accepting(new);
-        }
-    });
-    for rule in automaton.rules() {
-        let Some(result) = remap[rule.result.index()] else {
-            continue;
-        };
-        let Some(children) = rule
-            .children
+    fn retain_useful(self, useful: &[bool]) -> Trimmed {
+        let state_count = self.next_state as usize;
+        let source_states = useful
             .iter()
-            .map(|child| remap[child.index()])
-            .collect::<Option<Vec<_>>>()
-        else {
-            continue;
-        };
-        builder.add_weighted_rule(rule.symbol, children, result, rule.weight);
-    }
-    Trimmed {
-        automaton: builder.build(),
-        source_states,
+            .enumerate()
+            .filter(|(_, keep)| **keep)
+            .map(|(index, _)| StateId(u32::try_from(index).expect("state count is stored as u32")))
+            .collect::<Vec<_>>();
+        // Compact state IDs in increasing source-state order. `source_states`
+        // is the inverse mapping used to restore chart metadata afterward.
+        let mut builder = ExplicitBuilder::new();
+        let mut remap = vec![None; state_count];
+        for &old in &source_states {
+            remap[old.index()] = Some(builder.new_state());
+        }
+        for old in self.accepting {
+            if let Some(new) = remap[old.index()] {
+                builder.add_accepting(new);
+            }
+        }
+        for rule in self.rules {
+            let Some(result) = remap[rule.result.index()] else {
+                continue;
+            };
+            let Some(children) = rule
+                .children
+                .into_iter()
+                .map(|child| remap[child.index()])
+                .collect::<Option<SmallVec<[StateId; 2]>>>()
+            else {
+                continue;
+            };
+            builder.add_rule(rule.symbol, children.into_vec(), result);
+        }
+        Trimmed {
+            automaton: builder.build(),
+            source_states,
+        }
     }
 }
 
@@ -480,17 +594,17 @@ mod tests {
 
     #[test]
     fn removes_unproductive_and_non_accepting_branches() {
-        let mut builder = ExplicitBuilder::new();
+        let mut builder = GeneratedBuilder::new();
         let useful_leaf = builder.new_state();
         let root = builder.new_state();
         let dead_leaf = builder.new_state();
         let unproductive = builder.new_state();
         builder.add_rule(Symbol(0), vec![], useful_leaf);
-        builder.add_rule(Symbol(1), vec![useful_leaf], root);
+        builder.add_rule(Symbol(1), vec![useful_leaf, useful_leaf], root);
         builder.add_rule(Symbol(2), vec![], dead_leaf);
         builder.add_rule(Symbol(3), vec![unproductive], unproductive);
         builder.add_accepting(root);
-        let result = trim(&builder.build());
+        let result = builder.trim();
         assert_eq!(result.automaton.num_states(), 2);
         assert_eq!(result.automaton.num_rules(), 2);
         assert!(result.automaton.is_accepting(&StateId(1)));
@@ -499,17 +613,19 @@ mod tests {
 
     #[test]
     fn productive_trim_matches_general_trim_when_all_states_are_productive() {
-        let mut builder = ExplicitBuilder::new();
-        let useful_leaf = builder.new_state();
-        let root = builder.new_state();
-        let dead_leaf = builder.new_state();
-        builder.add_rule(Symbol(0), vec![], useful_leaf);
-        builder.add_rule(Symbol(1), vec![useful_leaf], root);
-        builder.add_rule(Symbol(2), vec![], dead_leaf);
-        builder.add_accepting(root);
-        let automaton = builder.build();
-        let general = trim(&automaton);
-        let specialized = trim_productive(&automaton);
+        fn generated() -> GeneratedBuilder {
+            let mut builder = GeneratedBuilder::new();
+            let useful_leaf = builder.new_state();
+            let root = builder.new_state();
+            let dead_leaf = builder.new_state();
+            builder.add_rule(Symbol(0), vec![], useful_leaf);
+            builder.add_rule(Symbol(1), vec![useful_leaf, useful_leaf], root);
+            builder.add_rule(Symbol(2), vec![], dead_leaf);
+            builder.add_accepting(root);
+            builder
+        }
+        let general = generated().trim();
+        let specialized = generated().trim_assuming_productive();
         assert_eq!(specialized.source_states, general.source_states);
         assert_eq!(specialized.automaton.num_states(), 2);
         assert_eq!(specialized.automaton.num_rules(), 2);
