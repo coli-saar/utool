@@ -56,6 +56,13 @@ export type AppInfo = {
   buildId: string;
 };
 
+export type ExampleSummary = {
+  id: string;
+  filename: string;
+  codec: string;
+  description: string;
+};
+
 export type EventEntry = {
   id: number;
   timestampMs: number;

@@ -11,6 +11,7 @@ name = "utool_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
+quick-xml = "0.41"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]

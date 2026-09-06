@@ -1,4 +1,7 @@
 use std::process::Command;
+use std::{fs, path::Path};
+
+use quick_xml::{Reader, XmlVersion, events::Event};
 
 fn git_output(arguments: &[&str]) -> Option<String> {
     let output = Command::new("git").args(arguments).output().ok()?;
@@ -34,6 +37,80 @@ fn generated_build_id() -> String {
     format!("local-{sha}{}", if dirty { "-dirty" } else { "" })
 }
 
+fn generate_builtin_examples() -> Result<(), String> {
+    const CATALOGUE: &str = "resources/examples/examples.xml";
+    let mut reader = Reader::from_file(CATALOGUE).map_err(|error| error.to_string())?;
+    reader.config_mut().trim_text(true);
+    let mut buffer = Vec::new();
+    let mut examples = Vec::new();
+
+    loop {
+        match reader
+            .read_event_into(&mut buffer)
+            .map_err(|error| error.to_string())?
+        {
+            Event::Empty(element) | Event::Start(element)
+                if element.name().as_ref() == b"example" =>
+            {
+                let mut filename = None;
+                let mut description = None;
+                for attribute in element.attributes() {
+                    let attribute = attribute.map_err(|error| error.to_string())?;
+                    let value = attribute
+                        .decoded_and_normalized_value(XmlVersion::default(), reader.decoder())
+                        .map_err(|error| error.to_string())?
+                        .into_owned();
+                    match attribute.key.as_ref() {
+                        b"filename" => filename = Some(value),
+                        b"description" => description = Some(value),
+                        _ => {}
+                    }
+                }
+                let filename = filename.ok_or("example is missing its filename attribute")?;
+                let description = description.ok_or_else(|| {
+                    format!("example {filename} is missing its description attribute")
+                })?;
+                let path = Path::new(&filename);
+                if path.file_name().and_then(|name| name.to_str()) != Some(filename.as_str()) {
+                    return Err(format!(
+                        "example filename must be a plain filename: {filename}"
+                    ));
+                }
+                let source = Path::new("resources/examples").join(&filename);
+                if !source.is_file() {
+                    return Err(format!(
+                        "example source does not exist: {}",
+                        source.display()
+                    ));
+                }
+                println!("cargo:rerun-if-changed={}", source.display());
+                examples.push((filename, description));
+            }
+            Event::Eof => break,
+            _ => {}
+        }
+        buffer.clear();
+    }
+
+    if examples.is_empty() {
+        return Err("examples.xml does not contain any examples".to_owned());
+    }
+
+    let mut generated = String::from("const BUILTIN_EXAMPLES: &[BuiltinExample] = &[\n");
+    for (filename, description) in examples {
+        generated.push_str(&format!(
+            "    BuiltinExample {{ filename: {filename:?}, description: {description:?}, source: include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/resources/examples/\", {filename:?})) }},\n"
+        ));
+    }
+    generated.push_str("];\n");
+
+    let output = Path::new(&std::env::var("OUT_DIR").map_err(|error| error.to_string())?)
+        .join("builtin_examples.rs");
+    fs::write(output, generated).map_err(|error| error.to_string())?;
+    println!("cargo:rerun-if-changed={CATALOGUE}");
+    Ok(())
+}
+
 fn main() {
     for variable in [
         "UTOOL_BUILD_ID",
@@ -57,5 +134,6 @@ fn main() {
 
     let build_id = std::env::var("UTOOL_BUILD_ID").unwrap_or_else(|_| generated_build_id());
     println!("cargo:rustc-env=UTOOL_BUILD_ID={build_id}");
+    generate_builtin_examples().expect("failed to generate the built-in example catalogue");
     tauri_build::build();
 }

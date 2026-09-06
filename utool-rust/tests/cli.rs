@@ -260,3 +260,31 @@ fn compound_output_suffix_selects_gxl_without_an_explicit_codec() {
     fs::remove_file(input).unwrap();
     fs::remove_file(output).unwrap();
 }
+
+#[test]
+fn gxl_input_defaults_to_gxl_output_without_an_explicit_codec() {
+    let domcon = fixture("gxl-default-input", "clls", "[label(x a)]");
+    let gxl = fixture("gxl-default-input", "dg.xml", "");
+    let conversion = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args([
+            "convert",
+            "-O",
+            "domgraph-gxl",
+            "-o",
+            gxl.to_str().unwrap(),
+            domcon.to_str().unwrap(),
+        ])
+        .status()
+        .unwrap();
+    assert!(conversion.success());
+
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["convert", gxl.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert!(String::from_utf8(output.stdout).unwrap().contains("<gxl"));
+
+    fs::remove_file(domcon).unwrap();
+    fs::remove_file(gxl).unwrap();
+}

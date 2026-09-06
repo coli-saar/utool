@@ -1,14 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { message, open, save } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
 import type { Zoom } from "./GraphCanvas";
-import type { AppInfo, ChartRowPage, ChartRule, ChartState, ChartView, GraphView, LoadedDocumentView, SolutionView, StartupDocument, StartupFilter } from "./types";
+import type { AppInfo, ChartRowPage, ChartRule, ChartState, ChartView, ExampleSummary, GraphView, LoadedDocumentView, SolutionView, StartupDocument, StartupFilter } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
 const WINDOW_LABEL = getCurrentWindow().label;
@@ -327,6 +327,108 @@ function SolutionSpaceControl({ variants, activeKey, filterRunning, onSelect, on
   </label>;
 }
 
+function ExampleChooser({ examples, selectedId, opening, onSelect, onOpen, onClose }: {
+  examples: ExampleSummary[] | null;
+  selectedId: string | null;
+  opening: boolean;
+  onSelect: (id: string) => void;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+}) {
+  const selected = examples?.find((example) => example.id === selectedId) ?? null;
+  const selectedButton = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    selectedButton.current?.focus();
+  }, [selectedId, examples]);
+
+  useEffect(() => {
+    const keyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      } else if (event.key === "Enter" && selected && !opening) {
+        event.preventDefault();
+        onOpen(selected.id);
+      } else if ((event.key === "ArrowDown" || event.key === "ArrowUp") && examples?.length) {
+        event.preventDefault();
+        const current = Math.max(0, examples.findIndex((example) => example.id === selectedId));
+        const direction = event.key === "ArrowDown" ? 1 : -1;
+        const next = Math.min(examples.length - 1, Math.max(0, current + direction));
+        onSelect(examples[next].id);
+      }
+    };
+    window.addEventListener("keydown", keyDown);
+    return () => window.removeEventListener("keydown", keyDown);
+  }, [examples, onClose, onOpen, onSelect, opening, selected, selectedId]);
+
+  const codecLabel = selected?.codec === "domcon-oz" ? "Domcon/Oz"
+    : selected?.codec === "holesem-comsem" ? "Hole Semantics"
+    : selected?.codec === "mrs-prolog" ? "MRS Prolog"
+    : selected?.codec ?? "";
+
+  return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="example-dialog" role="dialog" aria-modal="true" aria-labelledby="example-dialog-title">
+      <header><h1 id="example-dialog-title">Open Example</h1></header>
+      <div className="example-dialog-body">
+        <div className="example-list" role="listbox" aria-label="Built-in examples">
+          {examples === null && <div className="example-loading"><span className="small-spinner" />Loading examples…</div>}
+          {examples?.map((example) => <button
+            key={example.id}
+            ref={example.id === selectedId ? selectedButton : undefined}
+            type="button"
+            role="option"
+            aria-selected={example.id === selectedId}
+            className={example.id === selectedId ? "selected" : ""}
+            onClick={() => onSelect(example.id)}
+            onDoubleClick={() => { if (!opening) onOpen(example.id); }}
+          >{example.filename}</button>)}
+        </div>
+        <article className="example-description">
+          {selected ? <>
+            <h2>{selected.filename}</h2>
+            <p className="example-codec">Codec: {codecLabel}</p>
+            <p>{selected.description}</p>
+          </> : examples !== null && <p>Select an example to see its description.</p>}
+        </article>
+      </div>
+      <footer>
+        <button type="button" onClick={onClose} disabled={opening}>Cancel</button>
+        <button type="button" className="primary" onClick={() => { if (selected) onOpen(selected.id); }} disabled={!selected || opening}>{opening ? "Opening…" : "Open"}</button>
+      </footer>
+    </section>
+  </div>;
+}
+
+function AboutDialog({ info, onClose }: { info: AppInfo; onClose: () => void }) {
+  const closeButton = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    closeButton.current?.focus();
+    const keyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", keyDown);
+    return () => window.removeEventListener("keydown", keyDown);
+  }, [onClose]);
+
+  return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-dialog-title">
+      <header><h1 id="about-dialog-title">About Utool</h1></header>
+      <div className="about-dialog-body">
+        <strong>Utool</strong>
+        <p>The Swiss Army Knife of Underspecification</p>
+        <p>Saarland University</p>
+        <dl><div><dt>Version</dt><dd>{info.version}</dd></div><div><dt>Build</dt><dd>{info.buildId}</dd></div></dl>
+      </div>
+      <footer><button ref={closeButton} type="button" className="primary" onClick={onClose}>Close</button></footer>
+    </section>
+  </div>;
+}
+
 export default function App() {
   const [document, setDocument] = useState<DocumentView | null>(null);
   const [graphReady, setGraphReady] = useState(false);
@@ -344,6 +446,11 @@ export default function App() {
   const [graphOffsets, setGraphOffsets] = useState<Record<number, { x: number; y: number }>>({});
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<ActionStatus>({ action: "Ready", elapsedMs: null, running: false });
+  const [aboutInfo, setAboutInfo] = useState<AppInfo | null>(null);
+  const [exampleChooserOpen, setExampleChooserOpen] = useState(false);
+  const [examples, setExamples] = useState<ExampleSummary[] | null>(null);
+  const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null);
+  const [exampleOpening, setExampleOpening] = useState(false);
   const svg = useRef<SVGSVGElement | null>(null);
   const operation = useRef(0);
   const loadOperation = useRef(0);
@@ -495,6 +602,41 @@ export default function App() {
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
   }, []);
+
+  const showExampleChooser = useCallback(() => {
+    setExampleChooserOpen(true);
+    if (examples !== null) {
+      setSelectedExampleId((current) => current ?? examples[0]?.id ?? null);
+      return;
+    }
+    void invoke<ExampleSummary[]>("list_examples")
+      .then((items) => {
+        setExamples(items);
+        setSelectedExampleId((current) => current ?? items[0]?.id ?? null);
+      })
+      .catch((reason) => {
+        setExampleChooserOpen(false);
+        setError(String(reason));
+      });
+  }, [examples]);
+
+  const openExample = useCallback(async (id: string) => {
+    const example = examples?.find((item) => item.id === id);
+    if (!example || exampleOpening) return;
+    const startedAt = performance.now();
+    setExampleOpening(true);
+    setStatus({ action: `Opening ${example.filename}`, elapsedMs: null, running: true });
+    try {
+      await invoke("open_example_window", { id });
+      setExampleChooserOpen(false);
+      setStatus({ action: `Opened ${example.filename} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
+    } catch (reason) {
+      setError(String(reason));
+      setStatus({ action: `Opening ${example.filename} failed`, elapsedMs: performance.now() - startedAt, running: false });
+    } finally {
+      setExampleOpening(false);
+    }
+  }, [exampleOpening, examples]);
 
   const applyFilterFile = useCallback(async (selected: string, rewriteSystem?: string) => {
     const base = variants.find((variant) => variant.key === "base");
@@ -674,7 +816,7 @@ export default function App() {
   useEffect(() => {
     let disposed = false;
     const pending = Promise.all([
-      listen("menu-open", openDocument), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
+      listen("menu-open", openDocument), listen("menu-open-example", showExampleChooser), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
       ...OUTPUT_FORMATS.flatMap((format) => [
         listen(`menu-export-${format.name}`, () => exportCurrent(format)),
         listen(`menu-copy-${format.name}`, () => copyCurrent(format)),
@@ -688,15 +830,12 @@ export default function App() {
       listen("menu-fit-window", () => setZoom("fit")),
       listen("menu-about", () => {
         void invoke<AppInfo>("app_info")
-          .then(({ version, buildId }) => message(
-            `Utool, the Swiss Army Knife of Underspecification\nSaarland University\n\nversion ${version}\nbuild ${buildId}`,
-            { title: "About Utool", kind: "info" },
-          ))
+          .then(setAboutInfo)
           .catch((reason) => setError(String(reason)));
       }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, setZoom]);
+  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, setZoom, showExampleChooser]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;
@@ -719,6 +858,15 @@ export default function App() {
   }, [activeVariant, activeView, loadSolution, solutionIndex, solutionRunning, solutionTotal]);
 
   return <main>
+    {aboutInfo && <AboutDialog info={aboutInfo} onClose={() => setAboutInfo(null)} />}
+    {exampleChooserOpen && <ExampleChooser
+      examples={examples}
+      selectedId={selectedExampleId}
+      opening={exampleOpening}
+      onSelect={setSelectedExampleId}
+      onOpen={(id) => void openExample(id)}
+      onClose={() => { if (!exampleOpening) setExampleChooserOpen(false); }}
+    />}
     <nav className="tabs" aria-label="Document views">
       {(["graph", "chart", "solutions"] as ViewName[]).map((view) => <button key={view} className={view === activeView ? "active" : ""} onClick={() => setActiveView(view)} disabled={!document}>
         <span>{view === "graph" ? "Graph" : view === "chart" ? "Chart" : `Solutions${activeVariant ? ` (${activeVariant.chart.solutionCount})` : ""}`}</span>

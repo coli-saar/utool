@@ -293,10 +293,13 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<OutputCodec,
             return Ok(codec);
         }
     }
-    if opts.input_codec.as_deref() == Some("domcon-oz")
-        || input_name.and_then(OutputCodec::from_filename) == Some(OutputCodec::DomconOz)
-    {
-        return Ok(OutputCodec::DomconOz);
+    let input_codec = opts
+        .input_codec
+        .as_deref()
+        .and_then(InputCodec::from_name)
+        .or_else(|| input_name.and_then(InputCodec::from_filename));
+    if let Some(codec) = input_codec.and_then(|codec| OutputCodec::from_name(codec.name())) {
+        return Ok(codec);
     }
     Err((
         "You must specify an output codec for this operation!".to_owned(),

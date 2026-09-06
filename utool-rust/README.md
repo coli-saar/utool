@@ -19,17 +19,21 @@ Prebuilt command-line programs and desktop packages are published on the
 [GitHub Releases page](https://github.com/coli-saar/utool/releases). Release
 artifacts are built for these targets:
 
-| Platform | Desktop packages | Combined command-line/display archive |
+<!-- release-downloads:start version=4.0.0-alpha4 -->
+| Platform | Desktop application | Command line program |
 | --- | --- | --- |
-| macOS on Apple Silicon | `.app` and `.dmg` | `aarch64-apple-darwin.tar.gz` |
-| macOS on Intel | `.app` and `.dmg` | `x86_64-apple-darwin.tar.gz` |
-| Windows x64 | NSIS setup `.exe`; MSI for stable versions | `x86_64-pc-windows-msvc.zip` |
-| Linux x64 | `.AppImage` and `.deb` | `x86_64-unknown-linux-gnu.tar.gz` |
+| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_4.0.0-alpha4_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/utool-4.0.0-alpha4-aarch64-apple-darwin.tar.gz) |
+| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_4.0.0-alpha4_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/utool-4.0.0-alpha4-x86_64-apple-darwin.tar.gz) |
+| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_4.0.0-alpha4_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/utool-4.0.0-alpha4-x86_64-pc-windows-msvc.zip) |
+| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_4.0.0-alpha4_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/Utool_4.0.0-alpha4_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha4/utool-4.0.0-alpha4-x86_64-unknown-linux-gnu.tar.gz) |
+<!-- release-downloads:end -->
 
 The packages are not developer-signed or notarized. Windows SmartScreen and
 macOS Gatekeeper may therefore ask you to approve the application before its
 first launch. Download releases only from the repository's Releases page and
 verify that you selected the expected tag and architecture.
+
+The binaries you have to approve are called `utool` and `utool-display`.
 
 
 ### Install the command-line program
@@ -151,6 +155,50 @@ Output codecs are `domcon-oz`, `domgraph-gxl`, `domgraph-dot`,
 `domgraph-codegen`, and `plugging-groovy`. Not every output codec can represent
 both underspecified graphs and sequences of solved forms. Utool reports an
 error if an operation and output codec are incompatible.
+
+## Differences from Java Utool 3
+
+Utool 4 covers the main parse, solve, filter, enumerate, convert, server, and
+desktop workflows, but it does not reproduce every historical Utool 3 feature.
+In particular:
+
+- `--input-codec-options` and `--output-codec-options` are accepted for command-line
+  compatibility, but their values are currently ignored. Thus the Java options
+  for MRS normalization and label style, DOT edge ordering, and uDraw pipe mode
+  are not available in Rust.
+- The experimental Java input codecs `glue` and `rmrs-domcon` are not implemented.
+  The six production input codecs listed above and all ten Java output codecs
+  are available.
+- Quiet, unfiltered command-line `solvable` calls use the chart-free check
+  whether or not `--nochart` is present, while
+  `solvable --nochart --display-statistics` still constructs and reports a full
+  chart. The XML server honors `nochart` independently of statistics.
+- Rust implements the documented `classify` bit for compactifiability (value 8)
+  and reports `compactifiable` in server responses. The Java executable defines
+  and documents this bit but omits it from its command-line and server results,
+  so classification exit codes and XML attributes can differ.
+- Java's `ex:name` references to examples configured through `ExampleManager`
+  are not supported. Pass an example's filename instead.
+- The XML server implements the Java request and response shapes for solving,
+  conversion, classification, filtering, help, codec discovery, and version
+  information. A server `display` request only returns the legacy success
+  acknowledgement; it does not open a desktop window. Server codec-option
+  attributes are also not implemented.
+- The Rust desktop focuses on opening graphs, browsing built-in examples,
+  solving and filtering them, inspecting charts, browsing solutions, moving
+  fragments, zooming, copying or exporting in the supported codecs, and SVG
+  export. Unlike the Java workbench, it does not currently provide paste-as-input-codec,
+  tab duplication and close-all, PDF/raster export and printing, node-name/label
+  display modes, layout selection/reset, preferences and server controls, or
+  manual deletion of chart splits. Rust uses a separate window per graph rather
+  than Java's document tabs.
+- The Rust crate provides a streamlined API for graph construction, codecs,
+  solving, filtering, layouts, and the server. It is not source-compatible with
+  the Java library and does not port the extensible codec manager, RTG parser and
+  interchange APIs, weighted grammar packages, the full mutable graph API, or
+  the Swing chart and layout class hierarchy. Graph layouts preserve the key
+  structural invariants, but exact visual compatibility with every Java tower
+  heuristic is not guaranteed.
 
 ## Build the command-line program and library
 

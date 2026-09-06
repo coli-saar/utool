@@ -73,8 +73,11 @@ build` also uses the release profile when producing an application bundle.
 The initial graph is a small Domcon/Oz example with two solutions. Its chart is
 computed immediately. Use the fixed tabs to inspect the graph, chart, and
 solutions; controls along the bottom of Solutions navigate to any exact solution
-number. The Chart view lists the actual split rules, grouped and numbered by
-their left-hand-side subgraph.
+number. **File → Open Example…** shows the built-in example catalogue with codec
+and description details. The example catalogue and sources live under
+`src-tauri/resources/examples`; the build reads `examples.xml` and embeds every
+listed source file into the executable. The Chart view lists the actual split
+rules, grouped and numbered by their left-hand-side subgraph.
 
 Graph and solution tabs start at 100%. Zoom commands are in the **View** menu;
 Cmd/Ctrl-wheel zooms, while ordinary wheel and trackpad gestures pan scrollable

@@ -256,9 +256,8 @@ fn chart_rows_are_stable_across_lazy_pages() {
 
 #[test]
 fn top_fragments_enumerate_distinct_rule_symbols_without_paging() {
-    let chart = solve_text(
-        "[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]",
-    );
+    let chart =
+        solve_text("[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]");
     let display = ChartDisplay::new(&chart);
     let mut from_rows = display
         .rule_page(&chart, 0, display.row_count())

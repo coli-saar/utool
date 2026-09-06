@@ -4820,6 +4820,7 @@ dependencies = [
 name = "utool-display"
 version = "4.0.0-alpha4"
 dependencies = [
+ "quick-xml",
  "serde",
  "serde_json",
  "tauri",

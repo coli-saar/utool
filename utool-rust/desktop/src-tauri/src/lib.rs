@@ -50,6 +50,45 @@ struct AppInfoView {
     build_id: &'static str,
 }
 
+struct BuiltinExample {
+    filename: &'static str,
+    description: &'static str,
+    source: &'static str,
+}
+
+include!(concat!(env!("OUT_DIR"), "/builtin_examples.rs"));
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ExampleSummaryView {
+    id: &'static str,
+    filename: &'static str,
+    codec: &'static str,
+    description: &'static str,
+}
+
+fn example_summary(example: &'static BuiltinExample) -> Result<ExampleSummaryView, String> {
+    let codec = InputCodec::from_filename(example.filename).ok_or_else(|| {
+        format!(
+            "cannot infer a codec for built-in example {}",
+            example.filename
+        )
+    })?;
+    Ok(ExampleSummaryView {
+        id: example.filename,
+        filename: example.filename,
+        codec: codec.name(),
+        description: example.description,
+    })
+}
+
+fn builtin_example(id: &str) -> Result<&'static BuiltinExample, String> {
+    BUILTIN_EXAMPLES
+        .iter()
+        .find(|example| example.filename == id)
+        .ok_or_else(|| format!("unknown built-in example: {id}"))
+}
+
 struct StartupState {
     documents: Mutex<Option<Result<Vec<StartupDocumentView>, String>>>,
     filter: Result<Option<StartupFilterView>, String>,
@@ -508,6 +547,11 @@ fn app_info() -> AppInfoView {
         version: env!("CARGO_PKG_VERSION"),
         build_id: env!("UTOOL_BUILD_ID"),
     }
+}
+
+#[tauri::command]
+fn list_examples() -> Result<Vec<ExampleSummaryView>, String> {
+    BUILTIN_EXAMPLES.iter().map(example_summary).collect()
 }
 
 #[tauri::command]
@@ -1083,6 +1127,45 @@ struct OpenWindowRequest {
     filename: String,
 }
 
+fn create_graph_window(
+    request: &OpenWindowRequest,
+    app: &tauri::AppHandle,
+    state: &DocumentState,
+) -> Result<(), String> {
+    let started = Instant::now();
+    let graph = parse_graph(&request.input, &request.codec)?;
+    let drawing = graph_view(&graph, None)?;
+    let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
+    let label = format!("graph-{document_id}");
+    let resources = state.resources(&label)?;
+    *resources
+        .document
+        .lock()
+        .map_err(|_| "document state is unavailable")? = Some((
+        document_id,
+        Document {
+            graph,
+            title: request.title.clone(),
+            drawing,
+            elapsed_ms,
+        },
+    ));
+    let create_result =
+        WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html".into()))
+            .title(format!("{} — Utool", request.title))
+            .inner_size(1200.0, 800.0)
+            .min_inner_size(800.0, 560.0)
+            .build()
+            .map_err(|error| error.to_string());
+    if create_result.is_err() {
+        state.remove_window(&label);
+    }
+    create_result
+        .map(|_| refresh_window_menu(app))
+        .and_then(|result| result)
+}
+
 #[tauri::command]
 fn open_graph_window(
     request: OpenWindowRequest,
@@ -1096,44 +1179,45 @@ fn open_graph_window(
         "format": request.codec,
         "input size": format!("{} bytes", request.input.len()),
     });
-    let result = (|| {
-        let graph = parse_graph(&request.input, &request.codec)?;
-        let drawing = graph_view(&graph, None)?;
-        let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
-        let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
-        let label = format!("graph-{document_id}");
-        let resources = state.resources(&label)?;
-        *resources
-            .document
-            .lock()
-            .map_err(|_| "document state is unavailable")? = Some((
-            document_id,
-            Document {
-                graph,
-                title: request.title.clone(),
-                drawing,
-                elapsed_ms,
-            },
-        ));
-        let create_result =
-            WebviewWindowBuilder::new(&app, &label, WebviewUrl::App("index.html".into()))
-                .title(format!("{} — Utool", request.title))
-                .inner_size(1200.0, 800.0)
-                .min_inner_size(800.0, 560.0)
-                .build()
-                .map_err(|error| error.to_string());
-        if create_result.is_err() {
-            state.remove_window(&label);
-        }
-        create_result
-            .map(|_| refresh_window_menu(&app))
-            .and_then(|result| result)
-    })();
+    let result = create_graph_window(&request, &app, &state);
     state.record(
         &app,
         window.label(),
         "Open graph in new window",
         arguments,
+        started,
+        result.as_ref().err().cloned(),
+    );
+    result
+}
+
+#[tauri::command]
+fn open_example_window(
+    id: String,
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, DocumentState>,
+) -> Result<(), String> {
+    let started = Instant::now();
+    let result = (|| {
+        let example = builtin_example(&id)?;
+        let summary = example_summary(example)?;
+        create_graph_window(
+            &OpenWindowRequest {
+                input: example.source.to_owned(),
+                codec: summary.codec.to_owned(),
+                title: example.filename.to_owned(),
+                filename: format!("builtin: {}", example.filename),
+            },
+            &app,
+            &state,
+        )
+    })();
+    state.record(
+        &app,
+        window.label(),
+        "Open built-in example",
+        json!({ "example": id }),
         started,
         result.as_ref().err().cloned(),
     );
@@ -1264,9 +1348,11 @@ pub fn run() {
             take_startup_documents,
             startup_filter,
             app_info,
+            list_examples,
             load_document,
             current_document,
             open_graph_window,
+            open_example_window,
             build_chart,
             cancel_chart,
             chart_rows,
@@ -1300,6 +1386,8 @@ pub fn run() {
             let open = MenuItemBuilder::with_id("open", "Open…")
                 .accelerator("CmdOrCtrl+O")
                 .build(app)?;
+            let open_example =
+                MenuItemBuilder::with_id("open-example", "Open Example…").build(app)?;
             let close = MenuItemBuilder::with_id("close", "Close")
                 .accelerator("CmdOrCtrl+W")
                 .build(app)?;
@@ -1351,6 +1439,7 @@ pub fn run() {
             let copy_as = copy_as.separator().text("copy-svg", "SVG Image").build()?;
             let file = SubmenuBuilder::new(app, "File")
                 .item(&open)
+                .item(&open_example)
                 .separator()
                 .item(&export_as)
                 .separator()
@@ -1409,6 +1498,7 @@ pub fn run() {
                         };
                         let action = match id {
                             "open" => "Open graph",
+                            "open-example" => "Choose built-in example",
                             "close" => "Close window",
                             "event-log" => "Open Event Log",
                             "export-svg" => "Choose Export SVG",
@@ -1496,5 +1586,25 @@ mod tests {
         let windows = state.windows.lock().unwrap();
         assert!(!windows.contains_key("graph-1"));
         assert!(windows.contains_key("graph-2"));
+    }
+
+    #[test]
+    fn all_builtin_examples_have_unique_names_and_parse() {
+        let mut names = std::collections::HashSet::new();
+        assert!(!BUILTIN_EXAMPLES.is_empty());
+        for example in BUILTIN_EXAMPLES {
+            assert!(
+                names.insert(example.filename),
+                "duplicate example {}",
+                example.filename
+            );
+            let summary = example_summary(example).unwrap();
+            parse_graph(example.source, summary.codec).unwrap_or_else(|error| {
+                panic!(
+                    "built-in example {} does not parse: {error}",
+                    example.filename
+                )
+            });
+        }
     }
 }
