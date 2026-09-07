@@ -4802,7 +4802,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utool"
-version = "4.0.0-alpha6"
+version = "4.0.0-alpha7"
 dependencies = [
  "num-bigint",
  "packed-term-arena",
@@ -4819,7 +4819,7 @@ dependencies = [
 
 [[package]]
 name = "utool-display"
-version = "4.0.0-alpha6"
+version = "4.0.0-alpha7"
 dependencies = [
  "quick-xml",
  "serde",
