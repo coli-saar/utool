@@ -16,13 +16,13 @@ Prebuilt command-line programs and desktop packages are published on the
 [GitHub Releases page](https://github.com/coli-saar/utool/releases). Release
 artifacts are built for these targets:
 
-<!-- release-downloads:start version=4.0.0-alpha5 -->
+<!-- release-downloads:start version=4.0.0-alpha6 -->
 | Platform | Desktop application | Command line program |
 | --- | --- | --- |
-| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_4.0.0-alpha5_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/utool-4.0.0-alpha5-aarch64-apple-darwin.tar.gz) |
-| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_4.0.0-alpha5_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/utool-4.0.0-alpha5-x86_64-apple-darwin.tar.gz) |
-| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_4.0.0-alpha5_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/utool-4.0.0-alpha5-x86_64-pc-windows-msvc.zip) |
-| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_4.0.0-alpha5_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/Utool_4.0.0-alpha5_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha5/utool-4.0.0-alpha5-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_4.0.0-alpha6_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/utool-4.0.0-alpha6-aarch64-apple-darwin.tar.gz) |
+| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_4.0.0-alpha6_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/utool-4.0.0-alpha6-x86_64-apple-darwin.tar.gz) |
+| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_4.0.0-alpha6_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/utool-4.0.0-alpha6-x86_64-pc-windows-msvc.zip) |
+| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_4.0.0-alpha6_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/Utool_4.0.0-alpha6_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0-alpha6/utool-4.0.0-alpha6-x86_64-unknown-linux-gnu.tar.gz) |
 <!-- release-downloads:end -->
 
 The packages are not developer-signed or notarized. Windows SmartScreen and

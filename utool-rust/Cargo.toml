@@ -1,6 +1,6 @@
 [package]
 name = "utool"
-version = "4.0.0-alpha5"
+version = "4.0.0-alpha6"
 edition = "2024"
 rust-version = "1.86"
 license = "GPL-2.0-only"
