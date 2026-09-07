@@ -8,7 +8,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { CSSProperties } from "react";
 import { GraphCanvas } from "./GraphCanvas";
 import type { Zoom } from "./GraphCanvas";
-import type { AppInfo, ChartRowPage, ChartRule, ChartState, ChartView, ExampleSummary, GraphView, LoadedDocumentView, SolutionView, StartupDocument, StartupFilter } from "./types";
+import type { AppInfo, ChartRowPage, ChartRule, ChartState, ChartView, ExampleSummary, GraphView, LoadedDocumentView, ServerDialogInfo, ServerStatus, SolutionView, StartupDocument, StartupFilter } from "./types";
 
 const EXAMPLE = `[label(x f(x1)) label(y g(y1)) label(z a) dom(x1 z) dom(y1 z) dom(y x1)]`;
 const WINDOW_LABEL = getCurrentWindow().label;
@@ -457,6 +457,54 @@ function AboutDialog({ info, onClose }: { info: AppInfo; onClose: () => void }) 
   </div>;
 }
 
+function ServerDialog({ info, starting, error, onStart, onClose }: {
+  info: ServerDialogInfo;
+  starting: boolean;
+  error: string | null;
+  onStart: (port: number, acceptNonLocal: boolean) => void;
+  onClose: () => void;
+}) {
+  const [port, setPort] = useState(String(info.port));
+  const [acceptNonLocal, setAcceptNonLocal] = useState(info.acceptNonLocal);
+  const portNumber = Number(port);
+  const validPort = Number.isInteger(portNumber) && portNumber >= 1 && portNumber <= 65535;
+  const host = acceptNonLocal ? info.ethernetAddress : info.localAddress;
+  const address = host === "Unavailable" ? host : `${host}${validPort ? `:${portNumber}` : ""}`;
+  const portInput = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    portInput.current?.focus();
+    const keyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !starting) {
+        event.preventDefault();
+        onClose();
+      } else if (event.key === "Enter" && validPort && !starting) {
+        event.preventDefault();
+        onStart(portNumber, acceptNonLocal);
+      }
+    };
+    window.addEventListener("keydown", keyDown);
+    return () => window.removeEventListener("keydown", keyDown);
+  }, [acceptNonLocal, onClose, onStart, portNumber, starting, validPort]);
+
+  return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !starting) onClose(); }}>
+    <section className="server-dialog" role="dialog" aria-modal="true" aria-labelledby="server-dialog-title">
+      <header><h1 id="server-dialog-title">Start Server</h1></header>
+      <div className="server-dialog-body">
+        <label className="server-port"><span>Port</span><input ref={portInput} type="number" min="1" max="65535" value={port} onChange={(event) => setPort(event.target.value)} aria-invalid={!validPort} /></label>
+        <label className="server-checkbox"><input type="checkbox" checked={acceptNonLocal} onChange={(event) => setAcceptNonLocal(event.target.checked)} /><span>Accept non-local connections</span></label>
+        <div className="server-address"><span>Server address</span><code>{address}</code></div>
+        {acceptNonLocal && <p>Other computers that can reach this address can connect to Utool while the server is running.</p>}
+        {error && <div className="server-dialog-error" role="alert">{error}</div>}
+      </div>
+      <footer>
+        <button type="button" onClick={onClose} disabled={starting}>Cancel</button>
+        <button type="button" className="primary" onClick={() => onStart(portNumber, acceptNonLocal)} disabled={!validPort || starting}>{starting ? "Starting…" : "Start Server"}</button>
+      </footer>
+    </section>
+  </div>;
+}
+
 export default function App() {
   const [document, setDocument] = useState<DocumentView | null>(null);
   const [graphReady, setGraphReady] = useState(false);
@@ -475,6 +523,10 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<ActionStatus>({ action: "Ready", elapsedMs: null, running: false });
   const [aboutInfo, setAboutInfo] = useState<AppInfo | null>(null);
+  const [serverDialog, setServerDialog] = useState<ServerDialogInfo | null>(null);
+  const [serverStarting, setServerStarting] = useState(false);
+  const [serverStartError, setServerStartError] = useState<string | null>(null);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({ state: "stopped", address: null, tooltip: "Server stopped", notice: null });
   const [exampleChooserOpen, setExampleChooserOpen] = useState(false);
   const [examples, setExamples] = useState<ExampleSummary[] | null>(null);
   const [selectedExampleId, setSelectedExampleId] = useState<string | null>(null);
@@ -486,6 +538,51 @@ export default function App() {
   const activeJob = useRef<string | null>(null);
   const autoFilterDocument = useRef<number | null>(null);
   const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
+
+  const flashError = useCallback((message: string) => {
+    setError(message);
+    window.setTimeout(() => {
+      setError((current) => current === message ? null : current);
+    }, 4000);
+  }, []);
+
+  const applyServerStatus = useCallback((nextStatus: ServerStatus) => {
+    setServerStatus(nextStatus);
+    if (nextStatus.notice) {
+      setServerDialog(null);
+      setServerStarting(false);
+      flashError(nextStatus.notice);
+      void invoke("clear_server_notice");
+    } else if (nextStatus.state === "error") {
+      setError(nextStatus.tooltip);
+    }
+  }, [flashError]);
+
+  const showServerDialog = useCallback(() => {
+    setServerStartError(null);
+    void invoke<ServerDialogInfo>("server_dialog_info")
+      .then(setServerDialog)
+      .catch((reason) => setError(String(reason)));
+  }, []);
+
+  const startServer = useCallback((port: number, acceptNonLocal: boolean) => {
+    setServerStartError(null);
+    setServerStarting(true);
+    void invoke<ServerStatus>("start_desktop_server", { port, acceptNonLocal })
+      .then((nextStatus) => { applyServerStatus(nextStatus); setServerDialog(null); })
+      .catch((reason) => {
+        const message = String(reason);
+        if (/^Port \d+ is already in use$/.test(message)) {
+          setServerDialog(null);
+          setServerStatus({ state: "stopped", address: null, tooltip: "Server stopped", notice: null });
+          flashError(message);
+          void invoke("clear_server_notice");
+        } else {
+          setServerStartError(message);
+        }
+      })
+      .finally(() => setServerStarting(false));
+  }, [applyServerStatus, flashError]);
 
   const makeJobId = () => crypto.randomUUID();
   const recordClientAction = (action: string, arguments_: unknown, startedAt: number, reason?: unknown) => {
@@ -832,6 +929,17 @@ export default function App() {
   }, [activeVariant, activeView, document, solution]);
 
   useEffect(() => {
+    void invoke<ServerStatus>("server_status")
+      .then(applyServerStatus)
+      .catch((reason) => setError(String(reason)));
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+    void listen<ServerStatus>("server-status-changed", ({ payload }) => applyServerStatus(payload))
+      .then((dispose) => { if (disposed) dispose(); else unlisten = dispose; });
+    return () => { disposed = true; unlisten?.(); };
+  }, [applyServerStatus]);
+
+  useEffect(() => {
     if (WINDOW_LABEL === "main") {
       void Promise.all([
         invoke<StartupDocument[]>("take_startup_documents"),
@@ -866,7 +974,7 @@ export default function App() {
   useEffect(() => {
     let disposed = false;
     const pending = Promise.all([
-      listen("menu-open", openDocument), listen("menu-open-example", showExampleChooser), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
+      listen("menu-open", openDocument), listen("menu-open-example", showExampleChooser), listen("menu-start-server", showServerDialog), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
       ...OUTPUT_FORMATS.flatMap((format) => [
         listen(`menu-export-${format.name}`, () => exportCurrent(format)),
         listen(`menu-copy-${format.name}`, () => copyCurrent(format)),
@@ -888,7 +996,7 @@ export default function App() {
       }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, pasteDocument, setZoom, showExampleChooser]);
+  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, pasteDocument, setZoom, showExampleChooser, showServerDialog]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;
@@ -912,6 +1020,7 @@ export default function App() {
 
   return <main>
     {aboutInfo && <AboutDialog info={aboutInfo} onClose={() => setAboutInfo(null)} />}
+    {serverDialog && <ServerDialog info={serverDialog} starting={serverStarting} error={serverStartError} onStart={startServer} onClose={() => setServerDialog(null)} />}
     {exampleChooserOpen && <ExampleChooser
       examples={examples}
       selectedId={selectedExampleId}
@@ -945,6 +1054,10 @@ export default function App() {
           : <div className="computing"><span className="large-spinner" /><h2>Computing first solution</h2></div>}
       </div>}
     </section>
-    <footer className="status-bar"><span className={`status-operation${status.running ? " busy" : ""}`}>{status.action}</span><time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : formatElapsed(status.elapsedMs)}</time></footer>
+    <footer className="status-bar">
+      <span className={`server-status ${serverStatus.state}`} title={serverStatus.tooltip} aria-label={serverStatus.tooltip}><i aria-hidden="true" /></span>
+      <span className={`status-operation${status.running ? " busy" : ""}`}>{status.action}</span>
+      <time>{status.elapsedMs === null ? (status.running ? "Running…" : "") : formatElapsed(status.elapsedMs)}</time>
+    </footer>
   </main>;
 }

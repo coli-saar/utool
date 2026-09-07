@@ -56,6 +56,20 @@ export type AppInfo = {
   buildId: string;
 };
 
+export type ServerStatus = {
+  state: "stopped" | "starting" | "running" | "stopping" | "error";
+  address: string | null;
+  tooltip: string;
+  notice: string | null;
+};
+
+export type ServerDialogInfo = {
+  port: number;
+  acceptNonLocal: boolean;
+  localAddress: string;
+  ethernetAddress: string;
+};
+
 export type ExampleSummary = {
   id: string;
   filename: string;

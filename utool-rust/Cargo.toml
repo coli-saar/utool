@@ -7,6 +7,7 @@ license = "GPL-2.0-only"
 description = "Dominance graph solving and layout"
 
 [dependencies]
+dirs = "6"
 num-bigint = "0.5.1"
 packed-term-arena = "0.1.2"
 parol_runtime = "=5.0.2"
@@ -16,6 +17,7 @@ rustc-hash = "2.1"
 scnr2 = "=0.5.2"
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.16"
+socket2 = "0.6"
 thiserror = "2.0"
 
 [build-dependencies]

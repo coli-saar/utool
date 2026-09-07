@@ -21,6 +21,7 @@ mod holesem_parser {
 }
 
 pub mod codec;
+pub mod config;
 pub mod filter;
 pub mod graph;
 pub mod layout;
@@ -32,6 +33,7 @@ pub use codec::{
     encode_dot, parse_chain, parse_domcon_oz, parse_domgraph_gxl, parse_holesem, parse_mrs_prolog,
     parse_mrs_xml,
 };
+pub use config::{CodecPreferences, ServerPreferences, UserConfig};
 pub use filter::{FilterError, Pattern, RewriteRule, RewriteSystem, filter_chart};
 pub use graph::{GraphBuilder, GraphError, HncGraph, Node, NodeId, ParsedGraph};
 pub use layout::{

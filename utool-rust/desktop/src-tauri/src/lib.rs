@@ -4,6 +4,7 @@ use std::{
     collections::HashMap,
     ffi::OsString,
     fs,
+    net::{IpAddr, Ipv4Addr, UdpSocket},
     path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
@@ -13,13 +14,173 @@ use std::{
 };
 use tauri::{
     Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
-    menu::{MenuBuilder, MenuItemBuilder, MenuItemKind, Submenu, SubmenuBuilder},
+    menu::{
+        CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder, MenuItemKind, Submenu, SubmenuBuilder,
+    },
 };
 use utool::{
     Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutError, LayoutOptions, OutputCodec,
-    Point, RewriteSystem, Size, Solution, filter_chart, layout_chart, layout_graph,
-    solve_with_cancellation,
+    ParsedGraph, Point, RewriteSystem, ServerPreferences, Size, Solution, UserConfig, filter_chart,
+    layout_chart, layout_graph, solve_with_cancellation,
 };
+
+const SERVER_ACTION_ID: &str = "server-action";
+const SERVER_AUTOSTART_ID: &str = "server-autostart";
+const SERVER_MENU_ID: &str = "server-menu";
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServerStatusView {
+    state: &'static str,
+    address: Option<String>,
+    tooltip: String,
+    notice: Option<String>,
+}
+
+impl ServerStatusView {
+    fn stopped() -> Self {
+        Self {
+            state: "stopped",
+            address: None,
+            tooltip: "Server stopped".to_owned(),
+            notice: None,
+        }
+    }
+
+    fn error(error: &str) -> Self {
+        Self {
+            state: "error",
+            address: None,
+            tooltip: format!("Server error: {error}"),
+            notice: None,
+        }
+    }
+}
+
+enum ServerPhase {
+    Stopped {
+        notice: Option<String>,
+    },
+    Starting {
+        address: String,
+    },
+    Running {
+        address: String,
+        handle: utool::server::ServerHandle,
+    },
+    Stopping {
+        address: String,
+    },
+    Failed {
+        message: String,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ServerPhaseKind {
+    Stopped,
+    Starting,
+    Running,
+    Stopping,
+    Failed,
+}
+
+impl ServerPhaseKind {
+    const fn can_transition_to(self, next: Self) -> bool {
+        matches!(
+            (self, next),
+            (Self::Stopped | Self::Failed, Self::Starting)
+                | (Self::Starting, Self::Stopped | Self::Running | Self::Failed)
+                | (Self::Running, Self::Stopping)
+                | (Self::Stopping, Self::Stopped | Self::Failed)
+        )
+    }
+}
+
+impl ServerPhase {
+    const fn kind(&self) -> ServerPhaseKind {
+        match self {
+            Self::Stopped { .. } => ServerPhaseKind::Stopped,
+            Self::Starting { .. } => ServerPhaseKind::Starting,
+            Self::Running { .. } => ServerPhaseKind::Running,
+            Self::Stopping { .. } => ServerPhaseKind::Stopping,
+            Self::Failed { .. } => ServerPhaseKind::Failed,
+        }
+    }
+
+    fn status(&self) -> ServerStatusView {
+        match self {
+            Self::Stopped { notice } => ServerStatusView {
+                notice: notice.clone(),
+                ..ServerStatusView::stopped()
+            },
+            Self::Starting { address } => ServerStatusView {
+                state: "starting",
+                address: Some(address.clone()),
+                tooltip: format!("Starting server at {address}"),
+                notice: None,
+            },
+            Self::Running { address, .. } => ServerStatusView {
+                state: "running",
+                address: Some(address.clone()),
+                tooltip: format!("Server running at {address}"),
+                notice: None,
+            },
+            Self::Stopping { address } => ServerStatusView {
+                state: "stopping",
+                address: Some(address.clone()),
+                tooltip: format!("Stopping server at {address}"),
+                notice: None,
+            },
+            Self::Failed { message } => ServerStatusView::error(message),
+        }
+    }
+}
+
+struct ServerState {
+    config: Mutex<UserConfig>,
+    phase: Mutex<ServerPhase>,
+}
+
+impl ServerState {
+    fn load() -> Result<Self, String> {
+        Ok(Self {
+            config: Mutex::new(UserConfig::load().map_err(|error| error.to_string())?),
+            phase: Mutex::new(ServerPhase::Stopped { notice: None }),
+        })
+    }
+
+    fn preferences(&self) -> Result<ServerPreferences, String> {
+        Ok(self
+            .config
+            .lock()
+            .map_err(|_| "server preferences are unavailable")?
+            .server_preferences())
+    }
+
+    fn update_preferences(
+        &self,
+        update: impl FnOnce(&mut ServerPreferences),
+    ) -> Result<(), String> {
+        let mut config = self
+            .config
+            .lock()
+            .map_err(|_| "server preferences are unavailable")?;
+        let mut preferences = config.server_preferences();
+        update(&mut preferences);
+        config.set_server_preferences(&preferences);
+        config.save().map_err(|error| error.to_string())
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServerDialogView {
+    port: u16,
+    accept_non_local: bool,
+    local_address: String,
+    ethernet_address: String,
+}
 
 #[derive(Debug, PartialEq, Eq)]
 struct StartupArguments {
@@ -1134,6 +1295,16 @@ fn create_graph_window(
 ) -> Result<(), String> {
     let started = Instant::now();
     let graph = parse_graph(&request.input, &request.codec)?;
+    create_graph_window_from_graph(graph, &request.title, started, app, state)
+}
+
+fn create_graph_window_from_graph(
+    graph: HncGraph,
+    title: &str,
+    started: Instant,
+    app: &tauri::AppHandle,
+    state: &DocumentState,
+) -> Result<(), String> {
     let drawing = graph_view(&graph, None)?;
     let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
     let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
@@ -1146,14 +1317,14 @@ fn create_graph_window(
         document_id,
         Document {
             graph,
-            title: request.title.clone(),
+            title: title.to_owned(),
             drawing,
             elapsed_ms,
         },
     ));
     let create_result =
         WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html".into()))
-            .title(format!("{} — Utool", request.title))
+            .title(format!("{title} — Utool"))
             .inner_size(1200.0, 800.0)
             .min_inner_size(800.0, 560.0)
             .build()
@@ -1164,6 +1335,348 @@ fn create_graph_window(
     create_result
         .map(|_| refresh_window_menu(app))
         .and_then(|result| result)
+}
+
+fn ethernet_address() -> Option<Ipv4Addr> {
+    let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).ok()?;
+    socket.connect(("8.8.8.8", 80)).ok()?;
+    match socket.local_addr().ok()?.ip() {
+        IpAddr::V4(address) if !address.is_loopback() => Some(address),
+        _ => None,
+    }
+}
+
+fn server_submenu(app: &tauri::AppHandle) -> Result<Submenu<tauri::Wry>, String> {
+    app.menu()
+        .and_then(|menu| menu.get(SERVER_MENU_ID))
+        .and_then(|item| match item {
+            MenuItemKind::Submenu(menu) => Some(menu),
+            _ => None,
+        })
+        .ok_or_else(|| "Server menu is unavailable".to_owned())
+}
+
+fn update_server_menu(app: &tauri::AppHandle, phase: &ServerPhase) -> Result<(), String> {
+    let menu = server_submenu(app)?;
+    let item = menu
+        .get(SERVER_ACTION_ID)
+        .and_then(|item| match item {
+            MenuItemKind::MenuItem(item) => Some(item),
+            _ => None,
+        })
+        .ok_or_else(|| "Server action menu item is unavailable".to_owned())?;
+    let (text, enabled) = match phase {
+        ServerPhase::Stopped { .. } | ServerPhase::Failed { .. } => ("Start server…", true),
+        ServerPhase::Starting { .. } => ("Starting server…", false),
+        ServerPhase::Running { .. } => ("Stop server", true),
+        ServerPhase::Stopping { .. } => ("Stopping server…", false),
+    };
+    item.set_text(text).map_err(|error| error.to_string())?;
+    item.set_enabled(enabled).map_err(|error| error.to_string())
+}
+
+fn publish_server_phase(app: &tauri::AppHandle, phase: &ServerPhase) -> ServerStatusView {
+    if let Err(error) = update_server_menu(app, phase) {
+        eprintln!("Could not synchronize the Server menu: {error}");
+    }
+    let status = phase.status();
+    let _ = app.emit("server-status-changed", &status);
+    status
+}
+
+fn transition_server(
+    app: &tauri::AppHandle,
+    servers: &ServerState,
+    phase: ServerPhase,
+) -> Result<ServerStatusView, String> {
+    let mut current = servers
+        .phase
+        .lock()
+        .map_err(|_| "server state is unavailable")?;
+    if !current.kind().can_transition_to(phase.kind()) {
+        return Err(format!(
+            "invalid server state transition: {:?} to {:?}",
+            current.kind(),
+            phase.kind()
+        ));
+    }
+    *current = phase;
+    Ok(publish_server_phase(app, &current))
+}
+
+fn focus_graph_window(app: &tauri::AppHandle) -> Result<(), String> {
+    preferred_graph_window(app)
+        .ok_or_else(|| "no graph window is available".to_owned())
+        .and_then(|window| activate_window(app, window.label()))
+}
+
+fn preferred_graph_window(app: &tauri::AppHandle) -> Option<WebviewWindow> {
+    focused_window(app)
+        .filter(|window| is_graph_window_label(window.label()))
+        .or_else(|| app.get_webview_window("main"))
+        .or_else(|| {
+            app.webview_windows()
+                .into_values()
+                .find(|window| is_graph_window_label(window.label()))
+        })
+}
+
+fn selected_server_address(port: u16, accept_non_local: bool) -> String {
+    let host = if accept_non_local {
+        ethernet_address().map_or_else(|| "0.0.0.0".to_owned(), |address| address.to_string())
+    } else {
+        Ipv4Addr::LOCALHOST.to_string()
+    };
+    format!("{host}:{port}")
+}
+
+fn port_in_use_message(port: u16) -> String {
+    format!("Port {port} is already in use")
+}
+
+fn server_start_error(address: &str, error: &std::io::Error) -> String {
+    match error.kind() {
+        std::io::ErrorKind::PermissionDenied => format!(
+            "Could not start the server at {address}: permission to use this address was denied."
+        ),
+        _ => format!("Could not start the server at {address}: {error}"),
+    }
+}
+
+fn start_server(
+    port: u16,
+    accept_non_local: bool,
+    app: &tauri::AppHandle,
+    servers: &ServerState,
+) -> Result<ServerStatusView, String> {
+    let requested_address = selected_server_address(port, accept_non_local);
+    {
+        let mut phase = servers
+            .phase
+            .lock()
+            .map_err(|_| "server state is unavailable")?;
+        match &*phase {
+            ServerPhase::Stopped { .. } | ServerPhase::Failed { .. } => {
+                *phase = ServerPhase::Starting {
+                    address: requested_address.clone(),
+                };
+                publish_server_phase(app, &phase);
+            }
+            ServerPhase::Starting { .. } => {
+                return Err("Server startup is already in progress.".to_owned());
+            }
+            ServerPhase::Running { address, .. } => {
+                return Err(format!(
+                    "The server is already running at {address}. Stop it before starting it on another port."
+                ));
+            }
+            ServerPhase::Stopping { .. } => {
+                return Err("The server is still stopping. Try again in a moment.".to_owned());
+            }
+        }
+    }
+
+    let display_app = app.clone();
+    let display_handler: utool::server::DisplayHandler =
+        Arc::new(move |graph: Option<ParsedGraph>| {
+            if let Some(graph) = graph {
+                let graph = HncGraph::try_from(graph).map_err(|error| error.to_string())?;
+                let state = display_app.state::<DocumentState>();
+                create_graph_window_from_graph(
+                    graph,
+                    "Graph from server",
+                    Instant::now(),
+                    &display_app,
+                    &state,
+                )
+            } else {
+                focus_graph_window(&display_app)
+            }
+        });
+    let bind_address = if accept_non_local {
+        Ipv4Addr::UNSPECIFIED
+    } else {
+        Ipv4Addr::LOCALHOST
+    };
+    if let Err(error) = servers.update_preferences(|preferences| {
+        preferences.port = port;
+        preferences.accept_non_local = accept_non_local;
+    }) {
+        let message = format!("Could not save the server settings: {error}");
+        let _ = transition_server(
+            app,
+            servers,
+            ServerPhase::Failed {
+                message: message.clone(),
+            },
+        );
+        return Err(message);
+    }
+    let handle = match utool::server::start(
+        utool::server::ServerConfig {
+            bind_address: bind_address.into(),
+            port,
+            logging: utool::server::ServerLogging::Disabled,
+            warmup: false,
+        },
+        Some(display_handler),
+    ) {
+        Ok(handle) => handle,
+        Err(error) => {
+            if error.kind() == std::io::ErrorKind::AddrInUse {
+                let message = port_in_use_message(port);
+                let _ = transition_server(
+                    app,
+                    servers,
+                    ServerPhase::Stopped {
+                        notice: Some(message.clone()),
+                    },
+                );
+                return Err(message);
+            }
+            let message = server_start_error(&requested_address, &error);
+            let _ = transition_server(
+                app,
+                servers,
+                ServerPhase::Failed {
+                    message: message.clone(),
+                },
+            );
+            return Err(message);
+        }
+    };
+    let actual_port = handle.address().port();
+    let address = selected_server_address(actual_port, accept_non_local);
+    transition_server(app, servers, ServerPhase::Running { address, handle })
+}
+
+fn stop_server(app: &tauri::AppHandle, servers: &ServerState) -> Result<(), String> {
+    let (handle, address) = {
+        let mut phase = servers
+            .phase
+            .lock()
+            .map_err(|_| "server state is unavailable")?;
+        let previous = std::mem::replace(&mut *phase, ServerPhase::Stopped { notice: None });
+        match previous {
+            ServerPhase::Running { address, handle } => {
+                *phase = ServerPhase::Stopping {
+                    address: address.clone(),
+                };
+                publish_server_phase(app, &phase);
+                (handle, address)
+            }
+            ServerPhase::Stopped { notice } => {
+                *phase = ServerPhase::Stopped { notice };
+                return Ok(());
+            }
+            other @ ServerPhase::Failed { .. } => {
+                *phase = other;
+                return Err("The server is not running.".to_owned());
+            }
+            other @ ServerPhase::Starting { .. } => {
+                *phase = other;
+                return Err("The server is still starting.".to_owned());
+            }
+            other @ ServerPhase::Stopping { .. } => {
+                *phase = other;
+                return Err("The server is already stopping.".to_owned());
+            }
+        }
+    };
+    if let Err(error) = handle.stop() {
+        let message = format!("Could not stop the server at {address}: {error}");
+        let _ = transition_server(
+            app,
+            servers,
+            ServerPhase::Failed {
+                message: message.clone(),
+            },
+        );
+        return Err(message);
+    }
+    transition_server(app, servers, ServerPhase::Stopped { notice: None })?;
+    Ok(())
+}
+
+fn handle_server_action(app: &tauri::AppHandle) -> Result<(), String> {
+    let servers = app.state::<ServerState>();
+    let action = {
+        let phase = servers
+            .phase
+            .lock()
+            .map_err(|_| "server state is unavailable")?;
+        match &*phase {
+            ServerPhase::Stopped { .. } | ServerPhase::Failed { .. } => "start",
+            ServerPhase::Running { .. } => "stop",
+            ServerPhase::Starting { .. } | ServerPhase::Stopping { .. } => {
+                return Ok(());
+            }
+        }
+    };
+    match action {
+        "stop" => stop_server(app, &servers),
+        _ => preferred_graph_window(app)
+            .ok_or_else(|| "no graph window is available".to_owned())?
+            .emit("menu-start-server", ())
+            .map_err(|error| error.to_string()),
+    }
+}
+
+fn update_server_autostart(app: &tauri::AppHandle) -> Result<(), String> {
+    let servers = app.state::<ServerState>();
+    let checked = server_submenu(app)?
+        .get(SERVER_AUTOSTART_ID)
+        .and_then(|item| match item {
+            MenuItemKind::Check(item) => Some(item),
+            _ => None,
+        })
+        .ok_or_else(|| "server autostart menu is unavailable".to_owned())?
+        .is_checked()
+        .map_err(|error| error.to_string())?;
+    servers.update_preferences(|preferences| preferences.start_on_launch = checked)
+}
+
+#[tauri::command]
+fn server_dialog_info(state: tauri::State<'_, ServerState>) -> Result<ServerDialogView, String> {
+    let preferences = state.preferences()?;
+    Ok(ServerDialogView {
+        port: preferences.port,
+        accept_non_local: preferences.accept_non_local,
+        local_address: "localhost".to_owned(),
+        ethernet_address: ethernet_address()
+            .map_or_else(|| "Unavailable".to_owned(), |address| address.to_string()),
+    })
+}
+
+#[tauri::command]
+fn server_status(state: tauri::State<'_, ServerState>) -> Result<ServerStatusView, String> {
+    state
+        .phase
+        .lock()
+        .map(|phase| phase.status())
+        .map_err(|_| "server state is unavailable".to_owned())
+}
+
+#[tauri::command]
+fn clear_server_notice(state: tauri::State<'_, ServerState>) -> Result<(), String> {
+    let mut phase = state
+        .phase
+        .lock()
+        .map_err(|_| "server state is unavailable".to_owned())?;
+    if let ServerPhase::Stopped { notice } = &mut *phase {
+        *notice = None;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn start_desktop_server(
+    port: u16,
+    accept_non_local: bool,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, ServerState>,
+) -> Result<ServerStatusView, String> {
+    start_server(port, accept_non_local, &app, &state)
 }
 
 fn input_codec_label(codec: InputCodec) -> &'static str {
@@ -1392,7 +1905,11 @@ pub fn run() {
             export_solution,
             set_output_context,
             event_entries,
-            report_client_action
+            report_client_action,
+            server_dialog_info,
+            server_status,
+            clear_server_notice,
+            start_desktop_server
         ])
         .on_window_event(|window, event| {
             if matches!(event, WindowEvent::Destroyed) {
@@ -1413,6 +1930,11 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            app.manage(ServerState::load().map_err(std::io::Error::other)?);
+            let server_preferences = app
+                .state::<ServerState>()
+                .preferences()
+                .map_err(std::io::Error::other)?;
             let open = MenuItemBuilder::with_id("open", "Open…")
                 .accelerator("CmdOrCtrl+O")
                 .build(app)?;
@@ -1506,6 +2028,17 @@ pub fn run() {
                 .separator()
                 .text("fit-window", "Fit to Window")
                 .build()?;
+            let server_action =
+                MenuItemBuilder::with_id(SERVER_ACTION_ID, "Start server…").build(app)?;
+            let server_autostart =
+                CheckMenuItemBuilder::with_id(SERVER_AUTOSTART_ID, "Start server on launch")
+                    .checked(server_preferences.start_on_launch)
+                    .build(app)?;
+            let server_menu = SubmenuBuilder::with_id(app, SERVER_MENU_ID, "Server")
+                .item(&server_action)
+                .separator()
+                .item(&server_autostart)
+                .build()?;
             let window_menu = SubmenuBuilder::with_id(app, WINDOW_MENU_ID, "Window")
                 .text("event-log", "Event Log…")
                 .separator()
@@ -1513,7 +2046,14 @@ pub fn run() {
                 .separator()
                 .build()?;
             let menu = MenuBuilder::new(app)
-                .items(&[&application, &file, &edit, &view, &window_menu])
+                .items(&[
+                    &application,
+                    &file,
+                    &edit,
+                    &view,
+                    &server_menu,
+                    &window_menu,
+                ])
                 .build()?;
             app.set_menu(menu)?;
             refresh_window_menu(app.handle()).map_err(std::io::Error::other)?;
@@ -1535,6 +2075,8 @@ pub fn run() {
                         )
                     } else {
                         let result = match id {
+                            SERVER_ACTION_ID => handle_server_action(app),
+                            SERVER_AUTOSTART_ID => update_server_autostart(app),
                             "event-log" => show_event_log(app).map_err(|error| error.to_string()),
                             "close" => target.as_ref().map_or(Ok(()), |window| {
                                 window.close().map_err(|error| error.to_string())
@@ -1552,6 +2094,8 @@ pub fn run() {
                             "close" => "Close window",
                             "close-all" => "Close all graph windows",
                             "event-log" => "Open Event Log",
+                            SERVER_ACTION_ID => "Start or stop server",
+                            SERVER_AUTOSTART_ID => "Change server launch preference",
                             "export-svg" => "Choose Export SVG",
                             id if id.starts_with("export-") => "Choose graph/solution export",
                             id if id.starts_with("copy-") => "Choose graph/solution copy",
@@ -1570,6 +2114,17 @@ pub fn run() {
                     };
                 state.record(app, label, action, arguments, started, result.err());
             });
+            if server_preferences.start_on_launch {
+                let servers = app.state::<ServerState>();
+                if let Err(error) = start_server(
+                    server_preferences.port,
+                    server_preferences.accept_non_local,
+                    app.handle(),
+                    &servers,
+                ) {
+                    eprintln!("Could not start Utool server on launch: {error}");
+                }
+            }
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -1623,6 +2178,36 @@ mod tests {
         assert!(is_graph_window_label("graph-pasted"));
         assert!(!is_graph_window_label("event-log"));
         assert!(!is_graph_window_label("graphical-tool"));
+    }
+
+    #[test]
+    fn server_phase_transitions_are_explicit_and_closed() {
+        use ServerPhaseKind::{Failed, Running, Starting, Stopped, Stopping};
+
+        let legal = [
+            (Stopped, Starting),
+            (Starting, Stopped),
+            (Starting, Running),
+            (Starting, Failed),
+            (Running, Stopping),
+            (Stopping, Stopped),
+            (Stopping, Failed),
+            (Failed, Starting),
+        ];
+        for from in [Stopped, Starting, Running, Stopping, Failed] {
+            for to in [Stopped, Starting, Running, Stopping, Failed] {
+                assert_eq!(
+                    from.can_transition_to(to),
+                    legal.contains(&(from, to)),
+                    "unexpected transition {from:?} -> {to:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn address_in_use_error_is_short_and_exact() {
+        assert_eq!(port_in_use_message(2802), "Port 2802 is already in use");
     }
 
     #[test]

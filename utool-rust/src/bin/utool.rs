@@ -14,7 +14,6 @@ const NO_INPUT: u8 = 150;
 const NO_INPUT_CODEC: u8 = 151;
 const NO_SUCH_INPUT_CODEC: u8 = 152;
 const SOLVER_NOT_APPLICABLE: u8 = 153;
-const NO_OUTPUT_CODEC: u8 = 160;
 const NO_SUCH_OUTPUT_CODEC: u8 = 161;
 const FILTER_ERROR: u8 = 170;
 const PARSE_ERROR: u8 = 192;
@@ -34,6 +33,7 @@ enum Operation {
 struct Options {
     input_codec: Option<String>,
     output_codec: Option<String>,
+    default_output_codec: String,
     output: Option<String>,
     filter: Option<String>,
     statistics: bool,
@@ -45,7 +45,7 @@ struct Options {
     codec_options_help: bool,
     display_codecs: bool,
     version: bool,
-    port: u16,
+    port: Option<u16>,
     logging: LoggingOption,
     positional: Vec<String>,
 }
@@ -63,6 +63,7 @@ impl Default for Options {
         Self {
             input_codec: None,
             output_codec: None,
+            default_output_codec: "domcon-oz".to_owned(),
             output: None,
             filter: None,
             statistics: false,
@@ -74,7 +75,7 @@ impl Default for Options {
             codec_options_help: false,
             display_codecs: false,
             version: false,
-            port: 2802,
+            port: None,
             logging: LoggingOption::Disabled,
             positional: Vec::new(),
         }
@@ -116,9 +117,11 @@ fn options(args: &[String]) -> Result<Options, String> {
             "-o" => result.output = Some(take_value(args, &mut index, None, "-o")?),
             "-f" => result.filter = Some(take_value(args, &mut index, None, "-f")?),
             "-p" => {
-                result.port = take_value(args, &mut index, None, "-p")?
-                    .parse()
-                    .map_err(|_| "-p requires a TCP port between 0 and 65535".to_owned())?;
+                result.port = Some(
+                    take_value(args, &mut index, None, "-p")?
+                        .parse()
+                        .map_err(|_| "-p requires a TCP port between 0 and 65535".to_owned())?,
+                );
             }
             "-l" => {
                 let value = args
@@ -150,9 +153,13 @@ fn options(args: &[String]) -> Result<Options, String> {
                     result.filter = Some(take_value(args, &mut index, attached, "--filter")?);
                 }
                 "port" => {
-                    result.port = take_value(args, &mut index, attached, "--port")?
-                        .parse()
-                        .map_err(|_| "--port requires a TCP port between 0 and 65535".to_owned())?;
+                    result.port = Some(
+                        take_value(args, &mut index, attached, "--port")?
+                            .parse()
+                            .map_err(|_| {
+                                "--port requires a TCP port between 0 and 65535".to_owned()
+                            })?,
+                    );
                 }
                 "logging" => {
                     let value = attached.map(str::to_owned).or_else(|| {
@@ -325,10 +332,15 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<OutputCodec,
     if let Some(codec) = input_codec.and_then(|codec| OutputCodec::from_name(codec.name())) {
         return Ok(codec);
     }
-    Err((
-        "You must specify an output codec for this operation!".to_owned(),
-        NO_OUTPUT_CODEC,
-    ))
+    OutputCodec::from_name(&opts.default_output_codec).ok_or_else(|| {
+        (
+            format!(
+                "Unknown default output codec in ~/.utool: {}",
+                opts.default_output_codec
+            ),
+            NO_SUCH_OUTPUT_CODEC,
+        )
+    })
 }
 
 fn result_writer(opts: &Options) -> Result<BufWriter<Box<dyn Write>>, (String, u8)> {
@@ -625,10 +637,14 @@ fn launch_display(opts: &Options) -> ExitCode {
 
 fn main() -> ExitCode {
     let args = env::args().skip(1).collect::<Vec<_>>();
-    let opts = match options(&args) {
+    let mut opts = match options(&args) {
         Ok(value) => value,
         Err(error) => return fail(error, 140),
     };
+    let user_config = utool::UserConfig::load().ok();
+    if let Some(config) = &user_config {
+        opts.default_output_codec = config.codec_preferences().default_output;
+    }
     if opts.version {
         eprintln!(
             "Utool (The Swiss Army Knife of Underspecification), version {}",
@@ -661,18 +677,27 @@ fn main() -> ExitCode {
     }
     let op = op.expect("checked");
     if op == Operation::Server {
+        let configured_port = user_config.as_ref().map_or_else(
+            || utool::ServerPreferences::default().port,
+            |config| config.server_preferences().port,
+        );
+        let port = opts.port.unwrap_or(configured_port);
         let logging = match &opts.logging {
             LoggingOption::Disabled => utool::server::ServerLogging::Disabled,
             LoggingOption::Stderr => utool::server::ServerLogging::Stderr,
             LoggingOption::File(path) => utool::server::ServerLogging::File(path.into()),
         };
         let config = utool::server::ServerConfig {
-            port: opts.port,
+            bind_address: std::net::Ipv4Addr::UNSPECIFIED.into(),
+            port,
             logging,
             warmup: false,
         };
         return match utool::server::run(config) {
             Ok(()) => ExitCode::SUCCESS,
+            Err(error) if error.kind() == io::ErrorKind::AddrInUse => {
+                fail(format!("Port {port} is already in use"), 129)
+            }
             Err(error) => fail(
                 format!("An I/O error occurred in server mode.\n{error}"),
                 129,

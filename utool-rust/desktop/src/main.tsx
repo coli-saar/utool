@@ -2,7 +2,10 @@ import { createRoot } from "react-dom/client";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
 import EventLog from "./EventLog";
+import { installTauriUnlistenRaceGuard } from "./tauriEvents";
 import "./style.css";
+
+installTauriUnlistenRaceGuard();
 
 const parameters = new URLSearchParams(window.location.search);
 const isEventLog = parameters.get("view") === "event-log";

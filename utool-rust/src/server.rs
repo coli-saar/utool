@@ -11,17 +11,23 @@ use quick_xml::{
     Reader, XmlVersion,
     events::{BytesStart, Event},
 };
+use socket2::{Domain, Protocol, Socket, Type};
 use std::{
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Write},
-    net::{TcpListener, TcpStream},
+    net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream},
     path::PathBuf,
-    sync::{Arc, Mutex, RwLock},
-    thread,
+    sync::{
+        Arc, Mutex, RwLock,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread::{self, JoinHandle},
+    time::Duration,
     time::Instant,
 };
 
 const IO_ERROR: u8 = 128;
+const GRAPH_DRAWING_ERROR: u8 = 130;
 const PARSER_CONFIGURATION_ERROR: u8 = 140;
 const NO_SUCH_COMMAND: u8 = 141;
 const NO_INPUT: u8 = 150;
@@ -48,6 +54,8 @@ pub enum ServerLogging {
 /// Settings for the XML socket server.
 #[derive(Clone, Debug)]
 pub struct ServerConfig {
+    /// Address to bind. Use localhost to accept only local connections.
+    pub bind_address: IpAddr,
     /// TCP port to listen on.
     pub port: u16,
     /// Optional request/response logging.
@@ -59,6 +67,7 @@ pub struct ServerConfig {
 impl Default for ServerConfig {
     fn default() -> Self {
         Self {
+            bind_address: IpAddr::V4(Ipv4Addr::UNSPECIFIED),
             port: 2802,
             logging: ServerLogging::Disabled,
             warmup: false,
@@ -135,6 +144,57 @@ impl ServerError {
 type RuleCache = Arc<RwLock<Option<RewriteSystem>>>;
 type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
 
+/// Callback used by an embedded desktop server to display an optional graph.
+pub type DisplayHandler = Arc<dyn Fn(Option<ParsedGraph>) -> Result<(), String> + Send + Sync>;
+
+/// A running server that can be stopped without terminating its host process.
+pub struct ServerHandle {
+    address: SocketAddr,
+    shutdown: Arc<AtomicBool>,
+    thread: Option<JoinHandle<io::Result<()>>>,
+}
+
+impl ServerHandle {
+    /// Return the actual listening address. This is useful when port zero was requested.
+    #[must_use]
+    pub const fn address(&self) -> SocketAddr {
+        self.address
+    }
+
+    /// Ask the accept loop to stop and wait for it to finish.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the server loop failed or panicked.
+    pub fn stop(mut self) -> io::Result<()> {
+        self.shutdown.store(true, Ordering::SeqCst);
+        self.join()
+    }
+
+    /// Wait for the server loop to finish.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the server loop failed or panicked.
+    pub fn wait(mut self) -> io::Result<()> {
+        self.join()
+    }
+
+    fn join(&mut self) -> io::Result<()> {
+        self.thread.take().map_or(Ok(()), |thread| {
+            thread
+                .join()
+                .map_err(|_| io::Error::other("server thread panicked"))?
+        })
+    }
+}
+
+impl Drop for ServerHandle {
+    fn drop(&mut self) {
+        self.shutdown.store(true, Ordering::SeqCst);
+    }
+}
+
 /// Listen indefinitely and serve Java Utool-compatible XML requests.
 ///
 /// # Errors
@@ -142,6 +202,18 @@ type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
 /// Returns an I/O error if logging or the listening socket cannot be opened,
 /// or if accepting a client fails.
 pub fn run(config: ServerConfig) -> io::Result<()> {
+    start(config, None)?.wait()
+}
+
+/// Start the server in the background, optionally handling `display` requests.
+///
+/// # Errors
+///
+/// Returns an error if logging or the listening socket cannot be opened.
+pub fn start(
+    config: ServerConfig,
+    display_handler: Option<DisplayHandler>,
+) -> io::Result<ServerHandle> {
     if config.warmup {
         warmup();
     }
@@ -150,23 +222,56 @@ pub fn run(config: ServerConfig) -> io::Result<()> {
         ServerLogging::Stderr => Some(Arc::new(Mutex::new(Box::new(io::stderr())))),
         ServerLogging::File(path) => Some(Arc::new(Mutex::new(Box::new(File::create(path)?)))),
     };
-    let listener = TcpListener::bind(("0.0.0.0", config.port))?;
-    log_line(&log, &format!("Listening on port {}...", config.port));
+    let bind_address = SocketAddr::new(config.bind_address, config.port);
+    let socket = Socket::new(
+        Domain::for_address(bind_address),
+        Type::STREAM,
+        Some(Protocol::TCP),
+    )?;
+    // Rust's standard listener enables SO_REUSEADDR on some platforms. That
+    // permits a wildcard listener and a localhost listener to claim the same
+    // port, which makes the desktop report a false-successful startup.
+    socket.set_reuse_address(false)?;
+    socket.bind(&bind_address.into())?;
+    socket.listen(128)?;
+    let listener: TcpListener = socket.into();
+    listener.set_nonblocking(true)?;
+    let address = listener.local_addr()?;
+    log_line(&log, &format!("Listening on {address}..."));
     let rules = Arc::new(RwLock::new(None));
-    for connection in listener.incoming() {
-        let stream = connection?;
-        let rules = Arc::clone(&rules);
-        let log = log.clone();
-        thread::spawn(move || {
-            if let Err(error) = serve_connection(stream, &rules, &log) {
-                log_line(
-                    &log,
-                    &format!("I/O error while processing command: {error}"),
-                );
+    let shutdown = Arc::new(AtomicBool::new(false));
+    let thread_shutdown = Arc::clone(&shutdown);
+    let thread = thread::spawn(move || {
+        while !thread_shutdown.load(Ordering::SeqCst) {
+            match listener.accept() {
+                Ok((stream, _)) => {
+                    let rules = Arc::clone(&rules);
+                    let log = log.clone();
+                    let display_handler = display_handler.clone();
+                    thread::spawn(move || {
+                        if let Err(error) =
+                            serve_connection(stream, &rules, &log, display_handler.as_ref())
+                        {
+                            log_line(
+                                &log,
+                                &format!("I/O error while processing command: {error}"),
+                            );
+                        }
+                    });
+                }
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    thread::sleep(Duration::from_millis(20));
+                }
+                Err(error) => return Err(error),
             }
-        });
-    }
-    Ok(())
+        }
+        Ok(())
+    });
+    Ok(ServerHandle {
+        address,
+        shutdown,
+        thread: Some(thread),
+    })
 }
 
 fn warmup() {
@@ -193,13 +298,18 @@ fn log_line(log: &Log, message: &str) {
     }
 }
 
-fn serve_connection(stream: TcpStream, rules: &RuleCache, log: &Log) -> io::Result<()> {
+fn serve_connection(
+    stream: TcpStream,
+    rules: &RuleCache,
+    log: &Log,
+    display_handler: Option<&DisplayHandler>,
+) -> io::Result<()> {
     let peer = stream.peer_addr().ok();
     log_line(log, &format!("Accepted connection from {peer:?}"));
     let mut reader = BufReader::new(stream.try_clone()?);
     let parsed = parse_request(&mut reader);
     let response = match parsed {
-        Ok(request) => process_request(request, rules),
+        Ok(request) => process_request(request, rules, display_handler),
         Err(error) => error_response(&error),
     };
     log_line(log, &format!("Sent: {}", response.trim_end()));
@@ -369,23 +479,39 @@ fn parse_filter(element: &BytesStart<'_>, request: &mut Request) -> Result<(), S
     Ok(())
 }
 
-fn process_request(request: Request, cache: &RuleCache) -> String {
-    match process_request_inner(request, cache) {
+fn process_request(
+    request: Request,
+    cache: &RuleCache,
+    display_handler: Option<&DisplayHandler>,
+) -> String {
+    match process_request_inner(request, cache, display_handler) {
         Ok(response) => response,
         Err(error) => error_response(&error),
     }
 }
 
-fn process_request_inner(request: Request, cache: &RuleCache) -> Result<String, ServerError> {
+fn process_request_inner(
+    request: Request,
+    cache: &RuleCache,
+    display_handler: Option<&DisplayHandler>,
+) -> Result<String, ServerError> {
     let command = request.command.expect("validated request has a command");
     let filter_system = resolve_filter(request.filters, cache)?;
     match command {
         Command::Help => return Ok(help_response(request.help_on.as_deref())),
         Command::DisplayCodecs => return Ok(codec_response()),
         Command::Version => return Ok(version_response()),
-        // There is no in-process workbench window in the standalone Rust
-        // binary, but legacy clients expect this acknowledgement.
-        Command::Display => return Ok("<result code='0' />\n".to_owned()),
+        Command::Display => {
+            if let Some(handler) = display_handler {
+                handler(request.graph).map_err(|error| {
+                    ServerError::new(
+                        GRAPH_DRAWING_ERROR,
+                        format!("An error occurred while drawing the graph.\n{error}"),
+                    )
+                })?;
+            }
+            return Ok("<result code='0' />\n".to_owned());
+        }
         _ => {}
     }
     let parsed = request.graph.expect("validated input command has a graph");
@@ -666,7 +792,7 @@ mod tests {
     fn request(xml: &str, cache: &RuleCache) -> String {
         let mut input = io::Cursor::new(xml.as_bytes());
         match parse_request(&mut input) {
-            Ok(request) => process_request(request, cache),
+            Ok(request) => process_request(request, cache, None),
             Err(error) => error_response(&error),
         }
     }
@@ -779,7 +905,7 @@ mod tests {
         let server_cache = Arc::clone(&cache);
         let server = thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
-            serve_connection(stream, &server_cache, &None).unwrap();
+            serve_connection(stream, &server_cache, &None, None).unwrap();
         });
         let mut client = TcpStream::connect(address).unwrap();
         client
@@ -795,5 +921,92 @@ mod tests {
             "{response}"
         );
         server.join().unwrap();
+    }
+
+    #[test]
+    fn display_requests_are_forwarded_to_an_embedded_handler() {
+        let cache = Arc::new(RwLock::new(None));
+        let displayed = Arc::new(AtomicBool::new(false));
+        let handler_displayed = Arc::clone(&displayed);
+        let handler: DisplayHandler = Arc::new(move |graph| {
+            assert!(graph.is_some());
+            handler_displayed.store(true, Ordering::SeqCst);
+            Ok(())
+        });
+        let mut input = io::Cursor::new(
+            b"<utool cmd='display'><usr codec='domcon-oz' string='[label(x a)]'/></utool>",
+        );
+        let response = process_request(parse_request(&mut input).unwrap(), &cache, Some(&handler));
+        assert_eq!(response, "<result code='0' />\n");
+        assert!(displayed.load(Ordering::SeqCst));
+
+        let failing: DisplayHandler = Arc::new(|_| Err("window creation failed".to_owned()));
+        let mut input = io::Cursor::new(b"<utool cmd='display'/>");
+        let response = process_request(parse_request(&mut input).unwrap(), &cache, Some(&failing));
+        assert!(response.starts_with("<error code='130'"), "{response}");
+    }
+
+    #[test]
+    fn background_server_can_be_stopped_and_releases_its_port() {
+        let server = start(
+            ServerConfig {
+                bind_address: Ipv4Addr::LOCALHOST.into(),
+                port: 0,
+                logging: ServerLogging::Disabled,
+                warmup: false,
+            },
+            None,
+        )
+        .unwrap();
+        let address = server.address();
+        let mut client = TcpStream::connect(address).unwrap();
+        client.write_all(b"<utool cmd='version'/>").unwrap();
+        client.flush().unwrap();
+        let mut response = String::new();
+        client.read_to_string(&mut response).unwrap();
+        assert!(response.starts_with("<result version="), "{response}");
+
+        server.stop().unwrap();
+        let rebound = TcpListener::bind(address).unwrap();
+        drop(rebound);
+    }
+
+    #[test]
+    fn wildcard_and_localhost_listeners_cannot_share_a_port() {
+        // Use standard listeners to represent another process, including an
+        // older Utool whose socket may have address reuse enabled.
+        let wildcard = TcpListener::bind((Ipv4Addr::UNSPECIFIED, 0)).unwrap();
+        let port = wildcard.local_addr().unwrap().port();
+        let conflict = start(
+            ServerConfig {
+                bind_address: Ipv4Addr::LOCALHOST.into(),
+                port,
+                logging: ServerLogging::Disabled,
+                warmup: false,
+            },
+            None,
+        );
+        assert!(
+            matches!(conflict, Err(error) if error.kind() == io::ErrorKind::AddrInUse),
+            "localhost unexpectedly shared port {port} with a wildcard listener"
+        );
+        drop(wildcard);
+
+        let localhost = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let port = localhost.local_addr().unwrap().port();
+        let conflict = start(
+            ServerConfig {
+                bind_address: Ipv4Addr::UNSPECIFIED.into(),
+                port,
+                logging: ServerLogging::Disabled,
+                warmup: false,
+            },
+            None,
+        );
+        assert!(
+            matches!(conflict, Err(error) if error.kind() == io::ErrorKind::AddrInUse),
+            "wildcard listener unexpectedly shared port {port} with localhost"
+        );
+        drop(localhost);
     }
 }

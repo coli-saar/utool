@@ -93,6 +93,14 @@ including manual fragment adjustments. The bottom status bar reports the
 runtime of loading/codec conversion, chart construction, and each Solution
 enumeration.
 
+The **Server** menu starts and stops the Java-compatible XML socket server.
+It listens on localhost by default; non-local connections can be enabled in
+the start dialog. The status-bar indicator shows the current server state and
+listening address. **Start server on launch** remembers the chosen port and
+network setting. A server `display` request opens its graph in a new desktop
+window, while solving and conversion requests continue to run in the server.
+These settings are stored with the other Utool preferences in `~/.utool`.
+
 For build-only verification:
 
 ```sh
