@@ -1,6 +1,6 @@
 [package]
 name = "utool-display"
-version = "4.0.0-alpha7"
+version = "4.0.0-alpha8"
 description = "Desktop interface for Utool"
 edition = "2024"
 rust-version = "1.88"
