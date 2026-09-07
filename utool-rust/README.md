@@ -2,12 +2,9 @@
 
 Utool is the Swiss Army Knife of Underspecification. It parses, solves,
 converts, classifies, lays out, and filters dominance graphs and related
-underspecified semantic representations. This directory contains the Rust
-implementation used by Utool 4:
+underspecified semantic representations. 
 
-- the `utool` Rust library;
-- the `utool` command-line program;
-- the Tauri desktop application in [`desktop/`](desktop/).
+This directory contains the source code for Utool 4, the Rust reimplementation of 2026. It consists of a command-line tool called `utool` and a desktop application calles `utool-display`. The command-line tool is intended as a drop-in replacement for the Utool 3 command-line program; the desktop application is a streamlined version of the Utool 3 GUI.
 
 Utool 3.x, the older Java implementation, remains in the repository root. The
 Rust and Java builds are independent. Commands in this README assume that the
@@ -186,12 +183,13 @@ In particular:
   attributes are also not implemented.
 - The Rust desktop focuses on opening graphs, browsing built-in examples,
   solving and filtering them, inspecting charts, browsing solutions, moving
-  fragments, zooming, copying or exporting in the supported codecs, and SVG
-  export. Unlike the Java workbench, it does not currently provide paste-as-input-codec,
-  tab duplication and close-all, PDF/raster export and printing, node-name/label
-  display modes, layout selection/reset, preferences and server controls, or
-  manual deletion of chart splits. Rust uses a separate window per graph rather
-  than Java's document tabs.
+  fragments, zooming, copying or exporting in the supported codecs, SVG export,
+  pasting clipboard text with any graph input codec, and closing all graph
+  windows. Unlike the Java workbench, it does not currently provide tab
+  duplication, PDF/raster export and printing, node-name/label display modes,
+  layout selection/reset, preferences and server controls, or manual deletion
+  of chart splits. Rust uses a separate window per graph rather than Java's
+  document tabs.
 - The Rust crate provides a streamlined API for graph construction, codecs,
   solving, filtering, layouts, and the server. It is not source-compatible with
   the Java library and does not port the extensible codec manager, RTG parser and
@@ -359,7 +357,9 @@ npm run tauri dev -- -- \
 ```
 
 The desktop recognizes `.clls`, `.dg.xml`, `.hs.pl`, `.mrs.pl`, and `.mrs.xml`
-input files. Each graph opens in its own window. See
+input files. Each graph opens in its own window. **Edit → Paste as** opens
+clipboard text as a new graph using the selected graph input codec, and
+**File → Close All** closes every graph window. See
 [`desktop/README.md`](desktop/README.md) for interaction details.
 
 ### Build the frontend only
