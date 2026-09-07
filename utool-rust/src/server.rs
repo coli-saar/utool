@@ -118,6 +118,7 @@ struct Request {
     nochart: bool,
     limit: usize,
     graph: Option<ParsedGraph>,
+    graph_name: Option<String>,
     filters: Vec<FilterRequest>,
 }
 
@@ -144,8 +145,14 @@ impl ServerError {
 type RuleCache = Arc<RwLock<Option<RewriteSystem>>>;
 type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
 
-/// Callback used by an embedded desktop server to display an optional graph.
-pub type DisplayHandler = Arc<dyn Fn(Option<ParsedGraph>) -> Result<(), String> + Send + Sync>;
+/// A graph and optional client-supplied name from a `display` request.
+pub struct DisplayRequest {
+    pub graph: Option<ParsedGraph>,
+    pub name: Option<String>,
+}
+
+/// Callback used by an embedded desktop server to handle `display` requests.
+pub type DisplayHandler = Arc<dyn Fn(DisplayRequest) -> Result<(), String> + Send + Sync>;
 
 /// A running server that can be stopped without terminating its host process.
 pub struct ServerHandle {
@@ -449,6 +456,7 @@ fn parse_usr(element: &BytesStart<'_>, request: &mut Request) -> Result<(), Serv
             format!("Unknown input codec: {codec_name}"),
         )
     })?;
+    request.graph_name = attribute(element, b"name")?.filter(|name| !name.trim().is_empty());
     request.graph = Some(codec.parse(&source).map_err(|error| {
         let code = if codec == InputCodec::Chain && matches!(&error, CodecError::Semantic(_)) {
             INPUT_PARSE_ERROR + 1
@@ -503,7 +511,11 @@ fn process_request_inner(
         Command::Version => return Ok(version_response()),
         Command::Display => {
             if let Some(handler) = display_handler {
-                handler(request.graph).map_err(|error| {
+                handler(DisplayRequest {
+                    graph: request.graph,
+                    name: request.graph_name,
+                })
+                .map_err(|error| {
                     ServerError::new(
                         GRAPH_DRAWING_ERROR,
                         format!("An error occurred while drawing the graph.\n{error}"),
@@ -928,13 +940,14 @@ mod tests {
         let cache = Arc::new(RwLock::new(None));
         let displayed = Arc::new(AtomicBool::new(false));
         let handler_displayed = Arc::clone(&displayed);
-        let handler: DisplayHandler = Arc::new(move |graph| {
-            assert!(graph.is_some());
+        let handler: DisplayHandler = Arc::new(move |request| {
+            assert!(request.graph.is_some());
+            assert_eq!(request.name.as_deref(), Some("Named graph"));
             handler_displayed.store(true, Ordering::SeqCst);
             Ok(())
         });
         let mut input = io::Cursor::new(
-            b"<utool cmd='display'><usr codec='domcon-oz' string='[label(x a)]'/></utool>",
+            b"<utool cmd='display'><usr name='Named graph' codec='domcon-oz' string='[label(x a)]'/></utool>",
         );
         let response = process_request(parse_request(&mut input).unwrap(), &cache, Some(&handler));
         assert_eq!(response, "<result code='0' />\n");

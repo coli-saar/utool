@@ -973,23 +973,25 @@ export default function App() {
   }, [addGraph, installGraph]);
   useEffect(() => {
     let disposed = false;
+    const listenMenu = (event: string, handler: () => void) =>
+      listen(event, handler, { target: WINDOW_LABEL });
     const pending = Promise.all([
-      listen("menu-open", openDocument), listen("menu-open-example", showExampleChooser), listen("menu-start-server", showServerDialog), listen("menu-export-svg", exportSvg), listen("menu-copy-svg", copySvg),
+      listenMenu("menu-open", openDocument), listenMenu("menu-open-example", showExampleChooser), listenMenu("menu-start-server", showServerDialog), listenMenu("menu-export-svg", exportSvg), listenMenu("menu-copy-svg", copySvg),
       ...OUTPUT_FORMATS.flatMap((format) => [
-        listen(`menu-export-${format.name}`, () => exportCurrent(format)),
-        listen(`menu-copy-${format.name}`, () => copyCurrent(format)),
+        listenMenu(`menu-export-${format.name}`, () => exportCurrent(format)),
+        listenMenu(`menu-copy-${format.name}`, () => copyCurrent(format)),
       ]),
       ...INPUT_FORMATS.map((format) =>
-        listen(`menu-paste-${format.name}`, () => pasteDocument(format))
+        listenMenu(`menu-paste-${format.name}`, () => pasteDocument(format))
       ),
-      listen("menu-view-graph", () => setActiveView("graph")),
-      listen("menu-view-chart", () => setActiveView("chart")),
-      listen("menu-view-solutions", () => setActiveView("solutions")),
-      listen("menu-zoom-in", () => changeZoom(1)),
-      listen("menu-zoom-out", () => changeZoom(-1)),
-      listen("menu-actual-size", () => setZoom(100)),
-      listen("menu-fit-window", () => setZoom("fit")),
-      listen("menu-about", () => {
+      listenMenu("menu-view-graph", () => setActiveView("graph")),
+      listenMenu("menu-view-chart", () => setActiveView("chart")),
+      listenMenu("menu-view-solutions", () => setActiveView("solutions")),
+      listenMenu("menu-zoom-in", () => changeZoom(1)),
+      listenMenu("menu-zoom-out", () => changeZoom(-1)),
+      listenMenu("menu-actual-size", () => setZoom(100)),
+      listenMenu("menu-fit-window", () => setZoom("fit")),
+      listenMenu("menu-about", () => {
         void invoke<AppInfo>("app_info")
           .then(setAboutInfo)
           .catch((reason) => setError(String(reason)));

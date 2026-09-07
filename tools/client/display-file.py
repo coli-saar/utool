@@ -35,13 +35,20 @@ def arguments() -> argparse.Namespace:
         "--input-codec",
         help="input codec; inferred from the filename when omitted",
     )
+    parser.add_argument(
+        "--name",
+        help="graph name shown in the window title (default: input filename)",
+    )
     parser.add_argument("--timeout", type=float, default=30, help="socket timeout in seconds")
     return parser.parse_args()
 
 
-def request_xml(graph: str, input_codec: str) -> bytes:
+def request_xml(graph: str, input_codec: str, name: str | None) -> bytes:
     request = ET.Element("utool", {"cmd": "display"})
-    ET.SubElement(request, "usr", {"codec": input_codec, "string": graph})
+    attributes = {"codec": input_codec, "string": graph}
+    if name:
+        attributes["name"] = name
+    ET.SubElement(request, "usr", attributes)
     return ET.tostring(request, encoding="utf-8")
 
 
@@ -61,7 +68,7 @@ def main() -> int:
 
     try:
         graph = options.file.read_text(encoding="utf-8")
-        request = request_xml(graph, input_codec)
+        request = request_xml(graph, input_codec, options.name or options.file.name)
         with socket.create_connection((options.host, options.port), options.timeout) as connection:
             connection.settimeout(options.timeout)
             connection.sendall(request)

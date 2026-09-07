@@ -20,8 +20,8 @@ use tauri::{
 };
 use utool::{
     Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutError, LayoutOptions, OutputCodec,
-    ParsedGraph, Point, RewriteSystem, ServerPreferences, Size, Solution, UserConfig, filter_chart,
-    layout_chart, layout_graph, solve_with_cancellation,
+    Point, RewriteSystem, ServerPreferences, Size, Solution, UserConfig, filter_chart, layout_chart,
+    layout_graph, solve_with_cancellation,
 };
 
 const SERVER_ACTION_ID: &str = "server-action";
@@ -1478,17 +1478,12 @@ fn start_server(
 
     let display_app = app.clone();
     let display_handler: utool::server::DisplayHandler =
-        Arc::new(move |graph: Option<ParsedGraph>| {
-            if let Some(graph) = graph {
+        Arc::new(move |request: utool::server::DisplayRequest| {
+            if let Some(graph) = request.graph {
                 let graph = HncGraph::try_from(graph).map_err(|error| error.to_string())?;
                 let state = display_app.state::<DocumentState>();
-                create_graph_window_from_graph(
-                    graph,
-                    "Graph from server",
-                    Instant::now(),
-                    &display_app,
-                    &state,
-                )
+                let title = request.name.as_deref().unwrap_or("Graph from server");
+                create_graph_window_from_graph(graph, title, Instant::now(), &display_app, &state)
             } else {
                 focus_graph_window(&display_app)
             }
@@ -1615,10 +1610,13 @@ fn handle_server_action(app: &tauri::AppHandle) -> Result<(), String> {
     };
     match action {
         "stop" => stop_server(app, &servers),
-        _ => preferred_graph_window(app)
-            .ok_or_else(|| "no graph window is available".to_owned())?
-            .emit("menu-start-server", ())
-            .map_err(|error| error.to_string()),
+        _ => {
+            let window = preferred_graph_window(app)
+                .ok_or_else(|| "no graph window is available".to_owned())?;
+            window
+                .emit_to(window.label(), "menu-start-server", ())
+                .map_err(|error| error.to_string())
+        }
     }
 }
 
@@ -2084,7 +2082,7 @@ pub fn run() {
                             "close-all" => close_all_graph_windows(app),
                             _ => target.as_ref().map_or(Ok(()), |window| {
                                 window
-                                    .emit(&format!("menu-{id}"), ())
+                                    .emit_to(window.label(), &format!("menu-{id}"), ())
                                     .map_err(|error| error.to_string())
                             }),
                         };
