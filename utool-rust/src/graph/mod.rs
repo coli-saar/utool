@@ -217,6 +217,64 @@ impl ParsedGraph {
         })
     }
 
+    /// Normalize dominance edges before passing the graph to the solver.
+    ///
+    /// This mirrors the Java command-line preprocessor: constraints already
+    /// implied by a fragment are removed, cross-fragment targets are lifted to
+    /// their fragment roots, and `None` is returned when a constraint is
+    /// inconsistent within a single fragment.
+    ///
+    /// # Errors
+    ///
+    /// Returns a structural graph error when the tree edges are not a forest.
+    pub fn preprocess_for_solver(mut self) -> Result<Option<Self>, GraphError> {
+        deduplicate_edges(&mut self);
+        let parents = self.tree_parents()?;
+        ensure_tree_acyclic(&self)?;
+        let dominance_edges = std::mem::take(&mut self.dominance_edges);
+        let mut normalized = Vec::with_capacity(dominance_edges.len());
+
+        'edge: for (source, target) in dominance_edges {
+            // Reflexive dominance is always satisfied.
+            if source == target {
+                continue;
+            }
+
+            let mut source_root = source;
+            while let Some(parent) = parents[source_root.index()] {
+                source_root = parent;
+                if source_root == target {
+                    // The constraint points upwards within a fragment.
+                    return Ok(None);
+                }
+            }
+
+            let mut target_root = target;
+            while let Some(parent) = parents[target_root.index()] {
+                target_root = parent;
+                if target_root == source {
+                    // Tree dominance already entails this constraint.
+                    continue 'edge;
+                }
+            }
+
+            if source_root == target_root {
+                // Neither endpoint dominates the other in their fragment.
+                return Ok(None);
+            }
+
+            if self.node(target).is_hole() && parents[source.index()].is_none() {
+                normalized.push((source, target));
+            } else {
+                normalized.push((source, target_root));
+            }
+        }
+
+        self.dominance_edges = normalized;
+        deduplicate_edges(&mut self);
+        Ok(Some(self))
+    }
+
     /// Whether every dominance edge starts at a hole or ends at a fragment root.
     #[must_use]
     pub fn is_weakly_normal(&self) -> bool {

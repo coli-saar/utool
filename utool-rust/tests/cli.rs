@@ -130,6 +130,89 @@ fn no_command_displays_java_style_help_successfully() {
 }
 
 #[test]
+fn every_command_has_consistent_specific_help() {
+    let commands = [
+        ("solve", "Solve an underspecified description"),
+        (
+            "solvable",
+            "Check solvability without enumerating solutions",
+        ),
+        (
+            "convert",
+            "Convert underspecified description from one format to another",
+        ),
+        (
+            "classify",
+            "Check whether a description belongs to special classes",
+        ),
+        ("display", "Start the Underspecification Workbench GUI"),
+        ("server", "Start Utool in server mode"),
+        ("help", "Display help on a command"),
+    ];
+    for (command, description) in commands {
+        let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+            .args([command, "--help"])
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{command}");
+        assert!(output.stdout.is_empty(), "{command}");
+        let help = String::from_utf8(output.stderr).unwrap();
+        assert!(
+            help.starts_with(&format!("utool {command}: {description}.\n")),
+            "{command}: {help}"
+        );
+        assert!(!help.contains("Unknown command"), "{command}: {help}");
+    }
+}
+
+#[test]
+fn warmup_is_accepted_silently_but_not_advertised() {
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["server", "--warmup", "--help"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let help = String::from_utf8(output.stderr).unwrap();
+    assert!(!help.contains("warmup"));
+    assert!(!help.contains("Warming up"));
+}
+
+#[test]
+fn chart_unsolvable_solve_matches_java_empty_output() {
+    let input = fixture(
+        "chart-unsolvable",
+        "clls",
+        "[label(n0 f(n1 n2)) label(n3 a) label(n4 b) dom(n1 n3) dom(n2 n4) dom(n1 n4)]",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["solve", "-O", "term-prolog", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+    assert!(output.stdout.is_empty());
+    assert!(output.stderr.is_empty());
+    fs::remove_file(input).unwrap();
+}
+
+#[test]
+fn trivially_unsolvable_solve_matches_java_empty_list() {
+    let input = fixture(
+        "trivially-unsolvable",
+        "clls",
+        "[label(x1 f(x2 x3)) label(x2 a) label(x3 b) dom(x2 x3)]",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["solve", "-O", "term-prolog", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+    assert_eq!(output.stdout, b"[]");
+    assert!(output.stderr.is_empty());
+    fs::remove_file(input).unwrap();
+}
+
+#[test]
 fn chain_specification_is_a_length_not_a_filename() {
     let output = Command::new(env!("CARGO_BIN_EXE_utool"))
         .args(["solve", "-I", "chain", "3", "-O", "term-prolog", "-n", "-s"])

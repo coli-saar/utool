@@ -8,6 +8,8 @@ button:not(:disabled) { cursor: pointer; }
 button:hover:not(:disabled) { background: #f0f3f7; }
 button:disabled { opacity: .45; }
 button.primary { background: #315db5; border-color: #315db5; color: #fff; }
+button.primary:hover:not(:disabled) { background: #294f9b; border-color: #294f9b; color: #fff; }
+button.primary:active:not(:disabled) { background: #234584; border-color: #234584; color: #fff; }
 main { height: 100vh; display: grid; grid-template-rows: 40px 1fr 29px; }
 .tabs { padding: 6px 10px 0; display: flex; align-items: end; gap: 1px; background: #e5e7ea; border-bottom: 1px solid #aeb4bc; }
 .tabs button { height: 34px; min-width: 108px; padding: 5px 16px 6px; display: flex; gap: 7px; align-items: center; justify-content: center; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: #59626d; font-size: 12px; font-weight: 580; box-shadow: none; }

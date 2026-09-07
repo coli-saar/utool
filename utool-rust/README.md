@@ -28,7 +28,7 @@ artifacts are built for these targets:
 The packages are not developer-signed or notarized. Windows SmartScreen and
 macOS Gatekeeper may therefore ask you to approve the application before its
 first launch. Download releases only from the repository's Releases page and
-verify that you selected the expected tag and architecture.
+verify that you selected the expected version and architecture.
 
 The binaries you have to approve are called `utool` and `utool-display`.
 

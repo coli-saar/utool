@@ -47,7 +47,6 @@ struct Options {
     version: bool,
     port: u16,
     logging: LoggingOption,
-    warmup: bool,
     positional: Vec<String>,
 }
 
@@ -77,7 +76,6 @@ impl Default for Options {
             version: false,
             port: 2802,
             logging: LoggingOption::Disabled,
-            warmup: false,
             positional: Vec::new(),
         }
     }
@@ -167,7 +165,8 @@ fn options(args: &[String]) -> Result<Options, String> {
                     }
                     result.logging = value.map_or(LoggingOption::Stderr, LoggingOption::File);
                 }
-                "warmup" => result.warmup = true,
+                // Accepted for command-line compatibility with Java Utool.
+                "warmup" => {}
                 "limit" => {
                     result.limit = Some(
                         take_value(args, &mut index, attached, "--limit")?
@@ -209,33 +208,58 @@ fn operation(name: Option<&String>) -> Option<Operation> {
 }
 
 fn print_help(command: Option<&str>) {
-    if let Some(command) = command {
-        eprintln!(
-            "utool {command}: {}.",
-            match command {
+    match command {
+        Some(command @ ("solve" | "solvable" | "convert" | "classify")) => {
+            let description = match command {
                 "solve" => "Solve an underspecified description",
                 "solvable" => "Check solvability without enumerating solutions",
                 "convert" => "Convert underspecified description from one format to another",
                 "classify" => "Check whether a description belongs to special classes",
-                _ => "Unknown command",
-            }
-        );
-        if command == "server" {
-            eprintln!("Usage: utool server [options]");
-        } else {
+                _ => unreachable!(),
+            };
+            eprintln!("utool {command}: {description}.");
             eprintln!("Usage: utool {command} [options] [input-source]");
         }
-        if command == "server" {
+        Some("display") => {
+            eprintln!("utool display: Start the Underspecification Workbench GUI.");
+            eprintln!("Usage: utool display [input-source]");
+        }
+        Some("server") => {
+            eprintln!("utool server: Start Utool in server mode.");
+            eprintln!("Usage: utool server [options]");
             eprintln!(
-                "\nServer options:\n  --port, -p <port>          Accept connections on this port (default: 2802)\n  --logging, -l [filename]   Log traffic to a file, or stderr when omitted\n  --warmup                   Warm up the solver before accepting connections"
+                "\nServer options:\n  --port, -p <port>          Accept connections on this port (default: 2802)\n  --logging, -l [filename]   Log traffic to a file, or stderr when omitted"
             );
         }
-    } else {
-        eprintln!("Usage: utool <subcommand> [options] [args]");
-        eprintln!(
-            "Type `utool help <subcommand>' for help on a specific subcommand.\n\nAvailable subcommands:\n    solve        Solve an underspecified description.\n    solvable     Check solvability without enumerating solutions.\n    convert      Convert underspecified description from one format to another.\n    classify     Check whether a description belongs to special classes.\n    display      Start the Underspecification Workbench GUI.\n    server       Start Utool in server mode.\n    help         Display help on a command."
-        );
+        Some("help") => {
+            eprintln!("utool help: Display help on a command.");
+            eprintln!("Usage: utool help [command]");
+        }
+        Some(_) | None => {
+            eprintln!("Usage: utool <subcommand> [options] [args]");
+            eprintln!(
+                "Type `utool help <subcommand>' for help on a specific subcommand.\n\nAvailable subcommands:\n    solve        Solve an underspecified description.\n    solvable     Check solvability without enumerating solutions.\n    convert      Convert underspecified description from one format to another.\n    classify     Check whether a description belongs to special classes.\n    display      Start the Underspecification Workbench GUI.\n    server       Start Utool in server mode.\n    help         Display help on a command."
+            );
+        }
     }
+}
+
+fn write_empty_solution_list(
+    opts: &Options,
+    codec: Option<OutputCodec>,
+) -> Result<(), (String, u8)> {
+    let Some(codec) = codec else {
+        return Ok(());
+    };
+    let mut writer = result_writer(opts)?;
+    let mut encoder = codec
+        .solution_encoder()
+        .expect("solution codec capability was checked above");
+    encoder
+        .begin(&mut writer)
+        .and_then(|()| encoder.finish(&mut writer))
+        .and_then(|()| writer.flush())
+        .map_err(|e| (e.to_string(), IO_ERROR))
 }
 
 fn read_graph(opts: &Options, source: &str) -> Result<ParsedGraph, (String, u8)> {
@@ -416,6 +440,21 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             | (u8::from(hnc) << 4)
             | (u8::from(leaf_labelled) << 5));
     }
+    let Some(parsed) = parsed.preprocess_for_solver().map_err(|e| {
+        (
+            format!("The solver is not applicable to this graph.\n{e}"),
+            SOLVER_NOT_APPLICABLE,
+        )
+    })?
+    else {
+        if opts.statistics {
+            eprintln!("The graph has trivially unsolvable dominance edges within fragments.");
+        }
+        if op == Operation::Solve && !opts.no_output {
+            write_empty_solution_list(opts, solve_output_codec)?;
+        }
+        return Ok(0);
+    };
     let graph = HncGraph::try_from(parsed).map_err(|e| {
         (
             format!("The solver is not applicable to this graph.\n{e}"),
@@ -428,6 +467,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
     let started = Instant::now();
     let mut chart = solve(&graph).map_err(|e| (e.to_string(), SOLVER_NOT_APPLICABLE))?;
     let chart_duration = started.elapsed();
+    let solvable = chart.count_solutions() != 0u8.into();
     if opts.statistics {
         report_chart_phase(
             "Chart construction",
@@ -456,7 +496,6 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             );
         }
     }
-    let solvable = chart.count_solutions() != 0u8.into();
     if opts.statistics {
         eprintln!(
             "Solving graph ... {}.",
@@ -467,6 +506,9 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             }
         );
         eprintln!("Number of solved forms: {}\n", chart.count_solutions());
+    }
+    if !solvable {
+        return Ok(0);
     }
     if opts.dump_chart {
         let display = utool::ChartDisplay::new(&chart);
@@ -596,7 +638,7 @@ fn main() -> ExitCode {
     }
     if opts.codec_options_help {
         eprintln!(
-            "utool global options are:\n  --help-options\n  --display-codecs, -d\n  --display-statistics, -s\n  --no-output, -n\n  --filter, -f <filename>\n  --port, -p <port>\n  --logging, -l [filename]\n  --warmup\n  --version"
+            "utool global options are:\n  --help-options\n  --display-codecs, -d\n  --display-statistics, -s\n  --no-output, -n\n  --filter, -f <filename>\n  --port, -p <port>\n  --logging, -l [filename]\n  --version"
         );
         return ExitCode::SUCCESS;
     }
@@ -608,7 +650,9 @@ fn main() -> ExitCode {
     }
     let op = operation(opts.positional.first());
     if opts.help || op == Some(Operation::Help) || op.is_none() {
-        print_help(if op == Some(Operation::Help) {
+        print_help(if opts.help {
+            opts.positional.first().map(String::as_str)
+        } else if op == Some(Operation::Help) {
             opts.positional.get(1).map(String::as_str)
         } else {
             opts.positional.first().map(String::as_str)
@@ -625,7 +669,7 @@ fn main() -> ExitCode {
         let config = utool::server::ServerConfig {
             port: opts.port,
             logging,
-            warmup: opts.warmup,
+            warmup: false,
         };
         return match utool::server::run(config) {
             Ok(()) => ExitCode::SUCCESS,
