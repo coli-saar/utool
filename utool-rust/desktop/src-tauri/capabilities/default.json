@@ -5,6 +5,7 @@
   "windows": ["main", "graph-*", "event-log"],
   "permissions": [
     "core:default",
+    "core:window:allow-show",
     "core:window:allow-set-title",
     "dialog:allow-message",
     "dialog:allow-open",

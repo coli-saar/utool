@@ -149,6 +149,24 @@ const CHART_CACHE_PAGES = 8;
 const CHART_ROW_ESTIMATE = 58;
 const CHART_OVERSCAN = 10;
 
+function dismissStartupScreen() {
+  const screen = window.document.getElementById("startup-screen");
+  const root = window.document.documentElement;
+  if (!screen || !root.classList.contains("startup") || screen.dataset.dismissing) return;
+  screen.dataset.dismissing = "true";
+  const shownAt = Number(root.dataset.startupShownAt);
+  const elapsed = Number.isFinite(shownAt) ? performance.now() - shownAt : 650;
+  const remaining = Math.max(0, 650 - elapsed);
+  window.setTimeout(() => {
+    screen.classList.add("startup-screen-exit");
+    window.setTimeout(() => {
+      screen.remove();
+      root.classList.remove("startup");
+      delete root.dataset.startupShownAt;
+    }, 180);
+  }, remaining);
+}
+
 class RowHeightIndex {
   private readonly corrections: Float32Array;
   private readonly prefixes: Float64Array;
@@ -821,16 +839,20 @@ export default function App() {
           .then((selected) => { setStartupFilter(selected); })
           .catch((reason) => { setStartupFilter(null); setError(String(reason)); }),
       ]).then(async ([documents]) => {
-        if (documents.length === 0) {
-          await addGraph(EXAMPLE, "domcon-oz", "Example");
-          return;
+        try {
+          if (documents.length === 0) {
+            await addGraph(EXAMPLE, "domcon-oz", "Example");
+            return;
+          }
+          const [first, ...rest] = documents;
+          await addGraph(first.input, first.codec, first.title);
+          for (const request of rest) {
+            await invoke("open_graph_window", { request });
+          }
+        } finally {
+          dismissStartupScreen();
         }
-        const [first, ...rest] = documents;
-        await addGraph(first.input, first.codec, first.title);
-        for (const request of rest) {
-          await invoke("open_graph_window", { request });
-        }
-      }).catch((reason) => { setStartupFilter(null); setError(String(reason)); });
+      }).catch((reason) => { dismissStartupScreen(); setStartupFilter(null); setError(String(reason)); });
     } else {
       void invoke<StartupFilter | null>("startup_filter")
         .then(setStartupFilter)

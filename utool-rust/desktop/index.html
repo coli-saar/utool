@@ -4,8 +4,89 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Utool</title>
+    <script>
+      if (new URLSearchParams(window.location.search).has("startup")) {
+        document.documentElement.classList.add("startup");
+      }
+    </script>
+    <style>
+      .startup-screen { display: none; }
+      html.startup { background: #edf0f4; }
+      html.startup body { margin: 0; }
+      html.startup .startup-screen {
+        display: flex;
+        position: fixed;
+        z-index: 1000;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(145deg, #f8fafc 0%, #e8edf4 100%);
+        color: #202630;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+      html.startup .startup-screen-exit { opacity: 0; transition: opacity .18s ease-out; }
+      .startup-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        transform: translateY(-2vh);
+      }
+      .startup-logo {
+        width: 112px;
+        height: 112px;
+        transform-box: fill-box;
+        transform-origin: center;
+        filter: drop-shadow(0 6px 10px #27364b18);
+        animation: startup-logo 1.5s ease-in-out infinite alternate;
+      }
+      .startup-cross { animation: startup-cross 1.5s ease-in-out infinite alternate; }
+      .startup-name { font-size: 25px; font-weight: 680; letter-spacing: -.02em; }
+      .startup-tagline { margin-top: -12px; color: #687483; font-size: 12px; }
+      .startup-progress {
+        width: 112px;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 2px;
+        background: #d7dee8;
+      }
+      .startup-progress::after {
+        content: "";
+        display: block;
+        width: 42%;
+        height: 100%;
+        border-radius: inherit;
+        background: #315db5;
+        animation: startup-progress 1.15s ease-in-out infinite;
+      }
+      @keyframes startup-logo { from { transform: translateY(2px) scale(.985); } to { transform: translateY(-2px) scale(1); } }
+      @keyframes startup-cross { from { opacity: .78; } to { opacity: 1; } }
+      @keyframes startup-progress { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
+      @media (prefers-reduced-motion: reduce) {
+        .startup-logo, .startup-cross, .startup-progress::after { animation: none; }
+        .startup-progress::after { width: 100%; opacity: .65; }
+      }
+    </style>
   </head>
   <body>
+    <div id="startup-screen" class="startup-screen" role="status" aria-label="Starting Utool">
+      <div class="startup-card">
+        <svg class="startup-logo" viewBox="0 0 1024 1024" aria-hidden="true">
+          <rect x="32" y="32" width="960" height="960" rx="214" fill="#f7f7f5" />
+          <rect x="41" y="41" width="942" height="942" rx="205" fill="none" stroke="#d5d5d0" stroke-width="18" />
+          <g transform="translate(-44 0)">
+            <path d="M140 300h100v225c0 73 26 107 80 107s80-34 80-107V300h100v234c0 120-65 190-180 190s-180-70-180-190z" fill="#111" />
+            <rect x="548" y="300" width="424" height="424" fill="#111" />
+            <rect x="562" y="314" width="396" height="396" fill="#c00" />
+            <path class="startup-cross" d="M717 382h86v87h87v86h-87v87h-86v-87h-87v-86h87z" fill="#fff" stroke="#111" stroke-width="14" stroke-linejoin="miter" />
+          </g>
+        </svg>
+        <div class="startup-name">Utool</div>
+        <div class="startup-tagline">Underspecification Workbench</div>
+        <div class="startup-progress" aria-hidden="true"></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
