@@ -836,12 +836,12 @@ fn set_menu_item_enabled(
     enabled: bool,
 ) -> Result<bool, String> {
     for item in items {
-        if item.id().0 == id {
-            if let Some(item) = item.as_menuitem() {
-                item.set_enabled(enabled)
-                    .map_err(|error| error.to_string())?;
-                return Ok(true);
-            }
+        if item.id().0 == id
+            && let Some(item) = item.as_menuitem()
+        {
+            item.set_enabled(enabled)
+                .map_err(|error| error.to_string())?;
+            return Ok(true);
         }
         if let Some(submenu) = item.as_submenu()
             && set_menu_item_enabled(

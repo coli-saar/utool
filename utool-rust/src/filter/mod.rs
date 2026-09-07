@@ -27,7 +27,6 @@
 //! then read the four sections above in call order. Parsing and static
 //! validation are independent of the automata construction.
 
-use crate::automata_ext::GeneratedBuilder;
 use crate::graph::{HncGraph, NodeId};
 use crate::solver::{Chart, FragmentNode};
 use packed_term_arena::tree::{Tree, TreeArena};
@@ -1253,7 +1252,7 @@ struct PreState {
 
 #[derive(Default)]
 struct PreBuilder {
-    builder: GeneratedBuilder,
+    builder: ExplicitBuilder,
     states: FxHashMap<PreState, StateId>,
     /// Target component of each generated state, indexed by generated state ID.
     target_by_state: Vec<StateId>,
@@ -1278,7 +1277,7 @@ impl PreBuilder {
 
     fn add_rule(&mut self, symbol: Symbol, children: SmallVec<[StateId; 2]>, result: StateId) {
         if self.rules.insert((symbol, children.clone(), result)) {
-            self.builder.add_rule(symbol, children, result);
+            self.builder.add_rule_from_iter(symbol, children, result);
         }
     }
 }
@@ -1290,7 +1289,7 @@ fn compute_preimage(
     target: &NodeExpansion,
     ctt: &Ctt,
     cancelled: impl Fn() -> bool,
-) -> Result<GeneratedBuilder, FilterError> {
+) -> Result<ExplicitBuilder, FilterError> {
     let mut output = PreBuilder::default();
     let mut agenda = VecDeque::new();
     target.automaton.initial_states(&mut |target_state| {
@@ -1514,7 +1513,7 @@ struct DerivedState {
 /// Such a state is accepting precisely when `left` is accepting in the source
 /// chart and no state in `residual` is accepting in the bad-language automaton.
 struct DifferenceBuilder {
-    builder: GeneratedBuilder,
+    builder: ExplicitBuilder,
     states: FxHashMap<(StateId, ResidualId), StateId>,
     state_info: Vec<DerivedState>,
     states_by_left: Vec<Vec<StateId>>,
@@ -1608,7 +1607,7 @@ impl SiblingDegrees {
 impl DifferenceBuilder {
     fn new(left_states: usize) -> Self {
         Self {
-            builder: GeneratedBuilder::new(),
+            builder: ExplicitBuilder::new(),
             states: FxHashMap::default(),
             state_info: Vec::new(),
             states_by_left: vec![Vec::new(); left_states],
@@ -1641,22 +1640,20 @@ impl DifferenceBuilder {
         accepting: bool,
     ) {
         let result = self.state(left, residual, accepting);
-        self.builder.add_rule(
-            symbol,
-            SmallVec::<[StateId; 2]>::from_slice(children),
-            result,
-        );
+        self.builder
+            .add_rule_from_iter(symbol, children.iter().copied(), result);
     }
 
     fn finish(self, chart: &Chart) -> Chart {
-        // States are created bottom-up from productive source-chart states, so
-        // every generated state is productive. Only coaccessibility trimming is
-        // needed before rebuilding the indexed Explicit automaton.
-        let trimmed = self.builder.trim_assuming_productive();
-        let retained_sources = trimmed
-            .source_states
-            .iter()
-            .map(|state| self.state_info[state.index()].left)
+        // Difference states are created bottom-up only when a rule with
+        // productive children is emitted, so productivity is guaranteed by
+        // construction and only coaccessibility needs to be computed here.
+        let trimmed = self.builder.build_trimmed_assuming_productive();
+        let retained_sources = (0..trimmed.automaton.num_states())
+            .map(|state| {
+                let old = trimmed.state_mapping.old_state(StateId(state));
+                self.state_info[old.index()].left
+            })
             .collect::<Vec<_>>();
         Chart::from_filtered_automaton(chart, trimmed.automaton, &retained_sources)
     }
@@ -2068,7 +2065,7 @@ pub fn filter_chart(
     let node_chart = expand_chart(chart, cancelled)?;
     let rewrite = build_ctt(chart.graph(), system, cancelled)?;
     let bad_language = compute_preimage(&node_chart, &rewrite, cancelled)?
-        .trim()
+        .build_trimmed()
         .automaton;
     difference_on_fragments(chart, &bad_language, cancelled)
 }

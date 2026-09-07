@@ -220,13 +220,13 @@ fn chain_specification_is_a_length_not_a_filename() {
         .unwrap();
     assert_eq!(output.status.code(), Some(1));
     let statistics = String::from_utf8(output.stderr).unwrap();
-    assert!(statistics.contains("Number of solved forms: 5"));
+    assert!(statistics.contains("Number of solutions: 5"));
     assert!(statistics.contains("Chart construction"));
     assert!(statistics.contains("Chart size:"));
-    assert!(statistics.contains("Language size: 5 solved forms"));
+    assert!(statistics.contains("Language size: 5 solutions"));
     assert!(statistics.contains("Time to build chart:"));
     assert!(!statistics.contains("Filtering"));
-    assert!(statistics.contains("Enumerated 5 solved forms."));
+    assert!(statistics.contains("Enumerated 5 solutions."));
     assert!(statistics.contains("Time to enumerate solutions:"));
     assert!(statistics.contains("solutions/sec)"));
     assert!(
@@ -273,8 +273,8 @@ fn filtering_reports_both_phases_only_with_statistics() {
     assert_eq!(report.matches("Filtering").count(), 1);
     assert_eq!(report.matches("Chart size:").count(), 2);
     assert_eq!(report.matches("Language size:").count(), 2);
-    assert!(report.contains("Language size: 2 solved forms"));
-    assert!(report.contains("Language size: 1 solved forms"));
+    assert!(report.contains("Language size: 2 solutions"));
+    assert!(report.contains("Language size: 1 solutions"));
     assert!(report.contains("Time to build chart:"));
     assert!(report.contains("Time to filter chart:"));
 

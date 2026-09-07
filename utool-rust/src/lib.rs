@@ -20,7 +20,6 @@ mod holesem_parser {
     include!(concat!(env!("OUT_DIR"), "/holesem_parser.rs"));
 }
 
-mod automata_ext;
 pub mod codec;
 pub mod filter;
 pub mod graph;

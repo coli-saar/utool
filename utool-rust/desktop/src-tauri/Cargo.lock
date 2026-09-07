@@ -3368,15 +3368,16 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "rusty-alto"
-version = "0.2.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c80a2dfdac2d03c7192b1313cbbaa26ef45466dca063e522ad174c5b040e9fd"
+checksum = "3f797d4fd42a5f5d3582bb2aceb1798d285f8e68118068884e9d4e78efe15140"
 dependencies = [
  "fixedbitset",
  "hashbrown 0.15.5",
  "indicatif",
  "lalrpop",
  "lalrpop-util",
+ "num-traits",
  "packed-term-arena",
  "rustc-hash",
  "smallvec",

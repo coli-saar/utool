@@ -9,12 +9,14 @@
 
 use num_bigint::BigUint;
 use packed_term_arena::tree::{Tree, TreeArena};
-use rusty_alto::{Explicit, ExplicitBuilder, StateId, Symbol, TopDownTa};
-use std::collections::{HashMap, HashSet};
+use rusty_alto::{
+    Derivation, Explicit, ExplicitBuilder, FiniteLanguageIterator, FiniteLanguagePlan,
+    LanguageCardinality, StateId, Symbol, TopDownTa,
+};
+use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 
-use crate::automata_ext::{DfsDerivation, DfsLanguageIterator, DfsLanguagePlan};
 use crate::graph::{HncGraph, NodeId};
 
 /// Fixed-size bit set used for node and fragment membership during solving.
@@ -350,7 +352,7 @@ pub struct Chart {
     /// Automaton containing all productive split rules.
     fragment_automaton: FragmentAutomaton,
     /// Precomputed traversal data for allocation-free derivation iteration.
-    derivation_plan: DfsLanguagePlan,
+    derivation_plan: FiniteLanguagePlan,
     /// Source graph shared with derived filtered charts.
     graph: Arc<HncGraph>,
     /// Exact cardinality of the automaton language.
@@ -513,9 +515,17 @@ impl Chart {
             .iter()
             .map(|state| source.source_subgraph(*state).clone())
             .collect::<Vec<_>>();
-        let count = count_automaton(&automaton);
-        let derivation_plan = DfsLanguagePlan::new(&automaton)
+        let derivation_plan = FiniteLanguagePlan::new(&automaton)
             .expect("filtered charts retain an acyclic productive state graph");
+        let count = match derivation_plan.language_cardinality_as::<BigUint>() {
+            LanguageCardinality::Finite(count) => count,
+            LanguageCardinality::Infinite => {
+                panic!("filtered charts have finite derivation languages")
+            }
+            LanguageCardinality::TooLarge => {
+                unreachable!("BigUint cardinality cannot overflow")
+            }
+        };
         Self {
             fragment_automaton: FragmentAutomaton {
                 automaton,
@@ -532,8 +542,8 @@ impl Chart {
     /// Construct an empty chart that retains the source graph and fragment arena.
     pub(crate) fn empty_filter_result(source: &Self) -> Self {
         let automaton = ExplicitBuilder::new().build();
-        let derivation_plan =
-            DfsLanguagePlan::new(&automaton).expect("an empty automaton has no productive cycle");
+        let derivation_plan = FiniteLanguagePlan::new(&automaton)
+            .expect("an empty automaton has no productive cycle");
         Self {
             fragment_automaton: FragmentAutomaton {
                 automaton,
@@ -715,52 +725,6 @@ fn make_display_offsets(automaton: &Explicit) -> Vec<usize> {
     offsets
 }
 
-/// Count all trees accepted by an acyclic finite tree automaton.
-fn count_automaton(automaton: &Explicit) -> BigUint {
-    /// Count trees rooted in `state`, memoizing shared subproblems.
-    fn count_state(
-        automaton: &Explicit,
-        state: StateId,
-        visiting: &mut HashSet<StateId>,
-        memo: &mut HashMap<StateId, BigUint>,
-    ) -> BigUint {
-        // Shared child states are counted once and reused by all parent rules.
-        if let Some(count) = memo.get(&state) {
-            return count.clone();
-        }
-
-        // Productive cycles would denote an infinite language, which solver
-        // charts cannot represent.
-        assert!(
-            visiting.insert(state),
-            "a finite chart cannot contain a productive cycle"
-        );
-        let mut total = BigUint::from(0_u8);
-        for rule in automaton.rules_topdown(state) {
-            // Choices below distinct child positions combine independently;
-            // alternative rules at this state are mutually exclusive choices.
-            let mut here = BigUint::from(1_u8);
-            for &child in rule.children {
-                here *= count_state(automaton, child, visiting, memo);
-            }
-            total += here;
-        }
-        // Mark the state complete only after every dependent count is known.
-        visiting.remove(&state);
-        memo.insert(state, total.clone());
-        total
-    }
-
-    // Accepted trees are partitioned by their accepting root state.
-    let mut total = BigUint::from(0_u8);
-    let mut visiting = HashSet::new();
-    let mut memo = HashMap::new();
-    automaton.initial_states(&mut |state| {
-        total += count_state(automaton, state, &mut visiting, &mut memo);
-    });
-    total
-}
-
 /// One fully resolved tree borrowing the iterator's reusable arena.
 #[derive(Clone, Copy)]
 pub struct Solution<'a> {
@@ -856,7 +820,7 @@ pub struct Solutions<'a> {
     /// Chart whose language is being enumerated.
     chart: &'a Chart,
     /// Depth-first automaton-language cursor.
-    inner: DfsLanguageIterator<'a>,
+    inner: FiniteLanguageIterator<'a>,
     /// Rewiring instructions indexed by terminal symbol.
     fragments: Vec<SolutionFragment>,
     /// Arena and lookup tables reused between solutions.
@@ -879,7 +843,9 @@ impl Solutions<'_> {
         self.tree.apply_derivation(
             &self.fragments,
             self.inner.current().expect("advance produced a derivation"),
-            self.inner.changed_from(),
+            self.inner
+                .changed_from()
+                .expect("advance reported a changed derivation"),
             self.current,
         );
         self.current = true;
@@ -972,7 +938,7 @@ pub fn solve_with_cancellation(
 
     // Freeze the chart and precompute the plan used by every solution cursor.
     let automaton = compiler.builder.build();
-    let derivation_plan = DfsLanguagePlan::new(&automaton)
+    let derivation_plan = FiniteLanguagePlan::new(&automaton)
         .expect("solver charts have an acyclic productive state graph");
     Ok(Chart {
         fragment_automaton: FragmentAutomaton {
@@ -1769,16 +1735,16 @@ impl ReusableSolutionTree {
     fn apply_derivation(
         &mut self,
         fragments: &[SolutionFragment],
-        derivation: DfsDerivation<'_>,
+        derivation: Derivation<'_>,
         changed_from: usize,
         had_current: bool,
     ) {
         // The DFS cursor reports the earliest changed frame. Earlier frames
         // still describe the same fragment choices and need no rewiring.
         let first_changed = if had_current { changed_from } else { 0 };
-        for frame in first_changed..derivation.len() {
-            let node = derivation.node(frame);
-            let fragment = &fragments[node.symbol.0 as usize];
+        let nodes = derivation.nodes();
+        for node in &nodes[first_changed..] {
+            let fragment = &fragments[node.symbol().0 as usize];
 
             // First restore substitutions contained within this fragment.
             for &(hole, replacement) in &fragment.internal_links {
@@ -1786,15 +1752,15 @@ impl ReusableSolutionTree {
             }
 
             // Then plug the fragment root into its parent's corresponding socket.
-            if let Some((parent, child_index)) = node.parent {
-                let parent_symbol = derivation.node(parent).symbol;
+            if let (Some(parent), Some(child_index)) = (node.parent(), node.child_position()) {
+                let parent_symbol = nodes[parent].symbol();
                 let hole = fragments[parent_symbol.0 as usize].sockets[child_index];
                 self.set_hole_child(hole, fragment.root);
             }
         }
 
         // The first derivation frame determines the complete solution root.
-        let top_symbol = derivation.node(0).symbol;
+        let top_symbol = nodes[0].symbol();
         let top = fragments[top_symbol.0 as usize].root;
         self.root = self.handles[top.index()];
     }

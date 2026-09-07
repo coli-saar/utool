@@ -360,7 +360,7 @@ fn report_chart_phase(name: &str, time_label: &str, chart: &Chart, duration: Dur
         chart.state_count(),
         chart.split_count()
     );
-    eprintln!("  Language size: {} solved forms", chart.count_solutions());
+    eprintln!("  Language size: {} solutions", chart.count_solutions());
     eprintln!(
         "  {time_label}: {duration}\n",
         duration = format_duration(duration)
@@ -374,7 +374,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         let codec = output_codec(opts, Some(source))?;
         if !codec.supports_solutions() {
             return Err((
-                "This output codec doesn't support the printing of multiple solved forms!"
+                "This output codec doesn't support the printing of multiple solutions!"
                     .to_owned(),
                 162,
             ));
@@ -505,7 +505,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
                 "it is unsolvable"
             }
         );
-        eprintln!("Number of solved forms: {}\n", chart.count_solutions());
+        eprintln!("Number of solutions: {}\n", chart.count_solutions());
     }
     if !solvable {
         return Ok(0);
@@ -559,7 +559,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             } else {
                 approximate_f64(count) / enumeration_duration.as_secs_f64()
             };
-            eprintln!("Enumerated {count} solved forms.");
+            eprintln!("Enumerated {count} solutions.");
             eprintln!(
                 "Time to enumerate solutions: {} ({solutions_per_second:.0} solutions/sec)",
                 format_duration(enumeration_duration),
