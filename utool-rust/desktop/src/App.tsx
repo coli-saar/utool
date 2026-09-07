@@ -708,7 +708,6 @@ export default function App() {
     if (!selected) return;
     const startedAt = performance.now();
     const title = selected.split(/[\\/]/).pop() ?? "Graph";
-    setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
     try {
       const lower = selected.toLowerCase();
       const codec = lower.endsWith(".mrs.pl") ? "mrs-prolog"
@@ -720,29 +719,24 @@ export default function App() {
       if (!codec) throw new Error(`Unsupported graph filename: ${title}`);
       const input = await readTextFile(selected);
       await invoke("open_graph_window", { request: { input, codec, title, filename: selected } });
-      setStatus({ action: `Opened ${title} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
     } catch (reason) {
       recordClientAction("Open graph file", { filename: selected }, startedAt, reason);
       setError(String(reason));
-      setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
   }, []);
 
   const pasteDocument = useCallback(async (format: InputFormat) => {
     const startedAt = performance.now();
     const title = `Clipboard — ${format.label}`;
-    setStatus({ action: `Opening ${title}`, elapsedMs: null, running: true });
     setError(null);
     try {
       const input = await readText();
       await invoke("open_graph_window", {
         request: { input, codec: format.name, title, filename: "Clipboard" },
       });
-      setStatus({ action: `Opened ${title} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
     } catch (reason) {
       recordClientAction("Paste graph from clipboard", { format: format.name }, startedAt, reason);
       setError(String(reason));
-      setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
   }, []);
 
@@ -766,16 +760,12 @@ export default function App() {
   const openExample = useCallback(async (id: string) => {
     const example = examples?.find((item) => item.id === id);
     if (!example || exampleOpening) return;
-    const startedAt = performance.now();
     setExampleOpening(true);
-    setStatus({ action: `Opening ${example.filename}`, elapsedMs: null, running: true });
     try {
       await invoke("open_example_window", { id });
       setExampleChooserOpen(false);
-      setStatus({ action: `Opened ${example.filename} in a new window`, elapsedMs: performance.now() - startedAt, running: false });
     } catch (reason) {
       setError(String(reason));
-      setStatus({ action: `Opening ${example.filename} failed`, elapsedMs: performance.now() - startedAt, running: false });
     } finally {
       setExampleOpening(false);
     }
