@@ -362,6 +362,7 @@ struct StoredChart {
 #[derive(Default)]
 struct WindowResources {
     document: Mutex<Option<(u64, Document)>>,
+    initial_filter: Mutex<Option<StartupFilterView>>,
     charts: Arc<Mutex<HashMap<u64, Arc<StoredChart>>>>,
     jobs: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
 }
@@ -697,9 +698,20 @@ fn take_startup_documents(
 
 #[tauri::command]
 fn startup_filter(
-    state: tauri::State<'_, StartupState>,
+    window: WebviewWindow,
+    startup: tauri::State<'_, StartupState>,
+    documents: tauri::State<'_, DocumentState>,
 ) -> Result<Option<StartupFilterView>, String> {
-    state.filter.clone()
+    if let Some(filter) = documents
+        .resources(window.label())?
+        .initial_filter
+        .lock()
+        .map_err(|_| "initial filter state is unavailable")?
+        .clone()
+    {
+        return Ok(Some(filter));
+    }
+    startup.filter.clone()
 }
 
 #[tauri::command]
@@ -1295,12 +1307,13 @@ fn create_graph_window(
 ) -> Result<(), String> {
     let started = Instant::now();
     let graph = parse_graph(&request.input, &request.codec)?;
-    create_graph_window_from_graph(graph, &request.title, started, app, state)
+    create_graph_window_from_graph(graph, &request.title, None, started, app, state)
 }
 
 fn create_graph_window_from_graph(
     graph: HncGraph,
     title: &str,
+    initial_filter: Option<StartupFilterView>,
     started: Instant,
     app: &tauri::AppHandle,
     state: &DocumentState,
@@ -1310,6 +1323,10 @@ fn create_graph_window_from_graph(
     let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     let label = format!("graph-{document_id}");
     let resources = state.resources(&label)?;
+    *resources
+        .initial_filter
+        .lock()
+        .map_err(|_| "initial filter state is unavailable")? = initial_filter;
     *resources
         .document
         .lock()
@@ -1483,7 +1500,20 @@ fn start_server(
                 let graph = HncGraph::try_from(graph).map_err(|error| error.to_string())?;
                 let state = display_app.state::<DocumentState>();
                 let title = request.name.as_deref().unwrap_or("Graph from server");
-                create_graph_window_from_graph(graph, title, Instant::now(), &display_app, &state)
+                let initial_filter = request.filter_rules.map(|rewrite_system| StartupFilterView {
+                    rewrite_system,
+                    filename: request
+                        .filter_name
+                        .unwrap_or_else(|| "Server filter".to_owned()),
+                });
+                create_graph_window_from_graph(
+                    graph,
+                    title,
+                    initial_filter,
+                    Instant::now(),
+                    &display_app,
+                    &state,
+                )
             } else {
                 focus_graph_window(&display_app)
             }

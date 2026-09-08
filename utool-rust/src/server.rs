@@ -123,8 +123,8 @@ struct Request {
 }
 
 enum FilterRequest {
-    Cached,
-    Rules(RewriteSystem),
+    Cached { name: Option<String> },
+    Rules { rules: String, name: Option<String> },
 }
 
 #[derive(Debug)]
@@ -142,13 +142,24 @@ impl ServerError {
     }
 }
 
-type RuleCache = Arc<RwLock<Option<RewriteSystem>>>;
+#[derive(Clone)]
+struct ResolvedFilter {
+    system: RewriteSystem,
+    rules: String,
+    name: Option<String>,
+}
+
+type RuleCache = Arc<RwLock<Option<ResolvedFilter>>>;
 type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
 
 /// A graph and optional client-supplied name from a `display` request.
 pub struct DisplayRequest {
     pub graph: Option<ParsedGraph>,
     pub name: Option<String>,
+    /// Filtering rules to install in the newly opened desktop window.
+    pub filter_rules: Option<String>,
+    /// Optional client-supplied label for the installed filter.
+    pub filter_name: Option<String>,
 }
 
 /// Callback used by an embedded desktop server to handle `display` requests.
@@ -472,17 +483,17 @@ fn parse_usr(element: &BytesStart<'_>, request: &mut Request) -> Result<(), Serv
 }
 
 fn parse_filter(element: &BytesStart<'_>, request: &mut Request) -> Result<(), ServerError> {
+    let name = attribute(element, b"name")?.filter(|name| !name.trim().is_empty());
     request
         .filters
         .push(if let Some(rules) = attribute(element, b"rules")? {
-            FilterRequest::Rules(RewriteSystem::parse(&rules).map_err(|error| {
-                ServerError::new(
-                    FILTER_ERROR,
-                    format!("An error occurred while reading the filtering rules file!\n{error}"),
-                )
-            })?)
+            // Keep reading until the complete request has arrived before parsing
+            // potentially large rule systems. Otherwise a rule error closes the
+            // socket while a streaming client may still be writing the request,
+            // hiding the useful XML error response behind ECONNRESET.
+            FilterRequest::Rules { rules, name }
         } else {
-            FilterRequest::Cached
+            FilterRequest::Cached { name }
         });
     Ok(())
 }
@@ -504,26 +515,33 @@ fn process_request_inner(
     display_handler: Option<&DisplayHandler>,
 ) -> Result<String, ServerError> {
     let command = request.command.expect("validated request has a command");
+    if command == Command::Display {
+        let filter = resolve_filter(request.filters, cache)?;
+        if let Some(handler) = display_handler {
+            let (filter_rules, filter_name) = filter.map_or((None, None), |filter| {
+                (Some(filter.rules), filter.name)
+            });
+            handler(DisplayRequest {
+                graph: request.graph,
+                name: request.graph_name,
+                filter_rules,
+                filter_name,
+            })
+            .map_err(|error| {
+                ServerError::new(
+                    GRAPH_DRAWING_ERROR,
+                    format!("An error occurred while drawing the graph.\n{error}"),
+                )
+            })?;
+        }
+        return Ok("<result code='0' />\n".to_owned());
+    }
     let filter_system = resolve_filter(request.filters, cache)?;
     match command {
         Command::Help => return Ok(help_response(request.help_on.as_deref())),
         Command::DisplayCodecs => return Ok(codec_response()),
         Command::Version => return Ok(version_response()),
-        Command::Display => {
-            if let Some(handler) = display_handler {
-                handler(DisplayRequest {
-                    graph: request.graph,
-                    name: request.graph_name,
-                })
-                .map_err(|error| {
-                    ServerError::new(
-                        GRAPH_DRAWING_ERROR,
-                        format!("An error occurred while drawing the graph.\n{error}"),
-                    )
-                })?;
-            }
-            return Ok("<result code='0' />\n".to_owned());
-        }
+        Command::Display => unreachable!("display returned above"),
         _ => {}
     }
     let parsed = request.graph.expect("validated input command has a graph");
@@ -558,7 +576,7 @@ fn process_request_inner(
     let chart_ms = elapsed_ms(started);
     let solvable = chart.count_solutions() != 0_u8.into();
     if let Some(system) = filter_system {
-        chart = filter_chart(&chart, &system, || false)
+        chart = filter_chart(&chart, &system.system, || false)
             .map_err(|error| ServerError::new(FILTER_ERROR, error.to_string()))?;
     }
     if command == Command::Solvable {
@@ -581,28 +599,47 @@ fn process_request_inner(
 fn resolve_filter(
     requested: Vec<FilterRequest>,
     cache: &RuleCache,
-) -> Result<Option<RewriteSystem>, ServerError> {
+) -> Result<Option<ResolvedFilter>, ServerError> {
     let mut selected = None;
     for request in requested {
         selected = Some(match request {
-            FilterRequest::Rules(system) => {
-                *cache.write().map_err(|_| {
-                    ServerError::new(FILTER_ERROR, "The filtering rule cache is unavailable.")
-                })? = Some(system.clone());
-                system
-            }
-            FilterRequest::Cached => cache
-                .read()
-                .map_err(|_| {
-                    ServerError::new(FILTER_ERROR, "The filtering rule cache is unavailable.")
-                })?
-                .clone()
-                .ok_or_else(|| {
+            FilterRequest::Rules { rules, name } => {
+                let system = RewriteSystem::parse(&rules).map_err(|error| {
                     ServerError::new(
                         FILTER_ERROR,
-                        "You specified the 'filter' option without specifying the rules.",
+                        format!(
+                            "An error occurred while reading the filtering rules file!\n{error}"
+                        ),
                     )
-                })?,
+                })?;
+                let filter = ResolvedFilter {
+                    system,
+                    rules,
+                    name,
+                };
+                *cache.write().map_err(|_| {
+                    ServerError::new(FILTER_ERROR, "The filtering rule cache is unavailable.")
+                })? = Some(filter.clone());
+                filter
+            }
+            FilterRequest::Cached { name } => {
+                let mut filter = cache
+                    .read()
+                    .map_err(|_| {
+                        ServerError::new(FILTER_ERROR, "The filtering rule cache is unavailable.")
+                    })?
+                    .clone()
+                    .ok_or_else(|| {
+                        ServerError::new(
+                            FILTER_ERROR,
+                            "You specified the 'filter' option without specifying the rules.",
+                        )
+                    })?;
+                if name.is_some() {
+                    filter.name = name;
+                }
+                filter
+            }
         });
     }
     Ok(selected)
@@ -943,20 +980,120 @@ mod tests {
         let handler: DisplayHandler = Arc::new(move |request| {
             assert!(request.graph.is_some());
             assert_eq!(request.name.as_deref(), Some("Named graph"));
+            assert_eq!(
+                request.filter_rules.as_deref(),
+                Some("a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))")
+            );
+            assert!(matches!(
+                request.filter_name.as_deref(),
+                Some("Initial filter" | "Cached filter")
+            ));
             handler_displayed.store(true, Ordering::SeqCst);
             Ok(())
         });
         let mut input = io::Cursor::new(
-            b"<utool cmd='display'><usr name='Named graph' codec='domcon-oz' string='[label(x a)]'/></utool>",
+            b"<utool cmd='display' output-codec='term-prolog'><usr name='Named graph' codec='domcon-oz' string='[label(x a)]'/><filter name='Initial filter' rules='a#1(X,a#2(Y,Z)) = a#2(Y,a#1(X,Z))'/></utool>",
         );
         let response = process_request(parse_request(&mut input).unwrap(), &cache, Some(&handler));
         assert_eq!(response, "<result code='0' />\n");
         assert!(displayed.load(Ordering::SeqCst));
+        assert!(cache.read().unwrap().is_some());
+
+        let mut cached_input = io::Cursor::new(
+            b"<utool cmd='display'><usr name='Named graph' codec='domcon-oz' string='[label(x a)]'/><filter name='Cached filter'/></utool>",
+        );
+        let cached_response = process_request(
+            parse_request(&mut cached_input).unwrap(),
+            &cache,
+            Some(&handler),
+        );
+        assert_eq!(cached_response, "<result code='0' />\n");
+
+        let malformed = request(
+            "<utool cmd='display'><filter rules='not a rewrite system'/></utool>",
+            &Arc::new(RwLock::new(None)),
+        );
+        assert!(malformed.starts_with("<error code='170'"), "{malformed}");
 
         let failing: DisplayHandler = Arc::new(|_| Err("window creation failed".to_owned()));
         let mut input = io::Cursor::new(b"<utool cmd='display'/>");
         let response = process_request(parse_request(&mut input).unwrap(), &cache, Some(&failing));
         assert!(response.starts_with("<error code='130'"), "{response}");
+    }
+
+    #[test]
+    fn malformed_filters_are_still_reported_for_solving_commands() {
+        let cache = Arc::new(RwLock::new(None));
+        let response = request(
+            "<utool cmd='solvable'><usr codec='domcon-oz' string='[label(x a)]'/><filter rules='not a rewrite system'/></utool>",
+            &cache,
+        );
+        assert!(response.starts_with("<error code='170'"), "{response}");
+    }
+
+    #[test]
+    fn accepts_reported_mrs_and_filter_rules_for_display() {
+        let cache = Arc::new(RwLock::new(None));
+        let graph = r"psoa(h1,e2,
+[
+ rel('every_q',h3,
+     [ attrval('ARG0',x4),
+       attrval('RSTR',h5),
+       attrval('BODY',h6)]),
+ rel('affe_rel',h7,
+     [ attrval('ARG0',x4)]),
+ rel('every_q',h8,
+     [ attrval('ARG0',x9),
+       attrval('RSTR',h10),
+       attrval('BODY',h11)]),
+ rel('kind_rel',h12,
+     [ attrval('ARG0',x9)]),
+ rel('kennen_rel',h13,
+     [ attrval('ARG0',e2),
+       attrval('ARG1',x4),
+       attrval('ARG2',x9)])],
+ hcons([
+ qeq(h5,h7),
+ qeq(h10,h12)
+ ]))";
+        let rules = include_str!("../../stefan-2026/equivalences.rewrite");
+        let unfiltered = request(
+            &format!(
+                "<utool cmd='display'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"
+            ),
+            &cache,
+        );
+        assert_eq!(unfiltered, "<result code='0' />\n");
+        let unfiltered_solvable = request(
+            &format!(
+                "<utool cmd='solvable'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"
+            ),
+            &cache,
+        );
+        assert!(
+            unfiltered_solvable.contains("count='2'"),
+            "{unfiltered_solvable}"
+        );
+
+        let encoded_rules = rules.replace('\n', "&#10;");
+        let response = request(
+            &format!(
+                "<utool cmd='display'><usr codec='mrs-prolog' string=\"{graph}\"/><filter rules=\"{encoded_rules}\"/></utool>"
+            ),
+            &cache,
+        );
+        assert_eq!(response, "<result code='0' />\n");
+        assert_eq!(cache.read().unwrap().as_ref().unwrap().rules, rules);
+        let filtered_solvable = request(
+            &format!(
+                "<utool cmd='solvable'><usr codec='mrs-prolog' string=\"{graph}\"/><filter/></utool>"
+            ),
+            &cache,
+        );
+        assert!(
+            filtered_solvable.contains("count='1'"),
+            "{filtered_solvable}"
+        );
     }
 
     #[test]

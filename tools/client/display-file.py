@@ -39,23 +39,55 @@ def arguments() -> argparse.Namespace:
         "--name",
         help="graph name shown in the window title (default: input filename)",
     )
+    parser.add_argument(
+        "-f",
+        "--filter",
+        type=Path,
+        help="rewrite-rule file to install and apply in the opened window",
+    )
+    parser.add_argument(
+        "--filter-name",
+        help="name shown for the filter in the opened window",
+    )
     parser.add_argument("--timeout", type=float, default=30, help="socket timeout in seconds")
     return parser.parse_args()
 
 
-def request_xml(graph: str, input_codec: str, name: str | None) -> bytes:
+def request_xml(
+    graph: str,
+    input_codec: str,
+    name: str | None,
+    filter_rules: str | None,
+    filter_name: str | None,
+) -> bytes:
     request = ET.Element("utool", {"cmd": "display"})
     attributes = {"codec": input_codec, "string": graph}
     if name:
         attributes["name"] = name
     ET.SubElement(request, "usr", attributes)
-    return ET.tostring(request, encoding="utf-8")
+    if filter_rules is not None:
+        filter_attributes = {"rules": filter_rules}
+        if filter_name:
+            filter_attributes["name"] = filter_name
+        ET.SubElement(request, "filter", filter_attributes)
+    # XML replaces literal whitespace in attributes with spaces. Numeric
+    # character references are expanded after that normalization, preserving
+    # the line structure required by // comments in rewrite-rule files.
+    return (
+        ET.tostring(request, encoding="utf-8")
+        .replace(b"\r", b"&#13;")
+        .replace(b"\n", b"&#10;")
+        .replace(b"\t", b"&#9;")
+    )
 
 
 def main() -> int:
     options = arguments()
     if not 1 <= options.port <= 65535:
         print("error: --port must be between 1 and 65535", file=sys.stderr)
+        return 2
+    if options.filter_name and options.filter is None:
+        print("error: --filter-name requires --filter", file=sys.stderr)
         return 2
 
     input_codec = options.input_codec or inferred_codec(options.file)
@@ -68,7 +100,18 @@ def main() -> int:
 
     try:
         graph = options.file.read_text(encoding="utf-8")
-        request = request_xml(graph, input_codec, options.name or options.file.name)
+        filter_rules = (
+            options.filter.read_text(encoding="utf-8")
+            if options.filter is not None
+            else None
+        )
+        request = request_xml(
+            graph,
+            input_codec,
+            options.name or options.file.name,
+            filter_rules,
+            options.filter_name,
+        )
         with socket.create_connection((options.host, options.port), options.timeout) as connection:
             connection.settimeout(options.timeout)
             connection.sendall(request)
@@ -91,7 +134,8 @@ def main() -> int:
         print(f"server error {result.get('code', '?')}: {explanation}", file=sys.stderr)
         return 1
 
-    print(f"Displayed {options.file} via {options.host}:{options.port}")
+    filter_note = f" with filter {options.filter}" if options.filter is not None else ""
+    print(f"Displayed {options.file}{filter_note} via {options.host}:{options.port}")
     return 0
 
 

@@ -664,7 +664,11 @@ attribute:
 Because the rules are an XML attribute value, the usual XML escaping
 is required: in particular, write \verb?&amp;?, \verb?&lt;?, and
 \verb?&quot;? for ampersands, less-than signs, and quotation marks.
-Character references such as \verb?&#10;? may be used for line breaks.
+Line breaks that separate rules or terminate comments must be written as
+character references such as \verb?&#10;? because XML normalizes literal
+line breaks in attributes to spaces.
+An optional \verb?name? attribute supplies the label shown for the filtered
+solution space in the desktop application.
 After a request has supplied rules, a later request to the same server
 process may use \verb?<filter/>? to reuse the most recently loaded
 rule system. Using \verb?<filter/>? before any rules have been loaded
