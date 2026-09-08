@@ -4,56 +4,43 @@
 
 Utool is the Swiss Army Knife of Underspecification. It is a GUI and library written in Rust for performing computations with dominance graphs and other formalisms, which are used to represent semantic ambiguities in natural language processing.
 
-![Utool Screenshot](doc/ubench-screenshot.png)
+![Utool Screenshot](doc/utool4.png)
 
-Visit the [Utool homepage](https://coli-saar.github.io/utool/) or read the [detailed manual](https://coli-saar.github.io/utool/manual/).
 
 Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University](https://www.lst.uni-saarland.de/) by [Alexander Koller](https://www.coli.uni-saarland.de/koller/) and collaborators. It is no longer under active development, but it is probably still the fastest solver for underspecified representations of scope ambiguities, and will still run fine today. If you have any questions or requests, please get in touch by submitting a Github issue.
 
-In 2026, in response to sustained interest in Utool, we ported a streamlined version of Utool to Rust. This increased the speed of chart generation and solution enumeration by a factor of 10x and chart filtering speed (with rewrite rules) on complex inputs by a factor of 20x. A Macbook Pro with M5 Pro processor will now compute the chart for the [hardest example in the testsuite](https://github.com/coli-saar/utool/blob/master/src/main/resources/examples/rondane-650.mrs.pl) in 70 milliseconds, reduce to weakest readings in 700 milliseconds, and enumerate the remaining 1.9 million readings in 200 milliseconds.
+In 2026, in response to sustained interest in Utool, we released Utool 4: a streamlined port of Utool to Rust from the original Java. This increased the speed of chart generation and solution enumeration by a factor of 10x. Chart filtering (with rewrite rules) can now be done efficiently even on dominance graphs where the Java version ran out of memory. A Macbook Pro with M5 Pro processor computes the chart for the [hardest example in the testsuite](https://github.com/coli-saar/utool/blob/master/src/main/resources/examples/rondane-650.mrs.pl) in 70 milliseconds, reduces to weakest readings in 700 milliseconds, and enumerates the remaining 1.9 million readings in 200 milliseconds.
 
-You can always download the most recent release of Utool from the [Releases page](https://github.com/coli-saar/utool/releases). You can still use the Java version as Utool 3.4; the 4.x versions are Rust.
-
-The instructions below are for the Java version. Have a look at the [Utool 4 README](https://github.com/coli-saar/utool/blob/master/utool-rust/README.md) for installation instructions for the Rust version. Utool 4 is a drop-in replacement for Utool 3, so most of the documentation should still apply.
-
-
-## Compiling Utool
-
-To compile Utool, you will need a recent version of [Apache Maven](https://maven.apache.org/) and [Java JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) or newer. Utool 3.3 has been tested in 2020 with Java 8 and 12.
-
-Clone Utool from Github and the compile as follows:
-
-```
-mvn install assembly:single
-```
-
-This will produce a file `target/utool-<version>-jar-with-dependencies.jar`, where `<version>` is the version of Utool. We will call this file `utool.jar` below for simplicity.
+The [Utool homepage](https://coli-saar.github.io/utool/) has a [detailed manual](https://coli-saar.github.io/utool/manual/). The manual is written for Utool 3.1 (in Jaav), but Utool 4 is mostly a drop-in replacement for 3.1, so the key points still apply.
 
 
 ## Running Utool
 
-Run Utool as follows to get some elementary help on command-line usage:
 
-```
-java -jar utool.jar
-```
+Prebuilt command-line programs and desktop packages for Utool 4 are published on the
+[GitHub Releases page](https://github.com/coli-saar/utool/releases). Release
+artifacts are built for these targets:
 
-You can open the GUI shown above as follows:
+<!-- release-downloads:start version=4.0.0 -->
+| Platform | Desktop application | Command line program |
+| --- | --- | --- |
+| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-aarch64-apple-darwin.tar.gz) |
+| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-apple-darwin.tar.gz) |
+| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-pc-windows-msvc.zip) |
+| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-unknown-linux-gnu.tar.gz) |
+<!-- release-downloads:end -->
 
-```
-java -jar target/utool.jar display
-```
+For the easiest start, download and run the desktop application. This will allow you to open, convert, and solve dominance graphs. You can also activate the server model in the desktop app, which allows you to send XML commands for solving dominance graphs from other programs over a socket.
 
+Alternatively, you can download the command-line program and then run it in your shell. This is most suitable for batch processing.
 
-## Website
+The packages are not developer-signed or notarized. Windows SmartScreen and
+macOS Gatekeeper may therefore ask you to approve the application before its
+first launch. Download releases only from the repository's Releases page and
+verify that you selected the expected version and architecture.
+The binaries you have to approve are called `utool` and `utool-display`.
 
-The homepage, HTML manual, and Javadocs are generated from the files in `website/`, the LaTeX manual sources in `doc/`, and the Java sources in `src/`. The `old-website/` backup is kept only as a historical reference and is not used by the build. With [Pandoc](https://pandoc.org/) and Maven installed, build the site locally with:
-
-```
-./scripts/build-website.sh
-```
-
-The generated site is written to `_site/`. Pushes to `master` that change the website or manual automatically rebuild and deploy the site with GitHub Pages.
+The [last Java version](https://github.com/coli-saar/utool/releases/tag/utool-3.4), Utool 3.4, is still available on the Releases page if you wish to use that instead.
 
 
 ## Citing Utool

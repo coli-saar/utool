@@ -538,6 +538,46 @@ that the tag is exactly `v` followed by the version in all four manifests. A
 workflow rerun uses the workflow definition from the tagged commit; committing
 a repair only on `master` does not alter an already tagged run.
 
+## Compiling Utool 3.x
+
+To compile the Java version of Utool, you will need a recent version of [Apache Maven](https://maven.apache.org/) and [Java JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) or newer. Utool 3.3 has been tested in 2020 with Java 8 and 12.
+
+Clone Utool from Github and the compile as follows:
+
+```
+mvn install assembly:single
+```
+
+This will produce a file `target/utool-<version>-jar-with-dependencies.jar`, where `<version>` is the version of Utool. We will call this file `utool.jar` below for simplicity.
+
+
+## Running Utool 3.x
+
+Run Utool as follows to get some elementary help on command-line usage:
+
+```
+java -jar utool.jar
+```
+
+You can open the GUI shown above as follows:
+
+```
+java -jar target/utool.jar display
+```
+
+
+## Website
+
+The homepage, HTML manual, and Javadocs are generated from the files in `website/`, the LaTeX manual sources in `doc/`, and the Java sources in `src/`. The `old-website/` backup is kept only as a historical reference and is not used by the build. With [Pandoc](https://pandoc.org/) and Maven installed, build the site locally with:
+
+```
+./scripts/build-website.sh
+```
+
+The generated site is written to `_site/`. Pushes to `master` that change the website or manual automatically rebuild and deploy the site with GitHub Pages.
+
+
+
 ## License and further documentation
 
 Utool is licensed under GPL-2.0-only. See the repository's

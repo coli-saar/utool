@@ -25,6 +25,7 @@ repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 
 version_files=(
+  README.md
   utool-rust/README.md
   utool-rust/Cargo.toml
   utool-rust/Cargo.lock
@@ -79,21 +80,28 @@ const files = new Map([
   ["utool-rust/desktop/src-tauri/tauri.conf.json", 1],
 ]);
 
-const readmeFile = "utool-rust/README.md";
-const readme = fs.readFileSync(readmeFile, "utf8");
 const downloadsPattern = /<!-- release-downloads:start version=([^ ]+) -->([\s\S]*?)<!-- release-downloads:end -->/;
-const downloads = readme.match(downloadsPattern);
-if (!downloads) {
-  throw new Error(`${readmeFile}: release downloads block not found`);
-}
-if (downloads[1] !== currentVersion) {
-  throw new Error(
-    `${readmeFile}: download version is ${downloads[1]}, expected ${currentVersion}`,
-  );
-}
-const updatedDownloads = downloads[0].split(currentVersion).join(version);
+const readmeFiles = ["README.md", "utool-rust/README.md"];
 
 const contents = new Map();
+for (const readmeFile of readmeFiles) {
+  const readme = fs.readFileSync(readmeFile, "utf8");
+  const downloads = readme.match(downloadsPattern);
+  if (!downloads) {
+    throw new Error(`${readmeFile}: release downloads block not found`);
+  }
+  if (downloads[1] !== currentVersion) {
+    throw new Error(
+      `${readmeFile}: download version is ${downloads[1]}, expected ${currentVersion}`,
+    );
+  }
+  const updatedDownloads = downloads[0].split(currentVersion).join(version);
+  contents.set(
+    readmeFile,
+    readme.replace(downloadsPattern, updatedDownloads),
+  );
+}
+
 for (const [file, expectedCount] of files) {
   const text = fs.readFileSync(file, "utf8");
   const occurrences = text.split(currentVersion).length - 1;
@@ -106,9 +114,11 @@ for (const [file, expectedCount] of files) {
 }
 
 for (const [file, text] of contents) {
-  fs.writeFileSync(file, text.split(currentVersion).join(version));
+  fs.writeFileSync(
+    file,
+    files.has(file) ? text.split(currentVersion).join(version) : text,
+  );
 }
-fs.writeFileSync(readmeFile, readme.replace(downloadsPattern, updatedDownloads));
 NODE
 
 manifest_versions=(
