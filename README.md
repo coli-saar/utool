@@ -11,7 +11,7 @@ Utool was developed in 2005-2010 in the CHORUS Project at  [Saarland University]
 
 In 2026, in response to sustained interest in Utool, we released Utool 4: a streamlined port of Utool to Rust from the original Java. This increased the speed of chart generation and solution enumeration by a factor of 10x. Chart filtering (with rewrite rules) can now be done efficiently even on dominance graphs where the Java version ran out of memory. A Macbook Pro with M5 Pro processor computes the chart for the [hardest example in the testsuite](https://github.com/coli-saar/utool/blob/master/src/main/resources/examples/rondane-650.mrs.pl) in 70 milliseconds, reduces to weakest readings in 700 milliseconds, and enumerates the remaining 1.9 million readings in 200 milliseconds.
 
-The [Utool homepage](https://coli-saar.github.io/utool/) has a [detailed manual](https://coli-saar.github.io/utool/manual/). The manual is written for Utool 3.1 (in Jaav), but Utool 4 is mostly a drop-in replacement for 3.1, so the key points still apply.
+The [Utool homepage](https://coli-saar.github.io/utool/) has a [detailed manual](https://coli-saar.github.io/utool/manual/). The manual is written for Utool 3.1 (in Java), but Utool 4 is mostly a drop-in replacement for 3.4, so the key points still apply.
 
 
 ## Running Utool
