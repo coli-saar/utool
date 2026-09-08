@@ -2,8 +2,9 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fs, io,
-    path::PathBuf,
+    fs,
+    io::{self, Write},
+    path::{Path, PathBuf},
 };
 
 pub const SERVER_PORT_PROPERTY: &str = "utool.server.port";
@@ -170,7 +171,10 @@ impl UserConfig {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent)?;
         }
-        fs::write(&self.path, update_properties(&contents, &self.updates))
+        atomic_write(
+            &self.path,
+            update_properties(&contents, &self.updates).as_bytes(),
+        )
     }
 
     fn set(&mut self, key: &str, value: String) {
@@ -182,6 +186,25 @@ impl UserConfig {
             self.set(key, value);
         }
     }
+}
+
+fn atomic_write(path: &Path, contents: &[u8]) -> io::Result<()> {
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
+    temporary.write_all(contents)?;
+    if let Ok(metadata) = fs::metadata(path) {
+        temporary
+            .as_file()
+            .set_permissions(metadata.permissions())?;
+    }
+    temporary.as_file().sync_all()?;
+    temporary.persist(path).map_err(|error| error.error)?;
+    #[cfg(unix)]
+    fs::File::open(parent)?.sync_all()?;
+    Ok(())
 }
 
 fn parse_property(line: &str) -> Option<(&str, &str)> {
@@ -263,5 +286,30 @@ mod tests {
         assert!(saved.contains("utool.codec.default.input=domcon-oz\n"));
         assert!(saved.contains("utool.codec.default.output=domcon-oz\n"));
         fs::remove_file(path).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn saving_configuration_atomically_replaces_the_file() {
+        use std::os::unix::fs::MetadataExt;
+
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join(".utool");
+        fs::write(&path, "utool.server.port=2802\n").unwrap();
+        let original_inode = fs::metadata(&path).unwrap().ino();
+        let mut config = UserConfig::load_from(path.clone()).unwrap();
+        config.set_server_preferences(&ServerPreferences {
+            port: 2803,
+            ..ServerPreferences::default()
+        });
+
+        config.save().unwrap();
+
+        assert_ne!(fs::metadata(&path).unwrap().ino(), original_inode);
+        assert!(
+            fs::read_to_string(path)
+                .unwrap()
+                .contains("utool.server.port=2803")
+        );
     }
 }

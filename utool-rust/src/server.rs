@@ -16,7 +16,7 @@ use std::{
     fmt::Write as _,
     fs::File,
     io::{self, BufRead, BufReader, BufWriter, Read, Write},
-    net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream},
+    net::{IpAddr, Ipv4Addr, Shutdown, SocketAddr, TcpListener, TcpStream},
     path::PathBuf,
     sync::{
         Arc, Mutex, RwLock,
@@ -174,6 +174,7 @@ struct ResolvedFilter {
 
 type RuleCache = Arc<RwLock<Option<ResolvedFilter>>>;
 type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
+type ActiveConnections = Arc<Mutex<Vec<(u64, TcpStream)>>>;
 
 struct RecordingReader<'a> {
     inner: &'a mut dyn BufRead,
@@ -228,6 +229,7 @@ pub type DisplayHandler = Arc<dyn Fn(DisplayRequest) -> Result<(), String> + Sen
 pub struct ServerHandle {
     address: SocketAddr,
     shutdown: Arc<AtomicBool>,
+    active_connections: ActiveConnections,
     thread: Option<JoinHandle<io::Result<()>>>,
 }
 
@@ -245,6 +247,7 @@ impl ServerHandle {
     /// Returns an error if the server loop failed or panicked.
     pub fn stop(mut self) -> io::Result<()> {
         self.shutdown.store(true, Ordering::SeqCst);
+        shutdown_connections(&self.active_connections);
         self.join()
     }
 
@@ -269,7 +272,32 @@ impl ServerHandle {
 impl Drop for ServerHandle {
     fn drop(&mut self) {
         self.shutdown.store(true, Ordering::SeqCst);
+        shutdown_connections(&self.active_connections);
     }
+}
+
+fn shutdown_connections(connections: &ActiveConnections) {
+    let connections = connections
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    for (_, stream) in &*connections {
+        let _ = stream.shutdown(Shutdown::Both);
+    }
+}
+
+fn join_finished_workers(workers: &mut Vec<JoinHandle<()>>) -> io::Result<()> {
+    let mut index = 0;
+    while index < workers.len() {
+        if workers[index].is_finished() {
+            workers
+                .swap_remove(index)
+                .join()
+                .map_err(|_| io::Error::other("connection thread panicked"))?;
+        } else {
+            index += 1;
+        }
+    }
+    Ok(())
 }
 
 /// Listen indefinitely and serve Java Utool-compatible XML requests.
@@ -317,19 +345,45 @@ pub fn start(
     log_line(&log, &format!("Listening on {address}..."));
     let rules = Arc::new(RwLock::new(None));
     let shutdown = Arc::new(AtomicBool::new(false));
+    let active_connections: ActiveConnections = Arc::new(Mutex::new(Vec::new()));
     let thread_shutdown = Arc::clone(&shutdown);
+    let thread_connections = Arc::clone(&active_connections);
     let thread = thread::spawn(move || {
+        let mut workers = Vec::new();
+        let mut next_connection_id = 0_u64;
+        let mut result = Ok(());
         while !thread_shutdown.load(Ordering::SeqCst) {
+            if let Err(error) = join_finished_workers(&mut workers) {
+                result = Err(error);
+                break;
+            }
             match listener.accept() {
                 Ok((stream, _)) => {
                     // Keep only the listener nonblocking. Clients may connect
                     // before sending and TCP may split one XML document across
                     // multiple reads, so each accepted stream must block.
-                    stream.set_nonblocking(false)?;
+                    if let Err(error) = stream.set_nonblocking(false) {
+                        result = Err(error);
+                        break;
+                    }
+                    let tracked_stream = match stream.try_clone() {
+                        Ok(stream) => stream,
+                        Err(error) => {
+                            result = Err(error);
+                            break;
+                        }
+                    };
+                    let connection_id = next_connection_id;
+                    next_connection_id = next_connection_id.wrapping_add(1);
+                    thread_connections
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner)
+                        .push((connection_id, tracked_stream));
                     let rules = Arc::clone(&rules);
                     let log = log.clone();
                     let display_handler = display_handler.clone();
-                    thread::spawn(move || {
+                    let worker_connections = Arc::clone(&thread_connections);
+                    workers.push(thread::spawn(move || {
                         if let Err(error) =
                             serve_connection(stream, &rules, &log, display_handler.as_ref())
                         {
@@ -338,19 +392,33 @@ pub fn start(
                                 &format!("I/O error while processing command: {error}"),
                             );
                         }
-                    });
+                        worker_connections
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner)
+                            .retain(|(id, _)| *id != connection_id);
+                    }));
                 }
                 Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
                     thread::sleep(Duration::from_millis(20));
                 }
-                Err(error) => return Err(error),
+                Err(error) => {
+                    result = Err(error);
+                    break;
+                }
             }
         }
-        Ok(())
+        shutdown_connections(&thread_connections);
+        for worker in workers {
+            if worker.join().is_err() && result.is_ok() {
+                result = Err(io::Error::other("connection thread panicked"));
+            }
+        }
+        result
     });
     Ok(ServerHandle {
         address,
         shutdown,
+        active_connections,
         thread: Some(thread),
     })
 }
@@ -1312,6 +1380,32 @@ mod tests {
         let response = response_from(&mut client);
         assert!(response.starts_with("<result version="), "{response}");
         server.stop().unwrap();
+    }
+
+    #[test]
+    fn stopping_server_terminates_active_connections() {
+        let server = test_server();
+        let mut client = TcpStream::connect(server.address()).unwrap();
+        client.write_all(b"<utool cmd='ver").unwrap();
+        client.flush().unwrap();
+        thread::sleep(Duration::from_millis(100));
+
+        server.stop().unwrap();
+
+        client
+            .set_read_timeout(Some(Duration::from_secs(1)))
+            .unwrap();
+        let mut response = Vec::new();
+        match client.read_to_end(&mut response) {
+            Ok(_) => assert!(response.is_empty(), "stopped server replied: {response:?}"),
+            Err(error) => assert!(
+                matches!(
+                    error.kind(),
+                    io::ErrorKind::ConnectionReset | io::ErrorKind::BrokenPipe
+                ),
+                "active connection remained open after stop: {error}"
+            ),
+        }
     }
 
     #[test]

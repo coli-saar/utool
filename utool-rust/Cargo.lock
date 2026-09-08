@@ -1560,6 +1560,7 @@ dependencies = [
  "serde",
  "smallvec",
  "socket2",
+ "tempfile",
  "thiserror",
 ]
 
