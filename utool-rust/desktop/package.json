@@ -1,7 +1,7 @@
 {
   "name": "utool-display",
   "private": true,
-  "version": "4.0.0-alpha10",
+  "version": "4.0.0",
   "license": "GPL-2.0-only",
   "type": "module",
   "scripts": {
