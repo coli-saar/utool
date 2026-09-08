@@ -16,6 +16,8 @@ type Props = {
 const MIN_ZOOM = 25;
 const MAX_ZOOM = 400;
 const PADDING = 30;
+const DOMINANCE_PORT_SPACING = 10;
+const DOMINANCE_PORT_MARGIN = 8;
 
 function fragments(graph: GraphView): Map<number, number[]> {
   const parent = new Map(graph.nodes.map((node) => [node.id, node.id]));
@@ -194,12 +196,37 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
     onZoomChange(Math.round(next));
   };
 
-  const route = (sourceId: number, targetId: number) => {
-    const source = nodes.get(sourceId)!;
-    const target = nodes.get(targetId)!;
-    const s = position(sourceId);
-    const t = position(targetId);
-    return `${s.x + source.width / 2},${s.y + source.height} ${t.x + target.width / 2},${t.y}`;
+  const dominanceLandings = new Map<number, { rank: number; count: number }>();
+  const incomingDominanceEdges = new Map<number, number[]>();
+  graph.edges.forEach((edge, index) => {
+    if (edge.kind !== "dominance") return;
+    incomingDominanceEdges.set(edge.target, [...(incomingDominanceEdges.get(edge.target) ?? []), index]);
+  });
+  incomingDominanceEdges.forEach((indices) => {
+    indices.sort((left, right) => {
+      const leftEdge = graph.edges[left];
+      const rightEdge = graph.edges[right];
+      const leftSource = nodes.get(leftEdge.source)!;
+      const rightSource = nodes.get(rightEdge.source)!;
+      const leftPosition = position(leftEdge.source);
+      const rightPosition = position(rightEdge.source);
+      return leftPosition.x + leftSource.width / 2 - (rightPosition.x + rightSource.width / 2) || left - right;
+    });
+    indices.forEach((edgeIndex, rank) => dominanceLandings.set(edgeIndex, { rank, count: indices.length }));
+  });
+
+  const route = (edge: GraphView["edges"][number], edgeIndex: number) => {
+    const source = nodes.get(edge.source)!;
+    const target = nodes.get(edge.target)!;
+    const s = position(edge.source);
+    const t = position(edge.target);
+    const landing = dominanceLandings.get(edgeIndex);
+    const availableWidth = Math.max(0, target.width - DOMINANCE_PORT_MARGIN * 2);
+    const spacing = landing && landing.count > 1
+      ? Math.min(DOMINANCE_PORT_SPACING, availableWidth / (landing.count - 1))
+      : 0;
+    const targetOffset = landing ? (landing.rank - (landing.count - 1) / 2) * spacing : 0;
+    return `${s.x + source.width / 2},${s.y + source.height} ${t.x + target.width / 2 + targetOffset},${t.y}`;
   };
 
   const fragmentBoxes = fragmentMembers.map((members) => {
@@ -240,13 +267,13 @@ export function GraphCanvas({ graph, zoom, offsets = {}, draggable = true, onOff
           .node.hole rect { fill: #fff; stroke: #b8c0ca; stroke-width: .9; }
           .node text { text-anchor: middle; font: 12px sans-serif; }
         `}</style>
-        <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" /></marker>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><path d="M0.5,.5 L7.5,3 L.5,5.5 Z" /></marker>
       </defs>
       {draggable && <g className="fragment-hitboxes" aria-hidden="true">
         {fragmentBoxes.map((box) => <rect key={box.members[0]} x={box.x} y={box.y} width={box.width} height={box.height} onPointerDown={(event) => beginDrag(event, box.members[0])} />)}
       </g>}
       <g className="edges">
-        {graph.edges.map((edge, index) => <polyline key={`${edge.source}-${edge.target}-${index}`} points={route(edge.source, edge.target)} className={`${edge.kind} ${edge.light ? "light" : ""}`} markerEnd={edge.kind === "dominance" ? "url(#arrow)" : undefined} />)}
+        {graph.edges.map((edge, index) => <polyline key={`${edge.source}-${edge.target}-${index}`} points={route(edge, index)} className={`${edge.kind} ${edge.light ? "light" : ""}`} markerEnd={edge.kind === "dominance" ? "url(#arrow)" : undefined} />)}
       </g>
       <g className="nodes">
         {graph.nodes.map((node) => {
