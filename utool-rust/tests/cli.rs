@@ -20,6 +20,32 @@ fn solve_uses_java_command_and_codec_options() {
 }
 
 #[test]
+fn malformed_input_reports_codec_location_and_failed_expectation() {
+    let input = fixture(
+        "malformed-mrs",
+        "mrs.pl",
+        "psoa(h1,e2,\n[ rel('rain_rel',h3 [ attrval('ARG0',e2)]) ],\nhcons([]))",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_utool"))
+        .args(["solvable", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    fs::remove_file(input).unwrap();
+
+    assert_eq!(output.status.code(), Some(192));
+    assert!(output.stdout.is_empty());
+    let error = String::from_utf8(output.stderr).unwrap();
+    assert!(
+        error.starts_with("Error: Could not parse the input graph."),
+        "{error}"
+    );
+    assert!(error.contains("Codec: mrs-prolog"), "{error}");
+    assert!(error.contains("expected punctuation ','"), "{error}");
+    assert!(error.contains("line 2, column"), "{error}");
+    assert!(error.contains("rel('rain_rel',h3 ["), "{error}");
+}
+
+#[test]
 fn solve_falls_back_to_the_configured_default_output_codec() {
     let output = Command::new(env!("CARGO_BIN_EXE_utool"))
         .args(["solve", "-I", "chain", "3"])
@@ -207,7 +233,7 @@ fn server_exits_with_a_clear_error_when_its_port_is_in_use() {
     assert!(output.stdout.is_empty());
     assert_eq!(
         String::from_utf8(output.stderr).unwrap(),
-        format!("Port {port} is already in use\n")
+        format!("Error: Port {port} is already in use\n")
     );
 }
 
@@ -233,7 +259,7 @@ fn server_uses_the_shared_user_configuration_port_by_default() {
     assert!(!output.status.success());
     assert_eq!(
         String::from_utf8(output.stderr).unwrap(),
-        format!("Port {port} is already in use\n")
+        format!("Error: Port {port} is already in use\n")
     );
     fs::remove_dir_all(directory).unwrap();
 }

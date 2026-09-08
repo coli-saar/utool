@@ -53,6 +53,11 @@ function formatElapsed(elapsedMs: number): string {
   return `${(elapsedMs / 1000).toFixed(3)} s`;
 }
 
+function describeError(reason: unknown): string {
+  if (reason instanceof Error) return reason.stack ?? reason.message;
+  return String(reason);
+}
+
 function solutionGraph(solution: SolutionView): GraphView {
   const SIBLING_GAP = 18;
   const ROOT_GAP = 64;
@@ -313,7 +318,7 @@ function ChartRules({ chart }: { chart: ChartView }) {
   }, [heights]);
 
   if (chart.displayRowCount === 0) return <div className="empty-chart">The chart contains no productive split rules.</div>;
-  if (loadError) return <div className="empty-chart">Could not load chart rules: {loadError}</div>;
+  if (loadError) return <div className="empty-chart">Could not load chart rules. See the Event Log for details.</div>;
   const rendered = [];
   for (let index = first; index < last; index++) {
     const row = rows.get(index);
@@ -540,11 +545,27 @@ export default function App() {
   const activeVariant = variants.find((variant) => variant.key === activeVariantKey) ?? variants[0];
 
   const flashError = useCallback((message: string) => {
-    setError(message);
+    const summary = message.trim().replace(/[.!?]+$/, "");
+    const banner = `${summary} (check the Event Log for details).`;
+    setError(banner);
     window.setTimeout(() => {
-      setError((current) => current === message ? null : current);
+      setError((current) => current === banner ? null : current);
     }, 4000);
   }, []);
+
+  const recordClientAction = useCallback((action: string, arguments_: unknown, startedAt: number, reason?: unknown) => {
+    void invoke("report_client_action", {
+      action,
+      arguments: arguments_,
+      elapsedMs: performance.now() - startedAt,
+      error: reason === undefined ? null : describeError(reason),
+    });
+  }, []);
+
+  const reportFailure = useCallback((summary: string, action: string, arguments_: unknown, startedAt: number, reason: unknown) => {
+    flashError(summary);
+    recordClientAction(action, arguments_, startedAt, reason);
+  }, [flashError, recordClientAction]);
 
   const applyServerStatus = useCallback((nextStatus: ServerStatus) => {
     setServerStatus(nextStatus);
@@ -552,53 +573,51 @@ export default function App() {
       setServerDialog(null);
       setServerStarting(false);
       flashError(nextStatus.notice);
+      recordClientAction("Server failure", {}, performance.now(), nextStatus.notice);
       void invoke("clear_server_notice");
     } else if (nextStatus.state === "error") {
-      setError(nextStatus.tooltip);
+      reportFailure("The server stopped with an error.", "Server failure", {}, performance.now(), nextStatus.tooltip);
     }
-  }, [flashError]);
+  }, [flashError, recordClientAction, reportFailure]);
 
   const showServerDialog = useCallback(() => {
     setServerStartError(null);
+    const startedAt = performance.now();
     void invoke<ServerDialogInfo>("server_dialog_info")
       .then(setServerDialog)
-      .catch((reason) => setError(String(reason)));
-  }, []);
+      .catch((reason) => reportFailure("Could not open the server settings.", "Open server settings", {}, startedAt, reason));
+  }, [reportFailure]);
 
   const startServer = useCallback((port: number, acceptNonLocal: boolean) => {
     setServerStartError(null);
     setServerStarting(true);
+    const startedAt = performance.now();
     void invoke<ServerStatus>("start_desktop_server", { port, acceptNonLocal })
       .then((nextStatus) => { applyServerStatus(nextStatus); setServerDialog(null); })
       .catch((reason) => {
-        const message = String(reason);
-        if (/^Port \d+ is already in use$/.test(message)) {
+        const message = describeError(reason);
+        recordClientAction("Start server", { port, acceptNonLocal }, startedAt, reason);
+        if (/Port \d+ is already in use/.test(message)) {
           setServerDialog(null);
           setServerStatus({ state: "stopped", address: null, tooltip: "Server stopped", notice: null });
-          flashError(message);
+          flashError(`Port ${port} is already in use.`);
           void invoke("clear_server_notice");
         } else {
-          setServerStartError(message);
+          setServerStartError("Could not start the server. See the Event Log for details.");
         }
       })
       .finally(() => setServerStarting(false));
-  }, [applyServerStatus, flashError]);
+  }, [applyServerStatus, flashError, recordClientAction]);
 
   const makeJobId = () => crypto.randomUUID();
-  const recordClientAction = (action: string, arguments_: unknown, startedAt: number, reason?: unknown) => {
-    void invoke("report_client_action", {
-      action,
-      arguments: arguments_,
-      elapsedMs: performance.now() - startedAt,
-      error: reason === undefined ? null : String(reason),
-    });
-  };
 
   useEffect(() => {
     const reportWindowError = (event: ErrorEvent) => {
+      flashError("An unexpected interface error occurred.");
       recordClientAction("Unhandled UI error", { filename: event.filename, line: event.lineno, column: event.colno }, performance.now(), event.error ?? event.message);
     };
     const reportRejection = (event: PromiseRejectionEvent) => {
+      flashError("An unexpected interface error occurred.");
       recordClientAction("Unhandled UI promise rejection", {}, performance.now(), event.reason);
     };
     window.addEventListener("error", reportWindowError);
@@ -607,7 +626,7 @@ export default function App() {
       window.removeEventListener("error", reportWindowError);
       window.removeEventListener("unhandledrejection", reportRejection);
     };
-  }, []);
+  }, [flashError, recordClientAction]);
   useEffect(() => {
     void getCurrentWindow().setTitle(document ? `${document.title} — Utool` : "Utool");
   }, [document?.title]);
@@ -625,12 +644,12 @@ export default function App() {
       if (announce) setStatus({ action: `Computed solution ${index + 1}`, elapsedMs: next?.elapsedMs ?? 0, running: false });
     } catch (reason) {
       if (solutionOperation.current !== token) return;
-      setError(String(reason));
+      reportFailure("Could not compute that solution.", "Compute solution", { chartId: chart.chartId, solution: index + 1 }, startedAt, reason);
       setStatus({ action: "Computing solution failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
       if (solutionOperation.current === token) setSolutionRunning(false);
     }
-  }, []);
+  }, [reportFailure]);
 
   const computeBaseChart = useCallback(async (loaded: LoadedDocumentView, token: number) => {
     const startedAt = performance.now();
@@ -656,7 +675,7 @@ export default function App() {
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
       setGraphReady(true);
-      setError(String(reason));
+      reportFailure("Could not compute the solution chart.", "Compute solution chart", { documentId: loaded.documentId }, startedAt, reason);
       setStatus({ action: "Computing chart failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
       if (operation.current === token) {
@@ -664,7 +683,7 @@ export default function App() {
         setChartRunning(false);
       }
     }
-  }, [loadSolution]);
+  }, [loadSolution, reportFailure]);
 
   const installGraph = useCallback((loaded: LoadedDocumentView) => {
       const token = ++operation.current;
@@ -696,10 +715,10 @@ export default function App() {
       installGraph(loaded);
     } catch (reason) {
       if (loadOperation.current !== loadToken) return;
-      setError(String(reason));
+      reportFailure(`Could not open ${title}.`, "Load graph document", { title, codec }, startedAt, reason);
       setStatus({ action: `Opening ${title} failed`, elapsedMs: performance.now() - startedAt, running: false });
     }
-  }, [installGraph]);
+  }, [installGraph, reportFailure]);
 
   const openDocument = useCallback(async () => {
     // Native pickers filter by the final filesystem extension. Compound codec
@@ -720,10 +739,9 @@ export default function App() {
       const input = await readTextFile(selected);
       await invoke("open_graph_window", { request: { input, codec, title, filename: selected } });
     } catch (reason) {
-      recordClientAction("Open graph file", { filename: selected }, startedAt, reason);
-      setError(String(reason));
+      reportFailure("Could not open the selected graph.", "Open graph file", { filename: selected }, startedAt, reason);
     }
-  }, []);
+  }, [reportFailure]);
 
   const pasteDocument = useCallback(async (format: InputFormat) => {
     const startedAt = performance.now();
@@ -735,10 +753,9 @@ export default function App() {
         request: { input, codec: format.name, title, filename: "Clipboard" },
       });
     } catch (reason) {
-      recordClientAction("Paste graph from clipboard", { format: format.name }, startedAt, reason);
-      setError(String(reason));
+      reportFailure("Could not paste the graph.", "Paste graph from clipboard", { format: format.name }, startedAt, reason);
     }
-  }, []);
+  }, [reportFailure]);
 
   const showExampleChooser = useCallback(() => {
     setExampleChooserOpen(true);
@@ -753,23 +770,24 @@ export default function App() {
       })
       .catch((reason) => {
         setExampleChooserOpen(false);
-        setError(String(reason));
+        reportFailure("Could not load the built-in examples.", "List built-in examples", {}, performance.now(), reason);
       });
-  }, [examples]);
+  }, [examples, reportFailure]);
 
   const openExample = useCallback(async (id: string) => {
     const example = examples?.find((item) => item.id === id);
     if (!example || exampleOpening) return;
+    const startedAt = performance.now();
     setExampleOpening(true);
     try {
       await invoke("open_example_window", { id });
       setExampleChooserOpen(false);
     } catch (reason) {
-      setError(String(reason));
+      reportFailure("Could not open the selected example.", "Open built-in example", { id }, startedAt, reason);
     } finally {
       setExampleOpening(false);
     }
-  }, [exampleOpening, examples]);
+  }, [exampleOpening, examples, reportFailure]);
 
   const applyFilterFile = useCallback(async (selected: string, rewriteSystem?: string) => {
     const base = variants.find((variant) => variant.key === "base");
@@ -802,8 +820,7 @@ export default function App() {
       if (chart.solutionCount !== "0") void loadSolution(chart, 0, false);
     } catch (reason) {
       if (operation.current !== token || String(reason).toLowerCase().includes("cancel")) return;
-      recordClientAction("Apply filter file", { filename: selected }, startedAt, reason);
-      setError(String(reason));
+      reportFailure(`Could not apply ${filterName}.`, "Apply filter file", { filename: selected }, startedAt, reason);
       setStatus({ action: "Filtering chart failed", elapsedMs: performance.now() - startedAt, running: false });
     } finally {
       if (operation.current === token) {
@@ -811,7 +828,7 @@ export default function App() {
         setFilterRunning(null);
       }
     }
-  }, [filterRunning, loadSolution, variants]);
+  }, [filterRunning, loadSolution, reportFailure, variants]);
 
   const chooseFilter = useCallback(async () => {
     const selected = await open({ multiple: false });
@@ -858,10 +875,9 @@ export default function App() {
       await writeTextFile(selected, `<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
       recordClientAction("Export SVG", { filename: selected }, startedAt);
     } catch (reason) {
-      recordClientAction("Export SVG", { filename: selected }, startedAt, reason);
-      setError(String(reason));
+      reportFailure("Could not export the SVG image.", "Export SVG", { filename: selected }, startedAt, reason);
     }
-  }, [activeView, document?.title]);
+  }, [activeView, document?.title, recordClientAction, reportFailure]);
 
   const encodeCurrent = useCallback(async (format: OutputFormat, filename: string) => {
     if (activeView === "graph" && document && format.graph) {
@@ -885,8 +901,11 @@ export default function App() {
       await writeTextFile(selected, text);
       recordClientAction("Write export", { filename: selected, format: format.name, view: activeView }, startedAt);
       setStatus({ action: `Exported ${format.label}`, elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { recordClientAction("Write export", { filename: selected, format: format.name, view: activeView }, startedAt, reason); setError(String(reason)); setStatus({ action: `Exporting ${format.label} failed`, elapsedMs: performance.now() - startedAt, running: false }); }
-  }, [activeView, document, encodeCurrent, solutionIndex]);
+    } catch (reason) {
+      reportFailure(`Could not export as ${format.label}.`, "Write export", { filename: selected, format: format.name, view: activeView }, startedAt, reason);
+      setStatus({ action: `Exporting ${format.label} failed`, elapsedMs: performance.now() - startedAt, running: false });
+    }
+  }, [activeView, document, encodeCurrent, recordClientAction, reportFailure, solutionIndex]);
 
   const copyCurrent = useCallback(async (format: OutputFormat) => {
     const startedAt = performance.now();
@@ -894,8 +913,10 @@ export default function App() {
       await writeText(await encodeCurrent(format, "Clipboard"));
       recordClientAction("Copy encoded output", { format: format.name, view: activeView }, startedAt);
       setStatus({ action: `Copied as ${format.label}`, elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { recordClientAction("Copy encoded output", { format: format.name, view: activeView }, startedAt, reason); setError(String(reason)); }
-  }, [activeView, encodeCurrent]);
+    } catch (reason) {
+      reportFailure(`Could not copy as ${format.label}.`, "Copy encoded output", { format: format.name, view: activeView }, startedAt, reason);
+    }
+  }, [activeView, encodeCurrent, recordClientAction, reportFailure]);
 
   const copySvg = useCallback(async () => {
     if (!svg.current || activeView === "chart") return;
@@ -904,8 +925,10 @@ export default function App() {
       await writeText(`<?xml version="1.0" encoding="UTF-8"?>\n${svg.current.outerHTML}`);
       recordClientAction("Copy SVG", { view: activeView }, startedAt);
       setStatus({ action: "Copied as SVG", elapsedMs: performance.now() - startedAt, running: false });
-    } catch (reason) { recordClientAction("Copy SVG", { view: activeView }, startedAt, reason); setError(String(reason)); }
-  }, [activeView]);
+    } catch (reason) {
+      reportFailure("Could not copy the SVG image.", "Copy SVG", { view: activeView }, startedAt, reason);
+    }
+  }, [activeView, recordClientAction, reportFailure]);
 
   useEffect(() => {
     const syncMenu = () => invoke("set_output_context", { view: activeView, hasDocument: Boolean(document), hasSolution: Boolean(solution && activeVariant) });
@@ -921,13 +944,13 @@ export default function App() {
   useEffect(() => {
     void invoke<ServerStatus>("server_status")
       .then(applyServerStatus)
-      .catch((reason) => setError(String(reason)));
+      .catch((reason) => reportFailure("Could not read the server status.", "Read server status", {}, performance.now(), reason));
     let disposed = false;
     let unlisten: (() => void) | undefined;
     void listen<ServerStatus>("server-status-changed", ({ payload }) => applyServerStatus(payload))
       .then((dispose) => { if (disposed) dispose(); else unlisten = dispose; });
     return () => { disposed = true; unlisten?.(); };
-  }, [applyServerStatus]);
+  }, [applyServerStatus, reportFailure]);
 
   useEffect(() => {
     if (WINDOW_LABEL === "main") {
@@ -935,7 +958,10 @@ export default function App() {
         invoke<StartupDocument[]>("take_startup_documents"),
         invoke<StartupFilter | null>("startup_filter")
           .then((selected) => { setStartupFilter(selected); })
-          .catch((reason) => { setStartupFilter(null); setError(String(reason)); }),
+          .catch((reason) => {
+            setStartupFilter(null);
+            reportFailure("Could not load the startup filter.", "Load startup filter", {}, performance.now(), reason);
+          }),
       ]).then(async ([documents]) => {
         try {
           if (documents.length === 0) {
@@ -950,17 +976,24 @@ export default function App() {
         } finally {
           dismissStartupScreen();
         }
-      }).catch((reason) => { dismissStartupScreen(); setStartupFilter(null); setError(String(reason)); });
+      }).catch((reason) => {
+        dismissStartupScreen();
+        setStartupFilter(null);
+        reportFailure("Could not restore the startup documents.", "Restore startup documents", {}, performance.now(), reason);
+      });
     } else {
       void invoke<StartupFilter | null>("startup_filter")
         .then(setStartupFilter)
-        .catch((reason) => { setStartupFilter(null); setError(String(reason)); });
+        .catch((reason) => {
+          setStartupFilter(null);
+          reportFailure("Could not load the startup filter.", "Load startup filter", {}, performance.now(), reason);
+        });
       void invoke<LoadedDocumentView | null>("current_document").then((loaded) => {
         if (loaded) installGraph(loaded);
-        else setError("This graph window no longer has an open document.");
-      }).catch((reason) => setError(String(reason)));
+        else reportFailure("This graph window no longer has an open document.", "Restore graph window", {}, performance.now(), "No document was associated with this window.");
+      }).catch((reason) => reportFailure("Could not restore this graph window.", "Restore graph window", {}, performance.now(), reason));
     }
-  }, [addGraph, installGraph]);
+  }, [addGraph, installGraph, reportFailure]);
   useEffect(() => {
     let disposed = false;
     const listenMenu = (event: string, handler: () => void) =>
@@ -984,11 +1017,11 @@ export default function App() {
       listenMenu("menu-about", () => {
         void invoke<AppInfo>("app_info")
           .then(setAboutInfo)
-          .catch((reason) => setError(String(reason)));
+          .catch((reason) => reportFailure("Could not open About Utool.", "Open About Utool", {}, performance.now(), reason));
       }),
     ]);
     return () => { disposed = true; void pending.then((items) => { if (disposed) items.forEach((unlisten) => unlisten()); }); };
-  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, pasteDocument, setZoom, showExampleChooser, showServerDialog]);
+  }, [changeZoom, copyCurrent, copySvg, exportCurrent, exportSvg, openDocument, pasteDocument, reportFailure, setZoom, showExampleChooser, showServerDialog]);
 
   const solutionTotal = activeVariant?.chart.solutionCount ?? "0";
   const derivedLoading = chartRunning && !activeVariant;

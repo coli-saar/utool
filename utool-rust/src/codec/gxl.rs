@@ -153,7 +153,13 @@ pub fn parse_domgraph_gxl(input: &str) -> CodecResult {
             }
             Ok(Event::Eof) => break,
             Ok(_) => {}
-            Err(error) => return Err(CodecError::Syntax(format!("invalid GXL XML: {error}"))),
+            Err(error) => {
+                return Err(CodecError::Syntax(super::format_source_error(
+                    input,
+                    usize::try_from(reader.error_position()).unwrap_or(usize::MAX),
+                    &format!("invalid GXL XML: {error}"),
+                )));
+            }
         }
     }
 

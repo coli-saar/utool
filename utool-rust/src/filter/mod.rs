@@ -123,6 +123,28 @@ pub enum FilterError {
     Cancelled,
 }
 
+impl FilterError {
+    /// Format this error together with the offending rewrite-rule source line,
+    /// when the parser recorded a line number.
+    #[must_use]
+    pub fn format_with_source(&self, source: &str) -> String {
+        let Some(line) = self.source_line() else {
+            return self.to_string();
+        };
+        let Some(text) = source.lines().nth(line.saturating_sub(1)) else {
+            return self.to_string();
+        };
+        format!("{self}\n\nSource line {line}:\n  {}", text.trim_end())
+    }
+
+    const fn source_line(&self) -> Option<usize> {
+        match self {
+            Self::Syntax { line, .. } | Self::InvalidVariables { line, .. } => Some(*line),
+            _ => None,
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Parsing and static validation
 // ---------------------------------------------------------------------------
@@ -2134,5 +2156,16 @@ mod tests {
             panic!("expected a constructor")
         };
         assert_eq!(occurrence, "1");
+    }
+
+    #[test]
+    fn parse_diagnostic_includes_the_offending_source_line() {
+        let source = "// valid comment\nnot a rewrite rule\n";
+        let error = RewriteSystem::parse(source).unwrap_err();
+        let diagnostic = error.format_with_source(source);
+
+        assert!(diagnostic.contains("line 2"), "{diagnostic}");
+        assert!(diagnostic.contains("Source line 2:"), "{diagnostic}");
+        assert!(diagnostic.contains("not a rewrite rule"), "{diagnostic}");
     }
 }

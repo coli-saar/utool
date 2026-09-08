@@ -13,8 +13,9 @@ use quick_xml::{
 };
 use socket2::{Domain, Protocol, Socket, Type};
 use std::{
+    fmt::Write as _,
     fs::File,
-    io::{self, BufRead, BufReader, BufWriter, Write},
+    io::{self, BufRead, BufReader, BufWriter, Read, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream},
     path::PathBuf,
     sync::{
@@ -142,6 +143,28 @@ impl ServerError {
     }
 }
 
+fn detailed_error(
+    summary: &str,
+    context: impl IntoIterator<Item = (&'static str, String)>,
+    detail: impl std::fmt::Display,
+) -> String {
+    let mut message = summary.to_owned();
+    for (label, value) in context {
+        let _ = write!(message, "\n  {label}: {value}");
+    }
+    let detail = detail.to_string();
+    if !detail.trim().is_empty() {
+        message.push_str("\n\nDetails:\n");
+        for line in detail.lines() {
+            message.push_str("  ");
+            message.push_str(line);
+            message.push('\n');
+        }
+        message.pop();
+    }
+    message
+}
+
 #[derive(Clone)]
 struct ResolvedFilter {
     system: RewriteSystem,
@@ -151,6 +174,42 @@ struct ResolvedFilter {
 
 type RuleCache = Arc<RwLock<Option<ResolvedFilter>>>;
 type Log = Option<Arc<Mutex<Box<dyn Write + Send>>>>;
+
+struct RecordingReader<'a> {
+    inner: &'a mut dyn BufRead,
+    consumed: Vec<u8>,
+}
+
+impl Read for RecordingReader<'_> {
+    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
+        let count = self.inner.read(output)?;
+        self.consumed.extend_from_slice(&output[..count]);
+        Ok(count)
+    }
+}
+
+impl BufRead for RecordingReader<'_> {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        self.inner.fill_buf()
+    }
+
+    fn consume(&mut self, amount: usize) {
+        if let Ok(buffer) = self.inner.fill_buf() {
+            self.consumed
+                .extend_from_slice(&buffer[..amount.min(buffer.len())]);
+        }
+        self.inner.consume(amount);
+    }
+}
+
+fn xml_source_diagnostic(source: &[u8], offset: u64, detail: impl std::fmt::Display) -> String {
+    let source = String::from_utf8_lossy(source);
+    crate::codec::format_source_error(
+        &source,
+        usize::try_from(offset).unwrap_or(usize::MAX),
+        &detail.to_string(),
+    )
+}
 
 /// A graph and optional client-supplied name from a `display` request.
 pub struct DisplayRequest {
@@ -341,7 +400,14 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Se
         let attribute = attribute.map_err(|error| {
             ServerError::new(
                 INPUT_PARSE_ERROR,
-                format!("An error occurred while parsing the input!\n{error}"),
+                detailed_error(
+                    "The XML request contains an invalid attribute.",
+                    [(
+                        "Element",
+                        String::from_utf8_lossy(element.name().as_ref()).into_owned(),
+                    )],
+                    error,
+                ),
             )
         })?;
         if attribute.key.as_ref() == name {
@@ -351,7 +417,11 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Se
                 .map_err(|error| {
                     ServerError::new(
                         INPUT_PARSE_ERROR,
-                        format!("An XML entity could not be resolved: {error}"),
+                        detailed_error(
+                            "An XML attribute contains an invalid entity.",
+                            [("Attribute", String::from_utf8_lossy(name).into_owned())],
+                            error,
+                        ),
                     )
                 });
         }
@@ -360,7 +430,11 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Se
 }
 
 fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
-    let mut reader = Reader::from_reader(input);
+    let recording = RecordingReader {
+        inner: input,
+        consumed: Vec::new(),
+    };
+    let mut reader = Reader::from_reader(recording);
     reader.config_mut().trim_text(true);
     let mut buffer = Vec::new();
     let mut request = Request {
@@ -369,13 +443,22 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
     };
     let mut saw_root = false;
     loop {
+        let event_start = reader.buffer_position();
         match reader.read_event_into(&mut buffer) {
             Ok(Event::Start(element)) => match element.local_name().as_ref() {
                 b"utool" => {
                     if saw_root {
                         return Err(ServerError::new(
                             INPUT_PARSE_ERROR,
-                            "An error occurred while parsing the input!",
+                            detailed_error(
+                                "The XML request contains more than one <utool> root element.",
+                                [],
+                                xml_source_diagnostic(
+                                    &reader.get_ref().consumed,
+                                    event_start,
+                                    "A request must contain exactly one <utool> element.",
+                                ),
+                            ),
                         ));
                     }
                     saw_root = true;
@@ -398,14 +481,30 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
             Ok(Event::Eof) => {
                 return Err(ServerError::new(
                     INPUT_PARSE_ERROR,
-                    "An error occurred while parsing the input!\nUnexpected end of input",
+                    detailed_error(
+                        "The XML request ended before </utool>.",
+                        [],
+                        xml_source_diagnostic(
+                            &reader.get_ref().consumed,
+                            reader.buffer_position(),
+                            "Unexpected end of input. Close the <utool> element before closing the connection.",
+                        ),
+                    ),
                 ));
             }
             Ok(_) => {}
             Err(error) => {
                 return Err(ServerError::new(
                     INPUT_PARSE_ERROR,
-                    format!("An error occurred while parsing the input!\n{error}"),
+                    detailed_error(
+                        "The XML request could not be parsed.",
+                        [],
+                        xml_source_diagnostic(
+                            &reader.get_ref().consumed,
+                            reader.error_position(),
+                            error,
+                        ),
+                    ),
                 ));
             }
         }
@@ -476,7 +575,21 @@ fn parse_usr(element: &BytesStart<'_>, request: &mut Request) -> Result<(), Serv
         };
         ServerError::new(
             code,
-            format!("A parsing error occurred while reading the input.\n{error}"),
+            detailed_error(
+                "The input graph could not be parsed.",
+                [
+                    (
+                        "Graph",
+                        request
+                            .graph_name
+                            .clone()
+                            .unwrap_or_else(|| "Unnamed graph".to_owned()),
+                    ),
+                    ("Input codec", codec.name().to_owned()),
+                    ("Input size", format!("{} bytes", source.len())),
+                ],
+                error,
+            ),
         )
     })?);
     Ok(())
@@ -509,6 +622,7 @@ fn process_request(
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn process_request_inner(
     request: Request,
     cache: &RuleCache,
@@ -518,9 +632,12 @@ fn process_request_inner(
     if command == Command::Display {
         let filter = resolve_filter(request.filters, cache)?;
         if let Some(handler) = display_handler {
-            let (filter_rules, filter_name) = filter.map_or((None, None), |filter| {
-                (Some(filter.rules), filter.name)
-            });
+            let (filter_rules, filter_name) =
+                filter.map_or((None, None), |filter| (Some(filter.rules), filter.name));
+            let graph_name = request
+                .graph_name
+                .clone()
+                .unwrap_or_else(|| "Unnamed graph".to_owned());
             handler(DisplayRequest {
                 graph: request.graph,
                 name: request.graph_name,
@@ -530,7 +647,11 @@ fn process_request_inner(
             .map_err(|error| {
                 ServerError::new(
                     GRAPH_DRAWING_ERROR,
-                    format!("An error occurred while drawing the graph.\n{error}"),
+                    detailed_error(
+                        "The desktop app could not display the graph.",
+                        [("Graph", graph_name)],
+                        error,
+                    ),
                 )
             })?;
         }
@@ -555,7 +676,11 @@ fn process_request_inner(
     let graph = HncGraph::try_from(parsed).map_err(|error| {
         ServerError::new(
             SOLVER_NOT_APPLICABLE,
-            format!("The solver is not applicable to this graph: {error}"),
+            detailed_error(
+                "The solver is not applicable to the input graph.",
+                [("Command", format!("{command:?}").to_lowercase())],
+                error,
+            ),
         )
     })?;
     if command == Command::Solvable && request.nochart {
@@ -570,14 +695,29 @@ fn process_request_inner(
     let mut chart = solve(&graph).map_err(|error| {
         ServerError::new(
             SOLVER_NOT_APPLICABLE,
-            format!("The solver is not applicable to this graph: {error}"),
+            detailed_error(
+                "The solution chart could not be constructed.",
+                [("Command", format!("{command:?}").to_lowercase())],
+                error,
+            ),
         )
     })?;
     let chart_ms = elapsed_ms(started);
     let solvable = chart.count_solutions() != 0_u8.into();
     if let Some(system) = filter_system {
-        chart = filter_chart(&chart, &system.system, || false)
-            .map_err(|error| ServerError::new(FILTER_ERROR, error.to_string()))?;
+        chart = filter_chart(&chart, &system.system, || false).map_err(|error| {
+            ServerError::new(
+                FILTER_ERROR,
+                detailed_error(
+                    "The solution chart could not be filtered.",
+                    [(
+                        "Filter",
+                        system.name.unwrap_or_else(|| "Unnamed filter".to_owned()),
+                    )],
+                    error,
+                ),
+            )
+        })?;
     }
     if command == Command::Solvable {
         return Ok(format!(
@@ -608,7 +748,10 @@ fn resolve_filter(
                     ServerError::new(
                         FILTER_ERROR,
                         format!(
-                            "An error occurred while reading the filtering rules file!\n{error}"
+                            "The filtering rules could not be parsed.\n  Filter: {}\n  Input size: {} bytes\n\nDetails:\n  {}",
+                            name.as_deref().unwrap_or("Unnamed filter"),
+                            rules.len(),
+                            error.format_with_source(&rules).replace('\n', "\n  ")
                         ),
                     )
                 })?;
@@ -671,8 +814,25 @@ fn solve_response(
         count += 1;
         if let Some(codec) = codec {
             let mut value = Vec::new();
-            codec.write_single_solution_at(&solutions.current().expect("advance produced a solution"), count, &mut value)
-                .map_err(|error| ServerError::new(OUTPUT_ERROR, format!("Output of the solved forms of this graph is not supported by this output codec.\n{error}")))?;
+            codec
+                .write_single_solution_at(
+                    &solutions.current().expect("advance produced a solution"),
+                    count,
+                    &mut value,
+                )
+                .map_err(|error| {
+                    ServerError::new(
+                        OUTPUT_ERROR,
+                        detailed_error(
+                            "A solved form could not be encoded.",
+                            [
+                                ("Output codec", codec.name().to_owned()),
+                                ("Solution", count.to_string()),
+                            ],
+                            error,
+                        ),
+                    )
+                })?;
             encoded.extend_from_slice(b"  <solution string='");
             escape_xml_bytes(&value, &mut encoded);
             encoded.extend_from_slice(b"' />\n");
@@ -682,7 +842,12 @@ fn solve_response(
     let mut response = format!("<result solvable='true' count='{count}' fragments='{fragments}' chartsize='{}' time-chart='{chart_ms}' time-extraction='{extraction_ms}' >\n", chart.split_count()).into_bytes();
     response.extend(encoded);
     response.extend_from_slice(b"</result>\n");
-    String::from_utf8(response).map_err(|error| ServerError::new(IO_ERROR, error.to_string()))
+    String::from_utf8(response).map_err(|error| {
+        ServerError::new(
+            IO_ERROR,
+            detailed_error("The server generated an invalid UTF-8 response.", [], error),
+        )
+    })
 }
 
 fn convert_response(
@@ -702,13 +867,22 @@ fn convert_response(
     encoder.write_graph(graph, &mut value).map_err(|error| {
         ServerError::new(
             OUTPUT_ERROR,
-            format!("This graph is not supported by the specified output codec.\n{error}"),
+            detailed_error(
+                "The graph could not be encoded.",
+                [("Output codec", codec.name().to_owned())],
+                error,
+            ),
         )
     })?;
     let mut response = b"<result usr='".to_vec();
     escape_xml_bytes(&value, &mut response);
     response.extend_from_slice(b"' />\n");
-    String::from_utf8(response).map_err(|error| ServerError::new(IO_ERROR, error.to_string()))
+    String::from_utf8(response).map_err(|error| {
+        ServerError::new(
+            IO_ERROR,
+            detailed_error("The server generated an invalid UTF-8 response.", [], error),
+        )
+    })
 }
 
 fn classify_response(graph: &ParsedGraph) -> String {
@@ -886,6 +1060,20 @@ mod tests {
     }
 
     #[test]
+    fn malformed_request_reports_line_and_offending_input_instead_of_byte_offset() {
+        let response = request(
+            "<utool cmd='display'>\n  <usr codec='domcon-oz' string='[label(x a)]'></utool>",
+            &Arc::new(RwLock::new(None)),
+        );
+
+        assert!(response.starts_with("<error code='192'"), "{response}");
+        assert!(response.contains("line 2, column"), "{response}");
+        assert!(response.contains("Offending input"), "{response}");
+        assert!(response.contains("&lt;usr codec="), "{response}");
+        assert!(!response.contains("Byte offset"), "{response}");
+    }
+
+    #[test]
     fn supports_the_java_protocol_operations_and_escaping() {
         let cache = Arc::new(RwLock::new(None));
         let graph = "[label(x f(x1)) label(y &apos;&amp;&apos;) dom(x1 y)]";
@@ -1014,6 +1202,8 @@ mod tests {
             &Arc::new(RwLock::new(None)),
         );
         assert!(malformed.starts_with("<error code='170'"), "{malformed}");
+        assert!(malformed.contains("Source line 1"), "{malformed}");
+        assert!(malformed.contains("not a rewrite system"), "{malformed}");
 
         let failing: DisplayHandler = Arc::new(|_| Err("window creation failed".to_owned()));
         let mut input = io::Cursor::new(b"<utool cmd='display'/>");
@@ -1029,6 +1219,24 @@ mod tests {
             &cache,
         );
         assert!(response.starts_with("<error code='170'"), "{response}");
+        assert!(
+            response.contains("The filtering rules could not be parsed"),
+            "{response}"
+        );
+    }
+
+    #[test]
+    fn malformed_graphs_report_codec_and_parser_location() {
+        let response = request(
+            "<utool cmd='solvable'><usr name='Broken MRS' codec='mrs-prolog' string=\"psoa(h1,e2,&#10;[ rel('rain_rel',h3 [ attrval('ARG0',e2)]) ],hcons([]))\"/></utool>",
+            &Arc::new(RwLock::new(None)),
+        );
+
+        assert!(response.starts_with("<error code='192'"), "{response}");
+        assert!(response.contains("Broken MRS"), "{response}");
+        assert!(response.contains("mrs-prolog"), "{response}");
+        assert!(response.contains("line 2, column"), "{response}");
+        assert!(response.contains("expected punctuation"), "{response}");
     }
 
     #[test]
@@ -1058,16 +1266,12 @@ mod tests {
  ]))";
         let rules = include_str!("../../stefan-2026/equivalences.rewrite");
         let unfiltered = request(
-            &format!(
-                "<utool cmd='display'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"
-            ),
+            &format!("<utool cmd='display'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"),
             &cache,
         );
         assert_eq!(unfiltered, "<result code='0' />\n");
         let unfiltered_solvable = request(
-            &format!(
-                "<utool cmd='solvable'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"
-            ),
+            &format!("<utool cmd='solvable'><usr codec='mrs-prolog' string=\"{graph}\"/></utool>"),
             &cache,
         );
         assert!(

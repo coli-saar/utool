@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 use std::{
     collections::HashMap,
     ffi::OsString,
+    fmt::Write as _,
     fs,
     net::{IpAddr, Ipv4Addr, UdpSocket},
     path::{Path, PathBuf},
@@ -145,7 +146,13 @@ struct ServerState {
 impl ServerState {
     fn load() -> Result<Self, String> {
         Ok(Self {
-            config: Mutex::new(UserConfig::load().map_err(|error| error.to_string())?),
+            config: Mutex::new(UserConfig::load().map_err(|error| {
+                detailed_error(
+                    "The Utool configuration could not be loaded.",
+                    [("Configuration", "~/.utool".to_owned())],
+                    error,
+                )
+            })?),
             phase: Mutex::new(ServerPhase::Stopped { notice: None }),
         })
     }
@@ -169,7 +176,13 @@ impl ServerState {
         let mut preferences = config.server_preferences();
         update(&mut preferences);
         config.set_server_preferences(&preferences);
-        config.save().map_err(|error| error.to_string())
+        config.save().map_err(|error| {
+            detailed_error(
+                "The server preferences could not be saved.",
+                [("Configuration", "~/.utool".to_owned())],
+                error,
+            )
+        })
     }
 }
 
@@ -578,11 +591,53 @@ struct SolutionNodeView {
     label: String,
 }
 
+fn detailed_error(
+    summary: &str,
+    context: impl IntoIterator<Item = (&'static str, String)>,
+    detail: impl std::fmt::Display,
+) -> String {
+    let mut message = summary.to_owned();
+    for (label, value) in context {
+        let _ = write!(message, "\n  {label}: {value}");
+    }
+    let detail = detail.to_string();
+    if !detail.trim().is_empty() {
+        message.push_str("\n\nDetails:\n");
+        for line in detail.lines() {
+            message.push_str("  ");
+            message.push_str(line);
+            message.push('\n');
+        }
+        message.pop();
+    }
+    message
+}
+
 fn parse_graph(input: &str, codec: &str) -> Result<HncGraph, String> {
-    let codec =
-        InputCodec::from_name(codec).ok_or_else(|| format!("unsupported input codec: {codec}"))?;
-    let parsed = codec.parse(input).map_err(|error| error.to_string())?;
-    HncGraph::try_from(parsed).map_err(|error| error.to_string())
+    let selected = InputCodec::from_name(codec).ok_or_else(|| {
+        detailed_error(
+            "The selected input format is not supported.",
+            [("Requested format", codec.to_owned())],
+            "Choose one of the formats listed in the Paste As menu.",
+        )
+    })?;
+    let parsed = selected.parse(input).map_err(|error| {
+        detailed_error(
+            "The graph could not be parsed.",
+            [
+                ("Input format", selected.name().to_owned()),
+                ("Input size", format!("{} bytes", input.len())),
+            ],
+            error,
+        )
+    })?;
+    HncGraph::try_from(parsed).map_err(|error| {
+        detailed_error(
+            "The graph cannot be processed by the solver.",
+            [("Input format", selected.name().to_owned())],
+            error,
+        )
+    })
 }
 
 fn display_filename(path: &str) -> String {
@@ -614,12 +669,21 @@ fn graph_view(graph: &HncGraph, chart: Option<&Chart>) -> Result<GraphView, Stri
         match layout_chart(chart, &sizes, options) {
             Ok(layout) => layout,
             Err(LayoutError::UnsolvableGraph) => {
-                layout_graph(graph, &sizes, options).map_err(|error| error.to_string())?
+                layout_graph(graph, &sizes, options).map_err(|error| {
+                    detailed_error("The graph layout could not be computed.", [], error)
+                })?
             }
-            Err(error) => return Err(error.to_string()),
+            Err(error) => {
+                return Err(detailed_error(
+                    "The chart layout could not be computed.",
+                    [],
+                    error,
+                ));
+            }
         }
     } else {
-        layout_graph(graph, &sizes, options).map_err(|error| error.to_string())?
+        layout_graph(graph, &sizes, options)
+            .map_err(|error| detailed_error("The graph layout could not be computed.", [], error))?
     };
     let nodes = layout
         .nodes
@@ -844,7 +908,13 @@ async fn build_chart(
         let result = (|| {
             let started = Instant::now();
             let chart = solve_with_cancellation(&graph, || cancelled.load(Ordering::Relaxed))
-                .map_err(|error| error.to_string())?;
+                .map_err(|error| {
+                    detailed_error(
+                        "The solution chart could not be constructed.",
+                        [("Document ID", document_id.to_string())],
+                        error,
+                    )
+                })?;
             let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
             if cancelled.load(Ordering::SeqCst) {
                 return Err("chart construction was cancelled".to_owned());
@@ -876,7 +946,13 @@ async fn build_chart(
         result
     })
     .await
-    .map_err(|error| format!("solver task failed: {error}"))?;
+    .map_err(|error| {
+        detailed_error(
+            "The background solver task failed.",
+            [("Document ID", document_id.to_string())],
+            error,
+        )
+    })?;
     state.record(
         &app,
         window.label(),
@@ -947,7 +1023,16 @@ async fn solution_at(
         )))
     })
     .await
-    .map_err(|error| format!("solution task failed: {error}"))?;
+    .map_err(|error| {
+        detailed_error(
+            "The background solution task failed.",
+            [
+                ("Chart", chart_source.clone()),
+                ("Solution", (index + 1).to_string()),
+            ],
+            error,
+        )
+    })?;
     state.record(
         &app,
         window.label(),
@@ -982,15 +1067,39 @@ fn export_document(
             .1
             .graph;
         let codec = OutputCodec::from_name(&format)
-            .ok_or_else(|| format!("unsupported output format: {format}"))?;
+            .ok_or_else(|| {
+                detailed_error(
+                    "The selected output format is not supported.",
+                    [("Requested format", format.clone())],
+                    "Choose one of the formats listed in the Export or Copy menu.",
+                )
+            })?;
         let encoder = codec
             .graph_encoder()
-            .ok_or_else(|| format!("output format does not support graphs: {}", codec.name()))?;
+            .ok_or_else(|| {
+                detailed_error(
+                    "The selected output format cannot encode graphs.",
+                    [("Output format", codec.name().to_owned())],
+                    "Choose a graph-capable format from the Export or Copy menu.",
+                )
+            })?;
         let mut output = Vec::new();
         encoder
             .write_graph(graph.parsed(), &mut output)
-            .map_err(|error| error.to_string())?;
-        String::from_utf8(output).map_err(|error| error.to_string())
+            .map_err(|error| {
+                detailed_error(
+                    "The graph could not be encoded.",
+                    [("Output format", codec.name().to_owned())],
+                    error,
+                )
+            })?;
+        String::from_utf8(output).map_err(|error| {
+            detailed_error(
+                "The output encoder generated invalid UTF-8.",
+                [("Output format", codec.name().to_owned())],
+                error,
+            )
+        })
     })();
     state.record(
         &app,
@@ -1080,11 +1189,18 @@ async fn export_solution(
             .ok_or("chart is no longer available")?,
     );
     let codec = OutputCodec::from_name(&format)
-        .ok_or_else(|| format!("unsupported output format: {format}"))?;
+        .ok_or_else(|| {
+            detailed_error(
+                "The selected output format is not supported.",
+                [("Requested format", format.clone())],
+                "Choose one of the formats listed in the Export or Copy menu.",
+            )
+        })?;
     if !codec.supports_solutions() {
-        return Err(format!(
-            "output format does not support solutions: {}",
-            codec.name()
+        return Err(detailed_error(
+            "The selected output format cannot encode solutions.",
+            [("Output format", codec.name().to_owned())],
+            "Choose a solution-capable format from the Export or Copy menu.",
         ));
     }
     let result = tauri::async_runtime::spawn_blocking(move || {
@@ -1097,11 +1213,35 @@ async fn export_solution(
         let mut output = Vec::new();
         codec
             .write_single_solution_at(&solutions.current().unwrap(), index + 1, &mut output)
-            .map_err(|error| error.to_string())?;
-        String::from_utf8(output).map_err(|error| error.to_string())
+            .map_err(|error| {
+                detailed_error(
+                    "The solution could not be encoded.",
+                    [
+                        ("Output format", codec.name().to_owned()),
+                        ("Solution", (index + 1).to_string()),
+                    ],
+                    error,
+                )
+            })?;
+        String::from_utf8(output).map_err(|error| {
+            detailed_error(
+                "The output encoder generated invalid UTF-8.",
+                [("Output format", codec.name().to_owned())],
+                error,
+            )
+        })
     })
     .await
-    .map_err(|error| format!("solution export task failed: {error}"))?;
+    .map_err(|error| {
+        detailed_error(
+            "The background solution export task failed.",
+            [
+                ("Output format", format.clone()),
+                ("Solution", (index + 1).to_string()),
+            ],
+            error,
+        )
+    })?;
     state.record(
         &app,
         window.label(),
@@ -1227,7 +1367,16 @@ async fn filter_chart_command(
             .ok_or("chart is no longer available")?,
     );
     let source_name = source.source.clone();
-    let system = match RewriteSystem::parse(&rewrite_system).map_err(|error| error.to_string()) {
+    let system = match RewriteSystem::parse(&rewrite_system).map_err(|error| {
+        detailed_error(
+            "The filtering rules could not be parsed.",
+            [
+                ("Filter", filter_name.clone()),
+                ("Input size", format!("{} bytes", rewrite_system.len())),
+            ],
+            error.format_with_source(&rewrite_system),
+        )
+    }) {
         Ok(system) => system,
         Err(error) => {
             state.record(
@@ -1245,6 +1394,8 @@ async fn filter_chart_command(
     let result_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     let result_source = format!("Filtered by {filter_name}");
     let stored_source = result_source.clone();
+    let worker_filter_name = filter_name.clone();
+    let worker_source_name = source_name.clone();
     let cancelled = Arc::new(AtomicBool::new(false));
     resources
         .jobs
@@ -1256,7 +1407,16 @@ async fn filter_chart_command(
             let started = Instant::now();
             let filtered =
                 filter_chart(&source.chart, &system, || cancelled.load(Ordering::Relaxed))
-                    .map_err(|error| error.to_string())?;
+                    .map_err(|error| {
+                        detailed_error(
+                            "The solution chart could not be filtered.",
+                            [
+                                ("Source chart", worker_source_name.clone()),
+                                ("Filter", worker_filter_name.clone()),
+                            ],
+                            error,
+                        )
+                    })?;
             let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
             if cancelled.load(Ordering::SeqCst) {
                 return Err("chart filtering was cancelled".to_owned());
@@ -1279,7 +1439,16 @@ async fn filter_chart_command(
         result
     })
     .await
-    .map_err(|error| format!("filter task failed: {error}"))?;
+    .map_err(|error| {
+        detailed_error(
+            "The background filtering task failed.",
+            [
+                ("Source chart", source_name.clone()),
+                ("Filter", filter_name.clone()),
+            ],
+            error,
+        )
+    })?;
     state.record(
         &app,
         window.label(),
@@ -1345,7 +1514,13 @@ fn create_graph_window_from_graph(
             .inner_size(1200.0, 800.0)
             .min_inner_size(800.0, 560.0)
             .build()
-            .map_err(|error| error.to_string());
+            .map_err(|error| {
+                detailed_error(
+                    "The graph window could not be created.",
+                    [("Graph", title.to_owned()), ("Window", label.clone())],
+                    error,
+                )
+            });
     if create_result.is_err() {
         state.remove_window(&label);
     }
@@ -1452,12 +1627,16 @@ fn port_in_use_message(port: u16) -> String {
 }
 
 fn server_start_error(address: &str, error: &std::io::Error) -> String {
-    match error.kind() {
-        std::io::ErrorKind::PermissionDenied => format!(
-            "Could not start the server at {address}: permission to use this address was denied."
-        ),
-        _ => format!("Could not start the server at {address}: {error}"),
-    }
+    let explanation = if error.kind() == std::io::ErrorKind::PermissionDenied {
+        "Permission to bind this address was denied. Choose an unprivileged port or change the bind address."
+    } else {
+        "The operating system rejected the server socket."
+    };
+    detailed_error(
+        "The Utool server could not be started.",
+        [("Address", address.to_owned())],
+        format!("{explanation}\n{error}"),
+    )
 }
 
 fn start_server(
@@ -1497,7 +1676,13 @@ fn start_server(
     let display_handler: utool::server::DisplayHandler =
         Arc::new(move |request: utool::server::DisplayRequest| {
             if let Some(graph) = request.graph {
-                let graph = HncGraph::try_from(graph).map_err(|error| error.to_string())?;
+                let graph = HncGraph::try_from(graph).map_err(|error| {
+                    detailed_error(
+                        "The graph received from the server cannot be displayed.",
+                        [("Graph", request.name.clone().unwrap_or_else(|| "Unnamed graph".to_owned()))],
+                        error,
+                    )
+                })?;
                 let state = display_app.state::<DocumentState>();
                 let title = request.name.as_deref().unwrap_or("Graph from server");
                 let initial_filter = request.filter_rules.map(|rewrite_system| StartupFilterView {
@@ -1609,7 +1794,11 @@ fn stop_server(app: &tauri::AppHandle, servers: &ServerState) -> Result<(), Stri
         }
     };
     if let Err(error) = handle.stop() {
-        let message = format!("Could not stop the server at {address}: {error}");
+        let message = detailed_error(
+            "The Utool server could not be stopped cleanly.",
+            [("Address", address.clone())],
+            error,
+        );
         let _ = transition_server(
             app,
             servers,
@@ -2144,6 +2333,7 @@ pub fn run() {
             });
             if server_preferences.start_on_launch {
                 let servers = app.state::<ServerState>();
+                let started = Instant::now();
                 if let Err(error) = start_server(
                     server_preferences.port,
                     server_preferences.accept_non_local,
@@ -2151,6 +2341,17 @@ pub fn run() {
                     &servers,
                 ) {
                     eprintln!("Could not start Utool server on launch: {error}");
+                    app.state::<DocumentState>().record(
+                        app.handle(),
+                        "application",
+                        "Start server on launch",
+                        json!({
+                            "port": server_preferences.port,
+                            "accept non-local": server_preferences.accept_non_local,
+                        }),
+                        started,
+                        Some(error),
+                    );
                 }
             }
             Ok(())
@@ -2236,6 +2437,21 @@ mod tests {
     #[test]
     fn address_in_use_error_is_short_and_exact() {
         assert_eq!(port_in_use_message(2802), "Port 2802 is already in use");
+    }
+
+    #[test]
+    fn graph_parse_errors_keep_actionable_codec_diagnostics() {
+        let error = parse_graph(
+            "psoa(h1,e2,\n[ rel('rain_rel',h3 [ attrval('ARG0',e2)]) ],\nhcons([]))",
+            "mrs-prolog",
+        )
+        .unwrap_err();
+
+        assert!(error.starts_with("The graph could not be parsed."), "{error}");
+        assert!(error.contains("Input format: mrs-prolog"), "{error}");
+        assert!(error.contains("expected punctuation ','"), "{error}");
+        assert!(error.contains("line 2, column"), "{error}");
+        assert!(error.contains("rel('rain_rel',h3 ["), "{error}");
     }
 
     #[test]

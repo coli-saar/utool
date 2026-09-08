@@ -8,6 +8,7 @@
 //! helpers remain convenient when a complete in-memory [`String`] is desired.
 
 use crate::graph::ParsedGraph;
+use parol_runtime::{ParolError, ParserError};
 use thiserror::Error;
 
 mod domcon;
@@ -191,3 +192,105 @@ pub enum CodecError {
 
 /// Common result type for graph codecs.
 pub type CodecResult = Result<ParsedGraph, CodecError>;
+
+pub(crate) fn format_parol_error(error: &ParolError, input: &str) -> String {
+    let ParolError::ParserError(ParserError::SyntaxErrors { entries }) = error else {
+        return error.to_string();
+    };
+    entries
+        .iter()
+        .map(|entry| {
+            let location = entry
+                .unexpected_tokens
+                .first()
+                .map_or(entry.error_location.as_ref(), |token| &token.token);
+            let found = input
+                .get(location.range())
+                .filter(|text| !text.is_empty())
+                .map_or_else(|| "end of input".to_owned(), |text| format!("{text:?}"));
+            let expected = entry
+                .expected_tokens
+                .iter()
+                .map(|token| readable_expected_token(token))
+                .collect::<Vec<_>>()
+                .join(", ");
+            let expectation = if expected.is_empty() {
+                format!("unexpected {found}")
+            } else {
+                format!("unexpected {found}; expected one of: {expected}")
+            };
+            source_diagnostic(
+                input,
+                location.start(),
+                location.start_line as usize,
+                location.start_column as usize,
+                &expectation,
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n")
+}
+
+pub(crate) fn format_source_error(input: &str, byte: usize, message: &str) -> String {
+    source_diagnostic(input, byte, 0, 0, message)
+}
+
+fn readable_expected_token(token: &str) -> String {
+    match token {
+        "LParen" => "'('".to_owned(),
+        "RParen" => "')'".to_owned(),
+        "LBracket" => "'['".to_owned(),
+        "RBracket" => "']'".to_owned(),
+        "Comma" => "','".to_owned(),
+        "Tick" => "apostrophe".to_owned(),
+        other if other.chars().all(char::is_alphabetic) => {
+            format!("'{}'", other.to_ascii_lowercase())
+        }
+        other => other.to_owned(),
+    }
+}
+
+fn source_diagnostic(
+    input: &str,
+    byte: usize,
+    reported_line: usize,
+    reported_column: usize,
+    message: &str,
+) -> String {
+    let byte = byte.min(input.len());
+    let prefix = &input[..byte];
+    let line = if reported_line != 0 {
+        reported_line
+    } else {
+        prefix.bytes().filter(|byte| *byte == b'\n').count() + 1
+    };
+    let line_start = prefix.rfind('\n').map_or(0, |offset| offset + 1);
+    let column = if reported_column != 0 {
+        reported_column
+    } else {
+        input[line_start..byte].chars().count() + 1
+    };
+    let line_end = input[line_start..]
+        .find(['\r', '\n'])
+        .map_or(input.len(), |offset| line_start + offset);
+    let source_line = &input[line_start..line_end];
+    let characters = source_line.chars().collect::<Vec<_>>();
+    let target = column.saturating_sub(1).min(characters.len());
+    let excerpt_start = target.saturating_sub(50);
+    let excerpt_end = (target + 50).min(characters.len());
+    let has_prefix = excerpt_start != 0;
+    let has_suffix = excerpt_end != characters.len();
+    let excerpt = format!(
+        "{}{}{}",
+        if has_prefix { "…" } else { "" },
+        characters[excerpt_start..excerpt_end]
+            .iter()
+            .collect::<String>(),
+        if has_suffix { "…" } else { "" },
+    );
+    let caret_column = target - excerpt_start + usize::from(has_prefix);
+    format!(
+        "{message} at line {line}, column {column}\n\nOffending input:\n  {excerpt}\n  {}^",
+        " ".repeat(caret_column)
+    )
+}

@@ -20,7 +20,7 @@ impl<'t> HolesemGrammarTrait<'t> for HolesemGrammar<'t> {
 pub(crate) fn parse(input: &str) -> CodecResult {
     let mut actions = HolesemGrammar::default();
     crate::holesem_parser::parse(input, "<holesem>", &mut actions)
-        .map_err(|error| CodecError::Syntax(error.to_string()))?;
+        .map_err(|error| CodecError::Syntax(crate::codec::format_parol_error(&error, input)))?;
     lower(&actions.input.expect("Parol must invoke the start action"))
 }
 

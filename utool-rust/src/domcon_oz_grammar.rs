@@ -17,7 +17,7 @@ impl<'t> DomconOzGrammarTrait<'t> for DomconOzGrammar<'t> {
 pub(crate) fn parse(input: &str) -> CodecResult {
     let mut actions = DomconOzGrammar::default();
     crate::domcon_oz_parser::parse(input, "<domcon-oz>", &mut actions)
-        .map_err(|error| CodecError::Syntax(error.to_string()))?;
+        .map_err(|error| CodecError::Syntax(crate::codec::format_parol_error(&error, input)))?;
     lower(actions.input.expect("Parol must invoke the start action"))
 }
 

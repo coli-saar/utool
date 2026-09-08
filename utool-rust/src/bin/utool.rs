@@ -1,5 +1,7 @@
 use std::{
-    env, fs,
+    env,
+    fmt::Write as _,
+    fs,
     io::{self, BufWriter, Read, Write},
     process::{Command, ExitCode},
     time::{Duration, Instant},
@@ -83,8 +85,35 @@ impl Default for Options {
 }
 
 fn fail(message: impl AsRef<str>, code: u8) -> ExitCode {
-    eprintln!("{}", message.as_ref());
+    let message = message.as_ref();
+    let mut lines = message.lines();
+    eprintln!("Error: {}", lines.next().unwrap_or("Utool failed."));
+    for line in lines {
+        eprintln!("{line}");
+    }
     ExitCode::from(code)
+}
+
+fn detailed_error(
+    summary: &str,
+    context: impl IntoIterator<Item = (&'static str, String)>,
+    detail: impl std::fmt::Display,
+) -> String {
+    let mut message = summary.to_owned();
+    for (label, value) in context {
+        let _ = write!(message, "\n  {label}: {value}");
+    }
+    let detail = detail.to_string();
+    if !detail.trim().is_empty() {
+        message.push_str("\n\nDetails:\n");
+        for line in detail.lines() {
+            message.push_str("  ");
+            message.push_str(line);
+            message.push('\n');
+        }
+        message.pop();
+    }
+    message
 }
 
 fn take_value(
@@ -266,7 +295,22 @@ fn write_empty_solution_list(
         .begin(&mut writer)
         .and_then(|()| encoder.finish(&mut writer))
         .and_then(|()| writer.flush())
-        .map_err(|e| (e.to_string(), IO_ERROR))
+        .map_err(|error| {
+            (
+                detailed_error(
+                    "Could not write the empty solution list.",
+                    [("Output", output_destination(opts))],
+                    error,
+                ),
+                IO_ERROR,
+            )
+        })
+}
+
+fn output_destination(opts: &Options) -> String {
+    opts.output
+        .clone()
+        .unwrap_or_else(|| "standard output".to_owned())
 }
 
 fn read_graph(opts: &Options, source: &str) -> Result<ParsedGraph, (String, u8)> {
@@ -285,26 +329,48 @@ fn read_graph(opts: &Options, source: &str) -> Result<ParsedGraph, (String, u8)>
     if selected == InputCodec::Chain {
         text.push_str(source);
     } else if source == "-" {
-        io::stdin()
-            .read_to_string(&mut text)
-            .map_err(|e| (e.to_string(), IO_ERROR))?;
-    } else {
-        text = fs::read_to_string(source).map_err(|e| {
+        io::stdin().read_to_string(&mut text).map_err(|error| {
             (
-                format!("An I/O error occurred while reading the input.\n{e}"),
+                detailed_error(
+                    "Could not read the input graph from standard input.",
+                    [("Codec", selected.name().to_owned())],
+                    error,
+                ),
+                IO_ERROR,
+            )
+        })?;
+    } else {
+        text = fs::read_to_string(source).map_err(|error| {
+            (
+                detailed_error(
+                    "Could not read the input graph.",
+                    [
+                        ("Input", source.to_owned()),
+                        ("Codec", selected.name().to_owned()),
+                    ],
+                    error,
+                ),
                 IO_ERROR,
             )
         })?;
     }
-    selected.parse(&text).map_err(|e| {
-        let code = if selected == InputCodec::Chain && matches!(&e, utool::CodecError::Semantic(_))
-        {
-            PARSE_ERROR + 1
-        } else {
-            PARSE_ERROR
-        };
+    selected.parse(&text).map_err(|error| {
+        let code =
+            if selected == InputCodec::Chain && matches!(&error, utool::CodecError::Semantic(_)) {
+                PARSE_ERROR + 1
+            } else {
+                PARSE_ERROR
+            };
         (
-            format!("A parsing error occurred while reading the input.\n{e}"),
+            detailed_error(
+                "Could not parse the input graph.",
+                [
+                    ("Input", source.to_owned()),
+                    ("Codec", selected.name().to_owned()),
+                    ("Input size", format!("{} bytes", text.len())),
+                ],
+                error,
+            ),
             code,
         )
     })
@@ -345,7 +411,16 @@ fn output_codec(opts: &Options, input_name: Option<&str>) -> Result<OutputCodec,
 
 fn result_writer(opts: &Options) -> Result<BufWriter<Box<dyn Write>>, (String, u8)> {
     let writer: Box<dyn Write> = if let Some(path) = &opts.output {
-        Box::new(fs::File::create(path).map_err(|e| (e.to_string(), IO_ERROR))?)
+        Box::new(fs::File::create(path).map_err(|error| {
+            (
+                detailed_error(
+                    "Could not create the output file.",
+                    [("Output", path.clone())],
+                    error,
+                ),
+                IO_ERROR,
+            )
+        })?)
     } else {
         Box::new(io::stdout())
     };
@@ -386,8 +461,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         let codec = output_codec(opts, Some(source))?;
         if !codec.supports_solutions() {
             return Err((
-                "This output codec doesn't support the printing of multiple solutions!"
-                    .to_owned(),
+                "This output codec doesn't support the printing of multiple solutions!".to_owned(),
                 162,
             ));
         }
@@ -408,7 +482,19 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             encoder
                 .write_graph(&parsed, &mut writer)
                 .and_then(|()| writer.flush())
-                .map_err(|e| (e.to_string(), IO_ERROR))?;
+                .map_err(|error| {
+                    (
+                        detailed_error(
+                            "Could not write the converted graph.",
+                            [
+                                ("Output", output_destination(opts)),
+                                ("Codec", codec.name().to_owned()),
+                            ],
+                            error,
+                        ),
+                        IO_ERROR,
+                    )
+                })?;
         }
         return Ok(0);
     }
@@ -452,9 +538,13 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             | (u8::from(hnc) << 4)
             | (u8::from(leaf_labelled) << 5));
     }
-    let Some(parsed) = parsed.preprocess_for_solver().map_err(|e| {
+    let Some(parsed) = parsed.preprocess_for_solver().map_err(|error| {
         (
-            format!("The solver is not applicable to this graph.\n{e}"),
+            detailed_error(
+                "The solver is not applicable to the input graph.",
+                [("Input", source.to_owned())],
+                error,
+            ),
             SOLVER_NOT_APPLICABLE,
         )
     })?
@@ -467,9 +557,13 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         }
         return Ok(0);
     };
-    let graph = HncGraph::try_from(parsed).map_err(|e| {
+    let graph = HncGraph::try_from(parsed).map_err(|error| {
         (
-            format!("The solver is not applicable to this graph.\n{e}"),
+            detailed_error(
+                "The solver is not applicable to the input graph.",
+                [("Input", source.to_owned())],
+                error,
+            ),
             SOLVER_NOT_APPLICABLE,
         )
     })?;
@@ -477,7 +571,16 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         return Ok(u8::from(is_solvable(&graph)));
     }
     let started = Instant::now();
-    let mut chart = solve(&graph).map_err(|e| (e.to_string(), SOLVER_NOT_APPLICABLE))?;
+    let mut chart = solve(&graph).map_err(|error| {
+        (
+            detailed_error(
+                "Could not construct the solution chart.",
+                [("Input", source.to_owned())],
+                error,
+            ),
+            SOLVER_NOT_APPLICABLE,
+        )
+    })?;
     let chart_duration = started.elapsed();
     let solvable = chart.count_solutions() != 0u8.into();
     if opts.statistics {
@@ -489,16 +592,40 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         );
     }
     if let Some(path) = &opts.filter {
-        let rules = fs::read_to_string(path).map_err(|e| {
+        let rules = fs::read_to_string(path).map_err(|error| {
             (
-                format!("An error occurred while reading the filtering rules file!\n{e}"),
+                detailed_error(
+                    "Could not read the filtering rules.",
+                    [("Filter", path.clone())],
+                    error,
+                ),
                 FILTER_ERROR,
             )
         })?;
-        let system = RewriteSystem::parse(&rules).map_err(|e| (e.to_string(), FILTER_ERROR))?;
+        let system = RewriteSystem::parse(&rules).map_err(|error| {
+            (
+                detailed_error(
+                    "Could not parse the filtering rules.",
+                    [
+                        ("Filter", path.clone()),
+                        ("Input size", format!("{} bytes", rules.len())),
+                    ],
+                    error.format_with_source(&rules),
+                ),
+                FILTER_ERROR,
+            )
+        })?;
         let filtering_started = Instant::now();
-        chart =
-            filter_chart(&chart, &system, || false).map_err(|e| (e.to_string(), FILTER_ERROR))?;
+        chart = filter_chart(&chart, &system, || false).map_err(|error| {
+            (
+                detailed_error(
+                    "Could not filter the solution chart.",
+                    [("Filter", path.clone())],
+                    error,
+                ),
+                FILTER_ERROR,
+            )
+        })?;
         if opts.statistics {
             report_chart_phase(
                 "Filtering",
@@ -543,21 +670,57 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             let mut encoder = codec
                 .solution_encoder()
                 .expect("solution codec capability was checked above");
-            encoder
-                .begin(&mut writer)
-                .map_err(|e| (e.to_string(), IO_ERROR))?;
+            encoder.begin(&mut writer).map_err(|error| {
+                (
+                    detailed_error(
+                        "Could not begin writing solutions.",
+                        [
+                            ("Output", output_destination(opts)),
+                            ("Codec", codec.name().to_owned()),
+                        ],
+                        error,
+                    ),
+                    IO_ERROR,
+                )
+            })?;
             let mut solutions = chart.solutions();
             while count < limit && solutions.advance() {
                 let solution = solutions.current().expect("advance produced a solution");
                 encoder
                     .write_solution(&solution, &mut writer)
-                    .map_err(|e| (e.to_string(), IO_ERROR))?;
+                    .map_err(|error| {
+                        (
+                            detailed_error(
+                                "Could not write a solution.",
+                                [
+                                    ("Output", output_destination(opts)),
+                                    ("Codec", codec.name().to_owned()),
+                                    ("Solution", (count + 1).to_string()),
+                                ],
+                                error,
+                            ),
+                            IO_ERROR,
+                        )
+                    })?;
                 count += 1;
             }
             encoder
                 .finish(&mut writer)
                 .and_then(|()| writer.flush())
-                .map_err(|e| (e.to_string(), IO_ERROR))?;
+                .map_err(|error| {
+                    (
+                        detailed_error(
+                            "Could not finish writing solutions.",
+                            [
+                                ("Output", output_destination(opts)),
+                                ("Codec", codec.name().to_owned()),
+                                ("Solutions written", count.to_string()),
+                            ],
+                            error,
+                        ),
+                        IO_ERROR,
+                    )
+                })?;
         } else {
             let mut solutions = chart.solutions();
             while count < limit && solutions.advance() {
@@ -616,7 +779,11 @@ fn launch_display(opts: &Options) -> ExitCode {
         }
         Err(error) => {
             return fail(
-                format!("Could not locate the Utool executable.\n{error}"),
+                detailed_error(
+                    "Could not locate the Utool executable.",
+                    std::iter::empty(),
+                    error,
+                ),
                 IO_ERROR,
             );
         }
@@ -631,7 +798,17 @@ fn launch_display(opts: &Options) -> ExitCode {
             .code()
             .and_then(|code| u8::try_from(code).ok())
             .map_or(ExitCode::FAILURE, ExitCode::from),
-        Err(error) => fail(format!("Could not start utool-display.\n{error}"), IO_ERROR),
+        Err(error) => fail(
+            detailed_error(
+                "Could not start utool-display.",
+                [(
+                    "Executable",
+                    command.get_program().to_string_lossy().into_owned(),
+                )],
+                error,
+            ),
+            IO_ERROR,
+        ),
     }
 }
 
@@ -641,7 +818,19 @@ fn main() -> ExitCode {
         Ok(value) => value,
         Err(error) => return fail(error, 140),
     };
-    let user_config = utool::UserConfig::load().ok();
+    let user_config = match utool::UserConfig::load() {
+        Ok(config) => Some(config),
+        Err(error) => {
+            return fail(
+                detailed_error(
+                    "Could not load the Utool configuration.",
+                    [("Configuration", "~/.utool".to_owned())],
+                    error,
+                ),
+                IO_ERROR,
+            );
+        }
+    };
     if let Some(config) = &user_config {
         opts.default_output_codec = config.codec_preferences().default_output;
     }
@@ -699,7 +888,11 @@ fn main() -> ExitCode {
                 fail(format!("Port {port} is already in use"), 129)
             }
             Err(error) => fail(
-                format!("An I/O error occurred in server mode.\n{error}"),
+                detailed_error(
+                    "The Utool server stopped because of an I/O error.",
+                    [("Port", port.to_string())],
+                    error,
+                ),
                 129,
             ),
         };

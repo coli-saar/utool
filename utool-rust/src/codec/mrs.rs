@@ -40,12 +40,15 @@ enum Token {
 
 struct Parser {
     tokens: Vec<Token>,
+    positions: Vec<usize>,
     offset: usize,
+    input: String,
 }
 
 impl Parser {
     fn new(input: &str) -> Result<Self, CodecError> {
         let mut tokens = Vec::new();
+        let mut positions = Vec::new();
         let mut chars = input.char_indices().peekable();
         while let Some((start, ch)) = chars.next() {
             if ch.is_whitespace() {
@@ -62,6 +65,7 @@ impl Parser {
             }
             if matches!(ch, '(' | ')' | '[' | ']' | ',') {
                 tokens.push(Token::Punct(ch));
+                positions.push(start);
                 continue;
             }
             if ch == '\'' {
@@ -75,11 +79,14 @@ impl Parser {
                     value.push(next);
                 }
                 if !closed {
-                    return Err(CodecError::Syntax(format!(
-                        "unterminated quoted symbol at byte {start}"
+                    return Err(CodecError::Syntax(source_diagnostic(
+                        input,
+                        start,
+                        "unterminated quoted symbol; add a closing apostrophe",
                     )));
                 }
                 tokens.push(Token::Quoted(value));
+                positions.push(start);
                 continue;
             }
             let mut value = String::from(ch);
@@ -92,8 +99,14 @@ impl Parser {
                 chars.next();
             }
             tokens.push(Token::Word(value));
+            positions.push(start);
         }
-        Ok(Self { tokens, offset: 0 })
+        Ok(Self {
+            tokens,
+            positions,
+            offset: 0,
+            input: input.to_owned(),
+        })
     }
 
     fn parse(mut self) -> Result<Mrs, CodecError> {
@@ -251,7 +264,10 @@ impl Parser {
         if self.consume_punct(expected) {
             Ok(())
         } else {
-            self.error(format!("expected {expected:?}"))
+            self.error(format!(
+                "expected punctuation {expected:?}, found {:?}",
+                self.tokens.get(self.offset)
+            ))
         }
     }
 
@@ -269,12 +285,29 @@ impl Parser {
     }
 
     fn error<T>(&self, message: impl Into<String>) -> Result<T, CodecError> {
-        Err(CodecError::Syntax(format!(
-            "{} at token {}",
-            message.into(),
-            self.offset + 1
+        let position = self
+            .positions
+            .get(self.offset)
+            .copied()
+            .unwrap_or(self.input.len());
+        Err(CodecError::Syntax(source_diagnostic(
+            &self.input,
+            position,
+            &format!("{} (token {})", message.into(), self.offset + 1),
         )))
     }
+}
+
+fn source_diagnostic(input: &str, byte: usize, message: &str) -> String {
+    let prefix = &input[..byte.min(input.len())];
+    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() + 1;
+    let line_start = prefix.rfind('\n').map_or(0, |offset| offset + 1);
+    let column = input[line_start..byte.min(input.len())].chars().count() + 1;
+    let source_line = input[line_start..]
+        .split_once(['\r', '\n'])
+        .map_or(&input[line_start..], |(text, _)| text);
+    let caret_padding = " ".repeat(column.saturating_sub(1));
+    format!("{message} at line {line}, column {column}\n\n  {source_line}\n  {caret_padding}^")
 }
 
 fn numbered(value: &str, prefix: char) -> bool {
@@ -800,7 +833,13 @@ pub fn parse_mrs_xml(input: &str) -> CodecResult {
             }
             Ok(Event::Eof) => break,
             Ok(_) => {}
-            Err(error) => return Err(CodecError::Syntax(format!("invalid MRS XML: {error}"))),
+            Err(error) => {
+                return Err(CodecError::Syntax(super::format_source_error(
+                    input,
+                    usize::try_from(reader.error_position()).unwrap_or(usize::MAX),
+                    &format!("invalid MRS XML: {error}"),
+                )));
+            }
         }
     }
     if top.is_empty() {

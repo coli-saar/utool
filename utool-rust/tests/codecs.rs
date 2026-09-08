@@ -133,6 +133,48 @@ fn mrs_prolog_matches_java_reference_and_all_repository_examples_are_hnc() {
     }
 }
 
+#[test]
+fn malformed_mrs_prolog_identifies_expectation_and_source_location() {
+    let error =
+        parse_mrs_prolog("psoa(h1,e2,\n[ rel('rain_rel',h3 [ attrval('ARG0',e2)]) ],\nhcons([]))")
+            .unwrap_err()
+            .to_string();
+
+    assert!(error.contains("expected punctuation ','"), "{error}");
+    assert!(error.contains("line 2, column"), "{error}");
+    assert!(error.contains("rel('rain_rel',h3 ["), "{error}");
+    assert!(error.contains('^'), "{error}");
+}
+
+#[test]
+fn generated_parsers_identify_unexpected_text_and_expected_syntax() {
+    for (codec, expected) in [
+        (InputCodec::DomconOz, "expected one of: '['"),
+        (InputCodec::HoleSemantics, "expected one of: '('"),
+    ] {
+        let error = codec.parse("not a graph").unwrap_err().to_string();
+        assert!(error.contains("unexpected \"not\""), "{codec:?}: {error}");
+        assert!(error.contains(expected), "{codec:?}: {error}");
+        assert!(error.contains("line 1, column 1"), "{codec:?}: {error}");
+        assert!(error.contains("not a graph"), "{codec:?}: {error}");
+        assert!(error.contains('^'), "{codec:?}: {error}");
+    }
+}
+
+#[test]
+fn malformed_xml_identifies_line_and_offending_input() {
+    for codec in [InputCodec::MrsXml, InputCodec::DomgraphGxl] {
+        let error = codec
+            .parse("<root>\n  <unexpected>\n</root>")
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("line 3, column"), "{codec:?}: {error}");
+        assert!(error.contains("Offending input"), "{codec:?}: {error}");
+        assert!(error.contains("</root>"), "{codec:?}: {error}");
+        assert!(!error.contains("near byte"), "{codec:?}: {error}");
+    }
+}
+
 fn assert_graph_equivalent(actual: &utool::ParsedGraph, expected: &utool::ParsedGraph) {
     let describe = |graph: &utool::ParsedGraph| {
         let nodes: std::collections::BTreeSet<_> = graph
