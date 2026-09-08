@@ -322,6 +322,10 @@ pub fn start(
         while !thread_shutdown.load(Ordering::SeqCst) {
             match listener.accept() {
                 Ok((stream, _)) => {
+                    // Keep only the listener nonblocking. Clients may connect
+                    // before sending and TCP may split one XML document across
+                    // multiple reads, so each accepted stream must block.
+                    stream.set_nonblocking(false)?;
                     let rules = Arc::clone(&rules);
                     let log = log.clone();
                     let display_handler = display_handler.clone();
@@ -429,6 +433,59 @@ fn attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, Se
     Ok(None)
 }
 
+fn xml_request_source_error(
+    reader: &Reader<RecordingReader<'_>>,
+    offset: u64,
+    summary: &str,
+    detail: impl std::fmt::Display,
+) -> ServerError {
+    ServerError::new(
+        INPUT_PARSE_ERROR,
+        detailed_error(
+            summary,
+            [],
+            xml_source_diagnostic(&reader.get_ref().consumed, offset, detail),
+        ),
+    )
+}
+
+fn read_request_event<'buffer>(
+    reader: &mut Reader<RecordingReader<'_>>,
+    buffer: &'buffer mut Vec<u8>,
+) -> Result<(u64, Event<'buffer>), ServerError> {
+    let event_start = reader.buffer_position();
+    let event = match reader.read_event_into(buffer) {
+        Ok(event) => event,
+        Err(quick_xml::Error::Io(error)) => {
+            return Err(ServerError::new(
+                IO_ERROR,
+                detailed_error(
+                    "An I/O error occurred while reading the XML request.",
+                    [],
+                    error,
+                ),
+            ));
+        }
+        Err(error) => {
+            return Err(xml_request_source_error(
+                reader,
+                reader.error_position(),
+                "The XML request could not be parsed.",
+                error,
+            ));
+        }
+    };
+    if let Err(error) = validate_xml_characters(&event) {
+        return Err(xml_request_source_error(
+            reader,
+            event_start,
+            "The XML request contains a character that XML 1.0 does not permit.",
+            error,
+        ));
+    }
+    Ok((event_start, event))
+}
+
 fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
     let recording = RecordingReader {
         inner: input,
@@ -436,6 +493,7 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
     };
     let mut reader = Reader::from_reader(recording);
     reader.config_mut().trim_text(true);
+    reader.config_mut().check_comments = true;
     let mut buffer = Vec::new();
     let mut request = Request {
         limit: usize::MAX,
@@ -443,9 +501,9 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
     };
     let mut saw_root = false;
     loop {
-        let event_start = reader.buffer_position();
-        match reader.read_event_into(&mut buffer) {
-            Ok(Event::Start(element)) => match element.local_name().as_ref() {
+        let (event_start, event) = read_request_event(&mut reader, &mut buffer)?;
+        match event {
+            Event::Start(element) => match element.local_name().as_ref() {
                 b"utool" => {
                     if saw_root {
                         return Err(ServerError::new(
@@ -468,7 +526,7 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
                 b"filter" => parse_filter(&element, &mut request)?,
                 _ => {}
             },
-            Ok(Event::Empty(element)) => match element.local_name().as_ref() {
+            Event::Empty(element) => match element.local_name().as_ref() {
                 b"utool" => {
                     parse_utool(&element, &mut request)?;
                     break;
@@ -477,8 +535,16 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
                 b"filter" => parse_filter(&element, &mut request)?,
                 _ => {}
             },
-            Ok(Event::End(element)) if element.local_name().as_ref() == b"utool" => break,
-            Ok(Event::Eof) => {
+            Event::End(element) if element.local_name().as_ref() == b"utool" => break,
+            Event::Text(text) if !saw_root && !text.is_empty() => {
+                return Err(xml_request_source_error(
+                    &reader,
+                    event_start,
+                    "The XML request contains text before its document element.",
+                    "Only XML whitespace, comments, and processing instructions are allowed before the document element.",
+                ));
+            }
+            Event::Eof => {
                 return Err(ServerError::new(
                     INPUT_PARSE_ERROR,
                     detailed_error(
@@ -492,21 +558,7 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
                     ),
                 ));
             }
-            Ok(_) => {}
-            Err(error) => {
-                return Err(ServerError::new(
-                    INPUT_PARSE_ERROR,
-                    detailed_error(
-                        "The XML request could not be parsed.",
-                        [],
-                        xml_source_diagnostic(
-                            &reader.get_ref().consumed,
-                            reader.error_position(),
-                            error,
-                        ),
-                    ),
-                ));
-            }
+            _ => {}
         }
         buffer.clear();
     }
@@ -520,6 +572,23 @@ fn parse_request(input: &mut dyn BufRead) -> Result<Request, ServerError> {
         ));
     }
     Ok(request)
+}
+
+fn validate_xml_characters(bytes: &[u8]) -> Result<(), String> {
+    let text = std::str::from_utf8(bytes)
+        .map_err(|error| format!("The request is not valid UTF-8: {error}"))?;
+    if let Some(character) = text.chars().find(|&character| {
+        !(matches!(character, '\u{9}' | '\u{A}' | '\u{D}')
+            || ('\u{20}'..='\u{D7FF}').contains(&character)
+            || ('\u{E000}'..='\u{FFFD}').contains(&character)
+            || ('\u{10000}'..='\u{10FFFF}').contains(&character))
+    }) {
+        return Err(format!(
+            "Character U+{:04X} is forbidden in XML 1.0.",
+            u32::from(character)
+        ));
+    }
+    Ok(())
 }
 
 fn parse_utool(element: &BytesStart<'_>, request: &mut Request) -> Result<(), ServerError> {
@@ -1012,6 +1081,22 @@ mod tests {
     use super::*;
     use std::io::{Read, Write};
 
+    struct FailedReader(io::ErrorKind);
+
+    impl Read for FailedReader {
+        fn read(&mut self, _output: &mut [u8]) -> io::Result<usize> {
+            Err(io::Error::from(self.0))
+        }
+    }
+
+    impl BufRead for FailedReader {
+        fn fill_buf(&mut self) -> io::Result<&[u8]> {
+            Err(io::Error::from(self.0))
+        }
+
+        fn consume(&mut self, _amount: usize) {}
+    }
+
     fn request(xml: &str, cache: &RuleCache) -> String {
         let mut input = io::Cursor::new(xml.as_bytes());
         match parse_request(&mut input) {
@@ -1158,6 +1243,103 @@ mod tests {
             "{response}"
         );
         server.join().unwrap();
+    }
+
+    fn test_server() -> ServerHandle {
+        start(
+            ServerConfig {
+                bind_address: Ipv4Addr::LOCALHOST.into(),
+                port: 0,
+                logging: ServerLogging::Disabled,
+                warmup: false,
+            },
+            None,
+        )
+        .unwrap()
+    }
+
+    fn response_from(client: &mut TcpStream) -> String {
+        client
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .unwrap();
+        let mut response = String::new();
+        client.read_to_string(&mut response).unwrap();
+        response
+    }
+
+    #[test]
+    fn server_waits_for_request_bytes_after_accepting_a_connection() {
+        let server = test_server();
+        let mut client = TcpStream::connect(server.address()).unwrap();
+
+        // Connecting and serialising the request are separate operations in
+        // real clients. The blocking Java server permits an arbitrary gap.
+        thread::sleep(Duration::from_millis(250));
+        client.write_all(b"<utool cmd='version'/>").unwrap();
+
+        let response = response_from(&mut client);
+        assert!(response.starts_with("<result version="), "{response}");
+        server.stop().unwrap();
+    }
+
+    #[test]
+    fn server_waits_for_all_fragments_of_a_request() {
+        let server = test_server();
+        let mut client = TcpStream::connect(server.address()).unwrap();
+
+        client.write_all(b"<utool cmd='ver").unwrap();
+        client.flush().unwrap();
+        thread::sleep(Duration::from_millis(250));
+        client.write_all(b"sion'/>").unwrap();
+
+        let response = response_from(&mut client);
+        assert!(response.starts_with("<result version="), "{response}");
+        server.stop().unwrap();
+    }
+
+    #[test]
+    fn server_accepts_a_utf8_code_point_split_across_packets() {
+        let server = test_server();
+        let mut client = TcpStream::connect(server.address()).unwrap();
+
+        client
+            .write_all(b"<utool cmd='version' name='Gr\xc3")
+            .unwrap();
+        client.flush().unwrap();
+        thread::sleep(Duration::from_millis(250));
+        client.write_all(b"\xbc\xc3\x9fe'/>").unwrap();
+
+        let response = response_from(&mut client);
+        assert!(response.starts_with("<result version="), "{response}");
+        server.stop().unwrap();
+    }
+
+    #[test]
+    fn transport_failures_are_reported_as_io_errors() {
+        let mut input = FailedReader(io::ErrorKind::ConnectionReset);
+
+        let Err(error) = parse_request(&mut input) else {
+            panic!("a failed transport read unexpectedly produced a request");
+        };
+        assert_eq!(error.code, IO_ERROR, "{error:?}");
+    }
+
+    fn assert_xml_parse_error(input: &[u8]) {
+        let mut input = io::Cursor::new(input);
+        let Err(error) = parse_request(&mut input) else {
+            panic!("invalid XML unexpectedly produced a request");
+        };
+        assert_eq!(error.code, INPUT_PARSE_ERROR, "{error:?}");
+    }
+
+    #[test]
+    fn rejects_non_whitespace_text_before_the_document_element() {
+        assert_xml_parse_error(b"not XML<utool cmd='version'/>");
+    }
+
+    #[test]
+    fn rejects_xml_forbidden_control_characters() {
+        assert_xml_parse_error(b"<utool cmd='version'>\0</utool>");
     }
 
     #[test]
