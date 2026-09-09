@@ -25,6 +25,7 @@ thiserror = "2.0"
 parol = "=5.0.2"
 
 [dev-dependencies]
+flate2 = "1.1"
 pretty_assertions = "1.4"
 
 [lints.rust]

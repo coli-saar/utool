@@ -5,7 +5,7 @@
 
 use crate::{
     CodecError, HncGraph, InputCodec, OutputCodec, ParsedGraph, RewriteSystem, filter_chart,
-    is_solvable, solve,
+    is_solvable, solve_shared,
 };
 use quick_xml::{
     Reader, XmlVersion,
@@ -429,7 +429,7 @@ fn warmup() {
         eprintln!("  - pass {pass}");
         if let Ok(parsed) = InputCodec::Chain.parse("12")
             && let Ok(graph) = HncGraph::try_from(parsed)
-            && let Ok(chart) = solve(&graph)
+            && let Ok(chart) = solve_shared(Arc::new(graph))
         {
             let mut solutions = chart.solutions();
             while solutions.advance() {}
@@ -810,7 +810,7 @@ fn process_request_inner(
         return Ok(classify_response(&parsed));
     }
     let fragments = parsed.fragment_count();
-    let graph = HncGraph::try_from(parsed).map_err(|error| {
+    let graph = Arc::new(HncGraph::try_from(parsed).map_err(|error| {
         ServerError::new(
             SOLVER_NOT_APPLICABLE,
             detailed_error(
@@ -819,7 +819,7 @@ fn process_request_inner(
                 error,
             ),
         )
-    })?;
+    })?);
     if command == Command::Solvable && request.nochart {
         let started = Instant::now();
         let solvable = is_solvable(&graph);
@@ -829,7 +829,7 @@ fn process_request_inner(
         ));
     }
     let started = Instant::now();
-    let mut chart = solve(&graph).map_err(|error| {
+    let mut chart = solve_shared(Arc::clone(&graph)).map_err(|error| {
         ServerError::new(
             SOLVER_NOT_APPLICABLE,
             detailed_error(

@@ -4,11 +4,12 @@ use std::{
     fs,
     io::{self, BufWriter, Read, Write},
     process::{Command, ExitCode},
+    sync::Arc,
     time::{Duration, Instant},
 };
 use utool::{
     Chart, HncGraph, InputCodec, OutputCodec, ParsedGraph, RewriteSystem, filter_chart,
-    is_solvable, solve,
+    is_solvable, solve_shared,
 };
 
 const IO_ERROR: u8 = 128;
@@ -557,7 +558,7 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
         }
         return Ok(0);
     };
-    let graph = HncGraph::try_from(parsed).map_err(|error| {
+    let graph = Arc::new(HncGraph::try_from(parsed).map_err(|error| {
         (
             detailed_error(
                 "The solver is not applicable to the input graph.",
@@ -566,12 +567,12 @@ fn execute(opts: &Options, op: Operation, source: &str) -> Result<u8, (String, u
             ),
             SOLVER_NOT_APPLICABLE,
         )
-    })?;
+    })?);
     if op == Operation::Solvable && !opts.statistics && opts.filter.is_none() && !opts.dump_chart {
         return Ok(u8::from(is_solvable(&graph)));
     }
     let started = Instant::now();
-    let mut chart = solve(&graph).map_err(|error| {
+    let mut chart = solve_shared(Arc::clone(&graph)).map_err(|error| {
         (
             detailed_error(
                 "Could not construct the solution chart.",

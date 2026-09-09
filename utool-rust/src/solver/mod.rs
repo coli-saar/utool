@@ -9,29 +9,35 @@
 
 use num_bigint::BigUint;
 use packed_term_arena::tree::{Tree, TreeArena};
+use rustc_hash::FxHashMap;
 use rusty_alto::{
     Derivation, Explicit, ExplicitBuilder, FiniteLanguageIterator, FiniteLanguagePlan,
     LanguageCardinality, StateId, Symbol, TopDownTa,
 };
+use smallvec::SmallVec;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use thiserror::Error;
 
 use crate::graph::{HncGraph, NodeId};
 
 /// Fixed-size bit set used for node and fragment membership during solving.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-struct BitSet(Vec<u64>);
+struct BitSet(SmallVec<[u64; 1]>);
 
 impl BitSet {
     /// Create an empty set for indices in `0..universe`.
     fn empty(universe: usize) -> Self {
-        Self(vec![0; universe.div_ceil(64)])
+        let mut words = SmallVec::new();
+        words.resize(universe.div_ceil(64), 0);
+        Self(words)
     }
 
     /// Create a set containing every index in `0..universe`.
     fn full(universe: usize) -> Self {
-        let mut set = Self(vec![u64::MAX; universe.div_ceil(64)]);
+        let mut words = SmallVec::new();
+        words.resize(universe.div_ceil(64), u64::MAX);
+        let mut set = Self(words);
         let excess = set.0.len() * 64 - universe;
         if let Some(last) = set.0.last_mut() {
             *last >>= excess;
@@ -58,6 +64,19 @@ impl BitSet {
         self.0[index / 64] &= !(1 << (index % 64));
     }
 
+    /// Remove every member without changing the allocated representation.
+    fn clear(&mut self) {
+        self.0.fill(0);
+    }
+
+    /// Return whether this set and `other` share a member.
+    fn intersects(&self, other: &Self) -> bool {
+        self.0
+            .iter()
+            .zip(&other.0)
+            .any(|(left, right)| left & right != 0)
+    }
+
     /// Return the number of indices in the set.
     fn count(&self) -> usize {
         self.0.iter().map(|word| word.count_ones() as usize).sum()
@@ -81,7 +100,9 @@ impl BitSet {
 
 #[cfg(test)]
 mod bit_set_tests {
-    use super::BitSet;
+    use super::{BitSet, solve, solve_shared};
+    use crate::{HncGraph, parse_chain};
+    use std::sync::Arc;
 
     /// Ensure the final storage word does not expose indices beyond the universe.
     #[test]
@@ -95,6 +116,31 @@ mod bit_set_tests {
         set.remove(64);
         assert!(!set.contains(64));
         assert!(set.insert(64));
+    }
+
+    /// Solver charts should not pay for enumeration analysis until requested.
+    #[test]
+    fn initializes_the_derivation_plan_lazily() {
+        let graph = HncGraph::try_from(parse_chain("4").unwrap()).unwrap();
+        let chart = solve(&graph).unwrap();
+        assert!(chart.derivation_plan.get().is_none());
+        assert!(chart.solution_fragments.get().is_none());
+        let _solutions = chart.solutions();
+        assert!(chart.derivation_plan.get().is_some());
+        let fragments = Arc::clone(chart.solution_fragments.get().unwrap());
+        let _second = chart.solutions();
+        assert!(Arc::ptr_eq(
+            &fragments,
+            chart.solution_fragments.get().unwrap()
+        ));
+    }
+
+    /// Shared solving must retain the caller's graph allocation.
+    #[test]
+    fn shared_solver_does_not_clone_the_source_graph() {
+        let graph = Arc::new(HncGraph::try_from(parse_chain("4").unwrap()).unwrap());
+        let chart = solve_shared(Arc::clone(&graph)).unwrap();
+        assert!(std::ptr::eq(chart.graph(), graph.as_ref()));
     }
 }
 
@@ -154,6 +200,55 @@ struct SplitCandidate {
     attachments: Vec<(NodeId, Subgraph)>,
     /// Holes filled directly by roots folded into the top context.
     substitutions: Vec<(NodeId, NodeId)>,
+}
+
+/// Reusable traversal storage shared by consecutive split candidates.
+struct SplitScratch {
+    root_nodes: BitSet,
+    ancestors: BitSet,
+    path: BitSet,
+    visited: BitSet,
+    substitutions: Vec<(NodeId, NodeId)>,
+    component_order: Vec<usize>,
+    components: Vec<Option<Subgraph>>,
+    incoming_fragments: Vec<BitSet>,
+}
+
+impl SplitScratch {
+    fn new(graph: &HncGraph) -> Self {
+        let node_count = graph.parsed().nodes().len();
+        let incoming_fragments = graph
+            .roots()
+            .iter()
+            .map(|&root| {
+                let mut incoming = BitSet::empty(graph.roots().len());
+                for &(_, source) in graph.incoming_dominance(root) {
+                    incoming.insert(graph.fragment_of(source));
+                }
+                incoming
+            })
+            .collect();
+        Self {
+            root_nodes: BitSet::empty(node_count),
+            ancestors: BitSet::empty(node_count),
+            path: BitSet::empty(node_count),
+            visited: BitSet::empty(node_count),
+            substitutions: Vec::new(),
+            component_order: Vec::new(),
+            components: vec![None; graph.parsed().dominance_edges().len()],
+            incoming_fragments,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.root_nodes.clear();
+        self.ancestors.clear();
+        self.path.clear();
+        self.visited.clear();
+        self.substitutions.clear();
+        self.component_order.clear();
+        self.components.fill(None);
+    }
 }
 
 /// Build the ranked terminal for one split and return its open holes in tree order.
@@ -319,7 +414,7 @@ pub struct FragmentAutomaton {
     /// Terminal tree root indexed by automaton symbol.
     fragment_roots: Arc<[Tree]>,
     /// Source subgraph indexed by automaton state.
-    state_subgraphs: Vec<Subgraph>,
+    state_subgraphs: Vec<Arc<Subgraph>>,
 }
 
 impl FragmentAutomaton {
@@ -351,8 +446,10 @@ impl FragmentAutomaton {
 pub struct Chart {
     /// Automaton containing all productive split rules.
     fragment_automaton: FragmentAutomaton,
-    /// Precomputed traversal data for allocation-free derivation iteration.
-    derivation_plan: FiniteLanguagePlan,
+    /// Lazily initialized traversal data for allocation-free derivation iteration.
+    derivation_plan: OnceLock<FiniteLanguagePlan>,
+    /// Lazily initialized fragment rewiring metadata shared by every cursor.
+    solution_fragments: Arc<OnceLock<Arc<[SolutionFragment]>>>,
     /// Source graph shared with derived filtered charts.
     graph: Arc<HncGraph>,
     /// Exact cardinality of the automaton language.
@@ -411,11 +508,25 @@ impl Chart {
     }
 
     /// Stream solutions through one stable arena whose fixed-arity edges are updated in place.
+    ///
+    /// # Panics
+    ///
+    /// Panics if an internally constructed chart violates the solver's finite,
+    /// productive automaton invariant.
     pub fn solutions(&self) -> Solutions<'_> {
         Solutions {
             chart: self,
-            inner: self.derivation_plan.iter(),
-            fragments: make_solution_fragments(self),
+            inner: self
+                .derivation_plan
+                .get_or_init(|| {
+                    FiniteLanguagePlan::new(self.fragment_automaton.automaton())
+                        .expect("solver charts have an acyclic productive state graph")
+                })
+                .iter(),
+            fragments: self
+                .solution_fragments
+                .get_or_init(|| make_solution_fragments(self).into())
+                .as_ref(),
             tree: ReusableSolutionTree::new(self),
             current: false,
         }
@@ -513,7 +624,7 @@ impl Chart {
         assert_eq!(automaton.num_states() as usize, source_states.len());
         let subgraphs = source_states
             .iter()
-            .map(|state| source.source_subgraph(*state).clone())
+            .map(|state| Arc::clone(&source.fragment_automaton.state_subgraphs[state.index()]))
             .collect::<Vec<_>>();
         let derivation_plan = FiniteLanguagePlan::new(&automaton)
             .expect("filtered charts retain an acyclic productive state graph");
@@ -533,7 +644,8 @@ impl Chart {
                 fragment_roots: Arc::clone(&source.fragment_automaton.fragment_roots),
                 state_subgraphs: subgraphs,
             },
-            derivation_plan,
+            derivation_plan: OnceLock::from(derivation_plan),
+            solution_fragments: Arc::clone(&source.solution_fragments),
             graph: Arc::clone(&source.graph),
             count,
         }
@@ -542,8 +654,6 @@ impl Chart {
     /// Construct an empty chart that retains the source graph and fragment arena.
     pub(crate) fn empty_filter_result(source: &Self) -> Self {
         let automaton = ExplicitBuilder::new().build();
-        let derivation_plan = FiniteLanguagePlan::new(&automaton)
-            .expect("an empty automaton has no productive cycle");
         Self {
             fragment_automaton: FragmentAutomaton {
                 automaton,
@@ -551,7 +661,8 @@ impl Chart {
                 fragment_roots: Arc::clone(&source.fragment_automaton.fragment_roots),
                 state_subgraphs: Vec::new(),
             },
-            derivation_plan,
+            derivation_plan: OnceLock::new(),
+            solution_fragments: Arc::clone(&source.solution_fragments),
             graph: Arc::clone(&source.graph),
             count: BigUint::from(0_u8),
         }
@@ -569,7 +680,7 @@ impl ChartDisplay {
         // Count them first, then assign display variants in state order.
         let mut totals = HashMap::<&Subgraph, usize>::new();
         for subgraph in &chart.fragment_automaton.state_subgraphs {
-            *totals.entry(subgraph).or_default() += 1;
+            *totals.entry(subgraph.as_ref()).or_default() += 1;
         }
         let mut seen = HashMap::<&Subgraph, u32>::new();
         let variants = chart
@@ -577,6 +688,7 @@ impl ChartDisplay {
             .state_subgraphs
             .iter()
             .map(|subgraph| {
+                let subgraph = subgraph.as_ref();
                 if totals[subgraph] == 1 {
                     None
                 } else {
@@ -822,7 +934,7 @@ pub struct Solutions<'a> {
     /// Depth-first automaton-language cursor.
     inner: FiniteLanguageIterator<'a>,
     /// Rewiring instructions indexed by terminal symbol.
-    fragments: Vec<SolutionFragment>,
+    fragments: &'a [SolutionFragment],
     /// Arena and lookup tables reused between solutions.
     tree: ReusableSolutionTree,
     /// Whether the cursor currently points at a solution.
@@ -841,7 +953,7 @@ impl Solutions<'_> {
             return false;
         }
         self.tree.apply_derivation(
-            &self.fragments,
+            self.fragments,
             self.inner.current().expect("advance produced a derivation"),
             self.inner
                 .changed_from()
@@ -892,6 +1004,18 @@ pub fn solve(graph: &HncGraph) -> Result<Chart, SolveError> {
     solve_with_cancellation(graph, || false)
 }
 
+/// Construct a chart while transferring shared ownership of the source graph.
+///
+/// This avoids cloning the graph into the returned chart. Callers that already
+/// own an `Arc<HncGraph>` should prefer this entry point over [`solve`].
+///
+/// # Errors
+///
+/// Returns an error if the graph cannot be compiled into a valid chart.
+pub fn solve_shared(graph: Arc<HncGraph>) -> Result<Chart, SolveError> {
+    solve_shared_with_cancellation(graph, || false)
+}
+
 /// Decide solvability by retaining only the first successful split of each subgraph.
 ///
 /// Unlike [`solve`], this does not construct a chart or count solved forms.
@@ -902,7 +1026,8 @@ pub fn is_solvable(graph: &HncGraph) -> bool {
     }
     SolvabilityCompiler {
         graph,
-        memo: HashMap::new(),
+        memo: FxHashMap::default(),
+        split_scratch: SplitScratch::new(graph),
     }
     .check(&Subgraph::all(graph))
 }
@@ -921,6 +1046,23 @@ pub fn solve_with_cancellation(
     graph: &HncGraph,
     cancelled: impl Fn() -> bool,
 ) -> Result<Chart, SolveError> {
+    solve_shared_with_cancellation(Arc::new(graph.clone()), cancelled)
+}
+
+/// Construct a chart from a shared graph, checking `cancelled` between split steps.
+///
+/// # Errors
+///
+/// Returns [`SolveError::Cancelled`] if `cancelled` requests cancellation, or
+/// another solver error if chart construction fails.
+///
+/// # Panics
+///
+/// Panics if an internal chart-construction invariant is violated.
+pub fn solve_shared_with_cancellation(
+    graph: Arc<HncGraph>,
+    cancelled: impl Fn() -> bool,
+) -> Result<Chart, SolveError> {
     if cancelled() {
         return Err(SolveError::Cancelled);
     }
@@ -929,17 +1071,19 @@ pub fn solve_with_cancellation(
     }
 
     // Compile the complete fragment set as the root dynamic-programming state.
-    let mut compiler = Compiler::new(graph);
-    let top = Subgraph::all(graph);
-    let (top_state, count) = compiler.compile(&top, &cancelled)?;
+    let mut compiler = Compiler::new(&graph);
+    let top = Subgraph::all(&graph);
+    let top_state = compiler.compile(&top, &cancelled)?;
+    let count = compiler.counts[top_state.index()]
+        .take()
+        .expect("the top-level subgraph finished compilation");
     if count != BigUint::from(0_u8) {
         compiler.builder.add_accepting(top_state);
     }
 
-    // Freeze the chart and precompute the plan used by every solution cursor.
+    // Freeze the chart. Enumeration analysis is deferred until a caller
+    // actually requests a solution cursor.
     let automaton = compiler.builder.build();
-    let derivation_plan = FiniteLanguagePlan::new(&automaton)
-        .expect("solver charts have an acyclic productive state graph");
     Ok(Chart {
         fragment_automaton: FragmentAutomaton {
             automaton,
@@ -947,8 +1091,9 @@ pub fn solve_with_cancellation(
             fragment_roots: compiler.fragment_roots.into(),
             state_subgraphs: compiler.subgraphs,
         },
-        derivation_plan,
-        graph: Arc::new(graph.clone()),
+        derivation_plan: OnceLock::new(),
+        solution_fragments: Arc::new(OnceLock::new()),
+        graph,
         count,
     })
 }
@@ -965,11 +1110,11 @@ struct Compiler<'a> {
     /// Incrementally constructed explicit tree automaton.
     builder: ExplicitBuilder,
     /// Canonical automaton state for every encountered subgraph.
-    states: HashMap<Subgraph, StateId>,
+    states: FxHashMap<Arc<Subgraph>, StateId>,
     /// Completed solution count by state, or `None` during expansion.
     counts: Vec<Option<BigUint>>,
     /// Source subgraph by dense state index.
-    subgraphs: Vec<Subgraph>,
+    subgraphs: Vec<Arc<Subgraph>>,
     /// Shared tree storage for fragment terminals.
     fragment_arena: TreeArena<FragmentNode>,
     /// Fragment root by dense terminal-symbol index.
@@ -977,7 +1122,9 @@ struct Compiler<'a> {
     /// Open holes by dense terminal-symbol index.
     fragment_sockets: Vec<Box<[NodeId]>>,
     /// Intern table from canonical top contexts to terminal symbols.
-    fragment_symbols: HashMap<(NodeId, Vec<(NodeId, NodeId)>), Symbol>,
+    fragment_symbols: FxHashMap<(NodeId, Vec<(NodeId, NodeId)>), Symbol>,
+    /// Allocation-reusing workspace for split validation.
+    split_scratch: SplitScratch,
 }
 
 /// Lightweight existence checker that stops after the first productive split.
@@ -985,7 +1132,9 @@ struct SolvabilityCompiler<'a> {
     /// Validated HNC graph being checked.
     graph: &'a HncGraph,
     /// Solvability result for every completed recursive subproblem.
-    memo: HashMap<Subgraph, bool>,
+    memo: FxHashMap<Subgraph, bool>,
+    /// Allocation-reusing workspace for split validation.
+    split_scratch: SplitScratch,
 }
 
 impl SolvabilityCompiler<'_> {
@@ -1001,7 +1150,7 @@ impl SolvabilityCompiler<'_> {
         let graph = self.graph;
         let mut candidates = SplitCandidates::new(graph, subgraph);
         while let Some(candidate) = candidates
-            .next(&|| false)
+            .next(&|| false, &mut self.split_scratch)
             .expect("solvability checking is never cancelled")
         {
             if candidate
@@ -1026,29 +1175,30 @@ impl<'a> Compiler<'a> {
         Self {
             graph,
             builder: ExplicitBuilder::new(),
-            states: HashMap::new(),
+            states: FxHashMap::default(),
             counts: Vec::new(),
             subgraphs: Vec::new(),
             fragment_arena: TreeArena::new(),
             fragment_roots: Vec::new(),
             fragment_sockets: Vec::new(),
-            fragment_symbols: HashMap::new(),
+            fragment_symbols: FxHashMap::default(),
+            split_scratch: SplitScratch::new(graph),
         }
     }
 
-    /// Compile `subgraph`, returning its automaton state and exact solution count.
+    /// Compile `subgraph`, returning its automaton state.
     fn compile(
         &mut self,
         subgraph: &Subgraph,
         cancelled: &impl Fn() -> bool,
-    ) -> Result<(StateId, BigUint), SolveError> {
+    ) -> Result<StateId, SolveError> {
         if cancelled() {
             return Err(SolveError::Cancelled);
         }
 
         // Dynamic programming ensures every distinct fragment set gets one state.
-        if let Some(compiled) = self.memoized_subgraph(subgraph) {
-            return Ok(compiled);
+        if let Some(state) = self.memoized_subgraph(subgraph) {
+            return Ok(state);
         }
 
         // Register before recursion so a cyclic dependency is detected as an
@@ -1059,7 +1209,7 @@ impl<'a> Compiler<'a> {
         // their solution counts add to the language size of this state.
         let mut total = BigUint::from(0_u8);
         let mut candidates = SplitCandidates::new(self.graph, subgraph);
-        while let Some(candidate) = candidates.next(cancelled)? {
+        while let Some(candidate) = candidates.next(cancelled, &mut self.split_scratch)? {
             if let Some(split) = self.compile_split(candidate, cancelled)? {
                 self.builder
                     .add_rule(split.symbol, split.child_states, state);
@@ -1068,26 +1218,23 @@ impl<'a> Compiler<'a> {
         }
 
         // Publishing the count marks the memoized state as fully expanded.
-        self.finish_subgraph(state, &total);
-        Ok((state, total))
+        self.finish_subgraph(state, total);
+        Ok(state)
     }
 
-    /// Return an existing state and its completed count, or zero while recursive.
-    fn memoized_subgraph(&self, subgraph: &Subgraph) -> Option<(StateId, BigUint)> {
-        let &state = self.states.get(subgraph)?;
-        let count = self.counts[state.index()]
-            .clone()
-            .unwrap_or_else(|| BigUint::from(0_u8));
-        Some((state, count))
+    /// Return the existing state for a previously encountered subgraph.
+    fn memoized_subgraph(&self, subgraph: &Subgraph) -> Option<StateId> {
+        self.states.get(subgraph).copied()
     }
 
     /// Allocate and memoize the state for a subgraph before expanding its splits.
     fn begin_subgraph(&mut self, subgraph: &Subgraph) -> StateId {
         let state = self.builder.new_state();
         assert_eq!(state.index(), self.subgraphs.len());
-        self.subgraphs.push(subgraph.clone());
+        let subgraph = Arc::new(subgraph.clone());
+        self.subgraphs.push(Arc::clone(&subgraph));
         self.counts.push(None);
-        self.states.insert(subgraph.clone(), state);
+        self.states.insert(subgraph, state);
         state
     }
 
@@ -1102,9 +1249,13 @@ impl<'a> Compiler<'a> {
         let mut children = Vec::with_capacity(candidate.attachments.len());
         let mut solution_count = BigUint::from(1_u8);
         for (hole, child) in candidate.attachments {
-            let (child_state, child_count) = self.compile(&child, cancelled)?;
+            let child_state = self.compile(&child, cancelled)?;
             children.push((hole, child_state));
-            solution_count *= child_count;
+            if let Some(child_count) = &self.counts[child_state.index()] {
+                solution_count *= child_count;
+            } else {
+                solution_count = BigUint::from(0_u8);
+            }
         }
 
         // A rule with an empty child language can never contribute a solution.
@@ -1181,8 +1332,8 @@ impl<'a> Compiler<'a> {
     }
 
     /// Store the final solution count for a fully expanded state.
-    fn finish_subgraph(&mut self, state: StateId, count: &BigUint) {
-        self.counts[state.index()] = Some(count.clone());
+    fn finish_subgraph(&mut self, state: StateId, count: BigUint) {
+        self.counts[state.index()] = Some(count);
     }
 }
 
@@ -1220,6 +1371,7 @@ impl<'a> SplitCandidates<'a> {
     fn next(
         &mut self,
         cancelled: &impl Fn() -> bool,
+        scratch: &mut SplitScratch,
     ) -> Result<Option<SplitCandidate>, SolveError> {
         while let Some(&root) = self.graph.roots().get(self.next_root) {
             self.next_root += 1;
@@ -1229,8 +1381,8 @@ impl<'a> SplitCandidates<'a> {
             // Only a fragment in this subproblem with no incoming local edge
             // can be the top fragment of a solved form.
             if self.subgraph.contains(self.graph, root)
-                && indegree_in(self.graph, root, self.subgraph) == 0
-                && let Some(candidate) = compute_split(self.graph, root, self.subgraph)
+                && !scratch.incoming_fragments[self.next_root - 1].intersects(&self.subgraph.0)
+                && let Some(candidate) = compute_split(self.graph, root, self.subgraph, scratch)
             {
                 return Ok(Some(candidate));
             }
@@ -1239,51 +1391,59 @@ impl<'a> SplitCandidates<'a> {
     }
 }
 
-/// Count tree and dominance edges entering `node` from within `subgraph`.
-fn indegree_in(graph: &HncGraph, node: NodeId, subgraph: &Subgraph) -> usize {
-    let tree = graph
-        .tree_parent(node)
-        .filter(|parent| subgraph.contains(graph, *parent))
-        .map_or(0, |_| 1);
-    tree + graph
-        .incoming_dominance(node)
-        .iter()
-        .filter(|(_, source)| subgraph.contains(graph, *source))
-        .count()
-}
-
 /// Compute and validate the split induced by choosing `root` as a free root.
 ///
 /// First, [`RootFragmentTraversal`] follows tree edges and admissible direct
 /// substitutions to construct the top context. Then [`SplitTraversal`] checks
 /// the remaining undirected graph and groups each attached weakly connected
 /// component by the dominance edge through which it leaves the top context.
-fn compute_split(graph: &HncGraph, root: NodeId, subgraph: &Subgraph) -> Option<SplitCandidate> {
+fn compute_split(
+    graph: &HncGraph,
+    root: NodeId,
+    subgraph: &Subgraph,
+    scratch: &mut SplitScratch,
+) -> Option<SplitCandidate> {
+    scratch.clear();
+
     // Phase 1: grow the top context through tree edges and legal substitutions.
-    let mut root_traversal = RootFragmentTraversal::new(graph, subgraph);
-    if !root_traversal.visit(root) {
-        return None;
+    {
+        let mut root_traversal = RootFragmentTraversal {
+            graph,
+            subgraph,
+            nodes: &mut scratch.root_nodes,
+            ancestors: &mut scratch.ancestors,
+            substitutions: &mut scratch.substitutions,
+        };
+        if !root_traversal.visit(root) {
+            return None;
+        }
     }
-    let RootFragmentTraversal {
-        nodes: root_fragment,
-        substitutions,
-        ..
-    } = root_traversal;
 
     // Phase 2: validate all remaining edges and partition nodes below the
     // context into independently solvable attachment components.
-    let mut traversal = SplitTraversal::new(graph, subgraph, &root_fragment, root);
-    if !traversal.visit(root, None) || traversal.visited.count() != subgraph.node_count(graph) {
-        return None;
+    {
+        scratch.path.insert(root.index());
+        let mut traversal = SplitTraversal {
+            graph,
+            subgraph,
+            root_fragment: &scratch.root_nodes,
+            path: &mut scratch.path,
+            visited: &mut scratch.visited,
+            component_order: &mut scratch.component_order,
+            components: &mut scratch.components,
+        };
+        if !traversal.visit(root, None) || traversal.visited.count() != subgraph.node_count(graph) {
+            return None;
+        }
     }
 
     // Convert boundary-edge IDs into the hole/component pairs consumed by the compiler.
-    let attachments = traversal
+    let attachments = scratch
         .component_order
-        .into_iter()
-        .map(|edge_index| {
+        .iter()
+        .map(|&edge_index| {
             let (dominator, _) = graph.parsed().dominance_edges()[edge_index];
-            let subgraph = traversal.components[edge_index]
+            let subgraph = scratch.components[edge_index]
                 .take()
                 .expect("a discovered WCC has members");
             (dominator, subgraph)
@@ -1293,7 +1453,7 @@ fn compute_split(graph: &HncGraph, root: NodeId, subgraph: &Subgraph) -> Option<
     Some(SplitCandidate {
         root,
         attachments,
-        substitutions,
+        substitutions: std::mem::take(&mut scratch.substitutions),
     })
 }
 
@@ -1304,26 +1464,14 @@ struct RootFragmentTraversal<'a> {
     /// Fragments belonging to the current recursive subproblem.
     subgraph: &'a Subgraph,
     /// Graph nodes included in the top context.
-    nodes: BitSet,
+    nodes: &'a mut BitSet,
     /// Current recursion path, used to reject substitution cycles.
-    ancestors: BitSet,
+    ancestors: &'a mut BitSet,
     /// Hole-to-fragment-root substitutions folded into the context.
-    substitutions: Vec<(NodeId, NodeId)>,
+    substitutions: &'a mut Vec<(NodeId, NodeId)>,
 }
 
-impl<'a> RootFragmentTraversal<'a> {
-    /// Create an empty traversal over `subgraph`.
-    fn new(graph: &'a HncGraph, subgraph: &'a Subgraph) -> Self {
-        let node_count = graph.parsed().nodes().len();
-        Self {
-            graph,
-            subgraph,
-            nodes: BitSet::empty(node_count),
-            ancestors: BitSet::empty(node_count),
-            substitutions: Vec::new(),
-        }
-    }
-
+impl RootFragmentTraversal<'_> {
     /// Extend the root context below `node`, returning false on an invalid split.
     fn visit(&mut self, node: NodeId) -> bool {
         // Every visited node becomes part of the proposed top context.
@@ -1428,37 +1576,16 @@ struct SplitTraversal<'a> {
     /// Nodes already assigned to the split's top context.
     root_fragment: &'a BitSet,
     /// Current path inside the root context.
-    path: BitSet,
+    path: &'a mut BitSet,
     /// Nodes assigned exactly once during validation.
-    visited: BitSet,
+    visited: &'a mut BitSet,
     /// Dominance-edge IDs in component discovery order.
-    component_order: Vec<usize>,
+    component_order: &'a mut Vec<usize>,
     /// Component accumulated below each boundary dominance edge.
-    components: Vec<Option<Subgraph>>,
+    components: &'a mut [Option<Subgraph>],
 }
 
-impl<'a> SplitTraversal<'a> {
-    /// Initialize split validation at `root`.
-    fn new(
-        graph: &'a HncGraph,
-        subgraph: &'a Subgraph,
-        root_fragment: &'a BitSet,
-        root: NodeId,
-    ) -> Self {
-        let node_count = graph.parsed().nodes().len();
-        let mut path = BitSet::empty(node_count);
-        path.insert(root.index());
-        Self {
-            graph,
-            subgraph,
-            root_fragment,
-            path,
-            visited: BitSet::empty(node_count),
-            component_order: Vec::new(),
-            components: vec![None; graph.parsed().dominance_edges().len()],
-        }
-    }
-
+impl SplitTraversal<'_> {
     /// Assign `node` and recursively validate all of its incident edges.
     fn visit(&mut self, node: NodeId, component_edge: Option<usize>) -> bool {
         // A node reached twice would join components that the split claims are

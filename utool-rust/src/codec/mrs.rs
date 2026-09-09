@@ -8,7 +8,18 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 enum ValueKind {
     Handle,
     Variable,
+    InstanceOrHandle,
     Other,
+}
+
+/// Policy for a `p` variable that structural MRS constraints cannot refine.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PVariablePolicy {
+    /// Treat unresolved `p` values as unexpressed instance arguments.
+    #[default]
+    ErgCompatible,
+    /// Reject unresolved `p` values instead of applying the ERG convention.
+    Strict,
 }
 
 #[derive(Clone, Debug)]
@@ -205,13 +216,7 @@ impl Parser {
             }
             Some(Token::Word(text)) => {
                 self.offset += 1;
-                let kind = if numbered(&text, 'h') {
-                    ValueKind::Handle
-                } else if numbered(&text, 'x') {
-                    ValueKind::Variable
-                } else {
-                    ValueKind::Other
-                };
+                let kind = value_kind(&text);
                 Ok(Value { text, kind })
             }
             found => self.error(format!("expected MRS value, found {found:?}")),
@@ -220,7 +225,7 @@ impl Parser {
 
     fn handle(&mut self) -> Result<String, CodecError> {
         let value = self.word()?;
-        if numbered(&value, 'h') {
+        if numbered(&value, 'h') || numbered(&value, 'p') {
             Ok(value)
         } else {
             self.error(format!("expected handle, found {value:?}"))
@@ -313,7 +318,19 @@ fn source_diagnostic(input: &str, byte: usize, message: &str) -> String {
 fn numbered(value: &str, prefix: char) -> bool {
     value
         .strip_prefix(prefix)
-        .is_some_and(|tail| tail.chars().all(|ch| ch.is_ascii_digit()))
+        .is_some_and(|tail| !tail.is_empty() && tail.chars().all(|ch| ch.is_ascii_digit()))
+}
+
+fn value_kind(value: &str) -> ValueKind {
+    if numbered(value, 'h') {
+        ValueKind::Handle
+    } else if numbered(value, 'x') {
+        ValueKind::Variable
+    } else if numbered(value, 'p') {
+        ValueKind::InstanceOrHandle
+    } else {
+        ValueKind::Other
+    }
 }
 
 #[derive(Default)]
@@ -385,6 +402,54 @@ impl RawGraph {
         false
     }
 
+    fn hypernormally_reachable_avoiding(
+        &self,
+        source: usize,
+        target: usize,
+        avoid: &HashSet<usize>,
+    ) -> bool {
+        fn visit(
+            graph: &RawGraph,
+            node: usize,
+            target: usize,
+            visited: &mut HashSet<usize>,
+            previous_was_upward_dominance: bool,
+        ) -> bool {
+            if !visited.insert(node) {
+                return false;
+            }
+            if node == target {
+                return true;
+            }
+
+            for &child in &graph.children[node] {
+                if visit(graph, child, target, visited, false) {
+                    return true;
+                }
+            }
+            for (parent, children) in graph.children.iter().enumerate() {
+                if children.contains(&node) && visit(graph, parent, target, visited, false) {
+                    return true;
+                }
+            }
+            for &(from, to) in &graph.dominance {
+                if from == node
+                    && !previous_was_upward_dominance
+                    && visit(graph, to, target, visited, false)
+                {
+                    return true;
+                }
+                if to == node && visit(graph, from, target, visited, true) {
+                    return true;
+                }
+            }
+            false
+        }
+
+        let mut visited = avoid.clone();
+        visit(self, source, target, &mut visited, false)
+    }
+
     fn remove(&mut self, removed: usize) {
         self.names.remove(removed);
         self.labels.remove(removed);
@@ -433,7 +498,46 @@ impl RawGraph {
     }
 }
 
-fn lower(mrs: Mrs) -> CodecResult {
+fn constrain_p(
+    refinements: &mut HashMap<String, ValueKind>,
+    value: &str,
+    kind: ValueKind,
+) -> Result<(), CodecError> {
+    if !numbered(value, 'p') {
+        return Ok(());
+    }
+    if let Some(previous) = refinements.insert(value.to_owned(), kind) {
+        if previous != kind {
+            return Err(CodecError::Semantic(format!(
+                "p variable {value:?} occurs in both handle and instance positions"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn p_refinements(mrs: &Mrs) -> Result<HashMap<String, ValueKind>, CodecError> {
+    let mut refinements = HashMap::new();
+    constrain_p(&mut refinements, &mrs.top, ValueKind::Handle)?;
+    for relation in &mrs.relations {
+        constrain_p(&mut refinements, &relation.handle, ValueKind::Handle)?;
+        for (name, value) in &relation.attrs {
+            if name == "ARG0" {
+                constrain_p(&mut refinements, &value.text, ValueKind::Variable)?;
+            } else if matches!(name.as_str(), "RSTR" | "BODY") {
+                constrain_p(&mut refinements, &value.text, ValueKind::Handle)?;
+            }
+        }
+    }
+    for (high, low) in &mrs.qeqs {
+        constrain_p(&mut refinements, high, ValueKind::Handle)?;
+        constrain_p(&mut refinements, low, ValueKind::Handle)?;
+    }
+    Ok(refinements)
+}
+
+fn lower(mrs: Mrs, p_policy: PVariablePolicy) -> CodecResult {
+    let p_refinements = p_refinements(&mrs)?;
     let mut graph = RawGraph::default();
     let mut binders = HashMap::<String, usize>::new();
     let mut bound = BTreeMap::<String, BTreeSet<String>>::new();
@@ -476,6 +580,23 @@ fn lower(mrs: Mrs) -> CodecResult {
                             .or_default()
                             .insert(relation.handle.clone());
                     }
+                    ValueKind::InstanceOrHandle => match p_refinements.get(&value.text) {
+                        Some(ValueKind::Handle) => graph.tree(&relation.handle, &value.text),
+                        Some(ValueKind::Variable) => {
+                            bound
+                                .entry(value.text)
+                                .or_default()
+                                .insert(relation.handle.clone());
+                        }
+                        Some(ValueKind::InstanceOrHandle | ValueKind::Other) => unreachable!(),
+                        None if p_policy == PVariablePolicy::ErgCompatible => {}
+                        None => {
+                            return Err(CodecError::Semantic(format!(
+                                "unresolved p variable {:?}; use the ErgCompatible policy or provide type information",
+                                value.text
+                            )));
+                        }
+                    },
                     ValueKind::Other => {}
                 }
             }
@@ -506,7 +627,33 @@ fn lower(mrs: Mrs) -> CodecResult {
     set_top(&mut graph, &mrs.top)?;
     remove_empty_top(&mut graph)?;
     normalize(&mut graph)?;
-    graph.finish()
+    validate_lowered_graph(graph.finish()?)
+}
+
+fn validate_lowered_graph(graph: crate::graph::ParsedGraph) -> CodecResult {
+    if !graph.is_weakly_normal() {
+        return Err(CodecError::Semantic(
+            "converted MRS graph is not weakly normal".to_owned(),
+        ));
+    }
+    let mut failures = Vec::new();
+    if !graph.is_normal() {
+        failures.push("normal");
+    }
+    if !graph.is_leaf_labelled() {
+        failures.push("leaf-labelled");
+    }
+    if !graph.is_hypernormally_connected() {
+        failures.push("hypernormally connected");
+    }
+    if failures.is_empty() {
+        Ok(graph)
+    } else {
+        Err(CodecError::Semantic(format!(
+            "converted MRS graph is not {}",
+            failures.join(", not ")
+        )))
+    }
 }
 
 #[allow(clippy::too_many_lines)]
@@ -661,6 +808,23 @@ fn normalize(graph: &mut RawGraph) -> Result<(), CodecError> {
         if outgoing.is_empty() {
             continue;
         }
+        for first in 0..outgoing.len() {
+            for second in (first + 1)..outgoing.len() {
+                let avoid = HashSet::from([root]);
+                if !graph.hypernormally_reachable_avoiding(
+                    outgoing[first].1,
+                    outgoing[second].1,
+                    &avoid,
+                ) {
+                    return Err(CodecError::Semantic(format!(
+                        "dominance children {:?} and {:?} of root {:?} are not hypernormally connected",
+                        graph.names[outgoing[first].1],
+                        graph.names[outgoing[second].1],
+                        graph.names[root]
+                    )));
+                }
+            }
+        }
         let mut fragment = HashSet::new();
         let mut todo = VecDeque::from([root]);
         while let Some(node) = todo.pop_front() {
@@ -697,7 +861,17 @@ fn normalize(graph: &mut RawGraph) -> Result<(), CodecError> {
 /// Returns an error if the Prolog term is malformed or the converted graph is
 /// not a valid normalized MRS dominance graph.
 pub fn parse_mrs_prolog(input: &str) -> CodecResult {
-    lower(Parser::new(input)?.parse()?)
+    parse_mrs_prolog_with_policy(input, PVariablePolicy::default())
+}
+
+/// Parse Prolog-style MRS with an explicit unresolved-`p` policy.
+///
+/// # Errors
+///
+/// Returns an error if the term is malformed, a `p` value violates the
+/// selected policy, or conversion does not produce a valid normalized graph.
+pub fn parse_mrs_prolog_with_policy(input: &str, p_policy: PVariablePolicy) -> CodecResult {
+    lower(Parser::new(input)?.parse()?, p_policy)
 }
 
 fn xml_attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>, CodecError> {
@@ -724,6 +898,17 @@ fn xml_attribute(element: &BytesStart<'_>, name: &[u8]) -> Result<Option<String>
 /// valid normalized MRS dominance graph.
 #[allow(clippy::too_many_lines)]
 pub fn parse_mrs_xml(input: &str) -> CodecResult {
+    parse_mrs_xml_with_policy(input, PVariablePolicy::default())
+}
+
+/// Parse XML MRS with an explicit unresolved-`p` policy.
+///
+/// # Errors
+///
+/// Returns an error if the XML is malformed, a `p` value violates the
+/// selected policy, or conversion does not produce a valid normalized graph.
+#[allow(clippy::too_many_lines)]
+pub fn parse_mrs_xml_with_policy(input: &str, p_policy: PVariablePolicy) -> CodecResult {
     let mut reader = Reader::from_str(input);
     reader.config_mut().trim_text(false);
     let mut stack = Vec::<String>::new();
@@ -752,13 +937,7 @@ pub fn parse_mrs_xml(input: &str) -> CodecResult {
                     let variable = xml_attribute(&element, b"vid")?
                         .ok_or_else(|| CodecError::Syntax("MRS XML var has no vid".to_owned()))?;
                     let parsed = Value {
-                        kind: if numbered(&variable, 'h') {
-                            ValueKind::Handle
-                        } else if numbered(&variable, 'x') {
-                            ValueKind::Variable
-                        } else {
-                            ValueKind::Other
-                        },
+                        kind: value_kind(&variable),
                         text: variable,
                     };
                     match stack.last().map(String::as_str) {
@@ -779,13 +958,7 @@ pub fn parse_mrs_xml(input: &str) -> CodecResult {
                     let variable = xml_attribute(&element, b"vid")?
                         .ok_or_else(|| CodecError::Syntax("MRS XML var has no vid".to_owned()))?;
                     let parsed = Value {
-                        kind: if numbered(&variable, 'h') {
-                            ValueKind::Handle
-                        } else if numbered(&variable, 'x') {
-                            ValueKind::Variable
-                        } else {
-                            ValueKind::Other
-                        },
+                        kind: value_kind(&variable),
                         text: variable,
                     };
                     match stack.last().map(String::as_str) {
@@ -845,9 +1018,12 @@ pub fn parse_mrs_xml(input: &str) -> CodecResult {
     if top.is_empty() {
         return Err(CodecError::Syntax("MRS XML has no top handle".to_owned()));
     }
-    lower(Mrs {
-        top,
-        relations,
-        qeqs,
-    })
+    lower(
+        Mrs {
+            top,
+            relations,
+            qeqs,
+        },
+        p_policy,
+    )
 }

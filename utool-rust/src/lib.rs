@@ -29,9 +29,9 @@ pub mod server;
 pub mod solver;
 
 pub use codec::{
-    CodecError, GraphOutputCodec, InputCodec, OutputCodec, SolutionEncoder, encode_domcon_oz,
-    encode_dot, parse_chain, parse_domcon_oz, parse_domgraph_gxl, parse_holesem, parse_mrs_prolog,
-    parse_mrs_xml,
+    CodecError, GraphOutputCodec, InputCodec, OutputCodec, PVariablePolicy, SolutionEncoder,
+    encode_domcon_oz, encode_dot, parse_chain, parse_domcon_oz, parse_domgraph_gxl, parse_holesem,
+    parse_mrs_prolog, parse_mrs_prolog_with_policy, parse_mrs_xml, parse_mrs_xml_with_policy,
 };
 pub use config::{CodecPreferences, ServerPreferences, UserConfig};
 pub use filter::{FilterError, Pattern, RewriteRule, RewriteSystem, filter_chart};
@@ -42,5 +42,6 @@ pub use layout::{
 };
 pub use solver::{
     Chart, ChartDisplay, ChartRule, ChartRulePage, ChartState, FragmentAutomaton, FragmentNode,
-    Solution, Solutions, SolveError, is_solvable, solve, solve_with_cancellation,
+    Solution, Solutions, SolveError, is_solvable, solve, solve_shared,
+    solve_shared_with_cancellation, solve_with_cancellation,
 };

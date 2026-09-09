@@ -8,9 +8,11 @@ use std::{
     net::{IpAddr, Ipv4Addr, UdpSocket},
     path::{Path, PathBuf},
     sync::{
-        Arc, Mutex,
+        Arc, Mutex, OnceLock,
         atomic::{AtomicBool, AtomicU64, Ordering},
+        mpsc,
     },
+    thread,
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 use tauri::{
@@ -21,8 +23,8 @@ use tauri::{
 };
 use utool::{
     Chart, ChartDisplay, EdgeKind, HncGraph, InputCodec, LayoutError, LayoutOptions, OutputCodec,
-    Point, RewriteSystem, ServerPreferences, Size, Solution, UserConfig, filter_chart, layout_chart,
-    layout_graph, solve_with_cancellation,
+    Point, RewriteSystem, ServerPreferences, Size, Solution, UserConfig, filter_chart,
+    layout_chart, layout_graph, solve_shared_with_cancellation,
 };
 
 const SERVER_ACTION_ID: &str = "server-action";
@@ -360,16 +362,128 @@ fn startup_state(args: impl IntoIterator<Item = OsString>) -> StartupState {
 }
 
 struct Document {
-    graph: HncGraph,
+    graph: Arc<HncGraph>,
     title: String,
     drawing: GraphView,
     elapsed_ms: f64,
 }
 
 struct StoredChart {
-    chart: Chart,
+    chart: Arc<Chart>,
     display: ChartDisplay,
     source: String,
+    solution_worker: OnceLock<SolutionWorker>,
+}
+
+enum SolutionRequest {
+    View {
+        index: usize,
+        response: mpsc::SyncSender<Result<Option<SolutionView>, String>>,
+    },
+    Export {
+        index: usize,
+        codec: OutputCodec,
+        response: mpsc::SyncSender<Result<String, String>>,
+    },
+}
+
+struct SolutionWorker {
+    requests: mpsc::Sender<SolutionRequest>,
+}
+
+impl SolutionWorker {
+    fn new(chart: Arc<Chart>) -> Self {
+        let (requests, receiver) = mpsc::channel();
+        thread::spawn(move || {
+            let mut solutions = chart.solutions();
+            let mut current_index = None;
+            while let Ok(request) = receiver.recv() {
+                let request_started = Instant::now();
+                let target = match &request {
+                    SolutionRequest::View { index, .. } | SolutionRequest::Export { index, .. } => {
+                        *index
+                    }
+                };
+
+                // Backward access restarts once; forward access advances only
+                // through the unseen suffix, making normal browsing linear.
+                if current_index.is_some_and(|current| target < current) {
+                    solutions = chart.solutions();
+                    current_index = None;
+                }
+                let mut available = true;
+                while current_index.is_none_or(|current| current < target) {
+                    if !solutions.advance() {
+                        available = false;
+                        break;
+                    }
+                    current_index = Some(current_index.map_or(0, |current| current + 1));
+                }
+
+                match request {
+                    SolutionRequest::View { response, .. } => {
+                        let result = if available {
+                            Ok(Some(solution_view(
+                                &solutions.current().expect("worker cursor has a solution"),
+                                request_started.elapsed().as_secs_f64() * 1000.0,
+                            )))
+                        } else {
+                            Ok(None)
+                        };
+                        let _ = response.send(result);
+                    }
+                    SolutionRequest::Export {
+                        index,
+                        codec,
+                        response,
+                    } => {
+                        let result = if available {
+                            encode_worker_solution(
+                                &solutions.current().expect("worker cursor has a solution"),
+                                index,
+                                codec,
+                            )
+                        } else {
+                            Err(format!("solution {} is no longer available", index + 1))
+                        };
+                        let _ = response.send(result);
+                    }
+                }
+            }
+        });
+        Self { requests }
+    }
+
+    fn view(&self, index: usize) -> Result<Option<SolutionView>, String> {
+        let (response, receiver) = mpsc::sync_channel(0);
+        self.requests
+            .send(SolutionRequest::View { index, response })
+            .map_err(|_| "solution worker is no longer available".to_owned())?;
+        receiver
+            .recv()
+            .map_err(|_| "solution worker stopped before responding".to_owned())?
+    }
+
+    fn export(&self, index: usize, codec: OutputCodec) -> Result<String, String> {
+        let (response, receiver) = mpsc::sync_channel(0);
+        self.requests
+            .send(SolutionRequest::Export {
+                index,
+                codec,
+                response,
+            })
+            .map_err(|_| "solution worker is no longer available".to_owned())?;
+        receiver
+            .recv()
+            .map_err(|_| "solution worker stopped before responding".to_owned())?
+    }
+}
+
+impl StoredChart {
+    fn solution_worker(&self) -> &SolutionWorker {
+        self.solution_worker
+            .get_or_init(|| SolutionWorker::new(Arc::clone(&self.chart)))
+    }
 }
 
 #[derive(Default)]
@@ -748,6 +862,33 @@ fn solution_view(solution: &Solution, elapsed_ms: f64) -> SolutionView {
     }
 }
 
+fn encode_worker_solution(
+    solution: &Solution,
+    index: usize,
+    codec: OutputCodec,
+) -> Result<String, String> {
+    let mut output = Vec::new();
+    codec
+        .write_single_solution_at(solution, index + 1, &mut output)
+        .map_err(|error| {
+            detailed_error(
+                "The solution could not be encoded.",
+                [
+                    ("Output format", codec.name().to_owned()),
+                    ("Solution", (index + 1).to_string()),
+                ],
+                error,
+            )
+        })?;
+    String::from_utf8(output).map_err(|error| {
+        detailed_error(
+            "The output encoder generated invalid UTF-8.",
+            [("Output format", codec.name().to_owned())],
+            error,
+        )
+    })
+}
+
 #[tauri::command]
 fn take_startup_documents(
     state: tauri::State<'_, StartupState>,
@@ -804,7 +945,7 @@ fn load_document(
     let arguments =
         json!({ "graph": title, "format": codec, "input size": format!("{} bytes", input.len()) });
     let result = (|| {
-        let graph = parse_graph(&input, &codec)?;
+        let graph = Arc::new(parse_graph(&input, &codec)?);
         let drawing = graph_view(&graph, None)?;
         let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
         let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
@@ -884,16 +1025,17 @@ async fn build_chart(
 ) -> Result<ChartView, String> {
     let started = Instant::now();
     let resources = state.resources(window.label())?;
-    let graph = resources
-        .document
-        .lock()
-        .map_err(|_| "document state is unavailable")?
-        .as_ref()
-        .filter(|(id, _)| *id == document_id)
-        .ok_or("document is no longer open")?
-        .1
-        .graph
-        .clone();
+    let graph = Arc::clone(
+        &resources
+            .document
+            .lock()
+            .map_err(|_| "document state is unavailable")?
+            .as_ref()
+            .filter(|(id, _)| *id == document_id)
+            .ok_or("document is no longer open")?
+            .1
+            .graph,
+    );
     let document = Arc::clone(&resources);
     let charts = Arc::clone(&resources.charts);
     let jobs = Arc::clone(&resources.jobs);
@@ -907,22 +1049,25 @@ async fn build_chart(
     let result = tauri::async_runtime::spawn_blocking(move || {
         let result = (|| {
             let started = Instant::now();
-            let chart = solve_with_cancellation(&graph, || cancelled.load(Ordering::Relaxed))
-                .map_err(|error| {
-                    detailed_error(
-                        "The solution chart could not be constructed.",
-                        [("Document ID", document_id.to_string())],
-                        error,
-                    )
-                })?;
+            let chart = solve_shared_with_cancellation(Arc::clone(&graph), || {
+                cancelled.load(Ordering::Relaxed)
+            })
+            .map_err(|error| {
+                detailed_error(
+                    "The solution chart could not be constructed.",
+                    [("Document ID", document_id.to_string())],
+                    error,
+                )
+            })?;
             let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
             if cancelled.load(Ordering::SeqCst) {
                 return Err("chart construction was cancelled".to_owned());
             }
             let stored = Arc::new(StoredChart {
                 display: ChartDisplay::new(&chart),
-                chart,
+                chart: Arc::new(chart),
                 source: "Original chart".to_owned(),
+                solution_worker: OnceLock::new(),
             });
             let response = chart_view(chart_id, &stored, elapsed_ms, Some(&graph))?;
             if document
@@ -1008,31 +1153,18 @@ async fn solution_at(
             .ok_or("chart is no longer available")?,
     );
     let chart_source = chart.source.clone();
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        let started = Instant::now();
-        let mut solutions = chart.chart.solutions();
-        for _ in 0..=index {
-            if !solutions.advance() {
-                return Ok(None);
-            }
-        }
-        let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
-        Ok(Some(solution_view(
-            &solutions.current().unwrap(),
-            elapsed_ms,
-        )))
-    })
-    .await
-    .map_err(|error| {
-        detailed_error(
-            "The background solution task failed.",
-            [
-                ("Chart", chart_source.clone()),
-                ("Solution", (index + 1).to_string()),
-            ],
-            error,
-        )
-    })?;
+    let result = tauri::async_runtime::spawn_blocking(move || chart.solution_worker().view(index))
+        .await
+        .map_err(|error| {
+            detailed_error(
+                "The background solution task failed.",
+                [
+                    ("Chart", chart_source.clone()),
+                    ("Solution", (index + 1).to_string()),
+                ],
+                error,
+            )
+        })?;
     state.record(
         &app,
         window.label(),
@@ -1066,23 +1198,20 @@ fn export_document(
             .ok_or("document is no longer open")?
             .1
             .graph;
-        let codec = OutputCodec::from_name(&format)
-            .ok_or_else(|| {
-                detailed_error(
-                    "The selected output format is not supported.",
-                    [("Requested format", format.clone())],
-                    "Choose one of the formats listed in the Export or Copy menu.",
-                )
-            })?;
-        let encoder = codec
-            .graph_encoder()
-            .ok_or_else(|| {
-                detailed_error(
-                    "The selected output format cannot encode graphs.",
-                    [("Output format", codec.name().to_owned())],
-                    "Choose a graph-capable format from the Export or Copy menu.",
-                )
-            })?;
+        let codec = OutputCodec::from_name(&format).ok_or_else(|| {
+            detailed_error(
+                "The selected output format is not supported.",
+                [("Requested format", format.clone())],
+                "Choose one of the formats listed in the Export or Copy menu.",
+            )
+        })?;
+        let encoder = codec.graph_encoder().ok_or_else(|| {
+            detailed_error(
+                "The selected output format cannot encode graphs.",
+                [("Output format", codec.name().to_owned())],
+                "Choose a graph-capable format from the Export or Copy menu.",
+            )
+        })?;
         let mut output = Vec::new();
         encoder
             .write_graph(graph.parsed(), &mut output)
@@ -1188,14 +1317,13 @@ async fn export_solution(
             .get(&chart_id)
             .ok_or("chart is no longer available")?,
     );
-    let codec = OutputCodec::from_name(&format)
-        .ok_or_else(|| {
-            detailed_error(
-                "The selected output format is not supported.",
-                [("Requested format", format.clone())],
-                "Choose one of the formats listed in the Export or Copy menu.",
-            )
-        })?;
+    let codec = OutputCodec::from_name(&format).ok_or_else(|| {
+        detailed_error(
+            "The selected output format is not supported.",
+            [("Requested format", format.clone())],
+            "Choose one of the formats listed in the Export or Copy menu.",
+        )
+    })?;
     if !codec.supports_solutions() {
         return Err(detailed_error(
             "The selected output format cannot encode solutions.",
@@ -1203,45 +1331,19 @@ async fn export_solution(
             "Choose a solution-capable format from the Export or Copy menu.",
         ));
     }
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        let mut solutions = chart.chart.solutions();
-        for _ in 0..=index {
-            if !solutions.advance() {
-                return Err(format!("solution {} is no longer available", index + 1));
-            }
-        }
-        let mut output = Vec::new();
-        codec
-            .write_single_solution_at(&solutions.current().unwrap(), index + 1, &mut output)
+    let result =
+        tauri::async_runtime::spawn_blocking(move || chart.solution_worker().export(index, codec))
+            .await
             .map_err(|error| {
                 detailed_error(
-                    "The solution could not be encoded.",
+                    "The background solution export task failed.",
                     [
-                        ("Output format", codec.name().to_owned()),
+                        ("Output format", format.clone()),
                         ("Solution", (index + 1).to_string()),
                     ],
                     error,
                 )
             })?;
-        String::from_utf8(output).map_err(|error| {
-            detailed_error(
-                "The output encoder generated invalid UTF-8.",
-                [("Output format", codec.name().to_owned())],
-                error,
-            )
-        })
-    })
-    .await
-    .map_err(|error| {
-        detailed_error(
-            "The background solution export task failed.",
-            [
-                ("Output format", format.clone()),
-                ("Solution", (index + 1).to_string()),
-            ],
-            error,
-        )
-    })?;
     state.record(
         &app,
         window.label(),
@@ -1423,8 +1525,9 @@ async fn filter_chart_command(
             }
             let stored = Arc::new(StoredChart {
                 display: ChartDisplay::new(&filtered),
-                chart: filtered,
+                chart: Arc::new(filtered),
                 source: stored_source,
+                solution_worker: OnceLock::new(),
             });
             let response = chart_view(result_id, &stored, elapsed_ms, None)?;
             charts
@@ -1488,6 +1591,7 @@ fn create_graph_window_from_graph(
     state: &DocumentState,
 ) -> Result<(), String> {
     let drawing = graph_view(&graph, None)?;
+    let graph = Arc::new(graph);
     let elapsed_ms = started.elapsed().as_secs_f64() * 1000.0;
     let document_id = state.next_id.fetch_add(1, Ordering::Relaxed) + 1;
     let label = format!("graph-{document_id}");
@@ -1679,18 +1783,26 @@ fn start_server(
                 let graph = HncGraph::try_from(graph).map_err(|error| {
                     detailed_error(
                         "The graph received from the server cannot be displayed.",
-                        [("Graph", request.name.clone().unwrap_or_else(|| "Unnamed graph".to_owned()))],
+                        [(
+                            "Graph",
+                            request
+                                .name
+                                .clone()
+                                .unwrap_or_else(|| "Unnamed graph".to_owned()),
+                        )],
                         error,
                     )
                 })?;
                 let state = display_app.state::<DocumentState>();
                 let title = request.name.as_deref().unwrap_or("Graph from server");
-                let initial_filter = request.filter_rules.map(|rewrite_system| StartupFilterView {
-                    rewrite_system,
-                    filename: request
-                        .filter_name
-                        .unwrap_or_else(|| "Server filter".to_owned()),
-                });
+                let initial_filter = request
+                    .filter_rules
+                    .map(|rewrite_system| StartupFilterView {
+                        rewrite_system,
+                        filename: request
+                            .filter_name
+                            .unwrap_or_else(|| "Server filter".to_owned()),
+                    });
                 create_graph_window_from_graph(
                     graph,
                     title,
@@ -2447,11 +2559,34 @@ mod tests {
         )
         .unwrap_err();
 
-        assert!(error.starts_with("The graph could not be parsed."), "{error}");
+        assert!(
+            error.starts_with("The graph could not be parsed."),
+            "{error}"
+        );
         assert!(error.contains("Input format: mrs-prolog"), "{error}");
         assert!(error.contains("expected punctuation ','"), "{error}");
         assert!(error.contains("line 2, column"), "{error}");
         assert!(error.contains("rel('rain_rel',h3 ["), "{error}");
+    }
+
+    #[test]
+    fn solution_worker_supports_forward_backward_and_export_access() {
+        let graph = Arc::new(parse_graph("6", "chain").unwrap());
+        let chart = Arc::new(utool::solve_shared(graph).unwrap());
+        let worker = SolutionWorker::new(chart);
+
+        let first = worker.view(0).unwrap().unwrap();
+        let later = worker.view(20).unwrap().unwrap();
+        let previous = worker.view(19).unwrap().unwrap();
+        assert!(!first.nodes.is_empty());
+        assert!(!later.nodes.is_empty());
+        assert!(!previous.nodes.is_empty());
+        assert!(
+            worker
+                .export(19, OutputCodec::TermProlog)
+                .unwrap()
+                .contains('(')
+        );
     }
 
     #[test]

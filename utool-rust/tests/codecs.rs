@@ -1,6 +1,7 @@
 use utool::{
-    CodecError, GraphError, HncGraph, InputCodec, parse_chain, parse_domcon_oz, parse_domgraph_gxl,
-    parse_holesem, parse_mrs_prolog, parse_mrs_xml, solve,
+    CodecError, GraphError, HncGraph, InputCodec, PVariablePolicy, parse_chain, parse_domcon_oz,
+    parse_domgraph_gxl, parse_holesem, parse_mrs_prolog, parse_mrs_prolog_with_policy,
+    parse_mrs_xml, parse_mrs_xml_with_policy, solve,
 };
 
 #[test]
@@ -144,6 +145,78 @@ fn malformed_mrs_prolog_identifies_expectation_and_source_location() {
     assert!(error.contains("line 2, column"), "{error}");
     assert!(error.contains("rel('rain_rel',h3 ["), "{error}");
     assert!(error.contains('^'), "{error}");
+}
+
+#[test]
+fn mrs_p_variables_default_to_dropped_instances_and_strict_mode_rejects_them() {
+    let without_p = "psoa(h1,e2,[rel('rain',h1,[attrval('ARG0',e2)])],hcons([]))";
+    let with_p = "psoa(h1,e2,[rel('rain',h1,[attrval('ARG0',e2),attrval('ARG1',p3)])],hcons([]))";
+    assert_eq!(
+        parse_mrs_prolog(with_p).unwrap(),
+        parse_mrs_prolog(without_p).unwrap()
+    );
+    assert!(
+        parse_mrs_prolog_with_policy(with_p, PVariablePolicy::Strict)
+            .unwrap_err()
+            .to_string()
+            .contains("unresolved p variable \"p3\"")
+    );
+
+    let xml = concat!(
+        "<mrs><var vid=\"h1\"/><ep><pred>rain</pred><var vid=\"h1\"/>",
+        "<fvpair><rargname>ARG0</rargname><var vid=\"e2\"/></fvpair>",
+        "<fvpair><rargname>ARG1</rargname><var vid=\"p3\"/></fvpair>",
+        "</ep></mrs>"
+    );
+    assert_eq!(parse_mrs_xml(xml).unwrap().nodes().len(), 1);
+    assert!(parse_mrs_xml_with_policy(xml, PVariablePolicy::Strict).is_err());
+}
+
+#[test]
+fn mrs_p_variables_refine_from_structure_and_reject_conflicts() {
+    let handle = concat!(
+        "psoa(h1,e2,[",
+        "rel('modal',h1,[attrval('ARG0',e2),attrval('ARG1',p3)]),",
+        "rel('rain',p3,[attrval('ARG0',e4)])",
+        "],hcons([]))"
+    );
+    let graph = parse_mrs_prolog_with_policy(handle, PVariablePolicy::Strict).unwrap();
+    assert_eq!(
+        graph
+            .node(graph.node_id("h1").unwrap())
+            .tree_children()
+            .len(),
+        1
+    );
+
+    let conflict = "psoa(h1,e2,[rel('bad',p3,[attrval('ARG0',p3)])],hcons([]))";
+    assert!(
+        parse_mrs_prolog(conflict)
+            .unwrap_err()
+            .to_string()
+            .contains("both handle and instance positions")
+    );
+}
+
+#[test]
+fn rondane_mrs_regressions_are_rejected_before_solving() {
+    let p_case = include_str!("fixtures/rondane-java-rejections/1108.mrs.pl");
+    let error = parse_mrs_prolog(p_case).unwrap_err().to_string();
+    assert!(error.contains("not normal"), "{error}");
+    assert!(!error.contains("unresolved p variable"), "{error}");
+
+    for input in [
+        include_str!("fixtures/rondane-java-rejections/1068.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/1136.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/1296.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/1317.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/221.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/308.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/464.mrs.pl"),
+        include_str!("fixtures/rondane-java-rejections/667.mrs.pl"),
+    ] {
+        assert!(parse_mrs_prolog(input).is_err());
+    }
 }
 
 #[test]

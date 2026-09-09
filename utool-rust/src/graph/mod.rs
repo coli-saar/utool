@@ -631,6 +631,28 @@ fn is_hypernormally_connected(graph: &ParsedGraph) -> bool {
     if graph.nodes.is_empty() {
         return true;
     }
+    let (adjacency, edge_count) = hnc_adjacency(graph);
+
+    // For a solvable graph, one restricted DFS is a complete HNC test.  On an
+    // arbitrary graph its positive result is still sound: the DFS tree itself
+    // supplies a hypernormal path between every pair of nodes.  A negative
+    // result is inconclusive (not necessarily false), so keep the exact search
+    // below as the fallback for unsolvable HNC graphs.
+    if hnc_fast_connected(&adjacency) {
+        return true;
+    }
+
+    // HNC implies ordinary connectivity.  This cheap negative certificate
+    // avoids allocating and filling the cubic exact-search table for the most
+    // common non-HNC shape.
+    if !is_connected(&adjacency) {
+        return false;
+    }
+
+    hnc_reference_reachability(graph.nodes.len(), edge_count, &adjacency)
+}
+
+fn hnc_adjacency(graph: &ParsedGraph) -> (Vec<Vec<AdjacentEdge>>, usize) {
     let mut adjacency = vec![Vec::new(); graph.nodes.len()];
     let mut next_edge_id = 0;
     for (parent_index, node) in graph.nodes.iter().enumerate() {
@@ -666,43 +688,38 @@ fn is_hypernormally_connected(graph: &ParsedGraph) -> bool {
         });
         next_edge_id += 1;
     }
+    (adjacency, next_edge_id)
+}
 
-    // This linear test is complete for solvable graphs and sound for all
-    // graphs: outside its intended domain it can miss an HNC graph, but it
-    // cannot accept a non-HNC graph. Keep the exact search as the fallback.
-    let mut fast_visited = vec![false; graph.nodes.len()];
-    hnc_fast_visit(NodeId(0), false, &adjacency, &mut fast_visited);
-    if fast_visited.iter().all(|visited| *visited) {
-        return true;
-    }
+/// Sound linear-time HNC certificate.
+///
+/// The traversal uses at most one outgoing dominance edge at a node and none
+/// immediately after arriving there against a dominance edge's direction. If
+/// it spans the graph, paths through the resulting DFS tree are hypernormal.
+fn hnc_fast_connected(adjacency: &[Vec<AdjacentEdge>]) -> bool {
+    let mut visited = vec![false; adjacency.len()];
+    hnc_fast_visit(NodeId::from_index(0), false, adjacency, &mut visited);
+    visited.into_iter().all(|node| node)
+}
 
-    let node_count = graph.nodes.len();
-    let mut reachable = vec![false; node_count * node_count];
-    let mut visit_marks = HashSet::new();
-    for start in 0..node_count {
-        visit_marks.clear();
-        let mut path = Vec::with_capacity(node_count);
-        let mut on_path = vec![false; node_count];
-        hnc_visit(
-            NodeId::from_index(start),
-            &mut path,
-            &mut on_path,
-            None,
-            &adjacency,
-            &mut reachable,
-            &mut visit_marks,
-            node_count,
-            next_edge_id,
-        );
+fn is_connected(adjacency: &[Vec<AdjacentEdge>]) -> bool {
+    let mut visited = vec![false; adjacency.len()];
+    let mut stack = vec![NodeId::from_index(0)];
+    visited[0] = true;
+    while let Some(node) = stack.pop() {
+        for edge in &adjacency[node.index()] {
+            if !visited[edge.neighbor.index()] {
+                visited[edge.neighbor.index()] = true;
+                stack.push(edge.neighbor);
+            }
+        }
     }
-    (0..node_count).all(|source| {
-        (0..node_count).all(|target| source == target || reachable[source * node_count + target])
-    })
+    visited.into_iter().all(|node| node)
 }
 
 fn hnc_fast_visit(
     node: NodeId,
-    arrived_via_dominance: bool,
+    arrived_up_dominance: bool,
     adjacency: &[Vec<AdjacentEdge>],
     visited: &mut [bool],
 ) {
@@ -710,15 +727,49 @@ fn hnc_fast_visit(
     let mut used_outgoing_dominance = false;
     for edge in &adjacency[node.index()] {
         if edge.dominance && edge.outgoing {
-            if arrived_via_dominance || used_outgoing_dominance {
+            if arrived_up_dominance || used_outgoing_dominance {
                 continue;
             }
             used_outgoing_dominance = true;
         }
         if !visited[edge.neighbor.index()] {
-            hnc_fast_visit(edge.neighbor, edge.dominance, adjacency, visited);
+            hnc_fast_visit(
+                edge.neighbor,
+                edge.dominance && !edge.outgoing,
+                adjacency,
+                visited,
+            );
         }
     }
+}
+
+fn hnc_reference_reachability(
+    node_count: usize,
+    edge_count: usize,
+    adjacency: &[Vec<AdjacentEdge>],
+) -> bool {
+    let mut reachable = vec![false; node_count * node_count];
+    let mut visit_marks = vec![0_u32; node_count * node_count * edge_count];
+    for start in 0..node_count {
+        let mut path = Vec::with_capacity(node_count);
+        let mut on_path = vec![false; node_count];
+        hnc_visit(
+            NodeId::from_index(start),
+            &mut path,
+            &mut on_path,
+            None,
+            false,
+            adjacency,
+            &mut reachable,
+            &mut visit_marks,
+            u32::try_from(start + 1).expect("graph node count exceeds HNC visit epochs"),
+            node_count,
+            edge_count,
+        );
+    }
+    (0..node_count).all(|source| {
+        (0..node_count).all(|target| source == target || reachable[source * node_count + target])
+    })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -727,9 +778,11 @@ fn hnc_visit(
     path: &mut Vec<NodeId>,
     on_path: &mut [bool],
     last_edge: Option<usize>,
+    arrived_up_dominance: bool,
     adjacency: &[Vec<AdjacentEdge>],
     reachable: &mut [bool],
-    visit_marks: &mut HashSet<usize>,
+    visit_marks: &mut [u32],
+    visit_epoch: u32,
     node_count: usize,
     edge_count: usize,
 ) {
@@ -742,7 +795,8 @@ fn hnc_visit(
         for &previous in path.iter() {
             reachable[previous.index() * node_count + node.index()] = true;
             let mark = (previous.index() * node_count + node.index()) * edge_count + last_edge;
-            if visit_marks.insert(mark) {
+            if visit_marks[mark] != visit_epoch {
+                visit_marks[mark] = visit_epoch;
                 discovered = true;
             }
         }
@@ -753,11 +807,6 @@ fn hnc_visit(
 
     on_path[node.index()] = true;
     path.push(node);
-    let arrived_up_dominance = last_edge.is_some_and(|last| {
-        adjacency[node.index()]
-            .iter()
-            .any(|edge| edge.id == last && edge.dominance && edge.outgoing)
-    });
     for edge in &adjacency[node.index()] {
         if Some(edge.id) != last_edge && !(arrived_up_dominance && edge.dominance && edge.outgoing)
         {
@@ -766,9 +815,11 @@ fn hnc_visit(
                 path,
                 on_path,
                 Some(edge.id),
+                edge.dominance && !edge.outgoing,
                 adjacency,
                 reachable,
                 visit_marks,
+                visit_epoch,
                 node_count,
                 edge_count,
             );
@@ -829,4 +880,28 @@ pub enum GraphError {
     /// The graph is outside the supported HNC fragment.
     #[error("graph is not hypernormally connected")]
     NotHypernormallyConnected,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{hnc_adjacency, hnc_fast_connected, hnc_reference_reachability};
+    use crate::codec::parse_domcon_oz;
+
+    #[test]
+    fn exact_hnc_fallback_accepts_an_unsolvable_counterexample() {
+        let graph = parse_domcon_oz(
+            "[label(x f(x2 x3)) label(y g(y1)) label(z f(z1)) \
+             label(v a) label(w b) dom(x2 y) dom(x2 z) dom(x3 z) \
+             dom(y1 v) dom(z1 v) dom(z1 w)]",
+        )
+        .unwrap();
+        let (adjacency, edge_count) = hnc_adjacency(&graph);
+
+        assert!(!hnc_fast_connected(&adjacency));
+        assert!(hnc_reference_reachability(
+            graph.nodes().len(),
+            edge_count,
+            &adjacency
+        ));
+    }
 }

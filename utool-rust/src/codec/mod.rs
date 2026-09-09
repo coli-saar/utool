@@ -20,7 +20,10 @@ mod output;
 pub use domcon::parse_domcon_oz;
 pub use gxl::parse_domgraph_gxl;
 pub use holesem::parse_holesem;
-pub use mrs::{parse_mrs_prolog, parse_mrs_xml};
+pub use mrs::{
+    PVariablePolicy, parse_mrs_prolog, parse_mrs_prolog_with_policy, parse_mrs_xml,
+    parse_mrs_xml_with_policy,
+};
 pub use output::{GraphOutputCodec, OutputCodec, SolutionEncoder};
 
 /// Input formats currently supported by the Rust implementation.
