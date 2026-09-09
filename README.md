@@ -21,13 +21,13 @@ Prebuilt command-line programs and desktop packages for Utool 4 are published on
 [GitHub Releases page](https://github.com/coli-saar/utool/releases). Release
 artifacts are built for these targets:
 
-<!-- release-downloads:start version=4.0.0 -->
+<!-- release-downloads:start version=4.1.0 -->
 | Platform | Desktop application | Command line program |
 | --- | --- | --- |
-| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-aarch64-apple-darwin.tar.gz) |
-| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-apple-darwin.tar.gz) |
-| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-pc-windows-msvc.zip) |
-| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.0.0/Utool_4.0.0_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.0.0/utool-4.0.0-x86_64-unknown-linux-gnu.tar.gz) |
+| macOS, Apple Silicon | [DMG](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_4.1.0_aarch64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_aarch64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.1.0/utool-4.1.0-aarch64-apple-darwin.tar.gz) |
+| macOS, Intel | [DMG](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_4.1.0_x64.dmg) · [app archive](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_x64.app.tar.gz) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.1.0/utool-4.1.0-x86_64-apple-darwin.tar.gz) |
+| Windows x64 | [installer](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_4.1.0_x64-setup.exe) | [zip](https://github.com/coli-saar/utool/releases/download/v4.1.0/utool-4.1.0-x86_64-pc-windows-msvc.zip) |
+| Linux x64 | [AppImage](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_4.1.0_amd64.AppImage) · [Debian package](https://github.com/coli-saar/utool/releases/download/v4.1.0/Utool_4.1.0_amd64.deb) | [tar.gz](https://github.com/coli-saar/utool/releases/download/v4.1.0/utool-4.1.0-x86_64-unknown-linux-gnu.tar.gz) |
 <!-- release-downloads:end -->
 
 For the easiest start, download and run the desktop application. This will allow you to open, convert, and solve dominance graphs. You can also activate the server model in the desktop app, which allows you to send XML commands for solving dominance graphs from other programs over a socket.
