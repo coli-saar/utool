@@ -68,14 +68,14 @@ fn solves_a_single_fragment() {
 }
 
 #[test]
-fn solves_compact_graph_into_split_automaton() {
+fn solves_compact_graph_into_rule_automaton() {
     let chart = solve_text("[label(x f(x1 x2)) dom(x1 y) label(y a) dom(x2 z) label(z b)]");
     assert_eq!(chart.count_solutions(), BigUint::from(1_u8));
     assert!(chart.state_count() >= 3);
-    assert!(chart.split_count() >= 3);
+    assert!(chart.rule_count() >= 3);
     let display = ChartDisplay::new(&chart);
     let rules = display.rule_page(&chart, 0, display.row_count()).rules;
-    assert_eq!(rules.len(), chart.split_count());
+    assert_eq!(rules.len(), chart.rule_count());
     assert!(rules.iter().any(|rule| rule.fragment.starts_with("f(")));
     assert!(rules.iter().any(|rule| {
         rule.assignments

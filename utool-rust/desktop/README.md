@@ -76,7 +76,7 @@ solutions; controls along the bottom of Solutions navigate to any exact solution
 number. **File → Open Example…** shows the built-in example catalogue with codec
 and description details. The example catalogue and sources live under
 `src-tauri/resources/examples`; the build reads `examples.xml` and embeds every
-listed source file into the executable. The Chart view lists the actual split
+listed source file into the executable. The Chart view lists the actual chart
 rules, grouped and numbered by their left-hand-side subgraph.
 
 Graph and solution tabs start at 100%. Zoom commands are in the **View** menu;

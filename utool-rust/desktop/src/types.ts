@@ -94,7 +94,7 @@ export type ChartView = {
   solutionCount: string;
   stateCount: number;
   subgraphCount: number;
-  splitCount: number;
+  ruleCount: number;
   displayRowCount: number;
   topFragments: string[];
   graph: GraphView | null;

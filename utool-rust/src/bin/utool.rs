@@ -444,9 +444,9 @@ fn format_duration(duration: Duration) -> String {
 fn report_chart_phase(name: &str, time_label: &str, chart: &Chart, duration: Duration) {
     eprintln!("{name}");
     eprintln!(
-        "  Chart size:    {} states, {} splits",
+        "  Chart size:    {} states, {} rules",
         chart.state_count(),
-        chart.split_count()
+        chart.rule_count()
     );
     eprintln!("  Language size: {} solutions", chart.count_solutions());
     eprintln!(

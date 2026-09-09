@@ -860,7 +860,7 @@ fn process_request_inner(
         return Ok(format!(
             "<result solvable='{solvable}' fragments='{fragments}' count='{}' chartsize='{}' time='{chart_ms}' />\n",
             chart.count_solutions(),
-            chart.split_count()
+            chart.rule_count()
         ));
     }
     solve_response(
@@ -940,7 +940,7 @@ fn solve_response(
     if !solvable {
         return Ok(format!(
             "<result solvable='false' count='0' fragments='{fragments}' chartsize='{}' time-chart='{chart_ms}' />\n",
-            chart.split_count()
+            chart.rule_count()
         ));
     }
     let extraction_started = Instant::now();
@@ -976,7 +976,7 @@ fn solve_response(
         }
     }
     let extraction_ms = elapsed_ms(extraction_started);
-    let mut response = format!("<result solvable='true' count='{count}' fragments='{fragments}' chartsize='{}' time-chart='{chart_ms}' time-extraction='{extraction_ms}' >\n", chart.split_count()).into_bytes();
+    let mut response = format!("<result solvable='true' count='{count}' fragments='{fragments}' chartsize='{}' time-chart='{chart_ms}' time-extraction='{extraction_ms}' >\n", chart.rule_count()).into_bytes();
     response.extend(encoded);
     response.extend_from_slice(b"</result>\n");
     String::from_utf8(response).map_err(|error| {

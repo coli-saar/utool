@@ -317,7 +317,7 @@ function ChartRules({ chart }: { chart: ChartView }) {
     setMeasurementVersion((version) => version + 1);
   }, [heights]);
 
-  if (chart.displayRowCount === 0) return <div className="empty-chart">The chart contains no productive split rules.</div>;
+  if (chart.displayRowCount === 0) return <div className="empty-chart">The chart contains no productive rules.</div>;
   if (loadError) return <div className="empty-chart">Could not load chart rules. See the Event Log for details.</div>;
   const rendered = [];
   for (let index = first; index < last; index++) {
@@ -1070,7 +1070,7 @@ export default function App() {
       {document && activeVariant && <div className={`chart-view${activeView === "chart" ? "" : " chart-view-preload"}`} aria-hidden={activeView !== "chart"}>
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}
         <ChartRules key={activeVariant.chart.chartId} chart={activeVariant.chart} />
-        <div className="chart-bar"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.splitCount}</b> split rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>
+        <div className="chart-bar"><span className="chart-stats"><b>{activeVariant.chart.stateCount}</b> states{activeVariant.chart.stateCount !== activeVariant.chart.subgraphCount && <> · <b>{activeVariant.chart.subgraphCount}</b> subgraphs</>} · <b>{activeVariant.chart.ruleCount}</b> rules · <strong>{activeVariant.chart.solutionCount} solutions</strong></span></div>
       </div>}
       {document && activeView === "solutions" && activeVariant && <div className="solutions-view">
         {filterRunning && <div className="pending-banner"><span className="small-spinner" />Computing {filterRunning}. Currently showing {activeVariant.name}.</div>}

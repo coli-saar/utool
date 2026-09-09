@@ -270,7 +270,7 @@ impl<'a> ChartLayouter<'a> {
 
     fn fill_layer(&mut self, state: usize, layer: usize, visited: &mut HashSet<usize>) {
         let chart_state = &self.chart.states[state];
-        if chart_state.splits.is_empty() {
+        if chart_state.rules.is_empty() {
             for &root in &chart_state.fragments {
                 let fragment = self.fragment_of[root.index()];
                 self.levels[fragment] = self.levels[fragment].max(layer);
@@ -278,14 +278,14 @@ impl<'a> ChartLayouter<'a> {
             return;
         }
 
-        let splits = chart_state
-            .splits
+        let rules = chart_state
+            .rules
             .iter()
-            .map(|split| (split.root, split.dominators.clone(), split.children.clone()))
+            .map(|rule| (rule.root, rule.dominators.clone(), rule.children.clone()))
             .collect::<Vec<_>>();
         let mut recent = HashSet::new();
         let mut child_states = Vec::new();
-        for (root, dominators, children) in splits {
+        for (root, dominators, children) in rules {
             let root_fragment = self.fragment_of[root.index()];
             if visited.insert(root_fragment) {
                 recent.insert(root_fragment);
@@ -347,7 +347,7 @@ impl<'a> ChartLayouter<'a> {
 
     fn free_fragments(&self, state: usize) -> HashSet<usize> {
         let chart_state = &self.chart.states[state];
-        if chart_state.splits.is_empty() {
+        if chart_state.rules.is_empty() {
             return chart_state
                 .fragments
                 .iter()
@@ -355,9 +355,9 @@ impl<'a> ChartLayouter<'a> {
                 .collect();
         }
         chart_state
-            .splits
+            .rules
             .iter()
-            .map(|split| split.root)
+            .map(|rule| rule.root)
             .map(|root| self.fragment_of[root.index()])
             .collect()
     }

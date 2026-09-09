@@ -369,7 +369,7 @@ pub struct ChartState {
     pub variant: Option<u32>,
 }
 
-/// One readable rule in a split chart.
+/// One readable chart rule.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ChartRule {
     /// Dense automaton-state identity, stable for the lifetime of the chart.
@@ -444,7 +444,7 @@ impl FragmentAutomaton {
 
 /// A solved dominance graph represented by a fragment automaton.
 pub struct Chart {
-    /// Automaton containing all productive split rules.
+    /// Automaton containing all productive chart rules.
     fragment_automaton: FragmentAutomaton,
     /// Lazily initialized traversal data for allocation-free derivation iteration.
     derivation_plan: OnceLock<FiniteLanguagePlan>,
@@ -464,19 +464,19 @@ pub(crate) struct LayoutChart {
     pub(crate) states: Vec<LayoutChartState>,
 }
 
-/// Source fragments and outgoing splits associated with one layout state.
+/// Source fragments and outgoing rules associated with one layout state.
 pub(crate) struct LayoutChartState {
     /// Roots of source fragments contained in this state.
     pub(crate) fragments: Vec<NodeId>,
-    /// Productive split alternatives for this state.
-    pub(crate) splits: Vec<LayoutChartSplit>,
+    /// Productive rule alternatives for this state.
+    pub(crate) rules: Vec<LayoutChartRule>,
 }
 
-/// Minimal split information needed by the chart layout algorithm.
-pub(crate) struct LayoutChartSplit {
-    /// Root fragment selected by this split.
+/// Minimal rule information needed by the chart layout algorithm.
+pub(crate) struct LayoutChartRule {
+    /// Root fragment selected by this rule.
     pub(crate) root: NodeId,
-    /// Open holes in the split terminal.
+    /// Open holes in the rule terminal.
     pub(crate) dominators: Vec<NodeId>,
     /// Child state indices in terminal-hole order.
     pub(crate) children: Vec<usize>,
@@ -495,9 +495,9 @@ impl Chart {
         self.fragment_automaton.automaton.num_states() as usize
     }
 
-    /// Number of split transitions.
+    /// Number of chart rules.
     #[must_use]
-    pub fn split_count(&self) -> usize {
+    pub fn rule_count(&self) -> usize {
         self.fragment_automaton.automaton.num_rules()
     }
 
@@ -584,10 +584,10 @@ impl Chart {
                     .members()
                     .map(|fragment| graph.roots()[fragment])
                     .collect();
-                let splits = automaton
+                let rules = automaton
                     .rules_topdown(state)
                     .map(|rule| {
-                        // Each automaton rule becomes one layout split. The
+                        // Each automaton rule becomes one layout rule. The
                         // terminal supplies its root and ordered open holes.
                         let terminal = self.fragment_automaton.fragment_root(rule.symbol);
                         let root = match arena.get_label(terminal) {
@@ -597,14 +597,14 @@ impl Chart {
                             }
                         };
                         let dominators = fragment_holes(arena, terminal);
-                        LayoutChartSplit {
+                        LayoutChartRule {
                             root: graph.roots()[graph.fragment_of(root)],
                             dominators,
                             children: rule.children.iter().map(|state| state.index()).collect(),
                         }
                     })
                     .collect();
-                LayoutChartState { fragments, splits }
+                LayoutChartState { fragments, rules }
             })
             .collect();
         LayoutChart { top_states, states }

@@ -309,6 +309,8 @@ fn chain_specification_is_a_length_not_a_filename() {
     assert!(statistics.contains("Number of solutions: 5"));
     assert!(statistics.contains("Chart construction"));
     assert!(statistics.contains("Chart size:"));
+    assert!(statistics.contains(" rules"));
+    assert!(!statistics.contains("splits"));
     assert!(statistics.contains("Language size: 5 solutions"));
     assert!(statistics.contains("Time to build chart:"));
     assert!(!statistics.contains("Filtering"));

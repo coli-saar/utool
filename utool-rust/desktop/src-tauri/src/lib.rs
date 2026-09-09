@@ -656,7 +656,7 @@ struct ChartView {
     solution_count: String,
     state_count: usize,
     subgraph_count: usize,
-    split_count: usize,
+    rule_count: usize,
     display_row_count: usize,
     top_fragments: Vec<String>,
     graph: Option<GraphView>,
@@ -1368,7 +1368,7 @@ fn chart_view(
         solution_count: chart.count_solutions().to_string(),
         state_count: chart.state_count(),
         subgraph_count: stored.display.subgraph_count(),
-        split_count: chart.split_count(),
+        rule_count: chart.rule_count(),
         display_row_count: stored.display.row_count(),
         top_fragments: chart.top_fragments(),
         graph: graph

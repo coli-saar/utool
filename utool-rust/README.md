@@ -188,7 +188,7 @@ In particular:
   windows. Unlike the Java workbench, it does not currently provide tab
   duplication, PDF/raster export and printing, node-name/label display modes,
   layout selection/reset, preferences and server controls, or manual deletion
-  of chart splits. Rust uses a separate window per graph rather than Java's
+  of chart rules. Rust uses a separate window per graph rather than Java's
   document tabs.
 - The Rust crate provides a streamlined API for graph construction, codecs,
   solving, filtering, layouts, and the server. It is not source-compatible with
