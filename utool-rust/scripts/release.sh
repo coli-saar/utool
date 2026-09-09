@@ -72,13 +72,16 @@ const version = process.env.VERSION;
 const currentVersion = process.env.CURRENT_VERSION;
 const files = new Map([
   ["utool-rust/Cargo.toml", 1],
-  ["utool-rust/Cargo.lock", 1],
   ["utool-rust/desktop/package.json", 1],
-  ["utool-rust/desktop/package-lock.json", 2],
   ["utool-rust/desktop/src-tauri/Cargo.toml", 1],
-  ["utool-rust/desktop/src-tauri/Cargo.lock", 2],
   ["utool-rust/desktop/src-tauri/tauri.conf.json", 1],
 ]);
+
+const cargoLocks = new Map([
+  ["utool-rust/Cargo.lock", ["utool"]],
+  ["utool-rust/desktop/src-tauri/Cargo.lock", ["utool", "utool-display"]],
+]);
+const packageLockFile = "utool-rust/desktop/package-lock.json";
 
 const downloadsPattern = /<!-- release-downloads:start version=([^ ]+) -->([\s\S]*?)<!-- release-downloads:end -->/;
 const readmeFiles = ["README.md", "utool-rust/README.md"];
@@ -111,6 +114,48 @@ for (const [file, expectedCount] of files) {
     );
   }
   contents.set(file, text);
+}
+
+for (const [file, packageNames] of cargoLocks) {
+  let text = fs.readFileSync(file, "utf8");
+  for (const packageName of packageNames) {
+    const escapedName = packageName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedVersion = currentVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const packageVersion = new RegExp(
+      `(\\[\\[package\\]\\]\\nname = "${escapedName}"\\nversion = ")${escapedVersion}("\\n)`,
+      "g",
+    );
+    const matches = [...text.matchAll(packageVersion)];
+    if (matches.length !== 1) {
+      throw new Error(
+        `${file}: expected one ${packageName} package at version ${currentVersion}, found ${matches.length}`,
+      );
+    }
+    text = text.replace(packageVersion, `$1${version}$2`);
+  }
+  contents.set(file, text);
+}
+
+{
+  let text = fs.readFileSync(packageLockFile, "utf8");
+  const escapedVersion = currentVersion.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const versionFields = [
+    new RegExp(`(^  "version": ")${escapedVersion}(",\\n)`, "gm"),
+    new RegExp(
+      `(^    "": \\{\\n      "name": "utool-display",\\n      "version": ")${escapedVersion}(",\\n)`,
+      "gm",
+    ),
+  ];
+  for (const versionField of versionFields) {
+    const matches = [...text.matchAll(versionField)];
+    if (matches.length !== 1) {
+      throw new Error(
+        `${packageLockFile}: expected one application version field at ${currentVersion}, found ${matches.length}`,
+      );
+    }
+    text = text.replace(versionField, `$1${version}$2`);
+  }
+  contents.set(packageLockFile, text);
 }
 
 for (const [file, text] of contents) {
